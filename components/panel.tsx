@@ -89,7 +89,7 @@ export default function Panel() {
         }
     };
 
-    const handleClickOutside = (e: MouseEvent) => {
+    const handleClickOutside = () => {
         setActiveMenu(null);
         setHoverEnabled(false);
     };
