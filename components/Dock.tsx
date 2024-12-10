@@ -52,7 +52,7 @@ const Dock = () => {
 
   return (
     <motion.div
-      className="fixed bottom-2 mx-auto left-0 right-0 w-max z-50 py-0 dark:bg-black dark:bg-opacity-50 bg-white bg-opacity-50 px-[6px] backdrop-blur-lg flex flex-shrink-0 rounded-2xl border-[0.1px] dark:border-gray-700 border-gray-500 shadow-2xl"
+      className="fixed bottom-2 mx-auto left-0 right-0 w-max z-50 py-0 dark:bg-black dark:bg-opacity-30 bg-white bg-opacity-30 px-[6px] backdrop-blur-lg flex flex-shrink-0 rounded-2xl border-[0.1px] dark:border-gray-700 border-gray-500 shadow-2xl"
       style={{
         height: '60px',
         overflow: 'visible',
@@ -112,7 +112,7 @@ const Dock = () => {
               )}
               <motion.img
                 src={app.icon}
-                className="rounded-xl transition-all duration-200"
+                className="rounded-xl  transition-all duration-200"
                 style={{
                   width: iconSize,
                   height: iconSize,

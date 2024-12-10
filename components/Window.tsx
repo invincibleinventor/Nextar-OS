@@ -7,7 +7,6 @@ import { apps } from './app';
 const PANEL_HEIGHT = 25;
 const DOCK_HEIGHT = 110;
 
-
 const Window = ({ id, appName, title, component: Component, props, isMinimized, isMaximized }: any) => {
   const { removeWindow, updateWindow, activeWindow, setActiveWindow } = useWindows();
   const [position, setPosition] = useState({ top: 100, left: 100 });
@@ -20,7 +19,12 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
 
   useEffect(() => {
     if (isMinimized) {
-      setPosition({ top: -1000, left: -1000 });
+      // Place the minimized window below the dock
+      const { innerWidth: screenWidth, innerHeight: screenHeight } = window;
+      setPosition({
+        top: screenHeight +10, // Adjust to place below the dock
+        left: (screenWidth - size.width) / 2, // Center it horizontally
+      });
     } else if (isMaximized) {
       const { innerWidth: screenWidth, innerHeight: screenHeight } = window;
       setPosition({ top: PANEL_HEIGHT, left: 0 });
@@ -114,15 +118,15 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
             ? 'dark:bg-opacity-50 bg-opacity-70 dark:bg-black bg-white relative backdrop-blur-sm'
             : 'dark:bg-gray-800 bg-white relative backdrop-blur-sm'
         } px-3 py-[10px] flex justify-between`}
-        onDoubleClick={handleMaximize} // Double-click listener
+        onDoubleClick={handleMaximize}
         onMouseDown={(e) => {
-          if (!(e.target as Element).closest('.window-button')) handleDragStart(e);
+          if (!(e.target as Element).closest('#buttons')) handleDragStart(e);
         }}
         onTouchStart={(e) => {
-          if (!(e.target as Element).closest('.window-button')) handleDragStart(e);
+          if (!(e.target as Element).closest('#buttons')) handleDragStart(e);
         }}
       >
-        <div className='flex flex-row items-center content-center space-x-2'>
+        <div id="buttons" className='flex flex-row items-center content-center space-x-2'>
           <button
             className='w-3 h-3 rounded-full bg-red-500 window-button'
             onClick={(e) => {
