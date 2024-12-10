@@ -10,7 +10,7 @@ export default function Panel() {
 
     // Get the appName of the currently active window
     const activeAppName =
-        windows.find((window) => window.id === activeWindow)?.appName || 'Finder';
+        windows.find((window:any) => window.id === activeWindow)?.appName || 'Finder';
 
     const fileMenu = [
         { title: 'New Finder Window', disabled: false },
