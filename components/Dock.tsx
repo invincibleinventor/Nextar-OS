@@ -2,7 +2,7 @@
 
 import { useWindows } from './WindowContext';
 import { motion } from 'framer-motion';
-import { apps } from './app'; // Import apps from app.ts
+import { apps } from './app';
 import { useState } from 'react';
 
 const Dock = () => {
@@ -10,15 +10,13 @@ const Dock = () => {
   const [hoveredApp, setHoveredApp] = useState<string | null>(null);
 
   const handleDockClick = (appId: string, appName: string, appTitle?: string) => {
-    // Find all windows that match the appName
     const appWindows = windows.filter((win: any) => win.appName === appName);
 
     if (appWindows.length > 0) {
       toggleWindows(appName);
     } else {
-      // Open a new instance if no windows of this app are currently open
       const newWindow = {
-        id: `${appName}-${Date.now()}`, // Ensure unique ID
+        id: `${appName}-${Date.now()}`,
         appName,
         title: appTitle || appName,
         component: () => <div className="p-4">This is {appName}</div>,
@@ -52,14 +50,13 @@ const Dock = () => {
             scale = 1.1;
           }
 
-          // Check if any window of this app is still open (not closed)
-          const hasAnyWindowOpened = windows.some((win: any) => win.appName === app.appName);
+             const hasAnyWindowOpened = windows.some((win: any) => win.appName === app.appName);
 
           return (
             <motion.div
               key={app.appName}
               className={`relative flex flex-col items-center cursor-pointer ${
-                index >= 4 ? 'hidden sm:block' : ''
+                index >= 7 ? 'hidden sm:block' : ''
               }`}
               onClick={() => handleDockClick(app.id, app.appName)}
               onMouseEnter={() => setHoveredApp(app.appName)}
@@ -68,7 +65,7 @@ const Dock = () => {
               whileTap={{ scale: 0.95 }}
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
             >
-              <img src={app.icon} className="w-14 h-14 rounded-xl transition-all duration-200" />
+              <img src={app.icon} className="w-12 h-12 rounded-xl transition-all duration-200" />
               {hasAnyWindowOpened && (
                 <div className="absolute bottom-0 w-1 h-1 bg-white rounded-md -mb-[2px] transition-all duration-200"></div>
               )}
