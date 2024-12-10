@@ -58,7 +58,7 @@ export default function Menu(props: any) {
                     {props.data.map((item: any, idx: number) =>
                         item.separator ? (
                             <div key={`sep-${idx}`} className="py-1 px-1">
-                                <div className="bg-gray-700 h-[0.1px]" />
+                                <div className="dark:bg-gray-400 bg-gray-700 h-[0.1px]" />
                             </div>
                         ) : (
                             <div
