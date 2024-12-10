@@ -7,66 +7,118 @@ import { useState } from 'react';
 
 const Dock = () => {
   const { windows, addWindow, toggleWindows, setActiveWindow } = useWindows();
-  const [hoveredApp, setHoveredApp] = useState<string | null>(null);
+  const [hoverApp, setHoverApp] = useState<string | null>(null);
 
-  const handleDockClick = (appId: string, appName: string, appTitle?: string) => {
-    const appWindows = windows.filter((win: any) => win.appName === appName);
+  const onClick = (id: string, name: string, title?: string) => {
+    const appWins = windows.filter((win: any) => win.appName === name);
 
-    if (appWindows.length > 0) {
-      toggleWindows(appName);
+    if (appWins.length > 0) {
+      toggleWindows(name);
     } else {
-      const newWindow = {
-        id: `${appName}-${Date.now()}`,
-        appName,
-        title: appTitle || appName,
-        component: () => <div className="p-4">This is {appName}</div>,
+      const newWin = {
+        id: `${name}-${Date.now()}`,
+        appName: name,
+        title: title || name,
+        component: () => <div className="p-4">This is {name}</div>,
         props: {},
         isMinimized: false,
         position: { top: 100, left: 100 },
         size: { width: 400, height: 300 },
         isMaximized: false,
       };
-      addWindow(newWindow);
-      setActiveWindow(newWindow.id);
+      addWindow(newWin);
+      setActiveWindow(newWin.id);
     }
   };
 
+  const baseSize = 50;
+  const gap = 10;
+
+  const getProps = (i: number) => {
+    if (hoverApp) {
+      const idx = apps.findIndex((app) => app.appName === hoverApp);
+      if (i === idx) {
+        return { size: baseSize * 1.6, y: -baseSize * 0.3 };
+      }
+      if (Math.abs(i - idx) === 1) {
+        return { size: baseSize * 1.4, y: -baseSize * 0.2 };
+      }
+      if (Math.abs(i - idx) === 2) {
+        return { size: baseSize * 1.2, y: -baseSize * 0.1 };
+      }
+    }
+    return { size: baseSize, y: 0 };
+  };
+
   return (
-    <motion.div className="fixed bottom-2 mx-auto left-0 right-0 w-max z-50 py-[2px] dark:bg-black dark:bg-opacity-30 bg-white bg-opacity-30 px-[2px] backdrop-blur-lg flex flex-shrink-0 rounded-2xl border-[0.1px] dark:border-gray-700 border-gray-500 shadow-2xl">
-      <div className="flex flex-shrink-0 items-center space-x-1 p-1">
-        {apps.map((app, index) => {
-          const isHovered = hoveredApp === app.appName;
-          const leftNeighbor1 = index > 0 ? apps[index - 1].appName : null;
-          const leftNeighbor2 = index > 1 ? apps[index + 1]?.appName : null;
-          const rightNeighbor1 = index < apps.length - 1 ? apps[index + 1].appName : null;
-          const rightNeighbor2 = index < apps.length - 2 ? apps[index + 2]?.appName : null;
-
-          let scale = 1;
-          if (isHovered) {
-            scale = 1.4;
-          } else if ([leftNeighbor1, rightNeighbor1].includes(hoveredApp)) {
-            scale = 1.2;
-          } else if ([leftNeighbor2, rightNeighbor2].includes(hoveredApp)) {
-            scale = 1.1;
-          }
-
-             const hasAnyWindowOpened = windows.some((win: any) => win.appName === app.appName);
+    <motion.div
+      className="fixed bottom-2 mx-auto left-0 right-0 w-max z-50 py-0 dark:bg-black dark:bg-opacity-50 bg-white bg-opacity-50 px-[6px] backdrop-blur-lg flex flex-shrink-0 rounded-2xl border-[0.1px] dark:border-gray-700 border-gray-500 shadow-2xl"
+      style={{
+        height: '60px',
+        overflow: 'visible',
+        display: 'flex',
+        justifyContent: 'center',
+        flexDirection: 'row',
+        gap: `${gap}px`,
+      }}
+    >
+      <div className="flex items-center">
+        {apps.map((app, i) => {
+          const { size: iconSize, y: iconY } = getProps(i);
+          const isHover = hoverApp === app.appName;
+          const hasWin = windows.some((win: any) => win.appName === app.appName);
 
           return (
             <motion.div
               key={app.appName}
-              className={`relative flex flex-col items-center cursor-pointer ${
-                index >= 7 ? 'hidden sm:block' : ''
-              }`}
-              onClick={() => handleDockClick(app.id, app.appName)}
-              onMouseEnter={() => setHoveredApp(app.appName)}
-              onMouseLeave={() => setHoveredApp(null)}
-              whileHover={{ scale }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+              className="relative flex flex-col items-center cursor-pointer"
+              onClick={() => onClick(app.id, app.appName)}
+              onMouseEnter={() => setHoverApp(app.appName)}
+              onMouseLeave={() => setHoverApp(null)}
+              animate={{
+                width: iconSize,
+                height: iconSize,
+                y: iconY,
+              }}
+              whileTap={{ scale: 0.9 }}
+              transition={{
+                type: 'spring',
+                stiffness: 150,
+                damping: 20,
+                mass: 1,
+              }}
+              style={{
+                position: 'relative',
+                zIndex: isHover ? 10 : undefined,
+              }}
             >
-              <img src={app.icon} className="w-12 h-12 rounded-xl transition-all duration-200" />
-              {hasAnyWindowOpened && (
+              {isHover && (
+                <motion.div
+                  className="absolute bottom-full mb-2 text-sm dark:bg-black dark:text-white dark:bg-opacity-30 bg-white text-black bg-opacity-30 backdrop-blur-lg px-2 py-1 rounded-md shadow-lg"
+                  style={{
+                    whiteSpace: 'nowrap',
+                  }}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{
+                    type: 'spring',
+                    stiffness: 150,
+                    damping: 20,
+                  }}
+                >
+                  {app.appName}
+                </motion.div>
+              )}
+              <motion.img
+                src={app.icon}
+                className="rounded-xl transition-all duration-200"
+                style={{
+                  width: iconSize,
+                  height: iconSize,
+                }}
+              />
+              {hasWin && (
                 <div className="absolute bottom-0 w-1 h-1 bg-white rounded-md -mb-[2px] transition-all duration-200"></div>
               )}
             </motion.div>
