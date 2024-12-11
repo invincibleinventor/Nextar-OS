@@ -53,7 +53,7 @@ export default function Menu(props: any) {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ type: 'spring', stiffness: 150, damping: 20 }}
-                    className="fixed left-0 sm:left-auto mt-2 min-w-56 w-max bg-white bg-opacity-30 dark:bg-black dark:bg-opacity-30 rounded-lg flex flex-col space-y-[1px] p-[6px] shadow-lg backdrop-blur-md"
+                    className="fixed left-0 sm:left-auto mt-2 min-w-56 w-max bg-white bg-opacity-30 dark:bg-black dark:bg-opacity-30 rounded-lg flex flex-col space-y-[1px] p-[6px] shadow-lg backdrop-blur-lg"
                 >
                     {props.data.map((item: any, idx: number) =>
                         item.separator ? (
