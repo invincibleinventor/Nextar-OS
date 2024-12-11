@@ -10,7 +10,7 @@ const Dock = () => {
   const [hoverApp, setHoverApp] = useState<string | null>(null);
 
   const onClick = (id: string, name: string, title?: string) => {
-    const appWins = windows.filter((win: any) => win.appName === name);
+   const appWins = windows.filter((win: any) => win.appName === name);
 
     if (appWins.length > 0) {
       toggleWindows(name);
@@ -118,6 +118,9 @@ const Dock = () => {
                   height: iconSize,
                 }}
               />
+              {appWins.length>1 &&
+              <div className='absolute rounded-full w-4 h-4 bottom-[2px] right-[2px] border-[1px] flex items-center content-center text-[10px] dark:bg-black dark:text-white dark:border-[1px] dark:bg-opacity-40 dark:border-neutral-500 bg-white bg-opacity-50 backdrop-blur-lg text-black border-neutral-200 '><span className='mx-auto'>1</span></div>
+        }
               {hasWin && (
                 <div className="absolute bottom-0 w-[3px] h-[3px] bg-white rounded-md -mb-[3px] transition-all duration-200"></div>
               )}

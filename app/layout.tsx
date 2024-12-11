@@ -12,11 +12,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="font-sf  bg-[url('/bg.jpg')] bg-auto md:bg-cover antialiased">
+      <body className="font-sf w-screen h-screen overflow-hidden bg-[url('/bg.jpg')] bg-auto md:bg-cover antialiased">
         <WindowProvider>
           <div className="relative h-screen w-screen overflow-hidden">
             <Panel />
-            <main className="absolute inset-0 z-0">{children}</main>
+            <main className="absolute w-full h-full inset-0 z-0">{children}</main>
             <Dock />
           </div>
         </WindowProvider>

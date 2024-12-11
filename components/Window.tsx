@@ -89,6 +89,7 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
     document.addEventListener('touchmove', onMouseMove);
     document.addEventListener('touchend', onMouseUp);
   };
+  
   const handleResizeStart = (e: React.MouseEvent | React.TouchEvent, direction: string) => {
     e.preventDefault();
     e.stopPropagation();
@@ -111,10 +112,19 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
       let newTop = startTop;
       let newLeft = startLeft;
   
-      if (direction.includes('right')) newWidth = Math.max(200, startWidth + (clientX - startX));
-      if (direction.includes('bottom')) newHeight = Math.max(100, startHeight + (clientY - startY) - DOCK_HEIGHT + PANEL_HEIGHT);
+      // Resizing logic based on the direction
+      if (direction.includes('right')) newWidth = Math.max(300, startWidth + (clientX - startX));
+      if (direction.includes('bottom')) {
+        newHeight = Math.max(100, startHeight + (clientY - startY));
+        
+        // Prevent window from resizing below the dock
+        const { innerHeight: screenHeight } = window;
+        if (newTop + newHeight > screenHeight - DOCK_HEIGHT) {
+          newHeight = screenHeight - DOCK_HEIGHT - newTop;
+        }
+      }
       if (direction.includes('left')) {
-        newWidth = Math.max(200, startWidth - (clientX - startX));
+        newWidth = Math.max(300, startWidth - (clientX - startX));
         newLeft = startLeft + (clientX - startX);
       }
       if (direction.includes('top')) {
@@ -124,6 +134,7 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
         // Ensure the window does not move out of the top bounds
         if (newTop < PANEL_HEIGHT) {
           newTop = PANEL_HEIGHT;
+          newHeight = Math.max(100, startHeight - (newTop - startTop)); // Adjust height accordingly
         }
       }
   
@@ -144,6 +155,7 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
     document.addEventListener('touchmove', onMouseMove);
     document.addEventListener('touchend', onMouseUp);
   };
+  
   
   return (
     <div
@@ -199,7 +211,7 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
             }}
           ></button>
         </div>
-        <div className="max-w-72 absolute mx-auto dark:text-white right-0 left-0 bottom-[8px] font-sf font-semibold text-[13px] text-center">
+        <div className="max-w-72 absolute mx-auto dark:text-white right-0 left-0 bottom-[8px] font-sf font-medium text-[13px] text-center">
           {title}
         </div>
       </div>
@@ -219,17 +231,17 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
         onMouseDown={(e) => handleResizeStart(e, 'top')}
       />
       <div
-        className="absolute w-full h-3 -bottom-[3px] cursor-ns-resize"
+        className="absolute w-full  h-3 cursor-ns-resize"
         onMouseDown={(e) => handleResizeStart(e, 'bottom')}
       />
-      <div
-        className="absolute h-full w-3 -left-[3px] cursor-ew-resize"
-        onMouseDown={(e) => handleResizeStart(e, 'left')}
-      />
-      <div
-        className="absolute h-full w-3 -right-[3px] cursor-ew-resize"
-        onMouseDown={(e) => handleResizeStart(e, 'right')}
-      />
+     <div
+  className="absolute top-0 left-0 w-[2px] h-full cursor-ew-resize"
+  onMouseDown={(e) => handleResizeStart(e, 'left')}
+></div>
+<div
+  className="absolute top-0 right-0 w-[2px] h-full cursor-ew-resize"
+  onMouseDown={(e) => handleResizeStart(e, 'right')}
+></div>
       <div
         className="absolute w-3 h-3 -left-[3px] -top-[3px] cursor-nwse-resize"
         onMouseDown={(e) => handleResizeStart(e, 'top-left')}
@@ -239,11 +251,11 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
         onMouseDown={(e) => handleResizeStart(e, 'top-right')}
       />
       <div
-        className="absolute w-3 h-3 -left-[3px] -bottom-[3px] cursor-nesw-resize"
+        className="absolute w-3 h-3 -left-[3px]  cursor-nesw-resize"
         onMouseDown={(e) => handleResizeStart(e, 'bottom-left')}
       />
       <div
-        className="absolute w-3 h-3 -right-[3px] -bottom-[3px] cursor-nwse-resize"
+        className="absolute w-3 h-3 -right-[3px] cursor-nwse-resize"
         onMouseDown={(e) => handleResizeStart(e, 'bottom-right')}
       />
     </div>
