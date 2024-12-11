@@ -118,7 +118,7 @@ const Dock = () => {
                   height: iconSize,
                 }}
               />
-              {appWins.length>1 &&
+              {1!=1 &&
               <div className='absolute rounded-full w-4 h-4 bottom-[2px] right-[2px] border-[1px] flex items-center content-center text-[10px] dark:bg-black dark:text-white dark:border-[1px] dark:bg-opacity-40 dark:border-neutral-500 bg-white bg-opacity-50 backdrop-blur-lg text-black border-neutral-200 '><span className='mx-auto'>1</span></div>
         }
               {hasWin && (
