@@ -21,7 +21,7 @@
       componentName: 'Finder',
       additionalData: {},
       multiwindow: true,
-      titlebarblurred: true,
+      titlebarblurred: false,
       pinned: true,
     },
     {
@@ -32,7 +32,7 @@
       componentName: 'Settings',
       additionalData: {},
       multiwindow: true,
-      titlebarblurred: true,
+      titlebarblurred: false,
       pinned: true,
     },
     {
@@ -43,7 +43,7 @@
       componentName: 'XCode',
       additionalData: {},
       multiwindow: true,
-      titlebarblurred: true,
+      titlebarblurred: false,
       pinned: true,
     },
     {
@@ -54,7 +54,7 @@
       componentName: 'Mail',
       additionalData: {},
       multiwindow: true,
-      titlebarblurred: true,
+      titlebarblurred: false,
       pinned: true,
     },
     {
@@ -89,7 +89,7 @@
       additionalData: {},
       multiwindow: false,
       titlebarblurred: false,
-      pinned: true,
+      pinned: false,
     },
     // Add more app data as needed
   ];
