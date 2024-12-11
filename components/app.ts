@@ -2,6 +2,18 @@
 
   export const apps = [
     {
+      id: 'launchpad',
+      appName: 'LaunchPad',
+      
+      icon: 'launchpad.png', // Replace with actual icon path
+      maximizeable: false,
+      componentName: 'AppStore',
+      additionalData: {},
+      multiwindow: false,
+      titlebarblurred: false,
+      pinned: true,
+    },
+    {
       id: 'finder',
       appName: 'Finder',
       icon: '/finder.png', // Replace with actual icon path

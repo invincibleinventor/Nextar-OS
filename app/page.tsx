@@ -24,7 +24,7 @@ const Page = () => {
 
   return (
     <div>
-      <button onClick={handleAddWindow} className="p-2  bg-blue-500 text-white">
+      <button onClick={handleAddWindow} className="p-2 hidden  bg-blue-500 text-white">
         Add Window
       </button>
       {windows.map((window: any,index:any) => (

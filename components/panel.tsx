@@ -104,7 +104,7 @@ export default function Panel() {
 
     return (
         <div
-            style={{ zIndex: 1000 }}
+            style={{ zIndex: 1001 }}
             className="fixed top-0 w-screen py-1 flex px-4 justify-between items-center content-center bg-white dark:bg-black dark:bg-opacity-50 bg-opacity-50 backdrop-blur-md"
         >
             <div className=" flex flex-row items-center content-center space-x-1">
