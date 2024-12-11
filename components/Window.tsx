@@ -211,7 +211,7 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
             }}
           ></button>
         </div>
-        <div className="max-w-72 absolute mx-auto dark:text-white right-0 left-0 bottom-[8px] font-sf font-semibold text-[14px] text-center">
+        <div className="max-w-72 absolute mx-auto dark:text-white right-0 left-0 bottom-[6px] font-sf font-semibold text-[14px] text-center">
           {title}
         </div>
       </div>
