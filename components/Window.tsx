@@ -17,7 +17,6 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
 
   const app = apps.find((app) => app.appName === appName);
   const windowRef = useRef<HTMLDivElement>(null);
-  const animationFrame = useRef<number | null>(null);
 
   useEffect(() => {
     if (isMinimized) {
@@ -123,7 +122,6 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
         newTop = startTop + (clientY - startY);
   
         // Ensure the window does not move out of the top bounds
-        const { innerHeight: screenHeight } = window;
         if (newTop < PANEL_HEIGHT) {
           newTop = PANEL_HEIGHT;
         }
