@@ -53,6 +53,7 @@ const Dock = () => {
 
   return (
     <div className=''>
+      {launchpad &&
 <motion.div
       id="launchpad"
       style={{ zIndex: 1000 }}
@@ -66,7 +67,7 @@ const Dock = () => {
         <svg xmlns="http://www.w3.org/2000/svg" className='absolute w-4 text-neutral-800 dark:text-neutral-400 left-4 h-4 top-0 bottom-0 my-auto' width="32" height="32" viewBox="0 0 32 32"><path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m5 27l7.5-7.5M28 13a9 9 0 1 1-18 0a9 9 0 0 1 18 0"/></svg>
         <input className='px-2 pl-10 dark:text-white text-black placeholder:dark:text-neutral-400 outline-none focus:border-2 focus:border-blue-600 focus:dark:border-blue-300 transition-all ease-linear duration-75 placeholder:text-neutral-800 w-full text-xs rounded-md py-2 border border-neutral-200 dark:border dark:border-neutral-700 bg-white bg-opacity-20 dark:bg-black dark:bg-opacity-20' placeholder='Search Apps'></input>
         </div>
-      </motion.div>
+      </motion.div>}
     <motion.div
       className="fixed bottom-2 mx-auto left-0 right-0 w-max z-50 py-0 dark:bg-black dark:bg-opacity-30 bg-white bg-opacity-30 px-[6px] backdrop-blur-lg flex flex-shrink-0 rounded-2xl border-[0.1px] dark:border-neutral-700 border-neutral-500 shadow-2xl"
       style={{
