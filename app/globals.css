@@ -99,6 +99,9 @@
   font-weight: 600;
   font-style: italic;
 }
+* {
+  font-family: 'SF Pro';
+}
 .tooltip {
   display: none;
   position: absolute;
