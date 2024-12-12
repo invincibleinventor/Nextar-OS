@@ -21,14 +21,12 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
   useEffect(() => {
     if (isMinimized) {
       const { innerWidth: screenWidth, innerHeight: screenHeight } = window;
-      if(!isMaximized){
-      setPreviousState({
-        position,size
-      })
-    }
+      if (!isMaximized) {
+        setPreviousState({ position, size });
+      }
       setPosition({
-        top: screenHeight ,
-        left: (screenWidth - size.width) / 2,
+        top: screenHeight,
+        left: Math.round((screenWidth - size.width) / 2),
       });
     } else if (isMaximized) {
       const { innerWidth: screenWidth, innerHeight: screenHeight } = window;
@@ -42,6 +40,23 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
       setSize(previousState.size);
     }
   }, [isMinimized, isMaximized]);
+
+  const roundPositionAndSize = () => {
+    setPosition((prev) => ({
+      top: Math.round(prev.top),
+      left: Math.round(prev.left),
+    }));
+    setSize((prev) => ({
+      width: Math.round(prev.width),
+      height: Math.round(prev.height),
+    }));
+  };
+
+  useEffect(() => {
+    if (!isDragging && !isResizing) {
+      roundPositionAndSize();
+    }
+  }, [isDragging, isResizing]);
 
   const handleMaximize = () => {
     if (!isMaximized) {
@@ -89,35 +104,33 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
     document.addEventListener('touchmove', onMouseMove);
     document.addEventListener('touchend', onMouseUp);
   };
-  
+
   const handleResizeStart = (e: React.MouseEvent | React.TouchEvent, direction: string) => {
     e.preventDefault();
     e.stopPropagation();
-  
+
     const startX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const startY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     const startWidth = size.width;
     const startHeight = size.height;
     const startTop = position.top;
     const startLeft = position.left;
-  
+
     setIsResizing(true);
-  
+
     const onMouseMove = (moveEvent: MouseEvent | TouchEvent) => {
       const clientX = 'touches' in moveEvent ? moveEvent.touches[0].clientX : (moveEvent as MouseEvent).clientX;
       const clientY = 'touches' in moveEvent ? moveEvent.touches[0].clientY : (moveEvent as MouseEvent).clientY;
-  
+
       let newWidth = startWidth;
       let newHeight = startHeight;
       let newTop = startTop;
       let newLeft = startLeft;
-  
+
       // Resizing logic based on the direction
       if (direction.includes('right')) newWidth = Math.max(300, startWidth + (clientX - startX));
       if (direction.includes('bottom')) {
         newHeight = Math.max(100, startHeight + (clientY - startY));
-        
-        // Prevent window from resizing below the dock
         const { innerHeight: screenHeight } = window;
         if (newTop + newHeight > screenHeight - DOCK_HEIGHT) {
           newHeight = screenHeight - DOCK_HEIGHT - newTop;
@@ -130,18 +143,16 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
       if (direction.includes('top')) {
         newHeight = Math.max(100, startHeight - (clientY - startY));
         newTop = startTop + (clientY - startY);
-  
-        // Ensure the window does not move out of the top bounds
         if (newTop < PANEL_HEIGHT) {
           newTop = PANEL_HEIGHT;
-          newHeight = Math.max(100, startHeight - (newTop - startTop)); // Adjust height accordingly
+          newHeight = startHeight - (newTop - startTop);
         }
       }
-  
+
       setSize({ width: newWidth, height: newHeight });
       setPosition({ top: newTop, left: newLeft });
     };
-  
+
     const onMouseUp = () => {
       setIsResizing(false);
       document.removeEventListener('mousemove', onMouseMove);
@@ -149,20 +160,19 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
       document.removeEventListener('touchmove', onMouseMove);
       document.removeEventListener('touchend', onMouseUp);
     };
-  
+
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
     document.addEventListener('touchmove', onMouseMove);
     document.addEventListener('touchend', onMouseUp);
   };
-  
-  
+
   return (
     <div
       ref={windowRef}
-      className={`absolute  ${
-        isMaximized ? '' : 'rounded-xl'
-      } ${isDragging ? 'cursor-grabbing' : 'cursor-default'}`}
+      className={`absolute ${isMaximized ? '' : 'rounded-xl'} ${
+        isDragging ? 'cursor-grabbing' : 'cursor-default'
+      }`}
       style={{
         top: position.top,
         left: position.left,
