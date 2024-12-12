@@ -287,3 +287,7 @@
   font-weight: 200;
   font-style: italic;
 }
+
+body {
+  cursor: url('/cursor.png'),auto !important;
+}

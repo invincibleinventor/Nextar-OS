@@ -8,6 +8,10 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      cursor: {
+        'fancy': 'url(/cursor.png), default',
+      },
+      
       fontFamily: {
         sf: ['"SF Pro"', 'sans-serif'], // Define your custom font
       },
