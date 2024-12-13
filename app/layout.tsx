@@ -16,7 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className="font-sf w-screen h-screen overflow-hidden  antialiased">
         <WindowProvider>
-          <div className="relative h-screen w-screen bg-[url('/bg.jpg')] dark:bg-[url('/bg-dark.jpg')] bg-center bg-auto md:bg-cover overflow-hidden">
+          <div className="relative h-screen w-screen bg-[url('/bg.jpg')] dark:bg-[url('/bg-dark.jpg')] bg-center bg-cover overflow-hidden">
             <Panel />
             <main className="absolute cursor-fancy w-full h-full inset-0 z-0">{children}</main>
             <Dock />

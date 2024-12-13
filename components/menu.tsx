@@ -55,7 +55,7 @@ export default function Menu(props: any) {
                 transition={{ type: 'spring', stiffness: 150, damping: 20 }}
                 style={{ zIndex: 10, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}
 
-                className="absolute left-0 sm:left-auto mt-2 min-w-56 w-max bg-white/20 dark:bg-black/20 rounded-lg flex flex-col space-y-[1px] p-[6px] shadow-lg z-[2000]"
+                className="absolute left-0 sm:left-auto mt-2 min-w-56 w-max bg-white/20 dark:bg-black/20 rounded-lg flex flex-col space-y-[1px] p-[6px] shadow-lg z-[10]"
             >
             
                     {props.data.map((item: any, idx: number) =>
