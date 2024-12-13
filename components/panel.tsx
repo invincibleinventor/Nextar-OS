@@ -5,6 +5,8 @@ import React, { useState, useEffect } from 'react';
 import Menu from './menu';
 import { useWindows } from './WindowContext';
 import { menus, titleMenu } from './menus'; 
+import Control from './controlcenter';
+import Logo from './applelogo';
 
 export default function Panel() {
     const { activeWindow, windows } = useWindows();
@@ -56,6 +58,8 @@ export default function Panel() {
             {
                 title: activeAppName,
                 menu: [
+                    { title: "About " + activeAppName, disabled: false },
+
                     { title: "Quit " + activeAppName, disabled: false },
                 ]
             },
@@ -103,11 +107,13 @@ export default function Panel() {
     };
 
     return (
+        <div>
         <div
-            style={{ zIndex: 1001 }}
-            className="fixed top-0 w-screen py-1 flex px-4 justify-between items-center content-center bg-white dark:bg-black dark:bg-opacity-50 bg-opacity-50 backdrop-blur-md"
+            style={{zIndex:10}}
+            className="relative h-full z-0 before:absolute before:inset-0 before:bg-transparent before:content-[''] before:backdrop-blur-[12px] before:webkit-backdrop-blur-[12px] before:z-[-1] top-0 w-screen py-1 flex px-4 justify-between items-center content-center bg-white dark:bg-black dark:bg-opacity-20 bg-opacity-20"
         >
-            <div className=" flex flex-row items-center content-center space-x-1">
+            <div className="relative flex flex-row items-center content-center space-x-0">
+                <Logo></Logo>
                 {appTitleMenu && (
                     <Menu
                         id="titleMenu"
@@ -138,12 +144,16 @@ export default function Panel() {
                     })}
                 </div>
             </div>
-            <div className='flex flex-row items-center content-center'>
+            <div className='flex space-x-4 flex-row items-center content-center'>
+                <Control/>
                 <div className='flex flex-row items-center content-center space-x-2 text-[12.5px] font-sf font-semibold dark:text-white text-black'>
                 <h1 className=''>{currentDate}</h1>
                 <h1 className=''>{currentTime}</h1>
                 </div>
             </div>
+            
         </div>
+
+                    </div>
     );
 }

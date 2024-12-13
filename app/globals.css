@@ -291,3 +291,18 @@
 body {
   cursor: url('/cursor.png'),auto !important;
 }
+
+
+
+
+.panel::before{
+  content: "";
+  width: inherit;
+  height: inherit;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 0;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}

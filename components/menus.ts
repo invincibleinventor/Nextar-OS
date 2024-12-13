@@ -68,12 +68,14 @@ export const menus = [
     {
       title: "Finder",
       menu: [
+        { title: "About Finder", disabled: false },
         { title: "Quit Finder", disabled: false },
       ] 
     },
     {
       title: "Calculator",
       menu: [
+        { title: "About Calculator", disabled: false },
         { title: "Quit Calculator", disabled: false },
       ]
     }

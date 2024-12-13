@@ -26,7 +26,7 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
       }
       setPosition({
         top: screenHeight,
-        left: Math.round((screenWidth - size.width) / 2),
+        left: Math.round((screenWidth - size.width) / 2.0),
       });
     } else if (isMaximized) {
       const { innerWidth: screenWidth, innerHeight: screenHeight } = window;
@@ -85,8 +85,8 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
       let newLeft = clientX - startX;
       let newTop = clientY - startY;
 
-      newLeft = Math.max(-size.width / 2, Math.min(screenWidth - size.width / 2, newLeft));
-      newTop = Math.max(PANEL_HEIGHT, Math.min(screenHeight - DOCK_HEIGHT - size.height / 4, newTop));
+      newLeft = Math.max(-size.width / 2.0, Math.min(screenWidth - size.width / 2.0, newLeft));
+      newTop = Math.max(PANEL_HEIGHT, Math.min(screenHeight - DOCK_HEIGHT - size.height / 4.0, newTop));
 
       setPosition({ top: newTop, left: newLeft });
     };
@@ -178,16 +178,16 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
         left: position.left,
         width: size.width,
         height: size.height,
-        zIndex: activeWindow === id ? 1000 : 0,
+        zIndex: activeWindow === id ? 10 : 0,
         transition: isDragging || isResizing ? 'none' : 'all 0.2s ease',
       }}
       onMouseDown={() => setActiveWindow(id)}
     >
       {/* Title Bar */}
       <div
-        className={`cursor-grab dark:border-x dark:border-x-neutral-800 dark:border-t dark:border-t-neutral-800 border-x border-x-neutral-200 border-t border-b border-b-white dark:border-b dark:border-b-neutral-900 border-t-neutral-200 ${isMaximized ? '' : 'rounded-t-xl'} ${
+        className={`cursor-grab dark:border-x dark:border-x-neutral-800 dark:border-t dark:border-t-neutral-800 border-x border-x-neutral-200 border-t  border-t-neutral-200 ${isMaximized ? '' : 'rounded-t-xl'} ${
           app?.titlebarblurred
-            ? 'dark:bg-opacity-70 bg-opacity-70  dark:bg-black bg-white relative backdrop-blur-sm'
+            ? 'dark:bg-opacity-40 bg-opacity-40  dark:bg-black bg-white relative backdrop-blur-md'
             : 'dark:bg-neutral-900 bg-white relative backdrop-blur-sm'
         } px-3 py-[10px] flex justify-between`}
         onDoubleClick={handleMaximize}
@@ -228,9 +228,9 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
 
       {/* Content Area */}
       <div
-        className={`h-full w-full overflow-hidden border-x border-x-neutral-200 dark:border-x border-b border-b-neutral-200 dark:border-b dark:border-b-neutral-800 dark:border-x-neutral-800 border-t dark:border-t  border-t-neutral-200 dark:border-t-neutral-900  dark:bg-neutral-900 ${
+        className={`h-full w-full overflow-hidden border-x border-x-neutral-200 dark:border-x border-b border-b-neutral-200 dark:border-b dark:border-b-neutral-800 dark:border-x-neutral-800   ${
           isMaximized ? '' : 'rounded-b-xl'
-        } bg-white `}
+        } ${app?.titlebarblurred?'bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md':'bg-white dark:bg-neutral-900'}`}
       >
         <Component focused={activeWindow === id} {...props} />
       </div>
