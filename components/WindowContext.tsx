@@ -18,9 +18,9 @@ export const WindowProvider = ({ children }: any) => {
     setWindows((prevWindows) => {
       const updatedWindows = prevWindows.filter((window) => window.id !== id);
       if (updatedWindows.length === 0) {
-        setActiveWindow(null); // No windows left, clear the active window
+        setActiveWindow(null);
       } else if (activeWindow === id) {
-        setActiveWindow(updatedWindows[0]?.id || null); // Set new active or null if none left
+        setActiveWindow(updatedWindows[0]?.id || null);
       }
       return updatedWindows;
     });
@@ -29,7 +29,6 @@ export const WindowProvider = ({ children }: any) => {
     setWindows((prevWindows) => {
       return prevWindows.map((win) => {
         if (win.appName === appName) {
-          // Toggle only the isMinimized property without changing position or other attributes
           return { ...win, isMinimized: !win.isMinimized };
         }
         return win;
@@ -43,7 +42,7 @@ export const WindowProvider = ({ children }: any) => {
       )
     );
     if (updatedProps.isMinimized === false) {
-      setActiveWindow(id); // Restore and set as active if unminimized
+      setActiveWindow(id);
     }
   };
 

@@ -48,9 +48,9 @@ export default function Panel() {
             });
             setCurrentDate(`${date.replace(',','').replace(',','')}`);
             setCurrentTime(`${time.toUpperCase()}`);
-        }, 1000); // Update every second
+        }, 1000);
 
-        return () => clearInterval(interval); // Clean up on component unmount
+        return () => clearInterval(interval);
     }, []);
 
     if (!appTitleMenu) {

@@ -183,7 +183,6 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
       }}
       onMouseDown={() => setActiveWindow(id)}
     >
-      {/* Title Bar */}
       <div
         className={`cursor-grab dark:border-x dark:border-x-neutral-800 dark:border-t dark:border-t-neutral-800 border-x border-x-neutral-200 border-t  border-t-neutral-200 ${isMaximized ? '' : 'rounded-t-xl'} ${
           app?.titlebarblurred
@@ -226,7 +225,6 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
         </div>
       </div>
 
-      {/* Content Area */}
       <div
         className={`h-full w-full overflow-hidden border-x border-x-neutral-200 dark:border-x border-b border-b-neutral-200 dark:border-b dark:border-b-neutral-800 dark:border-x-neutral-800   ${
           isMaximized ? '' : 'rounded-b-xl'
@@ -235,7 +233,6 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
         <Component focused={activeWindow === id} {...props} />
       </div>
 
-      {/* Resize Handles */}
       <div
         className="absolute w-full h-3 -top-[3px] cursor-ns-resize"
         onMouseDown={(e) => handleResizeStart(e, 'top')}

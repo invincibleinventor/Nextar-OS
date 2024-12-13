@@ -19,7 +19,7 @@ const setAppTheme = (theme:any) => {
   }
 };
 
-// ThemeProvider component to wrap the application
+
 export const ThemeProvider = ({ children }:props) => {
   const [theme, setTheme] = useState('light');
   useEffect(() => {
@@ -36,7 +36,7 @@ export const ThemeProvider = ({ children }:props) => {
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(newTheme);
-    localStorage.setItem('theme', newTheme); // Persist theme in localStorage
+    localStorage.setItem('theme', newTheme);
   };
 
   return (

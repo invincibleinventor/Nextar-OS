@@ -5,7 +5,7 @@
       id: 'launchpad',
       appName: 'LaunchPad',
       
-      icon: 'launchpad.png', // Replace with actual icon path
+      icon: 'launchpad.png',
       maximizeable: false,
       componentName: 'AppStore',
       additionalData: {},
@@ -16,7 +16,7 @@
     {
       id: 'finder',
       appName: 'Finder',
-      icon: '/finder.png', // Replace with actual icon path
+      icon: '/finder.png',
       maximizeable: true,
       componentName: 'Finder',
       additionalData: {},
@@ -27,7 +27,7 @@
     {
       id: 'settings',
       appName: 'Settings',
-      icon: '/settings.png', // Replace with actual icon path
+      icon: '/settings.png',
       maximizeable: true,
       componentName: 'Settings',
       additionalData: {},
@@ -38,7 +38,7 @@
     {
       id: 'xcode',
       appName: 'XCode',
-      icon: '/code.png', // Replace with actual icon path
+      icon: '/code.png',
       maximizeable: true,
       componentName: 'XCode',
       additionalData: {},
@@ -49,7 +49,7 @@
     {
       id: 'mail',
       appName: 'Mail',
-      icon: '/mail.png', // Replace with actual icon path
+      icon: '/mail.png',
       maximizeable: true,
       componentName: 'Mail',
       additionalData: {},
@@ -60,7 +60,7 @@
     {
       id: 'calendar',
       appName: 'Calendar',
-      icon: 'calendar.png', // Replace with actual icon path
+      icon: 'calendar.png',
       maximizeable: true,
       componentName: 'Calendar',
       additionalData: {},
@@ -71,7 +71,7 @@
     {
       id: 'calculator',
       appName: 'Calculator',
-      icon: 'calculator.png', // Replace with actual icon path
+      icon: 'calculator.png',
       maximizeable: true,
       componentName: 'Calculator',
       additionalData: {},
@@ -83,7 +83,7 @@
       id: 'appstore',
       appName: 'App Store',
       
-      icon: 'appstore.png', // Replace with actual icon path
+      icon: 'appstore.png',
       maximizeable: false,
       componentName: 'AppStore',
       additionalData: {},
@@ -91,5 +91,5 @@
       titlebarblurred: false,
       pinned: false,
     },
-    // Add more app data as needed
+
   ];
