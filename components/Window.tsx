@@ -21,12 +21,14 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
   useEffect(() => {
     if (isMinimized) {
       const { innerWidth: screenWidth, innerHeight: screenHeight } = window;
-      if (!isMaximized) {
-        setPreviousState({ position, size });
-      }
+      if(!isMaximized){
+      setPreviousState({
+        position,size
+      })
+    }
       setPosition({
-        top: screenHeight,
-        left: ((screenWidth - size.width) / 2.0),
+        top: screenHeight ,
+        left: (screenWidth - size.width) / 2,
       });
     } else if (isMaximized) {
       const { innerWidth: screenWidth, innerHeight: screenHeight } = window;
@@ -40,28 +42,6 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
       setSize(previousState.size);
     }
   }, [isMinimized, isMaximized]);
-
-  const roundPositionAndSize = () => {
-    setPosition((prev) => ({
-      ...prev,
-      style: {
-        transition: `all ${ANIMATION_DURATION}ms ease-in-out`,
-      },
-    }));
-    setSize((prev) => ({
-      ...prev,
-      style: {
-        transition: `all ${ANIMATION_DURATION}ms ease-in-out`,
-      },
-    }));
-  };
-
-  useEffect(() => {
-    if (!isDragging && !isResizing) {
-      roundPositionAndSize();
-    }
-  }, [isDragging, isResizing]);
-
   const handleMaximize = () => {
     if (!isMaximized) {
       setPreviousState({ position, size });
