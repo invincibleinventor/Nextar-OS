@@ -191,6 +191,7 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
         width: size.width,
         height: size.height,
         zIndex: activeWindow === id ? 10 : 0,
+        willChange: 'transform',
         transition: isDragging || isResizing ? 'none' : `all ${ANIMATION_DURATION}ms ease-in-out`
       }}
       onMouseDown={() => setActiveWindow(id)}
