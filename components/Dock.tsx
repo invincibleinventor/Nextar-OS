@@ -33,6 +33,26 @@ const Dock = () => {
     }
   };
 
+
+  const openNewWin = (app:any) => {
+
+    const newWin = {
+      id: `${app.appName}-${Date.now()}`,
+      appName: app.appName,
+      title: app.title || app.appName,
+      component: () => <div className="p-4">This is {app.appName}</div>,
+      props: {},
+      isMinimized: false,
+      position: { top: 100, left: 100 },
+      size: { width: 400, height: 300 },
+      isMaximized: false,
+    };
+    addWindow(newWin);
+    setActiveWindow(newWin.id);
+    setLaunch(!launchpad)
+
+  }
+
   const baseSize = 50;
   const gap = 10;
   const pinnedApps = apps.filter((app) => app.pinned);
@@ -86,7 +106,7 @@ const Dock = () => {
           </div>
           <div className='grid grid-cols-3 py-10 sm:grid-cols-4 gap-6 lg:grid-cols-6 px-10 md:px-20 lg:px-36'>
             {filteredApps.map((app,index)=>(
-              <div onClick={()=>(onClick(app.id, app.appName),setLaunch(!launchpad))}  key={index}  className='flex cursor-pointer hover:bg-white/10 rounded-xl py-2 flex-col gap-1 items-center content-center w-full h-full'>
+              <div onClick={()=>(openNewWin(app))}  key={index}  className='flex cursor-pointer hover:bg-white/10 rounded-xl py-2 flex-col gap-1 items-center content-center w-full h-full'>
            <img className='w-[60px] md:w-[70px] md:h-[70px] lg:w-[80px] lg:h-[80px] h-[60px]' src={app.icon}></img>
             <div className='text-[13px] text-white font-sf font-medium'>{app.appName}</div>
 
