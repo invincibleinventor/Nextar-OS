@@ -1,4 +1,3 @@
-'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useWindows } from './WindowContext';
@@ -6,8 +5,9 @@ import { apps } from './app';
 
 const PANEL_HEIGHT = 25;
 const DOCK_HEIGHT = 110;
+const ANIMATION_DURATION = 200;
 
-const Window = ({ id, appName, title, component: Component, props, isMinimized, isMaximized }: any) => {
+const Window = ({ id, appName, title, component: Component, props, isMinimized, isMaximized }:any) => {
   const { removeWindow, updateWindow, activeWindow, setActiveWindow } = useWindows();
   const [position, setPosition] = useState({ top: 100, left: 100 });
   const [size, setSize] = useState({ width: 400, height: 300 });
@@ -16,7 +16,7 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
   const [isResizing, setIsResizing] = useState(false);
 
   const app = apps.find((app) => app.appName === appName);
-  const windowRef = useRef<HTMLDivElement>(null);
+  const windowRef = useRef(null);
 
   useEffect(() => {
     if (isMinimized) {
@@ -26,7 +26,7 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
       }
       setPosition({
         top: screenHeight,
-        left: Math.round((screenWidth - size.width) / 2.0),
+        left: ((screenWidth - size.width) / 2.0),
       });
     } else if (isMaximized) {
       const { innerWidth: screenWidth, innerHeight: screenHeight } = window;
@@ -43,12 +43,16 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
 
   const roundPositionAndSize = () => {
     setPosition((prev) => ({
-      top: Math.round(prev.top),
-      left: Math.round(prev.left),
+      ...prev,
+      style: {
+        transition: `all ${ANIMATION_DURATION}ms ease-in-out`,
+      },
     }));
     setSize((prev) => ({
-      width: Math.round(prev.width),
-      height: Math.round(prev.height),
+      ...prev,
+      style: {
+        transition: `all ${ANIMATION_DURATION}ms ease-in-out`,
+      },
     }));
   };
 
@@ -69,16 +73,16 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
     }
   };
 
-  const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
+  const handleDragStart = (e:any) => {
     if (isMaximized || isResizing) return;
 
     const startX = 'touches' in e ? e.touches[0].clientX - position.left : e.clientX - position.left;
     const startY = 'touches' in e ? e.touches[0].clientY - position.top : e.clientY - position.top;
     setIsDragging(true);
 
-    const onMouseMove = (moveEvent: MouseEvent | TouchEvent) => {
-      const clientX = 'touches' in moveEvent ? moveEvent.touches[0].clientX : (moveEvent as MouseEvent).clientX;
-      const clientY = 'touches' in moveEvent ? moveEvent.touches[0].clientY : (moveEvent as MouseEvent).clientY;
+    const onMouseMove = (moveEvent:any) => {
+      const clientX = 'touches' in moveEvent ? moveEvent.touches[0].clientX : moveEvent.clientX;
+      const clientY = 'touches' in moveEvent ? moveEvent.touches[0].clientY : moveEvent.clientY;
 
       const { innerWidth: screenWidth, innerHeight: screenHeight } = window;
 
@@ -88,7 +92,11 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
       newLeft = Math.max(-size.width / 2.0, Math.min(screenWidth - size.width / 2.0, newLeft));
       newTop = Math.max(PANEL_HEIGHT, Math.min(screenHeight - DOCK_HEIGHT - size.height / 4.0, newTop));
 
-      setPosition({ top: newTop, left: newLeft });
+      setPosition({
+   
+        top: newTop,
+        left: newLeft,
+      });
     };
 
     const onMouseUp = () => {
@@ -105,7 +113,7 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
     document.addEventListener('touchend', onMouseUp);
   };
 
-  const handleResizeStart = (e: React.MouseEvent | React.TouchEvent, direction: string) => {
+  const handleResizeStart = (e:any, direction:any) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -118,9 +126,9 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
 
     setIsResizing(true);
 
-    const onMouseMove = (moveEvent: MouseEvent | TouchEvent) => {
-      const clientX = 'touches' in moveEvent ? moveEvent.touches[0].clientX : (moveEvent as MouseEvent).clientX;
-      const clientY = 'touches' in moveEvent ? moveEvent.touches[0].clientY : (moveEvent as MouseEvent).clientY;
+    const onMouseMove = (moveEvent:any) => {
+      const clientX = 'touches' in moveEvent ? moveEvent.touches[0].clientX : moveEvent.clientX;
+      const clientY = 'touches' in moveEvent ? moveEvent.touches[0].clientY : moveEvent.clientY;
 
       let newWidth = startWidth;
       let newHeight = startHeight;
@@ -149,8 +157,14 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
         }
       }
 
-      setSize({ width: newWidth, height: newHeight });
-      setPosition({ top: newTop, left: newLeft });
+      setSize({
+        width: newWidth,
+        height: newHeight,
+      });
+      setPosition({
+        top: newTop,
+        left: newLeft,
+      });
     };
 
     const onMouseUp = () => {
@@ -170,16 +184,14 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
   return (
     <div
       ref={windowRef}
-      className={`absolute ${isMaximized ? '' : 'rounded-xl'} ${
-        isDragging ? 'cursor-grabbing' : 'cursor-default'
-      }`}
+      className={`absolute ${isMaximized ? '' : 'rounded-xl'} ${isDragging ? 'cursor-grabbing' : 'cursor-default'}`}
       style={{
         top: position.top,
         left: position.left,
         width: size.width,
         height: size.height,
         zIndex: activeWindow === id ? 10 : 0,
-        transition: isDragging || isResizing ? 'none' : 'all 0.2s ease',
+        transition: isDragging || isResizing ? 'none' : `all ${ANIMATION_DURATION}ms ease-in-out`
       }}
       onMouseDown={() => setActiveWindow(id)}
     >
@@ -220,7 +232,7 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
             }}
           ></button>
         </div>
-        <div className="max-w-72 absolute mx-auto dark:text-white right-0 left-0 bottom-[6px] font-sf font-semibold text-[14px] text-center">
+        <div className="w-max max-w-72  absolute mx-auto dark:text-white right-0 left-0 bottom-[6px] font-sf font-semibold text-[14px] text-center">
           {title}
         </div>
       </div>
