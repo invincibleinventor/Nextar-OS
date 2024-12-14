@@ -71,7 +71,7 @@ const Dock = () => {
         <motion.div
         id="launchpad"
         style={{ zIndex: 11 }}
-        className={`py-10 absolute w-screen h-screen bg-opacity-5 dark:bg-black bg-black dark:bg-opacity-20  backdrop-blur-[12px]`}
+        className={`py-10 absolute w-screen h-screen bg-opacity-10 dark:bg-black bg-black dark:bg-opacity-20  backdrop-blur-[12px]`}
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
@@ -82,7 +82,7 @@ const Dock = () => {
       >
           <div className='mx-auto relative w-56'>
             <svg xmlns="http://www.w3.org/2000/svg" className='absolute w-4 text-white dark:text-neutral-400 left-4 h-4 top-0 bottom-0 my-auto' width="32" height="32" viewBox="0 0 32 32"><path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m5 27l7.5-7.5M28 13a9 9 0 1 1-18 0a9 9 0 0 1 18 0"/></svg>
-            <input           onChange={e => setSearchTerm(e.target.value)}  className='px-2 pl-10 dark:text-white text-white placeholder:text-white dark:placeholder:text-neutral-400 outline-none focus:border-[1px] focus:border-blue-200 focus:dark:border-blue-300 border border-neutral-200 dark:border-neutral-400 dark:border font-sf   w-full text-xs rounded-lg py-2 bg-black bg-opacity-10 dark:bg-black dark:bg-opacity-20' placeholder='Search Apps'></input>
+            <input           onChange={e => setSearchTerm(e.target.value)}  className='px-2 pl-10 dark:text-white text-white placeholder:text-white dark:placeholder:text-neutral-400 outline-none focus:border-[1px] focus:border-blue-200 focus:dark:border-blue-300 border border-neutral-200 dark:border-neutral-600 dark:border font-sf   w-full text-xs rounded-lg py-2 bg-black bg-opacity-10 dark:bg-black dark:bg-opacity-10' placeholder='Search Apps'></input>
           </div>
           <div className='grid grid-cols-3 py-10 sm:grid-cols-4 gap-6 lg:grid-cols-6 px-10 md:px-20 lg:px-36'>
             {filteredApps.map((app,index)=>(
@@ -96,7 +96,7 @@ const Dock = () => {
         </motion.div>}
 
       <motion.div
-        className="fixed  z-0 before:absolute before:inset-0 before:bg-transparent before:content-[''] before:backdrop-blur-[12px] before:webkit-backdrop-blur-[12px] before:z-[-1] bottom-1 mx-auto left-0 right-0 w-max before:rounded-2xl   dark:bg-black dark:bg-opacity-20 bg-white bg-opacity-20 px-[4px] pt-[4px] pb-[8px] flex flex-shrink-0 rounded-2xl border-[0.1px] dark:border-neutral-700 border-neutral-400 shadow-2xl"
+        className="fixed  z-0 before:absolute before:inset-0 before:bg-transparent before:content-[''] before:backdrop-blur-[12px] before:webkit-backdrop-blur-[12px] before:z-[-1] bottom-1 mx-auto left-0 right-0 w-max before:rounded-2xl   dark:bg-black dark:bg-opacity-10 bg-white bg-opacity-20 px-[4px] pt-[4px] pb-[8px] flex flex-shrink-0 rounded-2xl border-[0.1px] dark:border-neutral-600 border-neutral-400 shadow-2xl"
         style={{
           zIndex: 11
           ,
@@ -142,7 +142,7 @@ const Dock = () => {
                 >
                   {isHover && (
                     <motion.div
-                      className="absolute bottom-full mb-2 text-sm dark:bg-black dark:text-white dark:bg-opacity-30 bg-white text-black bg-opacity-30 backdrop-blur-lg px-2 py-1 rounded-md shadow-lg"
+                      className="absolute bottom-full mb-2 text-sm dark:bg-black dark:text-white dark:bg-opacity-10 bg-white text-black bg-opacity-30 backdrop-blur-lg px-2 py-1 rounded-md shadow-lg"
                       style={{
                         whiteSpace: 'nowrap',
                       }}
@@ -195,7 +195,7 @@ const Dock = () => {
                 >
                   {isHover && (
                     <motion.div
-                      className="absolute bottom-full mb-2 text-sm dark:bg-black dark:text-white dark:bg-opacity-30 bg-white text-black bg-opacity-30 backdrop-blur-lg px-2 py-1 rounded-md shadow-lg"
+                      className="absolute bottom-full mb-2 text-sm dark:bg-black dark:text-white dark:bg-opacity-10 bg-white text-black bg-opacity-30 backdrop-blur-lg px-2 py-1 rounded-md shadow-lg"
                       style={{
                         whiteSpace: 'nowrap',
                       }}
