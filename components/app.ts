@@ -1,4 +1,3 @@
-// app.ts
 
   export const apps = [
     {

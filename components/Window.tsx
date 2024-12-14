@@ -3,8 +3,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useWindows } from './WindowContext';
 import { apps } from './app';
 
-const PANEL_HEIGHT = 25;
-const DOCK_HEIGHT = 110;
+const PANEL_HEIGHT = 30;
+const DOCK_HEIGHT = 104;
 const ANIMATION_DURATION = 200;
 
 const Window = ({ id, appName, title, component: Component, props, isMinimized, isMaximized }:any) => {
@@ -115,7 +115,6 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
       let newTop = startTop;
       let newLeft = startLeft;
 
-      // Resizing logic based on the direction
       if (direction.includes('right')) newWidth = Math.max(300, startWidth + (clientX - startX));
       if (direction.includes('bottom')) {
         newHeight = Math.max(100, startHeight + (clientY - startY));
@@ -198,18 +197,19 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
               removeWindow(id);
             }}
           ></button>
-          <button
-            className={`w-[14px] h-[14px] rounded-full ${activeWindow==id?'bg-green-500':'bg-neutral-400'} window-button`}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleMaximize();
-            }}
-          ></button>
+         
           <button
             className={`${activeWindow==id?app?.titlebarblurred?'bg-yellow-500':'bg-yellow-400':'bg-neutral-400'} w-[14px] h-[14px] rounded-full  window-button`}
             onClick={(e) => {
               e.stopPropagation();
               updateWindow(id, { isMinimized: true });
+            }}
+          ></button>
+           <button
+            className={`w-[14px] h-[14px] rounded-full ${activeWindow==id?'bg-green-500':'bg-neutral-400'} window-button`}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleMaximize();
             }}
           ></button>
         </div>

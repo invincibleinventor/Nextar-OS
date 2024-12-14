@@ -1,4 +1,3 @@
-// menus.ts
 export const menus = [
     {
       appName: "Finder",

@@ -110,7 +110,7 @@ export default function Panel() {
         <div>
         <div
             style={{zIndex:10}}
-            className="relative h-full z-0 before:absolute before:inset-0 before:bg-transparent before:content-[''] before:backdrop-blur-[12px] before:webkit-backdrop-blur-[12px] before:z-[-1] top-0 w-screen py-1 flex px-4 justify-between items-center content-center bg-white dark:bg-black dark:bg-opacity-20 bg-opacity-20"
+            className="relative h-full z-0 before:absolute before:inset-0 before:bg-transparent before:content-[''] before:backdrop-blur-[12px] before:webkit-backdrop-blur-[12px] before:z-[-1] top-0 w-screen py-[6px] flex px-4 justify-between items-center content-center bg-white dark:bg-black dark:bg-opacity-20 bg-opacity-20"
         >
             <div className="relative flex flex-row items-center content-center space-x-0">
                 <Logo></Logo>

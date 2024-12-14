@@ -36,7 +36,7 @@ export default function Menu(props: any) {
                     props.bold ? 'font-bold' : 'font-normal'
                 } font-sf px-2 rounded-md cursor-pointer duration-100 transition-all ease-in dark:hover:bg-white dark:hover:bg-opacity-20 hover:bg-white hover:bg-opacity-20 text-[13px] dark:text-white text-black ${
                     props.visible
-                        ? 'bg-white dark:bg-black dark:bg-opacity-20 bg-opacity-20'
+                        ? 'bg-white dark:bg-white dark:bg-opacity-20 bg-opacity-20'
                         : ''
                 }`}
                 whileHover={{ scale: 1 }}
@@ -55,7 +55,7 @@ export default function Menu(props: any) {
                 transition={{ type: 'spring', stiffness: 150, damping: 20 }}
                 style={{ zIndex: 10, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}
 
-                className="absolute left-0 sm:left-auto mt-2 min-w-56 w-max bg-white/20 dark:bg-black/20 rounded-lg flex flex-col space-y-[1px] p-[6px] shadow-lg z-[10]"
+                className="absolute left-0 sm:left-auto mt-2 min-w-56 w-max bg-white/20 dark:bg-neutral-800/20 rounded-lg flex flex-col space-y-[1px] p-[6px] shadow-lg z-[10]"
             >
             
                     {props.data.map((item: any, idx: number) =>
