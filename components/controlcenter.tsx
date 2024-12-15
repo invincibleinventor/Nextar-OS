@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
-import { useContext, useState } from 'react'
+import {  useState } from 'react'
 import { FaWifi, FaMoon, FaBluetoothB, FaSun } from 'react-icons/fa'
 import { MdKeyboard, MdAirplay } from 'react-icons/md'
 import {  BsFillVolumeUpFill, BsSunFill } from 'react-icons/bs'
