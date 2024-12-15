@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 /* SF Pro Display Fonts */
+
+
 @font-face {
   font-family: "SF Pro";
   src: url("/fonts/sf-pro/SF-Pro-Display-Black.otf") format("opentype");

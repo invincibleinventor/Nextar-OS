@@ -10,13 +10,14 @@ const ThemeContext = createContext({
 );
 export const useTheme = () => useContext(ThemeContext);
 const setAppTheme = (theme:any) => {
-  if (theme === 'dark') {
-    document.body.classList.add('dark');
-    document.body.classList.remove('light');
-  } else {
-    document.body.classList.add('light');
-    document.body.classList.remove('dark');
-  }
+  const html = document.documentElement;
+
+  // Remove both themes first to ensure proper class assignment
+  html.classList.remove('light', 'dark');
+  html.classList.add(theme);
+
+  // Ensure theme reflects immediately by triggering a manual CSS reflow (optional, but may help)
+  html.style.transition = 'all 0.3s ease';
 };
 
 
@@ -37,6 +38,7 @@ export const ThemeProvider = ({ children }:props) => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(newTheme);
     localStorage.setItem('theme', newTheme);
+    setAppTheme(newTheme)
   };
 
   return (

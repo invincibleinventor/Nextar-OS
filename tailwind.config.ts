@@ -8,6 +8,7 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      darkMode: 'class',
       cursor: {
         'fancy': 'url(/cursor.png), default',
       },
