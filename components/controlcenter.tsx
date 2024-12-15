@@ -39,7 +39,7 @@ export default function Control(){
           <div>
           
             <p className="text-xs font-semibold  dark:text-white text-neutral-800">Wi-Fi</p>
-            <p className="text-[11px] text-gray-600 dark:text-neutral-400 truncate">Bala&apos;s Wifi</p>
+            <p className="text-[11px] text-gray-600 dark:text-neutral-300 truncate">Bala&apos;s Wifi</p>
           </div>
         </div>
         <div className="p-3 py-2 flex space-x-2 items-center">
@@ -50,7 +50,7 @@ export default function Control(){
           <div>
           
             <p className="text-xs font-semibold  dark:text-white text-neutral-800">Bluetooth</p>
-            <p className="text-[11px] text-gray-600 dark:text-neutral-400 truncate">Off</p>
+            <p className="text-[11px] text-gray-600 dark:text-neutral-300 truncate">Off</p>
           </div>
         </div>
         <div className="p-3 py-2 flex space-x-2 items-center">
@@ -61,7 +61,7 @@ export default function Control(){
           <div>
           
             <p className="text-xs font-semibold  dark:text-white text-neutral-800">AirDrop</p>
-            <p className="text-[11px] text-gray-600 dark:text-neutral-400 truncate">Off</p>
+            <p className="text-[11px] text-gray-600 dark:text-neutral-300 truncate">Off</p>
           </div>
         </div>
 
