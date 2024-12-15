@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useWindows } from './WindowContext';
 import { apps } from './app';
+import { motion } from 'framer-motion';
 
 const PANEL_HEIGHT = 30;
 const DOCK_HEIGHT = 104;
@@ -161,14 +162,19 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
   };
 
   return (
-    <div
+    <motion.div
       ref={windowRef}
-      className={`absolute ${isMaximized ? '' : 'rounded-xl'} ${isDragging ? 'cursor-grabbing' : 'cursor-default'}`}
+      initial= {{ opacity: 0, y: 0 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit = {{opacity: 0,y:-10}}
+      transition={{ duration: 0.1, ease: 'easeOut', }}
+            className={`absolute ${isMaximized ? '' : 'rounded-xl'} ${isDragging ? 'cursor-grabbing' : 'cursor-default'}`}
       style={{
         top: position.top,
         left: position.left,
         width: size.width,
         height: size.height,
+        
         zIndex: activeWindow === id ? 10 : 0,
         willChange: 'transform',
         transition: isDragging || isResizing ? 'none' : `all ${ANIMATION_DURATION}ms ease-in-out`
@@ -258,7 +264,7 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
         className="absolute w-3 h-3 -right-[3px] cursor-nwse-resize"
         onMouseDown={(e) => handleResizeStart(e, 'bottom-right')}
       />
-    </div>
+    </motion.div>
   );
 };
 
