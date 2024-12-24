@@ -1,5 +1,6 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+'use client'
+import React, { useState, useEffect, useRef, memo } from 'react';
 import { useWindows } from './WindowContext';
 import { apps } from './app';
 import { motion } from 'framer-motion';
@@ -7,8 +8,44 @@ import { motion } from 'framer-motion';
 const PANEL_HEIGHT = 30;
 const DOCK_HEIGHT = 104;
 const ANIMATION_DURATION = 200;
+// eslint-disable-next-line react/display-name
+const MemoizedDynamicComponent = memo(
+  ({ icon, component, appname, appProps, isFocused }: { icon:string, component: string; appname:string,appProps: any; isFocused: boolean }) => {
+    const [DynamicComponent, setDynamicComponent] = useState<any>(null);
 
-const Window = ({ id, appName, title, component: Component, props, isMinimized, isMaximized }:any) => {
+    useEffect(() => {
+      const loadComponent = async () => {
+        try {
+          const importedModule = await import(`../components/${component}`);
+          setDynamicComponent(() => importedModule.default || null);
+        } catch (err) {
+          console.log(err);
+          setDynamicComponent(null);
+        }
+      };
+
+      loadComponent();
+    }, [component]); // Reload component when it changes
+
+    if (!DynamicComponent) {
+      return (
+        <div className="flex flex-row h-full w-full items-center content-center">
+          <div className="flex flex-col space-y-5 font-sf mx-auto items-center content-center">
+            <img className="w-24 h-24" src={icon} />
+            <div className="text-sm dark:text-white">{appname} is being developed</div>
+          </div>
+        </div>
+      );
+    }
+
+    return <DynamicComponent {...appProps} isFocused={isFocused} />;
+  },
+  (prevProps, nextProps) => prevProps.isFocused === nextProps.isFocused
+);
+
+
+
+const Window = ({ id, appName, title, component, props, isMinimized, isMaximized }:any) => {
   const { removeWindow, updateWindow, activeWindow, setActiveWindow } = useWindows();
   const [position, setPosition] = useState({ top: 100, left: 100 });
   const [size, setSize] = useState({ width: 400, height: 300 });
@@ -18,7 +55,7 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
 
   const app = apps.find((app) => app.appName === appName);
   const windowRef = useRef(null);
-
+  
   useEffect(() => {
     if (isMinimized) {
       const { innerWidth: screenWidth, innerHeight: screenHeight } = window;
@@ -229,8 +266,9 @@ const Window = ({ id, appName, title, component: Component, props, isMinimized, 
           isMaximized ? '' : 'rounded-b-xl'
         } ${app?.titlebarblurred?'bg-white/40 dark:bg-neutral-900/40 backdrop-blur-md':'bg-white dark:bg-neutral-900'}`}
       >
-        <Component focused={activeWindow === id} {...props} />
-      </div>
+      
+<MemoizedDynamicComponent appname={app?app.appName:''} icon={app?app.icon:''} component={component} appProps={props} isFocused={activeWindow === id} />
+</div>
 
       <div
         className="absolute w-full h-3 -top-[3px] cursor-ns-resize"

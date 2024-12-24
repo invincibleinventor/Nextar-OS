@@ -39,7 +39,7 @@ export default function Control(){
           <div>
           
             <p className="text-xs font-semibold  dark:text-white text-neutral-800">Wi-Fi</p>
-            <p className="text-[11px] text-gray-600 dark:text-neutral-300 truncate">Bala&apos;s Wifi</p>
+            <p className="text-[11px] text-neutral-600 dark:text-neutral-300 truncate">Bala&apos;s Wifi</p>
           </div>
         </div>
         <div className="p-3 py-2 flex space-x-2 items-center">
@@ -50,7 +50,7 @@ export default function Control(){
           <div>
           
             <p className="text-xs font-semibold  dark:text-white text-neutral-800">Bluetooth</p>
-            <p className="text-[11px] text-gray-600 dark:text-neutral-300 truncate">Off</p>
+            <p className="text-[11px] text-neutral-600 dark:text-neutral-300 truncate">Off</p>
           </div>
         </div>
         <div className="p-3 py-2 flex space-x-2 items-center">
@@ -61,7 +61,7 @@ export default function Control(){
           <div>
           
             <p className="text-xs font-semibold  dark:text-white text-neutral-800">AirDrop</p>
-            <p className="text-[11px] text-gray-600 dark:text-neutral-300 truncate">Off</p>
+            <p className="text-[11px] text-neutral-600 dark:text-neutral-300 truncate">Off</p>
           </div>
         </div>
 
@@ -75,26 +75,26 @@ export default function Control(){
           <FaMoon className="text-neutral-800 dark:text-white" size={16} />
       }
           </div>
-          <p className="text-xs font-semibold dark:text-white text-gray-800 capitalize">{theme}<br></br> Mode</p>
+          <p className="text-xs font-semibold dark:text-white text-neutral-800 capitalize">{theme}<br></br> Mode</p>
         </div>
       {/* Keyboard Brightness and AirPlay */}
       <div className="grid grid-cols-2 gap-2">
         <div className="p-3 bg-white/20 dark:bg-black/10 rounded-2xl shadow flex flex-col items-center">
-          <MdKeyboard size={16} className="text-neutral-800 dark:text-gray-200" />
-          <p className="text-[11px] text-neutral-800 dark:text-gray-200 text-center mt-1 mx-1">Keyboard Brightness</p>
+          <MdKeyboard size={16} className="text-neutral-800 dark:text-neutral-200" />
+          <p className="text-[11px] text-neutral-800 dark:text-white text-center mt-1 mx-1">Keyboard Brightness</p>
         </div>
         <div className="p-3  bg-white/20 dark:bg-black/10 rounded-2xl shadow flex flex-col items-center">
-          <MdAirplay size={16} className="text-neutral-800 dark:text-gray-200" />
-          <p className="text-[11px] text-neutral-800 dark:text-gray-200 text-center mt-1">AirPlay Display</p>
+          <MdAirplay size={16} className="text-neutral-800 dark:text-neutral-200" />
+          <p className="text-[11px] text-neutral-800 dark:text-white text-center mt-1">AirPlay Display</p>
         </div>
       </div>
       </div>
 </div>
-      <div>
-      <p className="text-xs font-medium dark:text-white text-gray-800 mb-2">Display</p>
-      <div className="relative dark:border dark:border-neutral-600 border border-neutral-500 rounded-full flex items-center h-7">
-        <div className="absolute left-0 w-7 h-7 flex items-center justify-center rounded-full bg-white  ">
-          <BsSunFill size={14} className="text-gray-500" />
+<div className='p-3 shadow rounded-2xl bg-white/20 dark:bg-black/10  '>
+<p className="text-xs font-medium dark:text-white text-neutral-800 mb-2">Display</p>
+      <div className="relative  rounded-full flex items-center h-7">
+        <div className="absolute left-0 w-6 h-6 flex items-center justify-center rounded-full bg-white  ">
+          <BsSunFill size={12} className="text-neutral-500" />
         </div>
 
         <input
@@ -104,10 +104,10 @@ export default function Control(){
         value={brightness}
         onChange={(e) => (setBrightness(Number(e.target.value)))}
         className="
-        w-full h-7 appearance-none rounded-full 
-        [&::-webkit-slider-runnable-track]:w-full [&::-webkit-slider-runnable-track]:h-7 
+        w-full h-6 appearance-none rounded-full 
+        [&::-webkit-slider-runnable-track]:w-full [&::-webkit-slider-runnable-track]:h-6
         [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-transparent 
-        [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-7 [&::-webkit-slider-thumb]:h-7 
+        [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6
         [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-md 
         
 
@@ -119,12 +119,13 @@ export default function Control(){
       />
 </div>
   </div>
+  <div className='p-3 shadow rounded-2xl bg-white/20 dark:bg-black/10  '>
 
       <div>
-      <p className="text-xs font-medium dark:text-white text-gray-800 mb-2">Sound</p>
-      <div className="relative dark:border border border-neutral-500 dark:border-neutral-600  rounded-full flex items-center h-7">
-        <div className="absolute left-0 w-7 h-7 flex items-center justify-center rounded-full ">
-          <BsFillVolumeUpFill size={14} className="text-gray-500" />
+      <p className="text-xs font-medium dark:text-white text-neutral-800 mb-2">Sound</p>
+      <div className="relative rounded-full flex items-center h-7">
+        <div className="absolute left-0 w-6 h-6 flex items-center justify-center rounded-full ">
+          <BsFillVolumeUpFill size={12} className="text-neutral-500" />
         </div>
 
         <input
@@ -134,10 +135,10 @@ export default function Control(){
         value={volume}
         onChange={(e) => (setVolume(Number(e.target.value)))}
         className="
-        w-full h-7 appearance-none rounded-full 
-        [&::-webkit-slider-runnable-track]:w-full [&::-webkit-slider-runnable-track]:h-7 
+        w-full h-6 appearance-none rounded-full 
+        [&::-webkit-slider-runnable-track]:w-full [&::-webkit-slider-runnable-track]:h-6
         [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-transparent 
-        [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-7 [&::-webkit-slider-thumb]:h-7 
+        [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6
         [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-md 
         
 
@@ -149,16 +150,18 @@ export default function Control(){
       />
 </div>
   </div>
+  </div>
+  
    
-      <div className="flex items-center justify-between bg-gray-100/10 dark:bg-black/10 rounded-2xl p-3 pr-5 shadow">
+      <div className="flex items-center justify-between bg-neutral-100/10 dark:bg-black/10 rounded-2xl p-3 pr-5 shadow">
         <div className="flex items-center space-x-3">
           <div className="w-12 h-12 bg-yellow-400 rounded-lg"></div>
           <div>
-            <p className="text-sm font-semibold dark:text-white text-gray-800">Never gonna give you up!</p>
-            <p className="text-xs dark:text-gray-200 text-gray-700">Rick Astley</p>
+            <p className="text-sm font-semibold dark:text-white text-neutral-800">Never gonna give you up!</p>
+            <p className="text-xs dark:text-neutral-200 text-neutral-700">Rick Astley</p>
           </div>
         </div>
-        <IoPlay size={20} className="dark:text-gray-200 text-gray-700" />
+        <IoPlay size={20} className="dark:text-neutral-200 text-neutral-700" />
       </div>
 
       <div className="flex justify-between items-center bg-white/20 dark:bg-black/10 w-max rounded-xl p-3 py-2 shadow">
@@ -167,7 +170,7 @@ export default function Control(){
           <div className='flex flex-col'>
 
           <p className="text-[11px] font-normal dark:text-neutral-300 text-neutral-700">Battery</p>
-          <p className="text-[12px] font-semibold dark:text-neutral-200 text-gray-800">74%</p>
+          <p className="text-[12px] font-semibold dark:text-neutral-200 text-neutral-800">74%</p>
 
           </div>
         </div>

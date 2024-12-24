@@ -1,44 +1,49 @@
-'use client';
+'use client'
 import { createContext, useState, useEffect, useContext, ReactNode } from 'react';
-interface props{
-    children: ReactNode
+
+interface Props {
+  children: ReactNode;
 }
+
 const ThemeContext = createContext({
-    theme: 'light',
-    toggleTheme: () => {},
-}
-);
+  theme: 'light',
+  toggleTheme: () => {},
+});
+
 export const useTheme = () => useContext(ThemeContext);
-const setAppTheme = (theme:any) => {
+
+const setAppTheme = (theme: string) => {
   const html = document.documentElement;
 
-  // Remove both themes first to ensure proper class assignment
   html.classList.remove('light', 'dark');
   html.classList.add(theme);
 
-  // Ensure theme reflects immediately by triggering a manual CSS reflow (optional, but may help)
   html.style.transition = 'all 0.3s ease';
 };
 
-
-export const ThemeProvider = ({ children }:props) => {
+export const ThemeProvider = ({ children }: Props) => {
   const [theme, setTheme] = useState('light');
+
   useEffect(() => {
     const storedTheme = localStorage.getItem('theme');
     const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
+    // Use stored theme if available; otherwise, use system preference
     if (storedTheme) {
       setTheme(storedTheme);
     } else if (prefersDarkMode) {
       setTheme('dark');
     }
+  }, []); // Run only once on initial load
+
+  useEffect(() => {
     setAppTheme(theme);
-  }, [theme]);
+    localStorage.setItem('theme', theme);
+  }, [theme]); // Apply theme whenever it changes
+
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
-    setAppTheme(newTheme)
   };
 
   return (

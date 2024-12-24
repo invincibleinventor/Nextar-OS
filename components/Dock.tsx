@@ -21,7 +21,7 @@ const Dock = () => {
         id: `${name}-${Date.now()}`,
         appName: name,
         title: title || name,
-        component: () => <div className="p-4">This is {name}</div>,
+        component: name,
         props: {},
         isMinimized: false,
         position: { top: 100, left: 100 },

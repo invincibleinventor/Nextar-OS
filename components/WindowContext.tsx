@@ -16,15 +16,24 @@ export const WindowProvider = ({ children }: any) => {
   };
   const removeWindow = (id: string) => {
     setWindows((prevWindows) => {
+      // Remove the window with the given ID
       const updatedWindows = prevWindows.filter((window) => window.id !== id);
+      
+      // If no windows are left, clear the active window
       if (updatedWindows.length === 0) {
         setActiveWindow(null);
-      } else if (activeWindow === id) {
-        setActiveWindow(updatedWindows[0]?.id || null);
+      } else {
+        // If the active window is the one being closed, set the next window as active
+        if (activeWindow === id) {
+          setActiveWindow(updatedWindows[0]?.id || null);
+        }
       }
+  
       return updatedWindows;
     });
   };
+  
+  
   const toggleWindows = (appName: string) => {
     setWindows((prevWindows) => {
       return prevWindows.map((win) => {

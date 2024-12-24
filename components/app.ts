@@ -90,5 +90,17 @@
       titlebarblurred: false,
       pinned: false,
     },
+    {
+      id: 'welcome',
+      appName: 'Welcome',
+      icon: 'info.png',
+      maximizeable: false,
+      componentName: 'Welcome',
+      additionalData: {},
+      multiwindow: false,
+      titlebarblurred: false,
+      pinned:false,
+    }
+
 
   ];
