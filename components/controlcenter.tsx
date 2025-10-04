@@ -3,7 +3,7 @@
 
 import {  useState } from 'react'
 import { FaWifi, FaMoon, FaBluetoothB, FaSun } from 'react-icons/fa'
-import { MdKeyboard, MdAirplay } from 'react-icons/md'
+/*import { MdKeyboard, MdAirplay } from 'react-icons/md'*/
 import {  BsFillVolumeUpFill, BsSunFill } from 'react-icons/bs'
 import { FiBatteryCharging } from 'react-icons/fi'
 import { IoPlay } from 'react-icons/io5'

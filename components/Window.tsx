@@ -94,13 +94,12 @@ const Window = ({ id, appName, title, component, props, isMinimized, isMaximized
   const handleDragStart = (e: any) => {
     // Only start drag-to-unmaximize if the user is actually moving the mouse (not just clicking)
     let dragStarted = false;
-    let wasMaximized = isMaximized;
+    const wasMaximized = isMaximized;
     let dragOffsetX = 0;
     let dragOffsetY = 0;
     let startX = 0;
     let startY = 0;
     let prevSize = size;
-    let prevPosition = position;
 
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
