@@ -16,13 +16,17 @@ export const WindowProvider = ({ children }: any) => {
   };
   const removeWindow = (id: string) => {
     setWindows((prevWindows) => {
+      const idx = prevWindows.findIndex((w) => w.id === id);
       const updatedWindows = prevWindows.filter((window) => window.id !== id);
-      // If no windows left, clear activeWindow
       if (updatedWindows.length === 0) {
         setActiveWindow(null);
       } else {
-        // Set activeWindow to the last opened (topmost) window
-        setActiveWindow(updatedWindows[updatedWindows.length - 1].id);
+        // If the closed window was active, set active to the previous window in stacking order
+        if (activeWindow === id) {
+          // Try to focus the window just below the closed one
+          const newIdx = Math.max(0, idx - 1);
+          setActiveWindow(updatedWindows[newIdx].id);
+        }
       }
       return updatedWindows;
     });

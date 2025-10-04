@@ -20,7 +20,7 @@ const Dock = () => {
     } else {
       let position = { top: 100, left: 100 };
       let size = { width: 400, height: 300 };
-      let isMaximized = false;
+      const isMaximized = false;
       if (startLarge && typeof window !== 'undefined') {
         const screenWidth = window.innerWidth;
         const screenHeight = window.innerHeight;
@@ -122,7 +122,7 @@ const Dock = () => {
             >
               <div className='mx-auto relative'>
                 <svg xmlns="http://www.w3.org/2000/svg" className='absolute w-4 text-black dark:text-white left-4 h-4 top-0 bottom-0 my-auto' width="32" height="32" viewBox="0 0 32 32"><path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m5 27l7.5-7.5M28 13a9 9 0 1 1-18 0a9 9 0 0 1 18 0"/></svg>
-                <input           onChange={e => setSearchTerm(e.target.value)}  className='px-2 pl-10 dark:text-white text-black placeholder:text-black dark:placeholder:text-neutral-200 font-medium placeholder:font-semibold outline-none   rounded-xl bg-neutral-700/10  font-sf   w-full text-sm w-full py-3 bg-transparent' placeholder='Search Apps'></input>
+                <input           onChange={e => setSearchTerm(e.target.value)}  className='px-2 pl-10 dark:text-white text-black placeholder:text-black dark:placeholder:text-neutral-200 font-medium placeholder:font-semibold outline-none   rounded-xl  font-sf   w-full text-sm w-full py-3 bg-transparent' placeholder='Search Apps'></input>
               </div>
               <div className='grid grid-cols-2 md:grid-cols-4 py-5 pt-5  gap-6'>
                 {filteredApps.map((app,index)=>(
@@ -138,7 +138,7 @@ const Dock = () => {
       </AnimatePresence>
 
       <motion.div
-        className="fixed z-0 before:absolute before:inset-0 before:bg-transparent before:content-[''] before:backdrop-blur-[12px] before:webkit-backdrop-blur-[12px] before:z-[-1] bottom-1 mx-auto left-0 right-0 w-max before:rounded-3xl bg-white bg-opacity-30 dark:bg-black dark:bg-opacity-40 px-[8px] pt-[10px] pb-[12px] flex flex-shrink-0 rounded-3xl border-[0.1px] dark:border-neutral-600 border-neutral-500 shadow-2xl transition-colors duration-500"
+        className="fixed z-0 before:absolute before:inset-0 before:bg-transparent before:content-[''] before:backdrop-blur-[12px] before:webkit-backdrop-blur-[12px] before:z-[-1] bottom-1 mx-auto left-0 right-0 w-max before:rounded-3xl bg-white bg-opacity-30 dark:bg-black dark:bg-opacity-10 px-[8px] pt-[10px] pb-[12px] flex flex-shrink-0 rounded-3xl border-[0.1px] dark:border-neutral-600 border-neutral-500 shadow-2xl transition-colors duration-500"
         style={{
           zIndex: 11,
           height: '67px',

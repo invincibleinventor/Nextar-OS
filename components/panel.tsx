@@ -110,7 +110,7 @@ export default function Panel() {
         <div>
         <div
             style={{zIndex:10}}
-            className="relative h-full z-0 before:absolute before:inset-0 before:bg-transparent before:content-[''] before:backdrop-blur-[12px] before:webkit-backdrop-blur-[12px] before:z-[-1] top-0 w-screen py-[6px] flex px-4 justify-between items-center content-center bg-white bg-opacity-30 dark:bg-black dark:bg-opacity-40 transition-colors duration-500"
+            className="relative h-full z-0 before:absolute before:inset-0 before:bg-transparent before:content-[''] before:backdrop-blur-[12px] before:webkit-backdrop-blur-[12px] before:z-[-1] top-0 w-screen py-[6px] flex px-4 justify-between items-center content-center bg-white bg-opacity-30 dark:bg-black dark:bg-opacity-10 transition-colors duration-500"
         >
             <div className="relative flex flex-row items-center content-center space-x-0">
                 <Logo></Logo>
@@ -127,7 +127,7 @@ export default function Panel() {
                 )}
                 <div className='hidden md:inline-flex'>
                     {Object.entries(appMenus).map(([menuKey, menuItems]) => {
-                        if (menuKey === 'windowMenu' && activeAppName !== 'Finder') return null;
+{}                        if (menuKey === 'windowMenu' && activeAppName !== 'Finder') return null;
 
                         return (
                             <Menu
