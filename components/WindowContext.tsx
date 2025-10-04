@@ -16,30 +16,37 @@ export const WindowProvider = ({ children }: any) => {
   };
   const removeWindow = (id: string) => {
     setWindows((prevWindows) => {
-      // Remove the window with the given ID
       const updatedWindows = prevWindows.filter((window) => window.id !== id);
-      // If no windows are left, clear the active window
+      // If no windows left, clear activeWindow
       if (updatedWindows.length === 0) {
         setActiveWindow(null);
       } else {
-        // If the active window is the one being closed, set the next window as active, but do NOT change its position/size
-        if (activeWindow === id) {
-          setActiveWindow(updatedWindows[updatedWindows.length - 1]?.id || null);
-        }
+        // Set activeWindow to the last opened (topmost) window
+        setActiveWindow(updatedWindows[updatedWindows.length - 1].id);
       }
       return updatedWindows;
     });
   };
   
   
-  const toggleWindows = (appName: string) => {
+  // If the app's window is not active, bring it to front. If already active, toggle minimize.
+  const focusOrToggleWindow = (appName: string) => {
     setWindows((prevWindows) => {
-      return prevWindows.map((win) => {
-        if (win.appName === appName) {
-          return { ...win, isMinimized: !win.isMinimized };
-        }
-        return win;
-      });
+      const appWindows = prevWindows.filter((win) => win.appName === appName);
+      if (appWindows.length === 0) return prevWindows;
+      const topmost = appWindows.find((win) => win.id === activeWindow);
+      if (topmost) {
+        // If already active, minimize
+        return prevWindows.map((win) =>
+          win.appName === appName ? { ...win, isMinimized: !win.isMinimized } : win
+        );
+      } else {
+        // Bring the first found window to front (setActiveWindow)
+        setActiveWindow(appWindows[0].id);
+        return prevWindows.map((win) =>
+          win.id === appWindows[0].id ? { ...win, isMinimized: false } : win
+        );
+      }
     });
   };
   const updateWindow = (id: string, updatedProps: any) => {
@@ -62,7 +69,7 @@ export const WindowProvider = ({ children }: any) => {
         updateWindow,
         activeWindow,
         setActiveWindow,
-        toggleWindows,
+        focusOrToggleWindow,
       }}
     >
       {children}

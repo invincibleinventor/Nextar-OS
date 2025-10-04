@@ -31,7 +31,7 @@
       componentName: 'Settings',
       additionalData: {},
       multiwindow: true,
-      titlebarblurred: false,
+      titlebarblurred: true,
       pinned: true,
     },
     {
@@ -39,10 +39,10 @@
       appName: 'XCode',
       icon: '/code.png',
       maximizeable: true,
-      componentName: 'XCode',
-      additionalData: {},
+      componentName: 'BalaDev',
+  additionalData: {startLarge: true},
       multiwindow: true,
-      titlebarblurred: false,
+      titlebarblurred: true,
       pinned: true,
     },
     {

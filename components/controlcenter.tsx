@@ -37,71 +37,70 @@ export default function Control(){
                 >
       <div className="grid grid-cols-2 gap-4">
         <div className='grid   grid-rows-3 gap-2'>
-        <div className="p-3 bg-white/20 backdrop-blur-lg filter rounded-full dark:bg-neutral-900/20 shadow py-4 flex space-x-2 items-center">
+        <div className="p-3 bg-white/20 backdrop-blur-lg border-[0.1px] border-neutral-400 dark:border-neutral-500 filter rounded-full dark:bg-neutral-900/20  py-4 flex space-x-2 items-center">
         <div className='p-[10px] rounded-full bg-white/20'>
 
           <FaWifi className="text-neutral-800 dark:text-white" size={16} />
           </div>
           <div>
           
-            <p className="text-sm font-semibold  dark:text-white text-neutral-800">Wi-Fi</p>
-            <p className="text-[12px] text-neutral-600 dark:text-neutral-300 truncate">Bala&apos;s Wifi</p>
+            <p className="text-sm font-semibold  dark:text-white text-black">Wi-Fi</p>
+            <p className="text-[12px] text-neutral-950 dark:text-neutral-300 truncate">Bala&apos;s Wifi</p>
           </div>
         </div>
-        <div className="p-3 bg-white/20 backdrop-blur-lg filter rounded-full dark:bg-neutral-900/20 shadow py-4 flex space-x-2 items-center">
+        <div className="p-3 bg-white/20 backdrop-blur-lg filter border-[0.1px] border-neutral-400 dark:border-neutral-500 rounded-full dark:bg-neutral-900/20  py-4 flex space-x-2 items-center">
         <div className='p-[10px] rounded-full bg-white/20'>
 
           <FaBluetoothB className="text-neutral-800 dark:text-white" size={16} />
           </div>
           <div>
           
-            <p className="text-sm font-semibold  dark:text-white text-neutral-800">Bluetooth</p>
-            <p className="text-[12px] text-neutral-600 dark:text-neutral-300 truncate">Off</p>
+            <p className="text-sm font-semibold  dark:text-white text-black">Bluetooth</p>
+            <p className="text-[12px] text-neutral-950 dark:text-neutral-300 truncate">Off</p>
           </div>
         </div>
-        <div className="p-3 bg-white/20 backdrop-blur-lg filter rounded-full dark:bg-neutral-900/20 shadow py-4 flex space-x-2 items-center">
+        <div className="p-3 bg-white/20 backdrop-blur-lg filter rounded-full dark:bg-neutral-900/20 border-[0.1px] border-neutral-400 dark:border-neutral-500  py-4 flex space-x-2 items-center">
         <div className='p-[10px] rounded-full bg-white/20'>
 
           <FaTowerBroadcast className="text-neutral-800 dark:text-white" size={16} />
           </div>
           <div>
           
-            <p className="text-sm font-semibold  dark:text-white text-neutral-800">AirDrop</p>
-            <p className="text-[12px] text-neutral-600 dark:text-neutral-300 truncate">Off</p>
+            <p className="text-sm font-semibold  dark:text-white text-black">AirDrop</p>
+            <p className="text-[12px] text-neutral-950 dark:text-neutral-300 truncate">Off</p>
           </div>
         </div>
 
      
       </div>
       <div className='grid grid-rows-1 gap-4'>
-         <div className="flex flex-col items-center justify-between bg-white/20 backdrop-blur-lg filter  dark:bg-neutral-900/20 shadow rounded-3xl p-3 px-0  shadow">
+         <div className="flex flex-col items-center justify-between bg-white/20 backdrop-blur-lg filter border-[0.1px] border-neutral-400 dark:border-neutral-500  dark:bg-neutral-900/20  rounded-3xl p-3 px-0  ">
         <div className="flex flex-col items-center">
           <div className="w-12 h-12 mr-auto bg-yellow-400 rounded-xl"></div>
           <div className='my-2'>
-            <p className="text-sm font-semibold dark:text-white text-neutral-800">Never gonna give...</p>
-            <p className="text-[11px] dark:text-neutral-200 text-neutral-700">Rick Astley</p>
+            <p className="text-sm font-semibold dark:text-white text-black">Never gonna give...</p>
+            <p className="text-[11px] dark:text-neutral-200 text-neutral-950">Rick Astley</p>
           </div>
         </div>
-        <IoPlay size={20} className="dark:text-neutral-200 text-neutral-700" />
+        <IoPlay size={20} className="dark:text-neutral-200 text-neutral-950" />
       </div>
-      <div onClick={()=>toggleTheme()} className="p-3 bg-white/20 backdrop-blur-lg filter rounded-full dark:bg-neutral-900/20 shadow flex space-x-2 items-center">
+      <div onClick={()=>toggleTheme()} className="p-3 bg-white/20 backdrop-blur-lg filter border-[0.1px] border-neutral-400 dark:border-neutral-500 rounded-full dark:bg-neutral-900/20  flex space-x-2 items-center">
       <div className='p-[10px] rounded-full bg-white/20'>
       {theme == 'light' && <FaSun className='text-neutral-800 dark:text-white' size={16}></FaSun>}
       {theme  == 'dark' &&
           <FaMoon className="text-neutral-800 dark:text-white" size={16} />
       }
           </div>
-          <p className="text-[13px] font-semibold dark:text-white text-neutral-800 capitalize">{theme}<br></br> Mode</p>
+          <p className="text-[13px] font-semibold dark:text-white text-black capitalize">{theme}<br></br> Mode</p>
         </div>
-      {/* Keyboard Brightness and AirPlay */}
      
       </div>
 </div>
-<div className='p-3 shadow rounded-2xl bg-white/20 dark:bg-black/10  '>
+<div className='px-5 py-4 backdrop-blur-lg rounded-3xl border-[0.1px] border-neutral-400 dark:border-neutral-500 bg-white/20 dark:bg-black/10  '>
 <p className="text-xs font-medium dark:text-white text-neutral-800 mb-2">Display</p>
       <div className="relative  rounded-full flex items-center h-7">
-        <div className="absolute left-0 w-6 h-6 flex items-center justify-center rounded-full bg-white  ">
-          <BsSunFill size={12} className="text-neutral-500" />
+        <div className="absolute left-0 w-6 h-6 flex items-center justify-center rounded-full  ">
+          <BsSunFill size={16} className="text-white" />
         </div>
 
         <input
@@ -111,10 +110,10 @@ export default function Control(){
         value={brightness}
         onChange={(e) => (setBrightness(Number(e.target.value)))}
         className="
-        w-full h-6 appearance-none rounded-full 
-        [&::-webkit-slider-runnable-track]:w-full [&::-webkit-slider-runnable-track]:h-6
+        w-full ml-10 mr-5 h-1 appearance-none rounded-full 
+        [&::-webkit-slider-runnable-track]:w-full [&::-webkit-slider-runnable-track]:h-1 [&::-webkit-slider-runnable-track]:-mt-[6px]
         [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-transparent 
-        [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6
+        [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bottom-1
         [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-md 
         
 
@@ -126,13 +125,13 @@ export default function Control(){
       />
 </div>
   </div>
-  <div className='p-3 shadow rounded-2xl bg-white/20 dark:bg-black/10  '>
+  <div className='px-5 py-4 backdrop-blur-lg border-[0.1px] border-neutral-400 dark:border-neutral-500 rounded-3xl bg-white/20 dark:bg-black/10  '>
 
       <div>
       <p className="text-xs font-medium dark:text-white text-neutral-800 mb-2">Sound</p>
       <div className="relative rounded-full flex items-center h-7">
         <div className="absolute left-0 w-6 h-6 flex items-center justify-center rounded-full ">
-          <BsFillVolumeUpFill size={12} className="text-neutral-500" />
+          <BsFillVolumeUpFill size={16} className="text-white" />
         </div>
 
         <input
@@ -142,12 +141,13 @@ export default function Control(){
         value={volume}
         onChange={(e) => (setVolume(Number(e.target.value)))}
         className="
-        w-full h-6 appearance-none rounded-full 
-        [&::-webkit-slider-runnable-track]:w-full [&::-webkit-slider-runnable-track]:h-6
+      w-full ml-10 mr-5 h-1 appearance-none rounded-full 
+        [&::-webkit-slider-runnable-track]:w-full [&::-webkit-slider-runnable-track]:h-1 [&::-webkit-slider-runnable-track]:-mt-[6px]
         [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-transparent 
-        [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6
+        [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bottom-1
         [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-md 
         
+
 
       "
       style={{
@@ -162,7 +162,7 @@ export default function Control(){
    
      
 
-      <div className="flex justify-between items-center bg-white/20 dark:bg-black/10 w-max rounded-xl p-3 py-2 shadow">
+      <div className="flex justify-between items-center bg-white/20 dark:bg-black/10 border-[0.1px] border-neutral-400 dark:border-neutral-500 w-max rounded-full px-5 py-3 filter backdrop-blur-lg">
         <div className="flex items-center space-x-2">
           <FiBatteryCharging size={20} className="text-neutral-800 dark:text-white" />
           <div className='flex flex-col'>

@@ -9,7 +9,7 @@ import { apps } from './app';
 import { motion } from 'framer-motion';
 
 const PANEL_HEIGHT = 30;
-const DOCK_HEIGHT = 69;
+const DOCK_HEIGHT = 75;
 const ANIMATION_DURATION = 200;
 // eslint-disable-next-line react/display-name
 const MemoizedDynamicComponent = memo(
@@ -28,7 +28,7 @@ const MemoizedDynamicComponent = memo(
       };
 
       loadComponent();
-    }, [component]); // Reload component when it changes
+    }, [component]); 
 
     if (!DynamicComponent) {
       return (
@@ -49,15 +49,40 @@ const MemoizedDynamicComponent = memo(
 
 
 const Window = ({ id, appName, title, component, props, isMinimized, isMaximized }:any) => {
-  const { removeWindow, updateWindow, activeWindow, setActiveWindow } = useWindows();
-  const [position, setPosition] = useState({ top: 100, left: 100 });
-  const [size, setSize] = useState({ width: 400, height: 300 });
+  const { removeWindow, updateWindow, activeWindow, setActiveWindow, windows } = useWindows();
+  const app = apps.find((app) => app.appName === appName);
+  const [position, setPosition] = useState(() => {
+    if (app && app.additionalData && app.additionalData.startLarge && typeof window !== 'undefined') {
+      const screenWidth = window.innerWidth;
+      const screenHeight = window.innerHeight;
+      const width = Math.round(screenWidth * 0.85);
+      const height = Math.round((screenHeight - PANEL_HEIGHT - DOCK_HEIGHT) * 0.85);
+      return {
+        top: PANEL_HEIGHT + Math.round(((screenHeight - PANEL_HEIGHT - DOCK_HEIGHT) - height) / 2),
+        left: Math.round((screenWidth - width) / 2),
+      };
+    }
+    return { top: 100, left: 100 };
+  });
+  const [size, setSize] = useState(() => {
+    if (app && app.additionalData && app.additionalData.startLarge && typeof window !== 'undefined') {
+      const screenWidth = window.innerWidth;
+      const screenHeight = window.innerHeight;
+      return {
+        width: Math.round(screenWidth * 0.85),
+        height: Math.round((screenHeight - PANEL_HEIGHT - DOCK_HEIGHT) * 0.85),
+      };
+    }
+    return { width: 400, height: 300 };
+  });
   const [previousState, setPreviousState] = useState({ position, size });
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
-
-  const app = apps.find((app) => app.appName === appName);
   const windowRef = useRef(null);
+
+  // Calculate zIndex so that the active window is always on top, even over maximized windows
+  const myIndex = windows ? windows.findIndex((w:any) => w.id === id) : 0;
+  const zIndex = activeWindow === id ? 1000 : 100 + myIndex;
   
   useEffect(() => {
     if (isMinimized) {
@@ -95,7 +120,6 @@ const Window = ({ id, appName, title, component, props, isMinimized, isMaximized
   };
 
   const handleDragStart = (e: any) => {
-    // Only start drag-to-unmaximize if the user is actually moving the mouse (not just clicking)
     let dragStarted = false;
     const wasMaximized = isMaximized;
     let dragOffsetX = 0;
@@ -130,7 +154,6 @@ const Window = ({ id, appName, title, component, props, isMinimized, isMaximized
       const moveY = 'touches' in moveEvent ? moveEvent.touches[0].clientY : moveEvent.clientY;
 
       if (!dragStarted && wasMaximized && Math.abs(moveY - startY) > 3) {
-        // Only unmaximize if the user actually drags
         dragStarted = true;
         updateWindow(id, { isMaximized: false });
         setTimeout(() => {
@@ -261,14 +284,14 @@ const Window = ({ id, appName, title, component, props, isMinimized, isMaximized
       
       transition={{ duration: 0.1, ease: 'easeOut', }}
             className={`${app?.titlebarblurred
-            ? 'dark:bg-opacity-40 bg-opacity-80  dark:bg-black bg-white backdrop-blur-lg'
+            ? 'dark:bg-opacity-40 absolute bg-opacity-80  dark:bg-black bg-white backdrop-blur-lg'
             : 'dark:bg-neutral-900 bg-white backdrop-blur-sm'} absolute ${isMaximized ? '' : 'rounded-2xl'} ${isDragging ? 'cursor-grabbing' : 'cursor-default'}`}
       style={{
         top: position.top,
         left: isMaximized ? 0 : position.left,
         width: isMaximized ? '100vw' : size.width,
         height: size.height,
-        zIndex: activeWindow === id ? 10 : 0,
+        zIndex,
         willChange: 'transform',
         transition: isDragging || isResizing ? 'none' : `all ${ANIMATION_DURATION}ms ease-in-out`
       }}
@@ -318,12 +341,12 @@ const Window = ({ id, appName, title, component, props, isMinimized, isMaximized
       </div>
 
       <div
-        className={`h-[calc((100%)-35px)] w-full overflow-hidden   ${
+        className={` w-full overflow-hidden   ${
           isMaximized ? '' : 'rounded-b-2xl'
-        } ${app?.titlebarblurred?'':'bg-white dark:bg-neutral-900'}`}
+        } ${app?.titlebarblurred?'h-[calc((100%))]':'bg-white h-[calc((100%-80px))] dark:bg-neutral-900'}`}
       >
       
-<MemoizedDynamicComponent appname={app?app.appName:''} icon={app?app.icon:''} component={component} appProps={props} isFocused={activeWindow === id} />
+<MemoizedDynamicComponent appname={app?app.appName:''} icon={app?app.icon:''} component={app?.componentName?app.componentName:component} appProps={props} isFocused={activeWindow === id} />
 </div>
 
       <div

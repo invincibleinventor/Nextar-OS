@@ -55,7 +55,7 @@ export default function Menu(props: any) {
                 transition={{ type: 'spring', stiffness: 150, damping: 20 }}
                 style={{ zIndex: 10, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}
 
-                className="absolute left-0 sm:left-auto mt-2 min-w-56 w-max bg-white/20 dark:bg-neutral-800/20 rounded-xl flex flex-col space-y-[1px] p-[6px] shadow-lg z-[10]"
+                className="absolute left-0 sm:left-auto mt-2 min-w-56 w-max bg-white/20 dark:bg-neutral-900/20 rounded-xl flex flex-col space-y-[1px] p-[6px]  border-[0.01px] border-neutral-600 dark:border-neutral-500 z-[10]"
             >
             
                     {props.data.map((item: any, idx: number) =>
@@ -69,7 +69,7 @@ export default function Menu(props: any) {
                                 className={`py-[4px] px-4 text-[13px] font-medium dark:text-white text-black rounded-lg ${
                                     item.disabled
                                         ? 'text-neutral-700 dark:text-neutral-500 cursor-not-allowed'
-                                        : 'dark:hover:bg-blue-600 hover:bg-blue-500 hover:text-white cursor-pointer'
+                                        : 'dark:hover:bg-blue-600 hover:bg-blue-400 hover:text-white cursor-pointer'
                                 }`}
                             >
                                 {item.title}

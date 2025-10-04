@@ -20,9 +20,10 @@ const Page = () => {
   };
 
   return (
-    <div>
-      <button onClick={handleAddWindow} className="p-2   bg-blue-500 text-white">
-        Add Window
+    <div className='p-4 py-10 flex flex-col items-end content-end '>
+      <button onClick={handleAddWindow} className="p-2 flex hover:bg-neutral-400/20 rounded-2xl hover:backdrop-blur-lg hover:filter px-4 flex-col items-center content-center text-white">
+        <img className='w-16 h-16' src="/info.png"></img>
+        <span className='text-xs font-medium text-white mt-2'>Welcome</span>
       </button>
       {windows.map((window: any,index:any) => (
         <Window key={index} {...window} />

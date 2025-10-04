@@ -7,7 +7,6 @@ html, body, * {
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-/* SF Pro Display Fonts */
 
 
 @font-face {
@@ -169,7 +168,6 @@ html, body, * {
   font-style: italic;
 }
 
-/* SF Pro Text Fonts */
 @font-face {
   font-family: "SF Pro";
   src: url("/fonts/sf-pro/SF-Pro-Text-Black.otf") format("opentype");

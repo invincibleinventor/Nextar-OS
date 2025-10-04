@@ -28,18 +28,18 @@ export const ThemeProvider = ({ children }: Props) => {
     const storedTheme = localStorage.getItem('theme');
     const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-    // Use stored theme if available; otherwise, use system preference
+  
     if (storedTheme) {
       setTheme(storedTheme);
     } else if (prefersDarkMode) {
       setTheme('dark');
     }
-  }, []); // Run only once on initial load
+  }, []);
 
   useEffect(() => {
     setAppTheme(theme);
     localStorage.setItem('theme', theme);
-  }, [theme]); // Apply theme whenever it changes
+  }, [theme]);
 
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
