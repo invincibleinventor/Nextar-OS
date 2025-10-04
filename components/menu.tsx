@@ -33,8 +33,8 @@ export default function Menu(props: any) {
                     props.onToggle(props.id);
                 }}
                 className={`${
-                    props.bold ? 'font-bold' : 'font-normal'
-                } font-sf px-2 rounded-md cursor-pointer duration-100 transition-all ease-in dark:hover:bg-white dark:hover:bg-opacity-20 hover:bg-white hover:bg-opacity-20 text-[13px] dark:text-white text-black ${
+                    props.bold ? 'font-bold' : 'font-medium'
+                } font-sf px-2 rounded-md cursor-pointer duration-100 transition-all ease-in dark:hover:bg-white dark:hover:bg-opacity-20 hover:bg-white hover:bg-opacity-20 text-[12px] dark:text-white text-black ${
                     props.visible
                         ? 'bg-white dark:bg-white dark:bg-opacity-20 bg-opacity-20'
                         : ''
@@ -55,20 +55,20 @@ export default function Menu(props: any) {
                 transition={{ type: 'spring', stiffness: 150, damping: 20 }}
                 style={{ zIndex: 10, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}
 
-                className="absolute left-0 sm:left-auto mt-2 min-w-56 w-max bg-white/20 dark:bg-neutral-800/20 rounded-lg flex flex-col space-y-[1px] p-[6px] shadow-lg z-[10]"
+                className="absolute left-0 sm:left-auto mt-2 min-w-56 w-max bg-white/20 dark:bg-neutral-800/20 rounded-xl flex flex-col space-y-[1px] p-[6px] shadow-lg z-[10]"
             >
             
                     {props.data.map((item: any, idx: number) =>
                         item.separator ? (
-                            <div key={`sep-${idx}`} className="py-1 px-1">
-                                <div className="dark:bg-neutral-500 dark:bg-opacity-50 bg-neutral-700 h-[0.1px]" />
+                            <div key={`sep-${idx}`} className="py-2 px-4">
+                                <div className="dark:bg-neutral-500 dark:bg-opacity-50 bg-neutral-700 " />
                             </div>
                         ) : (
                             <div
                                 key={item.title}
-                                className={`py-[2px] px-2 text-sm dark:text-white text-black rounded-md ${
+                                className={`py-[4px] px-4 text-[13px] font-medium dark:text-white text-black rounded-lg ${
                                     item.disabled
-                                        ? 'text-neutral-700 dark:text-neutral-400 cursor-not-allowed'
+                                        ? 'text-neutral-700 dark:text-neutral-500 cursor-not-allowed'
                                         : 'dark:hover:bg-blue-600 hover:bg-blue-500 hover:text-white cursor-pointer'
                                 }`}
                             >
