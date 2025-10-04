@@ -1,9 +1,12 @@
+
 import type { Metadata } from 'next';
 import './globals.css';
 import Panel from '@/components/panel';
 import Dock from '@/components/Dock';
 import { WindowProvider } from '@/components/WindowContext';
 import { ThemeProvider } from '@/components/ThemeContext';
+
+
 
 export const metadata: Metadata = {
   title: 'Create Next App',
@@ -13,10 +16,12 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider>
-    <html lang="en">
+    <html className='' lang="en">
       <body className="font-sf w-screen h-screen overflow-hidden  antialiased">
         <WindowProvider>
-          <div className="relative h-screen w-screen bg-[url('/bg.jpg')] dark:bg-[url('/bg-dark.jpg')] bg-center bg-cover overflow-hidden">
+          <div className="relative bg-cover bg-no-repeat bg-[url('/bg-dark.jpg')] h-screen w-screen overflow-hidden transition-colors duration-500">
+            {/* Animated wallpaper video background */}
+           
             <Panel />
             <main className="absolute cursor-fancy w-full h-full inset-0 z-0">{children}</main>
             <Dock />

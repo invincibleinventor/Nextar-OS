@@ -18,17 +18,15 @@ export const WindowProvider = ({ children }: any) => {
     setWindows((prevWindows) => {
       // Remove the window with the given ID
       const updatedWindows = prevWindows.filter((window) => window.id !== id);
-      
       // If no windows are left, clear the active window
       if (updatedWindows.length === 0) {
         setActiveWindow(null);
       } else {
-        // If the active window is the one being closed, set the next window as active
+        // If the active window is the one being closed, set the next window as active, but do NOT change its position/size
         if (activeWindow === id) {
-          setActiveWindow(updatedWindows[0]?.id || null);
+          setActiveWindow(updatedWindows[updatedWindows.length - 1]?.id || null);
         }
       }
-  
       return updatedWindows;
     });
   };

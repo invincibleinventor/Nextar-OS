@@ -20,7 +20,7 @@
       componentName: 'Finder',
       additionalData: {},
       multiwindow: true,
-      titlebarblurred: false,
+      titlebarblurred: true,
       pinned: true,
     },
     {
