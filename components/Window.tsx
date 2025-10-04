@@ -1,4 +1,7 @@
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
+
 'use client'
 import React, { useState, useEffect, useRef, memo } from 'react';
 import { useWindows } from './WindowContext';
