@@ -12,8 +12,8 @@ const Page = () => {
 
     const newWindow = {
       id: Date.now(),
-      appName: 'Welcome',
-      component: apps.find((app) => app.appName === 'Welcome')?.componentName,
+      appName: 'XCode',
+      component: apps.find((app) => app.appName === 'XCode')?.componentName,
       props: {},
     };
     addWindow(newWindow);
@@ -22,8 +22,8 @@ const Page = () => {
   return (
     <div className='p-4 py-10 flex flex-col items-end content-end '>
       <button onClick={handleAddWindow} className="p-2 flex hover:bg-neutral-400/20 rounded-2xl hover:backdrop-blur-lg hover:filter px-4 flex-col items-center content-center text-white">
-        <img className='w-16 h-16' src="/info.png"></img>
-        <span className='text-xs font-medium text-white mt-2'>Welcome</span>
+        <img className='w-16 h-16' src="/code.png"></img>
+        <span className='text-xs font-medium text-white mt-2'>XCode</span>
       </button>
       {windows.map((window: any,index:any) => (
         <Window key={index} {...window} />

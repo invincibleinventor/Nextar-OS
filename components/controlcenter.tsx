@@ -97,7 +97,7 @@ export default function Control(){
       </div>
 </div>
 <div className='px-5 py-4 backdrop-blur-lg rounded-3xl border-[0.1px] border-neutral-400 dark:border-neutral-500 bg-white/20 dark:bg-black/10  '>
-<p className="text-xs font-medium dark:text-white text-neutral-800 mb-2">Display</p>
+<p className="text-xs font-semibold dark:text-white text-black mb-2">Display</p>
       <div className="relative  rounded-full flex items-center h-7">
         <div className="absolute left-0 w-6 h-6 flex items-center justify-center rounded-full  ">
           <BsSunFill size={16} className="text-white" />
@@ -128,7 +128,7 @@ export default function Control(){
   <div className='px-5 py-4 backdrop-blur-lg border-[0.1px] border-neutral-400 dark:border-neutral-500 rounded-3xl bg-white/20 dark:bg-black/10  '>
 
       <div>
-      <p className="text-xs font-medium dark:text-white text-neutral-800 mb-2">Sound</p>
+      <p className="text-xs font-semibold dark:text-white text-black mb-2">Sound</p>
       <div className="relative rounded-full flex items-center h-7">
         <div className="absolute left-0 w-6 h-6 flex items-center justify-center rounded-full ">
           <BsFillVolumeUpFill size={16} className="text-white" />
@@ -167,7 +167,7 @@ export default function Control(){
           <FiBatteryCharging size={20} className="text-neutral-800 dark:text-white" />
           <div className='flex flex-col'>
 
-          <p className="text-[11px] font-normal dark:text-neutral-300 text-neutral-700">Battery</p>
+          <p className="text-[11px] font-normal dark:text-neutral-300 text-black">Battery</p>
           <p className="text-[12px] font-semibold dark:text-neutral-200 text-neutral-800">74%</p>
 
           </div>

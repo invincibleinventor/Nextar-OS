@@ -69,7 +69,7 @@ export default function Menu(props: any) {
                                 className={`py-[4px] px-4 text-[13px] font-medium dark:text-white text-black rounded-lg ${
                                     item.disabled
                                         ? 'text-neutral-700 dark:text-neutral-500 cursor-not-allowed'
-                                        : 'dark:hover:bg-blue-600 hover:bg-blue-400 hover:text-white cursor-pointer'
+                                        : 'dark:hover:bg-blue-600 hover:bg-blue-500 hover:text-white cursor-pointer'
                                 }`}
                             >
                                 {item.title}
