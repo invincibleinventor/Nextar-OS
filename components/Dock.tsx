@@ -101,7 +101,7 @@ const Dock = () => {
                 opacity: { duration: 0.3, ease: 'easeInOut' },
                 scale: { type: 'spring', stiffness: 300, damping: 20 },
               }}
-              onClick={e => e.stopPropagation()}
+              onClick={(e:any) => e.stopPropagation()}
             >
               <div className='mx-auto relative'>
                 <svg xmlns="http://www.w3.org/2000/svg" className='absolute w-4 text-black dark:text-neutral-400 left-4 h-4 top-0 bottom-0 my-auto' width="32" height="32" viewBox="0 0 32 32"><path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m5 27l7.5-7.5M28 13a9 9 0 1 1-18 0a9 9 0 0 1 18 0"/></svg>

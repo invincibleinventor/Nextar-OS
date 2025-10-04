@@ -100,6 +100,7 @@ const Window = ({ id, appName, title, component, props, isMinimized, isMaximized
     let startX = 0;
     let startY = 0;
     let prevSize = size;
+    let prevPosition = position;
 
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
