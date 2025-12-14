@@ -1,15 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-import { FaWifi, FaMoon, FaBluetoothB, FaSun } from 'react-icons/fa'
+import { FaWifi, FaMoon, FaBluetooth, FaSun, FaBluetoothB } from 'react-icons/fa'
 import { BsFillVolumeUpFill, BsSunFill } from 'react-icons/bs'
 import { FiBatteryCharging } from 'react-icons/fi'
 import { IoPlay, IoWifi, IoBatteryFull } from 'react-icons/io5'
 import { BiSignal5 } from "react-icons/bi";
 import { FaTowerBroadcast } from 'react-icons/fa6'
-import { usetheme } from './ThemeContext'
+import { useTheme } from './ThemeContext'
 import { motion, AnimatePresence } from 'framer-motion'
-import { usedevice } from './DeviceContext'
+import { useDevice } from './DeviceContext'
 
 interface ControlProps {
   isOpen?: boolean;
@@ -21,8 +21,8 @@ export default function Control({ isOpen, onClose }: ControlProps) {
   const [brightness, setbrightness] = useState(50)
   const [volume, setvolume] = useState(100)
   const [visible, setvisible] = useState(false)
-  const { theme, toggletheme } = usetheme()
-  const { ismobile } = usedevice()
+  const { theme, toggletheme } = useTheme()
+  const { ismobile } = useDevice()
 
   const effectivevisible = isOpen !== undefined ? isOpen : visible;
   const handletoggle = () => {

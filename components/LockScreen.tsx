@@ -1,17 +1,20 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { usedevice } from './DeviceContext';
+import { useDevice } from './DeviceContext';
 import { IoMdCamera, IoMdFlashlight } from "react-icons/io";
-import { usenotifications } from './NotificationContext';
+import { useNotifications } from './NotificationContext';
 
 export default function LockScreen() {
-    const { osstate, setosstate, ismobile } = usedevice();
+    const { osstate, setosstate, ismobile } = useDevice();
     const [password, setpassword] = useState('');
+    const [error, seterror] = useState(false);
+    const [hint, sethint] = useState(false);
+    const inputref = useRef<HTMLInputElement>(null);
     const [shaking, setshaking] = useState(false);
     const [time, settime] = useState(new Date());
     const [dragy, setdragy] = useState(0);
-    const { notifications } = usenotifications();
+    const { notifications } = useNotifications();
 
     useEffect(() => {
         const timer = setInterval(() => settime(new Date()), 1000);

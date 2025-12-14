@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { usenotifications } from './NotificationContext';
+import { useNotifications } from './NotificationContext';
 
 interface NotificationCenterProps {
     isOpen: boolean;
@@ -9,7 +9,7 @@ interface NotificationCenterProps {
 }
 
 export default function NotificationCenter({ isOpen, onClose }: NotificationCenterProps) {
-    const { notifications, clearnotification, handlenotificationclick } = usenotifications();
+    const { notifications, clearnotification, handlenotificationclick } = useNotifications();
 
     const formattime = () => {
         const date = new Date();

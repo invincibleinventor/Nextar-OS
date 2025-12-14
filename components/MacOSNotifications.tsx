@@ -1,11 +1,11 @@
 'use client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { usenotifications } from './NotificationContext';
-import { usedevice } from './DeviceContext';
+import { useNotifications } from './NotificationContext';
+import { useDevice } from './DeviceContext';
 
 export default function MacOSNotifications({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
-    const { handlenotificationclick, notifications, clearnotification, markasviewed } = usenotifications();
-    const { ismobile, osstate } = usedevice();
+    const { handlenotificationclick, notifications, clearnotification, markasviewed } = useNotifications();
+    const { ismobile, osstate } = useDevice();
 
     if (ismobile || osstate !== 'unlocked') return null;
 

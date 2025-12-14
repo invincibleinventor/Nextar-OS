@@ -6,11 +6,11 @@ import { useWindows } from './WindowContext';
 import { menus, titleMenu, appleMenu } from './menus';
 import Control from './controlcenter';
 import Logo from './applelogo';
-import { usedevice } from './DeviceContext';
+import { useDevice } from './DeviceContext';
 
 export default function Panel({ ontogglenotifications }: { ontogglenotifications?: () => void }) {
     const { activewindow, windows } = useWindows();
-    const { setosstate } = usedevice();
+    const { setosstate } = useDevice();
 
     const activeappname =
         windows.find((window: any) => window.id === activewindow)?.appName || 'Finder';

@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, memo } from 'react';
 import { useWindows } from './WindowContext';
 import { apps } from './app';
 import { motion } from 'framer-motion';
-import { usedevice } from './DeviceContext';
+import { useDevice } from './DeviceContext';
 
 const panelheight = 35;
 const dockheight = 75;
@@ -56,7 +56,7 @@ MemoizedDynamicComponent.displayName = 'MemoizedDynamicComponent';
 const Window = ({ id, appName, title, component, props, isMinimized, isMaximized, shouldBlur = true, isSystemGestureActive = false }: any) => {
 
   const { removewindow, updatewindow, activewindow, setactivewindow, windows } = useWindows();
-  const { ismobile } = usedevice();
+  const { ismobile } = useDevice();
   const app = apps.find((app) => app.appName === appName);
 
   const [position, setposition] = useState(() => {

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useWindows } from '@/components/WindowContext';
 import Window from '@/components/Window';
 import { apps } from '@/components/app'
-import { usedevice } from '../components/DeviceContext';
+import { useDevice } from '../components/DeviceContext';
 import Panel from '@/components/panel';
 import Dock from '@/components/Dock';
 import BootScreen from '@/components/BootScreen';
@@ -16,13 +16,13 @@ import { motion } from 'framer-motion';
 import { BiSignal5 } from "react-icons/bi";
 
 import NotificationCenter from '@/components/NotificationCenter';
-import { usenotifications } from '@/components/NotificationContext';
+import { useNotifications } from '@/components/NotificationContext';
 import MacOSNotifications from '@/components/MacOSNotifications';
 
 const Page = () => {
   const { windows, addwindow, setwindows } = useWindows();
-  const { osstate, ismobile } = usedevice();
-  const { } = usenotifications();
+  const { osstate, ismobile } = useDevice();
+  const { } = useNotifications();
   const [showcontrolcenter, setshowcontrolcenter] = useState(false);
   const [shownotificationcenter, setshownotificationcenter] = useState(false);
   const [showrecentapps, setshowrecentapps] = useState(false);
