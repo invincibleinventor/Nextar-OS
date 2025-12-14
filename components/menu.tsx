@@ -7,18 +7,18 @@ export default function Menu(props: any) {
     const ref = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        const handleClickOutside = (e: MouseEvent) => {
+        const handleclickoutside = (e: MouseEvent) => {
             if (ref.current && !ref.current.contains(e.target as Node)) {
                 props.onToggle(null);
             }
         };
 
         if (props.visible) {
-            document.addEventListener('mousedown', handleClickOutside);
+            document.addEventListener('mousedown', handleclickoutside);
         }
 
         return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('mousedown', handleclickoutside);
         };
     }, [props.visible]);
 
@@ -32,13 +32,11 @@ export default function Menu(props: any) {
                     e.stopPropagation();
                     props.onToggle(props.id);
                 }}
-                className={`${
-                    props.bold ? 'font-bold' : 'font-medium'
-                } font-sf px-2 rounded-md cursor-pointer duration-100 transition-all ease-in dark:hover:bg-white dark:hover:bg-opacity-20 hover:bg-white hover:bg-opacity-20 text-[12px] dark:text-white text-black ${
-                    props.visible
+                className={`${props.bold ? 'font-bold' : 'font-medium'
+                    } font-sf px-3 rounded-md cursor-pointer duration-100 transition-all ease-in dark:hover:bg-white dark:hover:bg-opacity-20 hover:bg-white hover:bg-opacity-20 text-[14px] dark:text-white text-black ${props.visible
                         ? 'bg-white dark:bg-white dark:bg-opacity-20 bg-opacity-20'
                         : ''
-                }`}
+                    }`}
                 whileHover={{ scale: 1 }}
                 transition={{ type: 'spring', stiffness: 300, damping: 10 }}
             >
@@ -47,17 +45,17 @@ export default function Menu(props: any) {
 
             {props.visible && (
                 <motion.div
-                ref={ref}
-                id="menudropdown"
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ type: 'spring', stiffness: 150, damping: 20 }}
-                style={{ zIndex: 10, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}
+                    ref={ref}
+                    id="menudropdown"
+                    initial={{ opacity: 0, scale: 0.9, filter: "blur(5px)", transformOrigin: "top left" }}
+                    animate={{ opacity: 1, scale: 1, filter: "blur(0px)", transformOrigin: "top left" }}
+                    exit={{ opacity: 0, scale: 0.9, filter: "blur(5px)", transformOrigin: "top left" }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                    style={{ zIndex: 10, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}
 
-                className="absolute left-0 sm:left-auto mt-2 min-w-56 w-max bg-white/20 dark:bg-neutral-900/20 rounded-xl flex flex-col space-y-[1px] p-[6px]  border-[0.01px] border-neutral-600 dark:border-neutral-500 z-[10]"
-            >
-            
+                    className="absolute left-0 sm:left-auto mt-2 min-w-56 w-max bg-white/20 dark:bg-neutral-900/20 rounded-xl flex flex-col space-y-[1px] p-[6px]  border-[0.01px] border-neutral-600 dark:border-neutral-500 z-[10]"
+                >
+
                     {props.data.map((item: any, idx: number) =>
                         item.separator ? (
                             <div key={`sep-${idx}`} className="py-2 px-4">
@@ -66,11 +64,17 @@ export default function Menu(props: any) {
                         ) : (
                             <div
                                 key={item.title}
-                                className={`py-[4px] px-4 text-[13px] font-medium dark:text-white text-black rounded-lg ${
-                                    item.disabled
-                                        ? 'text-neutral-700 dark:text-neutral-500 cursor-not-allowed'
-                                        : 'dark:hover:bg-blue-600 hover:bg-blue-500 hover:text-white cursor-pointer'
-                                }`}
+                                className={`py-[4px] px-4 text-[15px] font-medium dark:text-white text-black rounded-lg ${item.disabled
+                                    ? 'text-neutral-700 dark:text-neutral-500 cursor-not-allowed'
+                                    : 'dark:hover:bg-blue-600 hover:bg-blue-500 hover:text-white cursor-pointer'
+                                    }`}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (!item.disabled && props.onAction) {
+                                        props.onAction(item.title);
+                                        props.onToggle(null);
+                                    }
+                                }}
                             >
                                 {item.title}
                             </div>

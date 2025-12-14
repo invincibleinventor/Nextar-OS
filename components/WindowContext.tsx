@@ -3,64 +3,62 @@ import React, { createContext, useState, useContext } from 'react';
 
 const WindowContext = createContext<any>(null);
 
-export const useWindows = () => useContext(WindowContext);
+export const usewindows = () => useContext(WindowContext);
 
 export const WindowProvider = ({ children }: any) => {
-  const [windows, setWindows] = useState<any[]>([]);
-  const [activeWindow, setActiveWindow] = useState<string | null>(null);
+  const [windows, setwindows] = useState<any[]>([]);
+  const [activewindow, setactivewindow] = useState<string | null>(null);
 
-  const addWindow = (newWindow: any) => {
-    setWindows((prevWindows) => {
-      return [...prevWindows, newWindow];
+  const addwindow = (newwindow: any) => {
+    setwindows((prevwindows) => {
+      if (typeof window !== 'undefined' && window.innerWidth < 768) {
+        const minimizedprev = prevwindows.map(w => ({ ...w, isMinimized: true }));
+        return [...minimizedprev, newwindow];
+      }
+      return [...prevwindows, newwindow];
     });
   };
-  const removeWindow = (id: string) => {
-    setWindows((prevWindows) => {
-      const idx = prevWindows.findIndex((w) => w.id === id);
-      const updatedWindows = prevWindows.filter((window) => window.id !== id);
-      if (updatedWindows.length === 0) {
-        setActiveWindow(null);
+  const removewindow = (id: string) => {
+    setwindows((prevwindows) => {
+      const idx = prevwindows.findIndex((w) => w.id === id);
+      const updatedwindows = prevwindows.filter((window) => window.id !== id);
+      if (updatedwindows.length === 0) {
+        setactivewindow(null);
       } else {
-        // If the closed window was active, set active to the previous window in stacking order
-        if (activeWindow === id) {
-          // Try to focus the window just below the closed one
-          const newIdx = Math.max(0, idx - 1);
-          setActiveWindow(updatedWindows[newIdx].id);
+        if (activewindow === id) {
+          const newidx = Math.max(0, idx - 1);
+          setactivewindow(updatedwindows[newidx].id);
         }
       }
-      return updatedWindows;
+      return updatedwindows;
     });
   };
-  
-  
-  // If the app's window is not active, bring it to front. If already active, toggle minimize.
-  const focusOrToggleWindow = (appName: string) => {
-    setWindows((prevWindows) => {
-      const appWindows = prevWindows.filter((win) => win.appName === appName);
-      if (appWindows.length === 0) return prevWindows;
-      const topmost = appWindows.find((win) => win.id === activeWindow);
+
+  const focusortogglewindow = (appname: string) => {
+    setwindows((prevwindows) => {
+      const appwindows = prevwindows.filter((win) => win.appName === appname);
+      if (appwindows.length === 0) return prevwindows;
+      const topmost = appwindows.find((win) => win.id === activewindow);
       if (topmost) {
-        // If already active, minimize
-        return prevWindows.map((win) =>
-          win.appName === appName ? { ...win, isMinimized: !win.isMinimized } : win
+        return prevwindows.map((win) =>
+          win.appName === appname ? { ...win, isMinimized: !win.isMinimized } : win
         );
       } else {
-        // Bring the first found window to front (setActiveWindow)
-        setActiveWindow(appWindows[0].id);
-        return prevWindows.map((win) =>
-          win.id === appWindows[0].id ? { ...win, isMinimized: false } : win
+        setactivewindow(appwindows[0].id);
+        return prevwindows.map((win) =>
+          win.id === appwindows[0].id ? { ...win, isMinimized: false } : win
         );
       }
     });
   };
-  const updateWindow = (id: string, updatedProps: any) => {
-    setWindows(
+  const updatewindow = (id: string, updatedprops: any) => {
+    setwindows(
       windows.map((window) =>
-        window.id === id ? { ...window, ...updatedProps } : window
+        window.id === id ? { ...window, ...updatedprops } : window
       )
     );
-    if (updatedProps.isMinimized === false) {
-      setActiveWindow(id);
+    if (updatedprops.isMinimized === false) {
+      setactivewindow(id);
     }
   };
 
@@ -68,12 +66,13 @@ export const WindowProvider = ({ children }: any) => {
     <WindowContext.Provider
       value={{
         windows,
-        addWindow,
-        removeWindow,
-        updateWindow,
-        activeWindow,
-        setActiveWindow,
-        focusOrToggleWindow,
+        addwindow,
+        removewindow,
+        updatewindow,
+        activewindow,
+        setactivewindow,
+        setwindows,
+        focusortogglewindow,
       }}
     >
       {children}

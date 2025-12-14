@@ -1,41 +1,45 @@
-
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
-
 'use client'
 import React, { useState, useEffect, useRef, memo } from 'react';
-import { useWindows } from './WindowContext';
+import { usewindows } from './WindowContext';
 import { apps } from './app';
 import { motion } from 'framer-motion';
+import { usedevice } from './DeviceContext';
 
-const PANEL_HEIGHT = 30;
-const DOCK_HEIGHT = 75;
-const ANIMATION_DURATION = 200;
-// eslint-disable-next-line react/display-name
+const panelheight = 35;
+const dockheight = 75;
+
+import dynamic from 'next/dynamic';
+
+const componentmap: { [key: string]: any } = {
+  'apps/Finder': dynamic(() => import('./apps/Finder')),
+  'apps/Settings': dynamic(() => import('./apps/Settings')),
+  'apps/Calendar': dynamic(() => import('./apps/Calendar')),
+  'apps/Safari': dynamic(() => import('./apps/Safari')),
+  'apps/Messages': dynamic(() => import('./apps/Messages')),
+  'apps/Photos': dynamic(() => import('./apps/Photos')),
+  'apps/Terminal': dynamic(() => import('./apps/Terminal')),
+  'apps/Launchpad': dynamic(() => import('./apps/Launchpad')),
+  'apps/News': dynamic(() => import('./apps/News')),
+
+  'AppStore': dynamic(() => import('./AppStore')),
+  'BalaDev': dynamic(() => import('./BalaDev')),
+  'Welcome': dynamic(() => import('./Welcome')),
+
+  'Mail': dynamic(() => import('./Mail')),
+  'Calculator': dynamic(() => import('./Calculator')),
+};
+
+
 const MemoizedDynamicComponent = memo(
-  ({ icon, component, appname, appProps, isFocused }: { icon:string, component: string; appname:string,appProps: any; isFocused: boolean }) => {
-    const [DynamicComponent, setDynamicComponent] = useState<any>(null);
-
-    useEffect(() => {
-      const loadComponent = async () => {
-        try {
-          const importedModule = await import(`../components/${component}`);
-          setDynamicComponent(() => importedModule.default || null);
-        } catch (err) {
-          console.log(err);
-          setDynamicComponent(null);
-        }
-      };
-
-      loadComponent();
-    }, [component]); 
+  ({ icon, component, appname, appProps, isFocused }: { icon: string, component: string; appname: string, appProps: any; isFocused: boolean }) => {
+    const DynamicComponent = componentmap[component];
 
     if (!DynamicComponent) {
       return (
         <div className="flex flex-row h-full w-full items-center content-center">
           <div className="flex flex-col space-y-5 font-sf mx-auto items-center content-center">
-            <img className="w-24 h-24" src={icon} />
-            <div className="text-sm dark:text-white">{appname} is being developed</div>
+            <img className="w-24 h-24" src={icon} alt={appname} />
+            <div className="text-sm dark:text-white">{appname} is coming soon</div>
           </div>
         </div>
       );
@@ -43,346 +47,354 @@ const MemoizedDynamicComponent = memo(
 
     return <DynamicComponent {...appProps} isFocused={isFocused} />;
   },
-  (prevProps, nextProps) => prevProps.isFocused === nextProps.isFocused
+  (prevprops, nextprops) => prevprops.isFocused === nextprops.isFocused
 );
+MemoizedDynamicComponent.displayName = 'MemoizedDynamicComponent';
 
 
 
-const Window = ({ id, appName, title, component, props, isMinimized, isMaximized }:any) => {
-  const { removeWindow, updateWindow, activeWindow, setActiveWindow, windows } = useWindows();
+const Window = ({ id, appName, title, component, props, isMinimized, isMaximized, shouldBlur = true, isSystemGestureActive = false }: any) => {
+
+  const { removewindow, updatewindow, activewindow, setactivewindow, windows } = usewindows();
+  const { ismobile } = usedevice();
   const app = apps.find((app) => app.appName === appName);
-  const [position, setPosition] = useState(() => {
+
+  const [position, setposition] = useState(() => {
     if (app && app.additionalData && app.additionalData.startLarge && typeof window !== 'undefined') {
-      const screenWidth = window.innerWidth;
-      const screenHeight = window.innerHeight;
-      const width = Math.round(screenWidth * 0.85);
-      const height = Math.round((screenHeight - PANEL_HEIGHT - DOCK_HEIGHT) * 0.85);
+      const screenwidth = window.innerWidth;
+      const screenheight = window.innerHeight;
+      const width = Math.round(screenwidth * 0.85);
+      const height = Math.round((screenheight - panelheight - dockheight) * 0.85);
       return {
-        top: PANEL_HEIGHT + Math.round(((screenHeight - PANEL_HEIGHT - DOCK_HEIGHT) - height) / 2),
-        left: Math.round((screenWidth - width) / 2),
+        top: panelheight + Math.round(((screenheight - panelheight - dockheight) - height) / 2),
+        left: Math.round((screenwidth - width) / 2),
       };
     }
     return { top: 100, left: 100 };
   });
-  const [size, setSize] = useState(() => {
+  const [size, setsize] = useState(() => {
     if (app && app.additionalData && app.additionalData.startLarge && typeof window !== 'undefined') {
-      const screenWidth = window.innerWidth;
-      const screenHeight = window.innerHeight;
+      const screenwidth = window.innerWidth;
+      const screenheight = window.innerHeight;
       return {
-        width: Math.round(screenWidth * 0.85),
-        height: Math.round((screenHeight - PANEL_HEIGHT - DOCK_HEIGHT) * 0.85),
+        width: Math.round(screenwidth * 0.85),
+        height: Math.round((screenheight - panelheight - dockheight) * 0.85),
       };
     }
     return { width: 400, height: 300 };
   });
-  const [previousState, setPreviousState] = useState({ position, size });
-  const [isDragging, setIsDragging] = useState(false);
-  const [isResizing, setIsResizing] = useState(false);
-  const windowRef = useRef(null);
+  const [previousstate, setpreviousstate] = useState({ position, size });
+  const [isdragging, setisdragging] = useState(false);
 
-  // Calculate zIndex so that the active window is always on top, even over maximized windows
-  const myIndex = windows ? windows.findIndex((w:any) => w.id === id) : 0;
-  const zIndex = activeWindow === id ? 1000 : 100 + myIndex;
-  
+  const windowref = useRef(null);
+
+  const myindex = windows ? windows.findIndex((w: any) => w.id === id) : 0;
+  const zindex = activewindow === id ? 1000 : 100 + myindex;
+
   useEffect(() => {
-    if (isMinimized) {
-      const { innerWidth: screenWidth, innerHeight: screenHeight } = window;
-      if(!isMaximized){
-      setPreviousState({
-        position,size
-      })
+    if (ismobile) {
+      setposition({ top: 44, left: 0 });
+      setsize({ width: window.innerWidth, height: window.innerHeight - 44 });
+      return;
     }
-      setPosition({
-        top: screenHeight ,
-        left: (screenWidth - size.width) / 2,
+    if (isMinimized) {
+      const { innerWidth: screenwidth, innerHeight: screenheight } = window;
+      if (!isMaximized) {
+        setpreviousstate({
+          position, size
+        })
+      }
+      setposition({
+        top: screenheight,
+        left: (screenwidth - size.width) / 2,
       });
     } else if (isMaximized) {
-      const { innerWidth: screenWidth, innerHeight: screenHeight } = window;
-      setPosition({ top: PANEL_HEIGHT, left: 0 });
-      setSize({
-        width: screenWidth,
-        height: screenHeight - PANEL_HEIGHT - DOCK_HEIGHT,
+      const { innerWidth: screenwidth, innerHeight: screenheight } = window;
+      setposition({ top: panelheight, left: 0 });
+      setsize({
+        width: screenwidth,
+        height: screenheight - panelheight - dockheight,
       });
     } else {
-      setPosition(previousState.position);
-      setSize(previousState.size);
+      setposition(previousstate.position);
+      setsize(previousstate.size);
     }
-  }, [isMinimized, isMaximized]);
-  const handleMaximize = () => {
+  }, [isMinimized, isMaximized, ismobile]);
+
+  const handlemaximize = () => {
     if (!isMaximized) {
-      setPreviousState({ position, size });
-      updateWindow(id, { isMaximized: true });
+      setpreviousstate({ position, size });
+      updatewindow(id, { isMaximized: true });
     } else {
-      updateWindow(id, { isMaximized: false });
-      setPosition(previousState.position);
-      setSize(previousState.size);
+      updatewindow(id, { isMaximized: false });
+      setposition(previousstate.position);
+      setsize(previousstate.size);
     }
   };
 
-  const handleDragStart = (e: any) => {
-    let dragStarted = false;
-    const wasMaximized = isMaximized;
-    let dragOffsetX = 0;
-    let dragOffsetY = 0;
-    let startX = 0;
-    let startY = 0;
-    let prevSize = size;
-    let prevPosition = position;
+  const handledragstart = (e: any) => {
+    let dragstarted = false;
+    const wasmaximized = isMaximized;
+    let dragoffsetx = 0;
+    let dragoffsety = 0;
+    let startx = 0;
+    let starty = 0;
+    let prevsize = size;
 
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    const clientx = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clienty = 'touches' in e ? e.touches[0].clientY : e.clientY;
 
-    if (wasMaximized) {
-      prevSize = previousState.size;
-      prevPosition = previousState.position;
-      dragOffsetX = prevSize.width / 2;
-      dragOffsetY = 20;
-      startX = clientX;
-      startY = clientY;
+    if (wasmaximized) {
+      prevsize = previousstate.size;
+      dragoffsetx = prevsize.width / 2;
+      dragoffsety = 20;
+      startx = clientx;
+      starty = clienty;
     } else {
-      startX = clientX;
-      startY = clientY;
-      dragOffsetX = startX - position.left;
-      dragOffsetY = startY - position.top;
+      startx = clientx;
+      starty = clienty;
+      dragoffsetx = startx - position.left;
+      dragoffsety = starty - position.top;
     }
 
-    let lastTop = wasMaximized ? PANEL_HEIGHT : position.top;
-    let maximizedOnDrag = false;
+    let lasttop = wasmaximized ? panelheight : position.top;
+    let maximizedondrag = false;
 
-    const onMouseMove = (moveEvent: any) => {
-      const moveX = 'touches' in moveEvent ? moveEvent.touches[0].clientX : moveEvent.clientX;
-      const moveY = 'touches' in moveEvent ? moveEvent.touches[0].clientY : moveEvent.clientY;
+    const onmousemove = (moveevent: any) => {
+      const movex = 'touches' in moveevent ? moveevent.touches[0].clientX : moveevent.clientX;
+      const movey = 'touches' in moveevent ? moveevent.touches[0].clientY : moveevent.clientY;
 
-      if (!dragStarted && wasMaximized && Math.abs(moveY - startY) > 3) {
-        dragStarted = true;
-        updateWindow(id, { isMaximized: false });
+      if (!dragstarted && wasmaximized && Math.abs(movey - starty) > 3) {
+        dragstarted = true;
+        updatewindow(id, { isMaximized: false });
         setTimeout(() => {
-          setSize(prevSize);
-          setPosition({
-            top: moveY - dragOffsetY,
-            left: moveX - dragOffsetX,
+          setsize(prevsize);
+          setposition({
+            top: movey - dragoffsety,
+            left: movex - dragoffsetx,
           });
         }, 0);
-        setIsDragging(true);
-      } else if (!wasMaximized) {
-        setIsDragging(true);
+        setisdragging(true);
+      } else if (!wasmaximized) {
+        setisdragging(true);
       }
 
-      if (!dragStarted && wasMaximized) return;
+      if (!dragstarted && wasmaximized) return;
 
-      const { innerWidth: screenWidth, innerHeight: screenHeight } = window;
-      let newLeft = moveX - dragOffsetX;
-      let newTop = moveY - dragOffsetY;
+      const { innerWidth: screenwidth, innerHeight: screenheight } = window;
+      let newleft = movex - dragoffsetx;
+      let newtop = movey - dragoffsety;
 
-      if (!wasMaximized && newTop <= PANEL_HEIGHT + 5) {
-        maximizedOnDrag = true;
+      if (!wasmaximized && newtop <= panelheight + 5) {
+        maximizedondrag = true;
         setTimeout(() => {
-          updateWindow(id, { isMaximized: true });
+          updatewindow(id, { isMaximized: true });
         }, 80);
       }
 
-      newLeft = Math.max(-size.width / 2.0, Math.min(screenWidth - size.width / 2.0, newLeft));
-      newTop = Math.max(PANEL_HEIGHT, Math.min(screenHeight - DOCK_HEIGHT - size.height / 4.0, newTop));
+      newleft = Math.max(-size.width / 2.0, Math.min(screenwidth - size.width / 2.0, newleft));
+      newtop = Math.max(panelheight, Math.min(screenheight - dockheight - size.height / 4.0, newtop));
 
-      setPosition({
-        top: newTop,
-        left: newLeft,
+      setposition({
+        top: newtop,
+        left: newleft,
       });
-      lastTop = newTop;
+      lasttop = newtop;
     };
 
-    const onMouseUp = () => {
-      setIsDragging(false);
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-      document.removeEventListener('touchmove', onMouseMove);
-      document.removeEventListener('touchend', onMouseUp);
-      if (!wasMaximized && lastTop <= PANEL_HEIGHT + 5 && !maximizedOnDrag) {
-        updateWindow(id, { isMaximized: true });
+    const onmouseup = () => {
+      setisdragging(false);
+      document.removeEventListener('mousemove', onmousemove);
+      document.removeEventListener('mouseup', onmouseup);
+      document.removeEventListener('touchmove', onmousemove);
+      document.removeEventListener('touchend', onmouseup);
+      if (!wasmaximized && lasttop <= panelheight + 5 && !maximizedondrag) {
+        updatewindow(id, { isMaximized: true });
       }
     };
 
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
-    document.addEventListener('touchmove', onMouseMove);
-    document.addEventListener('touchend', onMouseUp);
+    document.addEventListener('mousemove', onmousemove);
+    document.addEventListener('mouseup', onmouseup);
+    document.addEventListener('touchmove', onmousemove);
+    document.addEventListener('touchend', onmouseup);
   };
 
-  const handleResizeStart = (e:any, direction:any) => {
+  const handleresizestart = (e: any, direction: any) => {
     e.preventDefault();
     e.stopPropagation();
 
-    const startX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const startY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-    const startWidth = size.width;
-    const startHeight = size.height;
-    const startTop = position.top;
-    const startLeft = position.left;
+    const startx = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const starty = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    const startwidth = size.width;
+    const startheight = size.height;
+    const starttop = position.top;
+    const startleft = position.left;
 
-    setIsResizing(true);
+    const onmousemove = (moveevent: any) => {
+      const clientx = 'touches' in moveevent ? moveevent.touches[0].clientX : moveevent.clientX;
+      const clienty = 'touches' in moveevent ? moveevent.touches[0].clientY : moveevent.clientY;
 
-    const onMouseMove = (moveEvent:any) => {
-      const clientX = 'touches' in moveEvent ? moveEvent.touches[0].clientX : moveEvent.clientX;
-      const clientY = 'touches' in moveEvent ? moveEvent.touches[0].clientY : moveEvent.clientY;
+      let newwidth = startwidth;
+      let newheight = startheight;
+      let newtop = starttop;
+      let newleft = startleft;
 
-      let newWidth = startWidth;
-      let newHeight = startHeight;
-      let newTop = startTop;
-      let newLeft = startLeft;
-
-      if (direction.includes('right')) newWidth = Math.max(300, startWidth + (clientX - startX));
+      if (direction.includes('right')) newwidth = Math.max(300, startwidth + (clientx - startx));
       if (direction.includes('bottom')) {
-        newHeight = Math.max(100, startHeight + (clientY - startY));
-        const { innerHeight: screenHeight } = window;
-        if (newTop + newHeight > screenHeight - DOCK_HEIGHT) {
-          newHeight = screenHeight - DOCK_HEIGHT - newTop;
+        newheight = Math.max(100, startheight + (clienty - starty));
+        const { innerHeight: screenheight } = window;
+        if (newtop + newheight > screenheight - dockheight) {
+          newheight = screenheight - dockheight - newtop;
         }
       }
       if (direction.includes('left')) {
-        newWidth = Math.max(300, startWidth - (clientX - startX));
-        newLeft = startLeft + (clientX - startX);
+        newwidth = Math.max(300, startwidth - (clientx - startx));
+        newleft = startleft + (clientx - startx);
       }
       if (direction.includes('top')) {
-        newHeight = Math.max(100, startHeight - (clientY - startY));
-        newTop = startTop + (clientY - startY);
-        if (newTop < PANEL_HEIGHT) {
-          newTop = PANEL_HEIGHT;
-          newHeight = startHeight - (newTop - startTop);
+        newheight = Math.max(100, startheight - (clienty - starty));
+        newtop = starttop + (clienty - starty);
+        if (newtop < panelheight) {
+          newtop = panelheight;
+          newheight = startheight - (newtop - starttop);
         }
       }
 
-      setSize({
-        width: newWidth,
-        height: newHeight,
+      setsize({
+        width: newwidth,
+        height: newheight,
       });
-      setPosition({
-        top: newTop,
-        left: newLeft,
+      setposition({
+        top: newtop,
+        left: newleft,
       });
     };
 
-    const onMouseUp = () => {
-      setIsResizing(false);
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-      document.removeEventListener('touchmove', onMouseMove);
-      document.removeEventListener('touchend', onMouseUp);
+    const onmouseup = () => {
+      document.removeEventListener('mousemove', onmousemove);
+      document.removeEventListener('mouseup', onmouseup);
+      document.removeEventListener('touchmove', onmousemove);
+      document.removeEventListener('touchend', onmouseup);
     };
 
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
-    document.addEventListener('touchmove', onMouseMove);
-    document.addEventListener('touchend', onMouseUp);
+    document.addEventListener('mousemove', onmousemove);
+    document.addEventListener('mouseup', onmouseup);
+    document.addEventListener('touchmove', onmousemove);
+    document.addEventListener('touchend', onmouseup);
   };
 
   return (
     <motion.div
-      ref={windowRef}
-      initial= {{ opacity: 0, y: 0 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit = {{opacity: 0,y:-10}}
-      
-      transition={{ duration: 0.1, ease: 'easeOut', }}
-            className={`${app?.titlebarblurred
-            ? 'dark:bg-opacity-40 absolute bg-opacity-80  dark:bg-black bg-white backdrop-blur-lg'
-            : 'dark:bg-neutral-900 bg-white backdrop-blur-sm'} absolute ${isMaximized ? '' : 'rounded-2xl'} ${isDragging ? 'cursor-grabbing' : 'cursor-default'}`}
+      ref={windowref}
+      initial={{ opacity: 0, y: 0 }}
+      animate={{ opacity: isMinimized ? 0 : 1, y: isMinimized ? 100 : 0, scale: isMinimized ? 0.8 : 1 }}
+      exit={{ opacity: 0, y: -10 }}
+
+      transition={{ type: "spring", stiffness: 250, damping: 25 }}
+      className={`border dark:border-neutral-600 border-neutral-500 overflow-hidden flex flex-col ${app?.titlebarblurred
+        ? `dark:bg-opacity-40 absolute bg-opacity-80  dark:bg-black bg-white ${shouldBlur ? 'backdrop-blur-lg' : ''}`
+        : `dark:bg-neutral-900 bg-white ${shouldBlur ? 'backdrop-blur-sm' : ''}`}  absolute ${isMaximized || ismobile ? '' : 'rounded-3xl'} ${isdragging ? 'cursor-grabbing' : 'cursor-default'} ${isMinimized ? 'pointer-events-none' : 'pointer-events-auto'}`}
       style={{
         top: position.top,
         left: isMaximized ? 0 : position.left,
         width: isMaximized ? '100vw' : size.width,
         height: size.height,
-        zIndex,
+        zIndex: zindex,
+        display: isMinimized ? 'none' : 'flex',
         willChange: 'transform',
-        transition: isDragging || isResizing ? 'none' : `all ${ANIMATION_DURATION}ms ease-in-out`
       }}
-      onMouseDown={() => setActiveWindow(id)}
+      onMouseDown={() => setactivewindow(id)}
     >
-      <div
-        className={`cursor-grab  ${isMaximized ? '' : 'rounded-t-xl'} ${
-          app?.titlebarblurred
+      {!ismobile && (
+        <div
+          className={`cursor-grab  ${isMaximized ? '' : 'rounded-t-3xl'} ${app?.titlebarblurred
             ? ' relative '
-            : 'dark:bg-neutral-900 bg-white relative backdrop-blur-sm'
-        } px-5 py-[16px] flex justify-between`}
-        onDoubleClick={handleMaximize}
-        onMouseDown={(e) => {
-          if (!(e.target as Element).closest('#buttons')) handleDragStart(e);
-        }}
-        onTouchStart={(e) => {
-          if (!(e.target as Element).closest('#buttons')) handleDragStart(e);
-        }}
+            : 'dark:bg-neutral-800 bg-white relative backdrop-blur-sm'
+            } px-5 py-[16px] flex justify-between`}
+          onDoubleClick={handlemaximize}
+          onMouseDown={(e) => {
+            if (!(e.target as Element).closest('#buttons')) handledragstart(e);
+          }}
+          onTouchStart={(e) => {
+            if (!(e.target as Element).closest('#buttons')) handledragstart(e);
+          }}
+        >
+          <div id="buttons" className="flex flex-row items-center content-center space-x-[10px]">
+            <button
+              className={`w-[14px] h-[14px] rounded-full ${activewindow == id ? 'bg-red-600' : 'bg-neutral-400'} window-button`}
+              onClick={(e) => {
+                e.stopPropagation();
+                removewindow(id);
+              }}
+            ></button>
+
+            <button
+              className={`${activewindow == id ? app?.titlebarblurred ? 'bg-yellow-500' : 'bg-yellow-400' : 'bg-neutral-400'} w-[14px] h-[14px] rounded-full  window-button`}
+              onClick={(e) => {
+                e.stopPropagation();
+                updatewindow(id, { isMinimized: true });
+              }}
+            ></button>
+            <button
+              className={`w-[14px] h-[14px] rounded-full ${activewindow == id ? 'bg-green-600' : 'bg-neutral-400'} window-button`}
+              onClick={(e) => {
+                e.stopPropagation();
+                handlemaximize();
+              }}
+            ></button>
+          </div>
+          <div className="w-max max-w-72  absolute mx-auto dark:text-white right-0 left-0 bottom-[12px] font-sf font-semibold text-[15px] text-center">
+            {title}
+          </div>
+        </div>
+      )}
+
+      <div
+        className={`w-full dark:border-neutral-600 border-neutral-500 overflow-hidden flex-1 h-full ${isMaximized || ismobile ? '' : 'rounded-b-3xl'} ${app?.titlebarblurred ? '' : 'bg-white  dark:bg-neutral-800'} ${isSystemGestureActive ? 'pointer-events-none' : 'pointer-events-auto'}`}
       >
-        <div id="buttons" className="flex flex-row items-center content-center space-x-[10px]">
-          <button
-            className={`w-[14px] h-[14px] rounded-full ${activeWindow==id?'bg-red-600':'bg-neutral-400'} window-button`}
-            onClick={(e) => {
-              e.stopPropagation();
-              removeWindow(id);
-            }}
-          ></button>
-         
-          <button
-            className={`${activeWindow==id?app?.titlebarblurred?'bg-yellow-500':'bg-yellow-400':'bg-neutral-400'} w-[14px] h-[14px] rounded-full  window-button`}
-            onClick={(e) => {
-              e.stopPropagation();
-              updateWindow(id, { isMinimized: true });
-            }}
-          ></button>
-           <button
-            className={`w-[14px] h-[14px] rounded-full ${activeWindow==id?'bg-green-600':'bg-neutral-400'} window-button`}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleMaximize();
-            }}
-          ></button>
-        </div>
-        <div className="w-max max-w-72  absolute mx-auto dark:text-white right-0 left-0 bottom-[12px] font-sf font-semibold text-[14px] text-center">
-          {title}
-        </div>
+
+        <MemoizedDynamicComponent appname={app ? app.appName : ''} icon={app ? app.icon : ''} component={app?.componentName ? app.componentName : component} appProps={props} isFocused={activewindow === id} />
       </div>
 
-      <div
-        className={` w-full overflow-hidden   ${
-          isMaximized ? '' : 'rounded-b-2xl'
-        } ${app?.titlebarblurred?'h-[calc((100%))]':'bg-white h-[calc((100%-80px))] dark:bg-neutral-900'}`}
-      >
-      
-<MemoizedDynamicComponent appname={app?app.appName:''} icon={app?app.icon:''} component={app?.componentName?app.componentName:component} appProps={props} isFocused={activeWindow === id} />
-</div>
-
-      <div
-        className="absolute w-full h-3 -top-[3px] cursor-ns-resize"
-        onMouseDown={(e) => handleResizeStart(e, 'top')}
-      />
-      <div
-        className="absolute w-full  h-3 cursor-ns-resize"
-        onMouseDown={(e) => handleResizeStart(e, 'bottom')}
-      />
-     <div
-  className="absolute top-0 left-0 w-[2px] h-full cursor-ew-resize"
-  onMouseDown={(e) => handleResizeStart(e, 'left')}
-></div>
-<div
-  className="absolute top-0 right-0 w-[2px] h-full cursor-ew-resize"
-  onMouseDown={(e) => handleResizeStart(e, 'right')}
-></div>
-      <div
-        className="absolute w-3 h-3 -left-[3px] -top-[3px] cursor-nwse-resize"
-        onMouseDown={(e) => handleResizeStart(e, 'top-left')}
-      />
-      <div
-        className="absolute w-3 h-3 -right-[3px] -top-[3px] cursor-nesw-resize"
-        onMouseDown={(e) => handleResizeStart(e, 'top-right')}
-      />
-      <div
-        className="absolute w-3 h-3 -left-[3px]  cursor-nesw-resize"
-        onMouseDown={(e) => handleResizeStart(e, 'bottom-left')}
-      />
-      <div
-        className="absolute w-3 h-3 -right-[3px] cursor-nwse-resize"
-        onMouseDown={(e) => handleResizeStart(e, 'bottom-right')}
-      />
-    </motion.div>
+      {!ismobile && (
+        <>
+          <div
+            className="absolute w-full h-3 -top-[3px] cursor-ns-resize"
+            onMouseDown={(e) => handleresizestart(e, 'top')}
+          />
+          <div
+            className="absolute w-full h-3 -bottom-[3px] cursor-ns-resize"
+            onMouseDown={(e) => handleresizestart(e, 'bottom')}
+          />
+          <div
+            className="absolute top-0 left-0 w-[2px] h-full cursor-ew-resize"
+            onMouseDown={(e) => handleresizestart(e, 'left')}
+          ></div>
+          <div
+            className="absolute top-0 right-0 w-[2px] h-full cursor-ew-resize"
+            onMouseDown={(e) => handleresizestart(e, 'right')}
+          ></div>
+          <div
+            className="absolute w-3 h-3 -left-[3px] -top-[3px] cursor-nwse-resize"
+            onMouseDown={(e) => handleresizestart(e, 'top-left')}
+          />
+          <div
+            className="absolute w-3 h-3 -right-[3px] -top-[3px] cursor-nesw-resize"
+            onMouseDown={(e) => handleresizestart(e, 'top-right')}
+          />
+          <div
+            className="absolute w-3 h-3 -left-[3px] -bottom-[3px] cursor-nesw-resize"
+            onMouseDown={(e) => handleresizestart(e, 'bottom-left')}
+          />
+          <div
+            className="absolute w-3 h-3 -right-[3px] -bottom-[3px] cursor-nwse-resize"
+            onMouseDown={(e) => handleresizestart(e, 'bottom-right')}
+          />
+        </>
+      )}
+    </motion.div >
   );
 };
 
+Window.displayName = 'Window';
 export default Window;

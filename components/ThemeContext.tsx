@@ -7,47 +7,48 @@ interface Props {
 
 const ThemeContext = createContext({
   theme: 'light',
-  toggleTheme: () => {},
+  toggletheme: () => { },
 });
 
-export const useTheme = () => useContext(ThemeContext);
+export const usetheme = () => useContext(ThemeContext);
 
-const setAppTheme = (theme: string) => {
+const setapptheme = (theme: string) => {
   const html = document.documentElement;
 
   html.classList.remove('light', 'dark');
   html.classList.add(theme);
 
-  html.style.transition = 'all 0.3s ease';
+  html.classList.remove('light', 'dark');
+  html.classList.add(theme);
 };
 
 export const ThemeProvider = ({ children }: Props) => {
-  const [theme, setTheme] = useState('light');
+  const [theme, settheme] = useState('light');
 
   useEffect(() => {
-    const storedTheme = localStorage.getItem('theme');
-    const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const storedtheme = localStorage.getItem('theme');
+    const prefersdarkmode = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-  
-    if (storedTheme) {
-      setTheme(storedTheme);
-    } else if (prefersDarkMode) {
-      setTheme('dark');
+
+    if (storedtheme) {
+      settheme(storedtheme);
+    } else if (prefersdarkmode) {
+      settheme('dark');
     }
   }, []);
 
   useEffect(() => {
-    setAppTheme(theme);
+    setapptheme(theme);
     localStorage.setItem('theme', theme);
   }, [theme]);
 
-  const toggleTheme = () => {
-    const newTheme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(newTheme);
+  const toggletheme = () => {
+    const newtheme = theme === 'dark' ? 'light' : 'dark';
+    settheme(newtheme);
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, toggletheme }}>
       {children}
     </ThemeContext.Provider>
   );
