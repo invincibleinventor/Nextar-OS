@@ -1,12 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { FaWifi, FaMoon, FaBluetooth, FaSun, FaBluetoothB } from 'react-icons/fa'
+import { FaWifi, FaMoon, FaSun } from 'react-icons/fa'
 import { BsFillVolumeUpFill, BsSunFill } from 'react-icons/bs'
 import { FiBatteryCharging } from 'react-icons/fi'
 import { IoPlay, IoWifi, IoBatteryFull } from 'react-icons/io5'
 import { BiSignal5 } from "react-icons/bi";
-import { FaTowerBroadcast } from 'react-icons/fa6'
+import { FaBluetoothB, FaTowerBroadcast } from 'react-icons/fa6'
 import { useTheme } from './ThemeContext'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useDevice } from './DeviceContext'
