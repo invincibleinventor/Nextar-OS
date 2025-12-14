@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { FaFolder, FaFileAlt, FaClock, FaDesktop, FaDownload, FaCloud, FaHdd, FaChevronLeft, FaChevronRight, FaGlobe } from "react-icons/fa";
 import { IoApps, IoDocumentText } from "react-icons/io5";
 import { portfolioData } from '../portfolioData';
-import { usewindows } from '../WindowContext';
+import { useWindows } from '../WindowContext';
 import { apps } from '../app';
 
 const sidebaritems = [
@@ -43,7 +43,7 @@ interface fileitem {
 export default function Finder() {
     const [selected, setselected] = useState('Projects');
     const [selectedfile, setselectedfile] = useState<string | null>(null);
-    const { addwindow } = usewindows();
+    const { addwindow } = useWindows();
 
     const getfiles = (): fileitem[] => {
         if (selected === 'Projects') {

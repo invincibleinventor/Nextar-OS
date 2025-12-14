@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Notification, initialnotifications } from './notifications';
-import { usewindows } from './WindowContext';
+import { useWindows } from './WindowContext';
 import { usedevice } from './DeviceContext';
 
 interface NotificationContextType {
@@ -20,7 +20,7 @@ const NotificationContext = createContext<NotificationContextType | undefined>(u
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
     const [notifications, setnotifications] = useState<Notification[]>([]);
-    const { addwindow, setactivewindow, windows, updatewindow } = usewindows();
+    const { addwindow, setactivewindow, windows, updatewindow } = useWindows();
     const { osstate } = usedevice();
     const [isloaded, setisloaded] = useState(false);
     const [hasshownwelcome, sethasshownwelcome] = useState(false);

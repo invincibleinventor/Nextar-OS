@@ -1,12 +1,12 @@
 'use client';
 import React, { useState } from 'react';
 import { apps } from './app';
-import { usewindows } from './WindowContext';
+import { useWindows } from './WindowContext';
 import { motion } from 'framer-motion';
 import AppLibrary from './AppLibrary';
 
 export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayopen?: boolean }) {
-    const { addwindow, windows, setactivewindow, updatewindow } = usewindows();
+    const { addwindow, windows, setactivewindow, updatewindow } = useWindows();
     const [page, setpage] = useState(0);
 
     const handleappclick = (app: any) => {

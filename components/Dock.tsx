@@ -1,12 +1,12 @@
 'use client';
 
-import { usewindows } from './WindowContext';
+import { useWindows } from './WindowContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { apps } from './app';
 import { useState } from 'react';
 
 const Dock = () => {
-  const { windows, addwindow, setactivewindow, focusortogglewindow } = usewindows();
+  const { windows, addwindow, setactivewindow, focusortogglewindow } = useWindows();
   const [launchpad, setlaunch] = useState(false);
   const [hoverapp, sethoverapp] = useState<string | null>(null);
   const [searchterm, setsearchterm] = useState('');

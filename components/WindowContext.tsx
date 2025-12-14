@@ -3,7 +3,7 @@ import React, { createContext, useState, useContext } from 'react';
 
 const WindowContext = createContext<any>(null);
 
-export const usewindows = () => useContext(WindowContext);
+export const useWindows = () => useContext(WindowContext);
 
 export const WindowProvider = ({ children }: any) => {
   const [windows, setwindows] = useState<any[]>([]);

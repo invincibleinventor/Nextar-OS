@@ -1,14 +1,14 @@
 'use client';
 import React, { useState } from 'react';
 import { apps } from '../app';
-import { usewindows } from '../WindowContext';
+import { useWindows } from '../WindowContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { IoSearch } from 'react-icons/io5';
 
 const appsperpage = 35;
 
 export default function Launchpad() {
-    const { addwindow, removewindow, windows, setactivewindow } = usewindows();
+    const { addwindow, removewindow, windows, setactivewindow } = useWindows();
     const [searchterm, setsearchterm] = useState('');
     const [page, setpage] = useState(0);
 
@@ -118,6 +118,7 @@ export default function Launchpad() {
                                 <div className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24">
                                     <img
                                         src={app.icon}
+                                        alt={app.appName}
                                         className="w-full h-full object-contain drop-shadow-2xl"
                                         draggable={false}
                                     />

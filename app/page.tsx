@@ -1,6 +1,6 @@
 'use client'
 import React, { useState } from 'react';
-import { usewindows } from '@/components/WindowContext';
+import { useWindows } from '@/components/WindowContext';
 import Window from '@/components/Window';
 import { apps } from '@/components/app'
 import { usedevice } from '../components/DeviceContext';
@@ -20,7 +20,7 @@ import { usenotifications } from '@/components/NotificationContext';
 import MacOSNotifications from '@/components/MacOSNotifications';
 
 const Page = () => {
-  const { windows, addwindow, setwindows } = usewindows();
+  const { windows, addwindow, setwindows } = useWindows();
   const { osstate, ismobile } = usedevice();
   const { } = usenotifications();
   const [showcontrolcenter, setshowcontrolcenter] = useState(false);

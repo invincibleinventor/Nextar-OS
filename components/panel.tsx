@@ -2,14 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import Menu from './menu';
-import { usewindows } from './WindowContext';
+import { useWindows } from './WindowContext';
 import { menus, titleMenu, appleMenu } from './menus';
 import Control from './controlcenter';
 import Logo from './applelogo';
 import { usedevice } from './DeviceContext';
 
 export default function Panel({ ontogglenotifications }: { ontogglenotifications?: () => void }) {
-    const { activewindow, windows } = usewindows();
+    const { activewindow, windows } = useWindows();
     const { setosstate } = usedevice();
 
     const activeappname =

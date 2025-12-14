@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, memo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { usewindows } from './WindowContext';
+import { useWindows } from './WindowContext';
 import { apps } from './app';
 
 
@@ -48,7 +48,7 @@ const MemoizedDynamicComponent = memo(
 MemoizedDynamicComponent.displayName = 'MemoizedDynamicComponent';
 
 const RecentApps = React.memo(({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
-    const { windows, removewindow, setactivewindow, updatewindow } = usewindows();
+    const { windows, removewindow, setactivewindow, updatewindow } = useWindows();
     const containerref = useRef<HTMLDivElement>(null);
 
 

@@ -20,6 +20,7 @@ export default function Menu(props: any) {
         return () => {
             document.removeEventListener('mousedown', handleclickoutside);
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props.visible]);
 
     return (

@@ -1,10 +1,10 @@
 'use client';
 import React from 'react';
 import { apps } from './app';
-import { usewindows } from './WindowContext';
+import { useWindows } from './WindowContext';
 
 const AppLibrary = () => {
-    const { addwindow, windows, setactivewindow, updatewindow } = usewindows();
+    const { addwindow, windows, setactivewindow, updatewindow } = useWindows();
     const categories = ['Social', 'Utilities', 'Creativity', 'Entertainment'];
 
     const handleapplaunch = (app: any) => {

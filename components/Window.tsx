@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect, useRef, memo } from 'react';
-import { usewindows } from './WindowContext';
+import { useWindows } from './WindowContext';
 import { apps } from './app';
 import { motion } from 'framer-motion';
 import { usedevice } from './DeviceContext';
@@ -55,7 +55,7 @@ MemoizedDynamicComponent.displayName = 'MemoizedDynamicComponent';
 
 const Window = ({ id, appName, title, component, props, isMinimized, isMaximized, shouldBlur = true, isSystemGestureActive = false }: any) => {
 
-  const { removewindow, updatewindow, activewindow, setactivewindow, windows } = usewindows();
+  const { removewindow, updatewindow, activewindow, setactivewindow, windows } = useWindows();
   const { ismobile } = usedevice();
   const app = apps.find((app) => app.appName === appName);
 
