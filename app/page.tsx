@@ -150,7 +150,7 @@ const Page = () => {
 
             <div className="absolute bottom-0 left-0 right-0 h-10 flex items-end justify-center z-[9999] pointer-events-auto">
               <motion.div
-                className="w-[140px] h-[5px] bg-white/80 rounded-full mb-[6px] cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.3)] backdrop-blur-md"
+                className="w-[140px] h-[5px] bg-white/80 rounded-full mb-[12px] cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.3)] backdrop-blur-md"
                 whileTap={{ scale: 0.95 }}
                 drag="y"
                 dragConstraints={{ top: 0, bottom: 0 }}

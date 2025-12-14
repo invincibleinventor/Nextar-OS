@@ -98,7 +98,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                         </div>
                     </div>
 
-                    <div className={`mx-auto mb-4 p-3 rounded-[25px] w-max flex items-center justify-between gap-4 transition-all duration-300 ${isoverlayopen ? 'bg-transparent' : 'dark:bg-black/20 bg-white/20 backdrop-blur-md shadow-lg border border-white/10'}`}>
+                    <div className={`mx-auto mb-6 p-3 rounded-[25px] w-max flex items-center justify-between gap-4 transition-all duration-300 ${isoverlayopen ? 'bg-transparent' : 'dark:bg-black/20 bg-white/20 backdrop-blur-md shadow-lg border border-white/10'}`}>
                         {dockapps.map(app => (
                             <motion.button
                                 key={app.id}
