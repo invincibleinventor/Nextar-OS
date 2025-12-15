@@ -194,7 +194,7 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
                             </div>
                         </div>
 
-                        {/* Control Center Dropdown */}
+
                         {showControlCenter && (
                             <>
                                 <div className="fixed inset-0 z-[9998]" onClick={() => setShowControlCenter(false)} />

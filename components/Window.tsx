@@ -59,7 +59,7 @@ const Window = ({ id, appName, title, component, props, isMinimized, isMaximized
 
   const { removewindow, updatewindow, activewindow, setactivewindow, windows } = useWindows();
   const { ismobile } = useDevice();
-  const { reduceMotion, reduceTransparency } = useSettings();
+  const { reducemotion, reducetransparency } = useSettings();
   const app = apps.find((app) => app.appName === appName);
 
   const [position, setposition] = useState(() => {
@@ -119,9 +119,9 @@ const Window = ({ id, appName, title, component, props, isMinimized, isMaximized
         height: screenheight - panelheight - dockheight,
       });
     } else {
-      setposition(previousstate.position);
       setsize(previousstate.size);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMinimized, isMaximized, ismobile]);
 
   const handlemaximize = () => {
@@ -136,7 +136,6 @@ const Window = ({ id, appName, title, component, props, isMinimized, isMaximized
   };
 
   const handledragstart = (e: any) => {
-    // Check if it's a double click (prevent drag start if so)
     if (e.detail === 2) return;
 
     let dragstarted = false;
@@ -166,19 +165,19 @@ const Window = ({ id, appName, title, component, props, isMinimized, isMaximized
     let lasttop = wasmaximized ? panelheight : position.top;
     const maximizedondrag = false;
 
-    // Throttle / Debounce standard drag setup
+
     const onmousemove = (moveevent: any) => {
       const movex = 'touches' in moveevent ? moveevent.touches[0].clientX : moveevent.clientX;
       const movey = 'touches' in moveevent ? moveevent.touches[0].clientY : moveevent.clientY;
 
       if (!isdragging && Math.abs(movex - startx) < 5 && Math.abs(movey - starty) < 5) {
-        return; // Threshold to detect drag vs click
+        return;
       }
 
       if (!dragstarted && wasmaximized && Math.abs(movey - starty) > 10) {
         dragstarted = true;
         updatewindow(id, { isMaximized: false });
-        // Immediate position update to prevent jump
+
         setTimeout(() => {
           setsize(prevsize);
           setposition({
@@ -197,12 +196,12 @@ const Window = ({ id, appName, title, component, props, isMinimized, isMaximized
       let newleft = movex - dragoffsetx;
       let newtop = movey - dragoffsety;
 
-      // Snap to maximize logic (less sensitive)
-      if (!wasmaximized && newtop <= panelheight - 10) { // Must drag slightly PAST the panel
-        // Visual hint or preparation could go here
+      if (!wasmaximized && newtop <= panelheight - 10) {
+
       }
 
-      // Constrain within screen
+
+
       newleft = Math.max(-size.width / 2.0, Math.min(screenwidth - size.width / 2.0, newleft));
       newtop = Math.max(panelheight - 20, Math.min(screenheight - dockheight - size.height / 4.0, newtop));
 
@@ -220,11 +219,11 @@ const Window = ({ id, appName, title, component, props, isMinimized, isMaximized
       document.removeEventListener('touchmove', onmousemove);
       document.removeEventListener('touchend', onmouseup);
 
-      // Snap logic on release
+
       if (!wasmaximized && lasttop <= panelheight) {
         updatewindow(id, { isMaximized: true });
       } else if (wasmaximized && dragstarted) {
-        // Keep it unmaximized (already handled in drag)
+
       }
     };
 
@@ -305,16 +304,14 @@ const Window = ({ id, appName, title, component, props, isMinimized, isMaximized
       animate={{ opacity: isMinimized ? 0 : 1, y: isMinimized ? 400 : 0, scale: isMinimized ? 0.5 : 1 }}
       exit={{ opacity: 0, y: -10 }}
       onAnimationComplete={(definition) => {
-        // Optional: Adding a log or logic if needed, but the 100vh move is robust
         if (isMinimized) {
-          // Ensure it stays off
         }
       }}
       transition={{
-        type: reduceMotion ? "tween" : "spring",
-        stiffness: reduceMotion ? undefined : 350,
-        damping: reduceMotion ? undefined : 30,
-        duration: reduceMotion ? 0.2 : undefined
+        type: reducemotion ? "tween" : "spring",
+        stiffness: reducemotion ? undefined : 350,
+        damping: reducemotion ? undefined : 30,
+        duration: reducemotion ? 0.2 : undefined
       }}
       className={`border dark:border-neutral-600 border-neutral-500 overflow-hidden flex flex-col ${app?.titlebarblurred
         ? `dark:bg-opacity-40 absolute bg-opacity-80  dark:bg-black bg-white ${shouldBlur ? 'backdrop-blur-lg' : ''}`

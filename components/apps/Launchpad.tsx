@@ -98,17 +98,14 @@ export default function Launchpad({ onClose }: { onClose: () => void }) {
             <div
                 className="flex-1 w-full max-w-[1100px] px-8 sm:px-16 flex items-center justify-center"
                 onClick={(e) => {
-                    // Allow click to pass through to parent (which closes launchpad) 
-                    // unless it's on an app (handled by app click)
-                    // e.stopPropagation(); // REMOVED
                 }}
             >
                 <AnimatePresence mode='wait'>
                     <motion.div
                         key={page}
-                        initial={{ opacity: 0 }} /* Removed x: 100 to prevent slide */
+                        initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}    /* Removed x: -100 */
+                        exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
                         className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-x-6 gap-y-10 w-full"
                     >

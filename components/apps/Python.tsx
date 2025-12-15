@@ -35,7 +35,7 @@ export default function Python() {
 
     return (
         <div className="flex flex-col h-full w-full bg-[#1e1e1e] text-white font-mono">
-            {/* Toolbar */}
+
             <div className="h-10 bg-[#333333] flex items-center px-4 justify-between border-b border-black/20">
                 <div className="flex items-center gap-2 text-sm text-gray-300">
                     <FaTerminal className="text-green-500" />
@@ -61,7 +61,6 @@ export default function Python() {
             </div>
 
             <div className="flex-1 flex flex-col md:flex-row min-h-0">
-                {/* Editor */}
                 <div className="flex-1 relative border-r border-black/20">
                     <textarea
                         value={code}
@@ -71,7 +70,7 @@ export default function Python() {
                     />
                 </div>
 
-                {/* Output */}
+
                 <div className="h-1/3 md:h-full md:w-1/3 bg-[#181818] flex flex-col border-t md:border-t-0 md:border-l border-black/20">
                     <div className="px-3 py-1 bg-[#252526] text-xs text-gray-500 uppercase font-semibold tracking-wider">
                         Terminal Output

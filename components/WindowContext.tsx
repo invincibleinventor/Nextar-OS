@@ -43,13 +43,11 @@ export const WindowProvider = ({ children }: any) => {
       const topmost = appwindows.find((win) => win.id === activewindow);
 
       if (topmost) {
-        // If the app is currently active, toggle minimization for ALL its windows
         return prevwindows.map((win) =>
           win.appName === appname ? { ...win, isMinimized: !win.isMinimized } : win
         );
       } else {
-        // If app is not active, Bring ALL to front (restore) and focus the last one
-        const lastWindow = appwindows[appwindows.length - 1]; // Focus the newest/last window
+        const lastWindow = appwindows[appwindows.length - 1];
         setactivewindow(lastWindow.id);
 
         return prevwindows.map((win) =>

@@ -35,10 +35,10 @@ const Page = () => {
 
     addwindow({
       id: `safari-oldportfolio-${Date.now()}`,
-      appName: 'Old Portfolio', // Title for the window
+      appName: 'Old Portfolio',
       title: 'Old Portfolio',
       component: safariapp.componentName,
-      icon: '/code.png', // Window icon
+      icon: '/code.png',
       isMinimized: false,
       isMaximized: false,
       position: { top: 50, left: 50 },

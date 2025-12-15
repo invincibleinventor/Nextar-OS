@@ -21,7 +21,7 @@ export default function Safari({ initialurl = 'https://baladev.vercel.app' }: sa
 
     return (
         <div className="flex flex-col h-full w-full bg-[#f2f2f2] dark:bg-[#262626] text-black dark:text-white font-sf">
-            {/* Unified Toolbar */}
+
             <div className="h-[52px] bg-[#f2f2f2] dark:bg-[#343434] flex items-center px-3 gap-4 border-b border-black/5 dark:border-white/5 pt-1">
                 <div className="flex gap-4 text-gray-500 dark:text-gray-400">
                     <button className="hover:text-black dark:hover:text-white transition"><FaArrowLeft size={14} /></button>
@@ -79,7 +79,7 @@ export default function Safari({ initialurl = 'https://baladev.vercel.app' }: sa
                     <div className="flex flex-col items-center justify-center h-full text-gray-400">
                         <img src="/icons/safari.png" className="w-24 h-24 mb-8 opacity-20 filter grayscale" alt="Safari" />
                         <h1 className="text-2xl font-bold text-black/20 dark:text-white/20 mb-8">Favorites</h1>
-                        {/* Dummy Favorites Grid */}
+
                         <div className="grid grid-cols-4 gap-8">
                             {['Apple', 'iCloud', 'GitHub', 'LinkedIn'].map(site => (
                                 <div key={site} className="flex flex-col items-center gap-2 group cursor-pointer">

@@ -10,7 +10,7 @@ import { useWindows } from './WindowContext';
 
 export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayopen?: boolean }) {
     const { addwindow, windows, setactivewindow, updatewindow } = useWindows();
-    const { reduceMotion } = useSettings();
+    const { reducemotion } = useSettings();
     const [page, setpage] = useState(0);
 
     const handleappclick = (app: any) => {
@@ -57,11 +57,11 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                 animate={{ x: `-${page * 100}vw` }}
                 initial={{ x: 0 }}
                 transition={{
-                    type: reduceMotion ? "tween" : "spring",
-                    stiffness: reduceMotion ? undefined : 350,
-                    damping: reduceMotion ? undefined : 30,
+                    type: reducemotion ? "tween" : "spring",
+                    stiffness: reducemotion ? undefined : 350,
+                    damping: reducemotion ? undefined : 30,
                     mass: 1,
-                    duration: reduceMotion ? 0.2 : undefined
+                    duration: reducemotion ? 0.2 : undefined
                 }}
                 drag="x"
                 dragConstraints={{ left: -window.innerWidth, right: 0 }}

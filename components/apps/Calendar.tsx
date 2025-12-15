@@ -3,7 +3,7 @@ import React from 'react';
 
 const events = [
     { year: "2024", title: "Full Stack Developer", desc: "Building scalable web applications", color: "#007AFF" },
-   
+
 ];
 
 const today = new Date();
@@ -13,7 +13,7 @@ const weekday = today.toLocaleDateString('en-US', { weekday: 'short' });
 export default function Calendar() {
     return (
         <div className="h-full w-full bg-white dark:bg-[#1e1e1e] flex font-sf">
-            {/* Sidebar - Translucent */}
+
             <div className="w-[220px] border-r border-black/5 dark:border-white/5 bg-neutral-100/80 dark:bg-[#2d2d2d]/80 backdrop-blur-2xl hidden md:flex flex-col pt-4">
                 <div className="px-4 mb-6">
                     <div className="w-full aspect-square bg-white dark:bg-[#363636] rounded-xl border border-black/5 dark:border-white/5 shadow-sm flex flex-col items-center justify-center mb-4">

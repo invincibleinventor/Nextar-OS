@@ -21,8 +21,8 @@ const menuitems = [
 ];
 
 export default function Settings() {
-    const [activeTab, setActiveTab] = useState("general");
-    const { reduceMotion, setReduceMotion, reduceTransparency, setReduceTransparency } = useSettings();
+    const [activetab, setactivetab] = useState("general");
+    const { reducemotion, setreducemotion, reducetransparency, setreducetransparency } = useSettings();
     const { theme, toggletheme } = useTheme();
 
     return (
@@ -37,14 +37,14 @@ export default function Settings() {
                 {menuitems.map((item, i) => (
                     <div
                         key={i}
-                        onClick={() => setActiveTab(item.id)}
+                        onClick={() => setactivetab(item.id)}
                         className={`flex items-center justify-between px-3 py-1.5 mx-2 rounded-md cursor-pointer transition-colors
-                            ${activeTab === item.id
+                            ${activetab === item.id
                                 ? 'bg-[#007AFF] text-white'
                                 : 'text-black/80 dark:text-white/80 hover:bg-black/5 dark:hover:bg-white/5'}`}
                     >
                         <span>{item.name}</span>
-                        {activeTab !== item.id && <IoChevronForward className="text-gray-400 text-[10px]" />}
+                        {activetab !== item.id && <IoChevronForward className="text-gray-400 text-[10px]" />}
                     </div>
                 ))}
             </div>
@@ -52,7 +52,7 @@ export default function Settings() {
             <div className="flex-1 overflow-y-auto p-8">
                 <div className="max-w-md mx-auto">
 
-                    {activeTab === 'general' && (
+                    {activetab === 'general' && (
                         <>
                             <div className="flex flex-col items-center mb-8">
                                 <div className="w-24 h-24 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-full shadow-xl mb-4" />
@@ -93,7 +93,7 @@ export default function Settings() {
                         </>
                     )}
 
-                    {activeTab === 'appearance' && (
+                    {activetab === 'appearance' && (
                         <div className="space-y-6">
                             <h2 className="text-lg font-bold mb-4">Appearance</h2>
 
@@ -127,8 +127,8 @@ export default function Settings() {
                                     </div>
                                     <input
                                         type="checkbox"
-                                        checked={reduceTransparency}
-                                        onChange={(e) => setReduceTransparency(e.target.checked)}
+                                        checked={reducetransparency}
+                                        onChange={(e) => setreducetransparency(e.target.checked)}
                                         className="toggle"
                                     />
                                 </div>
@@ -139,8 +139,8 @@ export default function Settings() {
                                     </div>
                                     <input
                                         type="checkbox"
-                                        checked={reduceMotion}
-                                        onChange={(e) => setReduceMotion(e.target.checked)}
+                                        checked={reducemotion}
+                                        onChange={(e) => setreducemotion(e.target.checked)}
                                         className="toggle"
                                     />
                                 </div>

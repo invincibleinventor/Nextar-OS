@@ -6,22 +6,22 @@ import { motion } from 'framer-motion';
 export default function Menu(props: any) {
     const ref = useRef<HTMLDivElement>(null);
 
+    const { visible, onToggle } = props;
     useEffect(() => {
         const handleclickoutside = (e: MouseEvent) => {
             if (ref.current && !ref.current.contains(e.target as Node)) {
-                props.onToggle(null);
+                onToggle(null);
             }
         };
 
-        if (props.visible) {
+        if (visible) {
             document.addEventListener('mousedown', handleclickoutside);
         }
 
         return () => {
             document.removeEventListener('mousedown', handleclickoutside);
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [props.visible]);
+    }, [visible, onToggle]);
 
     return (
         <div

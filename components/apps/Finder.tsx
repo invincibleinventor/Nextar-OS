@@ -46,11 +46,10 @@ export default function Finder() {
     const [selected, setselected] = useState('Projects');
     const [selectedfile, setselectedfile] = useState<string | null>(null);
     const [viewmode, setviewmode] = useState<'list' | 'grid'>('grid');
-    const [showSidebar, setShowSidebar] = useState(true);
+    const [showsidebar, setshowsidebar] = useState(true);
     const { addwindow } = useWindows();
 
-    // Toggle sidebar visibility
-    const toggleSidebar = () => setShowSidebar(!showSidebar);
+    const togglesidebar = () => setshowsidebar(!showsidebar);
 
     const getfiles = (): fileitem[] => {
         if (selected === 'Projects') {
@@ -58,8 +57,7 @@ export default function Finder() {
                 name: p.title,
                 date: 'Today',
                 size: '--',
-                kind: 'Folder', // Treat projects as Folders in Finder
-                // Using a high-quality macOS folder icon image
+                kind: 'Folder',
                 icon: <img src="/folder.png" alt="folder" className="w-full h-full object-contain drop-shadow-md" />,
                 link: p.link
             }));
@@ -110,13 +108,13 @@ export default function Finder() {
     return (
         <div className="flex h-full w-full bg-[#fcfcfc] dark:bg-[#1e1e1e] text-black dark:text-white font-sf text-[13px] overflow-hidden rounded-b-xl relative">
 
-            {/* Sidebar (Responsive) */}
+
             <div className={`
-                ${showSidebar ? 'translate-x-0 w-[200px] border-r' : '-translate-x-full w-0 border-none'} 
+                ${showsidebar ? 'translate-x-0 w-[200px] border-r' : '-translate-x-full w-0 border-none'} 
                 transition-all duration-300 ease-in-out bg-neutral-100/80 dark:bg-[#2d2d2d]/80 backdrop-blur-2xl 
                 flex flex-col border-black/5 dark:border-white/5 pt-12 absolute md:relative z-20 h-full
             `}>
-                <div className={`flex-1 overflow-y-auto px-2 ${showSidebar ? 'opacity-100' : 'opacity-0'} transition-opacity duration-200`}>
+                <div className={`flex-1 overflow-y-auto px-2 ${showsidebar ? 'opacity-100' : 'opacity-0'} transition-opacity duration-200`}>
                     {sidebaritems.map((group, idx) => (
                         <div key={idx} className="mb-4">
                             <div className="text-[11px] font-bold text-gray-500/80 dark:text-gray-400/80 uppercase tracking-wide mb-1 px-3">
@@ -126,7 +124,7 @@ export default function Finder() {
                                 {group.items.map((item) => (
                                     <div
                                         key={item.name}
-                                        onClick={() => { setselected(item.name); if (window.innerWidth < 768) setShowSidebar(false); }}
+                                        onClick={() => { setselected(item.name); if (window.innerWidth < 768) setshowsidebar(false); }}
                                         className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg cursor-pointer transition-colors duration-100
                                             ${selected === item.name
                                                 ? 'bg-black/10 dark:bg-white/10 text-black dark:text-white font-medium'
@@ -159,7 +157,7 @@ export default function Finder() {
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <button onClick={toggleSidebar} className="p-1.5 rounded transition-all hover:bg-black/5 dark:hover:bg-white/10 text-gray-600 dark:text-gray-300">
+                        <button onClick={togglesidebar} className="p-1.5 rounded transition-all hover:bg-black/5 dark:hover:bg-white/10 text-gray-600 dark:text-gray-300">
                             <IoApps size={18} title="Toggle Sidebar" />
                         </button>
                         <div className="flex bg-gray-200/50 dark:bg-white/5 rounded-lg p-0.5 border border-black/5 dark:border-white/5">
@@ -192,7 +190,6 @@ export default function Finder() {
                                         ${selectedfile === file.name ? 'bg-[#007AFF]/10 dark:bg-[#007AFF]/20 border-[#007AFF]/30' : 'hover:bg-black/5 dark:hover:bg-white/5'}`}
                                 >
                                     <div className="w-14 h-14 md:w-16 md:h-16 flex items-center justify-center text-[40px] drop-shadow-md transition-transform duration-200 group-hover:scale-105 group-active:scale-95">
-                                        {/* Render Icon logic */}
                                         {file.kind === 'Folder' ? (
                                             file.icon
                                         ) : file.kind === 'Application' ? (
@@ -200,7 +197,6 @@ export default function Finder() {
                                         ) : file.kind === 'Web Link' && !file.icon ? (
                                             <FaGlobe className="text-[#007AFF]" />
                                         ) : (
-                                            /* Fallback for others */
                                             file.icon || <FaFileAlt className="text-gray-400" />
                                         )}
                                     </div>
@@ -254,7 +250,7 @@ export default function Finder() {
                     )}
                 </div>
 
-                {/* Footer Status Bar - Mac Style */}
+
                 <div className="h-[28px] bg-[#f8f8f8] dark:bg-[#282828] border-t border-black/5 dark:border-white/5 flex items-center px-4 justify-between select-none">
                     <span className="text-[10px] text-gray-400 dark:text-gray-500">
                     </span>

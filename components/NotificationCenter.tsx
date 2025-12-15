@@ -11,7 +11,7 @@ interface NotificationCenterProps {
 
 export default function NotificationCenter({ isOpen, onClose }: NotificationCenterProps) {
     const { notifications, clearnotification, handlenotificationclick } = useNotifications();
-    const { reduceMotion, reduceTransparency } = useSettings();
+    const { reducemotion, reducetransparency } = useSettings();
 
     const formattime = () => {
         const date = new Date();
@@ -31,10 +31,10 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
                     animate={{ y: 0 }}
                     exit={{ y: '-100%' }}
                     transition={{
-                        type: reduceMotion ? "tween" : "spring",
-                        stiffness: reduceMotion ? undefined : 250,
-                        damping: reduceMotion ? undefined : 25,
-                        duration: reduceMotion ? 0.3 : undefined
+                        type: reducemotion ? "tween" : "spring",
+                        stiffness: reducemotion ? undefined : 250,
+                        damping: reducemotion ? undefined : 25,
+                        duration: reducemotion ? 0.3 : undefined
                     }}
                     drag="y"
                     dragConstraints={{ top: -1000, bottom: 0 }}
@@ -44,7 +44,7 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
                             onClose();
                         }
                     }}
-                    className={`absolute inset-0 z-[60] flex flex-col h-full w-full pointer-events-auto ${reduceTransparency ? 'bg-neutral-900' : 'backdrop-blur-2xl bg-white/70 dark:bg-black/60'
+                    className={`absolute inset-0 z-[60] flex flex-col h-full w-full pointer-events-auto ${reducetransparency ? 'bg-neutral-900' : 'backdrop-blur-2xl bg-white/70 dark:bg-black/60'
                         }`}
                 >
                     <div className="flex flex-col items-center mt-16 mb-8 shrink-0">

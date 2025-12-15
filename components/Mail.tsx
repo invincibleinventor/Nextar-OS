@@ -12,7 +12,7 @@ export default function Mail() {
 
     return (
         <div className="flex h-full w-full bg-white dark:bg-[#1e1e1e] font-sf text-black dark:text-white rounded-lg overflow-hidden">
-            {/* Sidebar - Translucent */}
+
             <div className="w-[200px] bg-neutral-100/80 dark:bg-[#2d2d2d]/80 backdrop-blur-2xl border-r border-black/5 dark:border-white/5 flex flex-col pt-10 hidden md:flex">
                 <div className="px-3 mb-2">
                     <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide px-2">Favorites</span>
@@ -38,7 +38,7 @@ export default function Mail() {
                 </div>
             </div>
 
-            {/* Mail List */}
+
             <div className="w-[300px] md:w-[320px] bg-white dark:bg-[#1e1e1e] border-r border-black/5 dark:border-white/5 flex flex-col z-10">
                 <div className="h-[52px] border-b border-black/5 dark:border-white/5 flex items-center justify-between px-4 bg-white/95 dark:bg-[#1e1e1e]/95 backdrop-blur">
                     <span className="font-bold text-[16px]">Inbox</span>
@@ -65,11 +65,11 @@ export default function Mail() {
                 </div>
             </div>
 
-            {/* Reading Pane */}
+
             <div className="flex-1 bg-white dark:bg-[#1e1e1e] flex flex-col min-w-0">
                 {selectedmail ? (
                     <div className="flex flex-col h-full">
-                        {/* Header */}
+
                         <div className="h-[52px] border-b border-black/5 dark:border-white/5 flex items-center px-6 justify-between bg-white dark:bg-[#1e1e1e]">
                             <div className="flex gap-4 text-gray-400">
                                 <FaTrash className="hover:text-red-500 cursor-pointer transition" size={14} />

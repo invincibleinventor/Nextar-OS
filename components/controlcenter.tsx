@@ -13,7 +13,7 @@ export default function ControlCenter({ onClose, ismobile = false, isOpen = true
   const [brightness, setbrightness] = useState(100)
   const [volume, setvolume] = useState(100)
   const { theme, toggletheme } = useTheme()
-  const { reduceMotion, reduceTransparency } = useSettings()
+  const { reducemotion, reducetransparency } = useSettings()
 
   return (
     <AnimatePresence>
@@ -24,14 +24,14 @@ export default function ControlCenter({ onClose, ismobile = false, isOpen = true
           animate={ismobile ? { y: "0%" } : { opacity: 1, scale: 1, transformOrigin: "top right" }}
           exit={ismobile ? { y: "-100%" } : { opacity: 0, scale: 0.9, transformOrigin: "top right" }}
           transition={{
-            type: reduceMotion ? "tween" : "spring",
-            stiffness: reduceMotion ? undefined : 250,
-            damping: reduceMotion ? undefined : 25,
-            duration: reduceMotion ? 0.2 : undefined
+            type: reducemotion ? "tween" : "spring",
+            stiffness: reducemotion ? undefined : 250,
+            damping: reducemotion ? undefined : 25,
+            duration: reducemotion ? 0.2 : undefined
           }}
           className={`${ismobile
-            ? `fixed inset-0 w-full h-full rounded-none flex items-start justify-center pt-10 ${reduceTransparency ? 'bg-neutral-900' : 'backdrop-blur-2xl bg-white/70 dark:bg-black/60'}`
-            : `${reduceTransparency ? 'bg-[#e5e5e5] dark:bg-[#1a1a1a] border-opacity-50' : 'backdrop-blur-2xl bg-white/10 dark:bg-black/10'} w-[320px] fixed top-14 right-4 rounded-2xl border border-white/20 block`} 
+            ? `fixed inset-0 w-full h-full rounded-none flex items-start justify-center pt-10 ${reducetransparency ? 'bg-neutral-900' : 'backdrop-blur-2xl bg-white/70 dark:bg-black/60'}`
+            : `${reducetransparency ? 'bg-[#e5e5e5] dark:bg-[#1a1a1a] border-opacity-50' : 'backdrop-blur-2xl bg-white/10 dark:bg-black/10'} w-[320px] fixed top-14 right-4 rounded-2xl border border-white/20 block`} 
                  font-sans origin-top-right  shadow-2xl overflow-y-auto z-[9999]`}
           onClick={(e: React.MouseEvent) => e.stopPropagation()}
           drag={ismobile ? "y" : false}
@@ -42,13 +42,12 @@ export default function ControlCenter({ onClose, ismobile = false, isOpen = true
             }
           }}
         >
-          {/* iOS Style Mobile Layout */}
           {ismobile ? (
             <div className="w-full max-w-[340px] px-4 space-y-4">
-              {/* Top Row: Connectivity (Square) + Media (Square) */}
+
               <div className="grid grid-cols-2 gap-3">
 
-                {/* Connectivity Square */}
+
                 <div className="bg-neutral-800/80 backdrop-blur-xl rounded-[20px] p-3 grid grid-cols-2 grid-rows-2 gap-2 aspect-square shadow-lg">
                   <div className="flex items-center justify-center bg-blue-500 rounded-full aspect-square">
                     <FaPlane className="text-white" size={18} />
@@ -64,7 +63,7 @@ export default function ControlCenter({ onClose, ismobile = false, isOpen = true
                   </div>
                 </div>
 
-                {/* Media Square */}
+
                 <div className="bg-neutral-800/80 backdrop-blur-xl rounded-[20px] p-3 flex flex-col justify-between aspect-square shadow-lg">
                   <div className='flex items-center justify-center flex-1'>
                     <div className='text-center'>
@@ -78,7 +77,7 @@ export default function ControlCenter({ onClose, ismobile = false, isOpen = true
                 </div>
               </div>
 
-              {/* Middle Row: Lock, Moon, Screenshare, etc */}
+
               <div className="grid grid-cols-2 gap-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-neutral-800/80 backdrop-blur-xl rounded-[20px] aspect-square flex items-center justify-center shadow-lg">
@@ -100,15 +99,15 @@ export default function ControlCenter({ onClose, ismobile = false, isOpen = true
                 </div>
               </div>
 
-              {/* Sliders & Apps Combined Row */}
+
               <div className="grid grid-cols-2 gap-3">
-                {/* Sliders (Thinner, in first column) */}
+
                 <div className="grid grid-cols-2 gap-3 h-36" onPointerDown={(e) => e.stopPropagation()}>
                   <CCSlider value={brightness} onChange={setbrightness} icon={BsSunFill} />
                   <CCSlider value={volume} onChange={setvolume} icon={BsFillVolumeUpFill} />
                 </div>
 
-                {/* Apps (Moved to second column, 2x2 grid) */}
+
                 <div className="grid grid-cols-2 grid-rows-2 gap-3 h-36">
                   <div className="bg-neutral-800/80 backdrop-blur-xl rounded-[20px] flex items-center justify-center shadow-lg active:bg-white/20 transition-colors">
                     <IoFlashlight className="text-white" size={24} />
@@ -125,7 +124,7 @@ export default function ControlCenter({ onClose, ismobile = false, isOpen = true
                 </div>
               </div>
 
-              {/* Theme Toggle (Custom for user verification) */}
+
               <div onClick={toggletheme} className="bg-neutral-800/80 backdrop-blur-xl rounded-[24px] p-4 flex items-center justify-center shadow-lg active:bg-white/20 transition-colors gap-3 cursor-pointer">
                 {theme == 'light' ? <FaSun className='text-white' size={20} /> : <FaMoon className="text-white" size={20} />}
                 <span className="text-white font-medium">Switch Theme</span>
@@ -133,7 +132,7 @@ export default function ControlCenter({ onClose, ismobile = false, isOpen = true
 
             </div>
           ) : (
-            /* Desktop Layout (Preserved) */
+
             <div className={`p-4 space-y-4 w-full`}>
 
               <div className="grid grid-cols-2 gap-4">
