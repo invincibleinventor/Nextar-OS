@@ -1,17 +1,14 @@
 'use client';
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useSettings } from './SettingsContext';
-import { useNotifications } from './NotificationContext';
+import { usesettings } from './SettingsContext';
+import { usenotifications } from './NotificationContext';
 
-interface NotificationCenterProps {
-    isOpen: boolean;
-    onClose: () => void;
-}
 
-export default function NotificationCenter({ isOpen, onClose }: NotificationCenterProps) {
-    const { notifications, clearnotification, handlenotificationclick } = useNotifications();
-    const { reducemotion, reducetransparency } = useSettings();
+
+export default function NotificationCenter({ isopen, onclose }: { isopen: boolean; onclose: () => void }) {
+    const { notifications, clearnotification, handlenotificationclick } = usenotifications();
+    const { reducemotion, reducetransparency } = usesettings();
 
     const formattime = () => {
         const date = new Date();
@@ -24,7 +21,7 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
 
     return (
         <AnimatePresence>
-            {isOpen && (
+            {isopen && (
                 <motion.div
                     key="notification-center"
                     initial={{ y: '-100%' }}
@@ -41,7 +38,7 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
                     dragElastic={0.05}
                     onDragEnd={(_, info) => {
                         if (info.offset.y < -100 || info.velocity.y < -500) {
-                            onClose();
+                            onclose();
                         }
                     }}
                     className={`absolute inset-0 z-[60] flex flex-col h-full w-full pointer-events-auto ${reducetransparency ? 'bg-neutral-900' : 'backdrop-blur-2xl bg-white/70 dark:bg-black/60'
@@ -75,17 +72,17 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
                                             }}
                                             onClick={() => {
                                                 handlenotificationclick(n);
-                                                onClose();
+                                                onclose();
                                             }}
                                             className="w-full bg-white/40 dark:bg-neutral-800/40 backdrop-blur-xl rounded-[20px] p-4 shadow-sm active:scale-[0.98] transition-transform relative overflow-hidden"
                                         >
                                             <div className="flex items-start gap-4">
                                                 <div className="w-[42px] h-[42px] rounded-[10px] bg-white overflow-hidden shrink-0 shadow-sm">
-                                                    <img src={n.icon} className="w-full h-full object-cover" alt={n.appName} />
+                                                    <img src={n.icon} className="w-full h-full object-cover" alt={n.appname} />
                                                 </div>
                                                 <div className="flex-1 min-w-0 pt-0.5">
                                                     <div className="flex justify-between items-baseline mb-0.5">
-                                                        <span className="text-[15px] font-semibold text-black dark:text-white truncate">{n.appName}</span>
+                                                        <span className="text-[15px] font-semibold text-black dark:text-white truncate">{n.appname}</span>
                                                         <span className="text-[13px] text-black/60 dark:text-white/60">{n.time}</span>
                                                     </div>
                                                     <h3 className="text-[15px] font-semibold text-black dark:text-white leading-tight mb-0.5">{n.title}</h3>

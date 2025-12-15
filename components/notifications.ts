@@ -1,49 +1,49 @@
 export interface Notification {
     id: string;
-    appName: string;
+    appname: string;
     title: string;
     description: string;
     time: string;
     icon: string;
-    appId: string;
+    appid: string;
     viewed?: boolean;
 }
 
 export const initialnotifications: Notification[] = [
     {
         id: 'n1',
-        appName: 'Mail',
+        appname: 'Mail',
         title: 'New Project Proposal',
         description: 'Hey, check out the new design requirements...',
         time: '2m ago',
         icon: '/mail.png',
-        appId: 'mail'
+        appid: 'mail'
     },
     {
         id: 'n2',
-        appName: 'Calendar',
+        appname: 'Calendar',
         title: 'Team Meeting',
         description: 'Daily standup in 10 minutes',
         time: '12m ago',
         icon: '/calendar.png',
-        appId: 'calendar'
+        appid: 'calendar'
     },
     {
         id: 'n3',
-        appName: 'Messages',
+        appname: 'Messages',
         title: 'Sarah',
         description: 'Please push the repository by 1 am night today',
         time: '1h ago',
         icon: '/messages.png',
-        appId: 'messages'
+        appid: 'messages'
     },
     {
         id: 'n4',
-        appName: 'Settings',
+        appname: 'Settings',
         title: 'System Update',
         description: 'macOS Sonoma is ready to install',
         time: '2h ago',
         icon: '/settings.png',
-        appId: 'settings'
+        appid: 'settings'
     }
 ];

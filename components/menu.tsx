@@ -6,11 +6,11 @@ import { motion } from 'framer-motion';
 export default function Menu(props: any) {
     const ref = useRef<HTMLDivElement>(null);
 
-    const { visible, onToggle } = props;
+    const { visible, ontoggle } = props;
     useEffect(() => {
         const handleclickoutside = (e: MouseEvent) => {
             if (ref.current && !ref.current.contains(e.target as Node)) {
-                onToggle(null);
+                ontoggle(null);
             }
         };
 
@@ -21,17 +21,17 @@ export default function Menu(props: any) {
         return () => {
             document.removeEventListener('mousedown', handleclickoutside);
         };
-    }, [visible, onToggle]);
+    }, [visible, ontoggle]);
 
     return (
         <div
             className="relative"
-            onMouseEnter={() => props.onHover(props.id)}
+            onMouseEnter={() => props.onhover(props.id)}
         >
             <motion.div
                 onClick={(e: any) => {
                     e.stopPropagation();
-                    props.onToggle(props.id);
+                    props.ontoggle(props.id);
                 }}
                 className={`${props.bold ? 'font-bold' : 'font-medium'
                     } font-sf px-3 rounded-md cursor-pointer duration-100 transition-all ease-in dark:hover:bg-white dark:hover:bg-opacity-20 hover:bg-white hover:bg-opacity-20 text-[14px] dark:text-white text-black ${props.visible
@@ -71,9 +71,9 @@ export default function Menu(props: any) {
                                     }`}
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    if (!item.disabled && props.onAction) {
-                                        props.onAction(item.title);
-                                        props.onToggle(null);
+                                    if (!item.disabled && props.onaction) {
+                                        props.onaction(item.title);
+                                        props.ontoggle(null);
                                     }
                                 }}
                             >

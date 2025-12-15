@@ -1,16 +1,16 @@
 'use client';
 import React, { useState } from 'react';
 import { apps } from './app';
-import { useTheme } from './ThemeContext';
-import { useSettings } from './SettingsContext';
+import { usetheme } from './ThemeContext';
+import { usesettings } from './SettingsContext';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import AppLibrary from './AppLibrary';
-import { useWindows } from './WindowContext';
+import { usewindows } from './WindowContext';
 
 export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayopen?: boolean }) {
-    const { addwindow, windows, setactivewindow, updatewindow } = useWindows();
-    const { reducemotion } = useSettings();
+    const { addwindow, windows, setactivewindow, updatewindow } = usewindows();
+    const { reducemotion } = usesettings();
     const [page, setpage] = useState(0);
 
     const handleappclick = (app: any) => {
@@ -20,7 +20,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
             }
         });
 
-        const existingwin = windows.find((win: any) => win.appName === app.appName);
+        const existingwin = windows.find((win: any) => win.appname === app.appname);
         if (existingwin) {
             updatewindow(existingwin.id, { isMinimized: false });
             setactivewindow(existingwin.id);
@@ -28,11 +28,11 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
         }
 
         const newwin = {
-            id: `${app.appName}-${Date.now()}`,
-            appName: app.appName,
-            additionalData: {},
-            title: app.appName,
-            component: app.componentName,
+            id: `${app.appname}-${Date.now()}`,
+            appname: app.appname,
+            additionaldata: {},
+            title: app.appname,
+            component: app.componentname,
             props: {},
             isMinimized: false,
             isMaximized: true,
@@ -43,7 +43,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
         setactivewindow(newwin.id);
     };
 
-    const allapps = apps.filter(a => a.id !== 'launchpad' && a.id !== 'welcome');
+    const allapps = apps.filter(a => a.id !== 'launchpad' && a.id !== 'settings');
     const gridapps = allapps.slice(0, 8);
     const dockapps = apps.filter(a =>
         a.id === 'finder' || a.id === 'safari' || a.id === 'mail' || a.id === 'settings'
@@ -95,7 +95,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                                     <div className="w-[60px] h-[60px] rounded-[14px] overflow-hidden dark:bg-black/10 bg-white/10 shadow-sm ring-1 ring-white/5 relative">
                                         <Image
                                             src={app.icon}
-                                            alt={app.appName}
+                                            alt={app.appname}
                                             fill
                                             sizes="60px"
                                             className="object-cover"
@@ -103,7 +103,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                                         />
                                     </div>
                                     <span className="text-[11px] font-medium text-white/90 text-center leading-tight drop-shadow-md truncate w-full tracking-tight">
-                                        {app.appName}
+                                        {app.appname}
                                     </span>
                                 </motion.button>
                             ))}
@@ -120,7 +120,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                             >
                                 <Image
                                     src={app.icon}
-                                    alt={app.appName}
+                                    alt={app.appname}
                                     fill
                                     sizes="65px"
                                     className="object-cover"

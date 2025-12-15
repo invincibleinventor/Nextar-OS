@@ -1,9 +1,9 @@
 'use client'
-import React, { useState } from 'react';
-import { useWindows } from '@/components/WindowContext';
+import React, { useState, useEffect } from 'react';
+import { usewindows } from '@/components/WindowContext';
 import Window from '@/components/Window';
 import { apps } from '@/components/app'
-import { useDevice } from '../components/DeviceContext';
+import { usedevice } from '../components/DeviceContext';
 import Panel from '@/components/panel';
 import Dock from '@/components/Dock';
 import BootScreen from '@/components/BootScreen';
@@ -16,13 +16,13 @@ import { motion } from 'framer-motion';
 import { BiSignal5 } from "react-icons/bi";
 
 import NotificationCenter from '@/components/NotificationCenter';
-import { useNotifications } from '@/components/NotificationContext';
+import { usenotifications } from '@/components/NotificationContext';
 import MacOSNotifications from '@/components/MacOSNotifications';
 
 const Page = () => {
-  const { windows, addwindow, setwindows } = useWindows();
-  const { osstate, ismobile } = useDevice();
-  const { } = useNotifications();
+  const { windows, addwindow, setwindows } = usewindows();
+  const { osstate, ismobile } = usedevice();
+  const { } = usenotifications();
   const [showcontrolcenter, setshowcontrolcenter] = useState(false);
   const [shownotificationcenter, setshownotificationcenter] = useState(false);
   const [showrecentapps, setshowrecentapps] = useState(false);
@@ -35,17 +35,40 @@ const Page = () => {
 
     addwindow({
       id: `safari-oldportfolio-${Date.now()}`,
-      appName: 'Old Portfolio',
+      appname: 'Old Portfolio',
       title: 'Old Portfolio',
-      component: safariapp.componentName,
+      component: safariapp.componentname,
       icon: '/code.png',
-      isMinimized: false,
-      isMaximized: false,
+      isminimized: false,
+      ismaximized: false,
       position: { top: 50, left: 50 },
       size: { width: 1024, height: 768 },
       props: { initialurl: 'https://baladev.vercel.app' }
     });
   };
+
+  const hasLaunchedWelcome = React.useRef(false);
+
+  useEffect(() => {
+    if (osstate === 'unlocked' && !hasLaunchedWelcome.current) {
+      const welcomeapp = apps.find(a => a.id === 'welcome');
+      if (welcomeapp) {
+        addwindow({
+          id: 'welcome',
+          appname: 'Welcome',
+          title: 'Welcome',
+          component: 'Welcome',
+          icon: '/info.png',
+          isminimized: false,
+          ismaximized: false,
+          position: { top: 100, left: 100 },
+          size: { width: 800, height: 600 },
+          props: {}
+        });
+        hasLaunchedWelcome.current = true;
+      }
+    }
+  }, [osstate, addwindow]);
 
   const StatusBar = () => {
     const now = new Date();
@@ -121,11 +144,11 @@ const Page = () => {
           <div className="relative w-full h-full">
 
             <div className={`absolute top-0 right-0 z-[60] ${showrecentapps ? 'invisible' : 'visible'}`}>
-              <Control isOpen={showcontrolcenter} onClose={() => setshowcontrolcenter(false)} ismobile={true} />
+              <Control isopen={showcontrolcenter} onclose={() => setshowcontrolcenter(false)} ismobile={true} />
             </div>
 
             <div className={`absolute top-0 left-0 z-[60] w-full h-full pointer-events-none ${showrecentapps ? 'invisible' : 'visible'}`}>
-              <NotificationCenter isOpen={shownotificationcenter} onClose={() => setshownotificationcenter(false)} />
+              <NotificationCenter isopen={shownotificationcenter} onclose={() => setshownotificationcenter(false)} />
             </div>
 
             {!showcontrolcenter && !shownotificationcenter && <StatusBar />}
@@ -145,15 +168,15 @@ const Page = () => {
                     <Window
                       key={window.id}
                       {...window}
-                      shouldBlur={!showcontrolcenter && !showrecentapps}
-                      isSystemGestureActive={issystemgestureactive}
+                      shouldblur={!showcontrolcenter && !showrecentapps}
+                      issystemgestureactive={issystemgestureactive}
                     />
                   ))}
                 </div>
               </div>
             )}
 
-            <RecentApps isOpen={showrecentapps} onClose={() => setshowrecentapps(false)} />
+            <RecentApps isopen={showrecentapps} onclose={() => setshowrecentapps(false)} />
 
             <div className={`absolute bottom-0 left-0 right-0 h-10 flex items-end justify-center z-[9999] ${(shownotificationcenter || showcontrolcenter) ? 'pointer-events-none' : 'pointer-events-auto'}`}>
               <motion.div
@@ -174,7 +197,7 @@ const Page = () => {
                   if (showrecentapps) {
                     if (isflick || (offset.y < -30)) {
                       setshowrecentapps(false);
-                      setwindows(windows.map((w: any) => ({ ...w, isMinimized: true })));
+                      setwindows(windows.map((w: any) => ({ ...w, isminimized: true })));
                     }
                   } else if (showcontrolcenter) {
                     if (isdragup || isflick) setshowcontrolcenter(false);
@@ -183,7 +206,7 @@ const Page = () => {
                   } else {
                     if (isdragup) {
                       if (isflick) {
-                        setwindows(windows.map((w: any) => ({ ...w, isMinimized: true })));
+                        setwindows(windows.map((w: any) => ({ ...w, isminimized: true })));
                       } else {
                         setshowrecentapps(true);
                       }
@@ -194,13 +217,13 @@ const Page = () => {
                   setissystemgestureactive(false);
                   if (showrecentapps) {
                     setshowrecentapps(false);
-                    setwindows(windows.map((w: any) => ({ ...w, isMinimized: true })));
+                    setwindows(windows.map((w: any) => ({ ...w, isminimized: true })));
                   } else if (showcontrolcenter) {
                     setshowcontrolcenter(false);
                   } else if (shownotificationcenter) {
                     setshownotificationcenter(false);
                   } else {
-                    setwindows(windows.map((w: any) => ({ ...w, isMinimized: true })));
+                    setwindows(windows.map((w: any) => ({ ...w, isminimized: true })));
                   }
                 }}
               />
@@ -208,7 +231,7 @@ const Page = () => {
           </div>
         )}
       </div>
-      <MacOSNotifications isOpen={shownotificationcenter} onClose={() => setshownotificationcenter(false)} />
+      <MacOSNotifications isopen={shownotificationcenter} onclose={() => setshownotificationcenter(false)} />
     </>
   );
 };

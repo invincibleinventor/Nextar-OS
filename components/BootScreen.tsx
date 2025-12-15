@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useDevice } from './DeviceContext';
+import { usedevice } from './DeviceContext';
 import { FaApple } from 'react-icons/fa';
 
 export default function BootScreen() {
-    const { osstate, setosstate } = useDevice();
+    const { osstate, setosstate } = usedevice();
     const [progress, setprogress] = useState(0);
 
     useEffect(() => {

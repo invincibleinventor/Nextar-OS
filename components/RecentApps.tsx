@@ -2,58 +2,60 @@
 
 import React, { useState, useEffect, memo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useWindows } from './WindowContext';
+import { usewindows } from './WindowContext';
 import { apps } from './app';
 
 
 const MemoizedDynamicComponent = memo(
-    ({ icon, component, appProps }: { icon: string, component: string; appname?: string, appProps: any }) => {
-        const [DynamicComponent, setDynamicComponent] = useState<any>(null);
+    ({ icon, component, appprops }: { icon: string, component: string; appname?: string, appprops: any }) => {
+        const [dynamiccomponent, setdynamiccomponent] = useState<any>(null);
 
         useEffect(() => {
             const loadcomponent = async () => {
                 try {
 
                     const importedmodule = await import(`./${component}`);
-                    setDynamicComponent(() => importedmodule.default || null);
+                    setdynamiccomponent(() => importedmodule.default || null);
                 } catch {
                     try {
 
                         const importedmodule = await import(`../components/${component}`);
-                        setDynamicComponent(() => importedmodule.default || null);
+                        setdynamiccomponent(() => importedmodule.default || null);
                     } catch {
-                        setDynamicComponent(null);
+                        setdynamiccomponent(null);
                     }
                 }
             };
             loadcomponent();
         }, [component]);
 
-        if (!DynamicComponent) {
+        if (!dynamiccomponent) {
             return (
                 <div className="w-full h-full flex items-center justify-center bg-white/50 dark:bg-neutral-800/50">
-                    {icon ? <img src={icon} className="w-16 h-16 opacity-50 grayscale" /> : <div className="text-xs opacity-50">Loading...</div>}
+                    {icon ? <img src={icon} className="w-16 h-16 opacity-50 grayscale" alt="App Icon" /> : <div className="text-xs opacity-50">Loading...</div>}
                 </div>
             );
         }
 
+        const Component = dynamiccomponent;
+
         return (
             <div className="w-full h-full pointer-events-none select-none overflow-hidden relative">
                 <div className="absolute inset-0 z-10" />
-                <DynamicComponent {...appProps} isFocused={false} />
+                <Component {...appprops} isFocused={false} />
             </div>
         );
     }
 );
 MemoizedDynamicComponent.displayName = 'MemoizedDynamicComponent';
 
-const RecentApps = React.memo(({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
-    const { windows, removewindow, setactivewindow, updatewindow } = useWindows();
+const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: () => void }) => {
+    const { windows, removewindow, setactivewindow, updatewindow } = usewindows();
     const containerref = useRef<HTMLDivElement>(null);
-    const ignoreClickRef = useRef(false);
+    const ignoreclickref = useRef(false);
 
     useEffect(() => {
-        if (isOpen && containerref.current) {
+        if (isopen && containerref.current) {
 
             setTimeout(() => {
                 if (containerref.current) {
@@ -61,14 +63,14 @@ const RecentApps = React.memo(({ isOpen, onClose }: { isOpen: boolean, onClose: 
                 }
             }, 10);
         }
-    }, [isOpen]);
+    }, [isopen]);
 
 
     const springtransition = { type: "spring", stiffness: 350, damping: 30 };
 
     return (
         <AnimatePresence>
-            {isOpen && (
+            {isopen && (
                 <motion.div
                     className="fixed inset-0 z-[9990] flex flex-col pointer-events-auto"
                     initial={{ opacity: 0 }}
@@ -78,7 +80,7 @@ const RecentApps = React.memo(({ isOpen, onClose }: { isOpen: boolean, onClose: 
                 >
                     <motion.div
                         className="absolute inset-0 bg-black/30 backdrop-blur-2xl"
-                        onClick={onClose}
+                        onClick={onclose}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -99,13 +101,13 @@ const RecentApps = React.memo(({ isOpen, onClose }: { isOpen: boolean, onClose: 
                         initial={{ scale: 1.1, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0.9, opacity: 0 }}
-                        transition={springtransition}
-                        onClick={(e) => { if (!ignoreClickRef.current && e.target === e.currentTarget) onClose(); }}
+                        transition={{ type: "spring", stiffness: 300, damping: 25, mass: 0.8 }}
+                        onClick={(e) => { if (!ignoreclickref.current && e.target === e.currentTarget) onclose(); }}
                     >
                         <div className="flex flex-row gap-6 md:gap-10 h-[65vh] items-center">
                             <AnimatePresence mode='popLayout'>
                                 {[...windows].reverse().map((win: any) => {
-                                    const appdata = apps.find(a => a.appName === win.appName);
+                                    const appdata = apps.find(a => a.appname === win.appname);
                                     const icon = appdata?.icon || '';
 
                                     return (
@@ -113,16 +115,16 @@ const RecentApps = React.memo(({ isOpen, onClose }: { isOpen: boolean, onClose: 
                                             key={win.id}
                                             win={win}
                                             icon={icon}
-                                            onClose={onClose}
-                                            onKill={() => {
-                                                ignoreClickRef.current = true;
-                                                setTimeout(() => ignoreClickRef.current = false, 500);
+                                            onclose={onclose}
+                                            onkill={() => {
+                                                ignoreclickref.current = true;
+                                                setTimeout(() => ignoreclickref.current = false, 500);
                                                 removewindow(win.id);
                                             }}
-                                            onOpen={() => {
+                                            onopen={() => {
                                                 updatewindow(win.id, { isMinimized: false });
                                                 setactivewindow(win.id);
-                                                onClose();
+                                                onclose();
                                             }}
                                         />
                                     );
@@ -137,7 +139,7 @@ const RecentApps = React.memo(({ isOpen, onClose }: { isOpen: boolean, onClose: 
 });
 
 
-const AppCard = ({ win, icon, onKill, onOpen }: any) => {
+const AppCard = ({ win, icon, onkill, onopen }: any) => {
     const isdragging = useRef(false);
 
     return (
@@ -149,13 +151,14 @@ const AppCard = ({ win, icon, onKill, onOpen }: any) => {
             animate={{ opacity: 1, y: 0 }}
             exit={{
                 opacity: 0,
-                scale: 0.9,
+                scale: 0.85,
+                y: -50,
                 filter: "blur(10px)",
                 transition: {
                     type: "spring",
                     stiffness: 400,
                     damping: 30,
-                    mass: 1
+                    mass: 0.8
                 }
             }}
             drag="y"
@@ -171,17 +174,15 @@ const AppCard = ({ win, icon, onKill, onOpen }: any) => {
 
 
                 if (swipedistance < -150 || swipevelocity < -600) {
-
-                    onKill();
+                    onkill();
                 } else if (swipedistance > 150 || swipevelocity > 600) {
-
-                    onOpen();
+                    onopen();
                 }
             }}
             onClick={(e) => {
                 if (isdragging.current) return;
                 e.stopPropagation();
-                onOpen();
+                onopen();
             }}
 
 
@@ -194,7 +195,7 @@ const AppCard = ({ win, icon, onKill, onOpen }: any) => {
             }}
         >
             <div className="flex items-center gap-2 mb-3 px-1 pointer-events-none">
-                {icon && <img src={icon} className="w-8 h-8 drop-shadow-md" />}
+                {icon && <img src={icon} className="w-8 h-8 drop-shadow-md" alt={win.title} />}
                 <span className="text-white font-semibold text-sm tracking-wide drop-shadow-md">{win.title}</span>
             </div>
 
@@ -204,8 +205,8 @@ const AppCard = ({ win, icon, onKill, onOpen }: any) => {
                 <MemoizedDynamicComponent
                     icon={icon}
                     component={win.component}
-                    appname={win.appName}
-                    appProps={win.props}
+                    appname={win.appname}
+                    appprops={win.props}
                 />
             </div>
         </motion.div>

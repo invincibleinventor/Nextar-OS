@@ -1,117 +1,138 @@
+export interface App {
+  id: string;
+  appname: string;
+  icon: string;
+  maximizeable: boolean;
+  componentname: string;
+  additionaldata: any;
+  multiwindow: boolean;
+  titlebarblurred: boolean;
+  pinned: boolean;
+  defaultsize?: { width: number; height: number };
+}
 
-export const apps = [
-  {
-    id: 'launchpad',
-    appName: 'LaunchPad',
-
-    icon: '/launchpad.png',
-    maximizeable: false,
-    componentName: 'apps/Launchpad',
-    additionalData: {},
-    multiwindow: false,
-    titlebarblurred: false,
-    pinned: true,
-  },
+export const apps: App[] = [
   {
     id: 'finder',
-    appName: 'Finder',
+    appname: 'Finder',
     icon: '/finder.png',
     maximizeable: true,
-    componentName: 'apps/Finder',
-    additionalData: {},
+    componentname: 'apps/Finder',
+    additionaldata: {},
     multiwindow: true,
     titlebarblurred: true,
     pinned: true,
+    defaultsize: { width: 1000, height: 600 }
   },
   {
     id: 'settings',
-    appName: 'Settings',
+    appname: 'Settings',
     icon: '/settings.png',
     maximizeable: true,
-    componentName: 'apps/Settings',
-    additionalData: {},
+    componentname: 'apps/Settings',
+    additionaldata: {},
     multiwindow: true,
     titlebarblurred: true,
     pinned: true,
   },
-
   {
     id: 'python',
-    appName: 'Python IDE',
+    appname: 'Python IDE',
     icon: '/code.png',
     maximizeable: true,
-    componentName: 'apps/Python',
-    additionalData: {},
+    componentname: 'apps/Python',
+    additionaldata: {},
     multiwindow: true,
     titlebarblurred: false,
     pinned: true,
   },
   {
     id: 'mail',
-    appName: 'Mail',
+    appname: 'Mail',
     icon: '/mail.png',
     maximizeable: true,
-    componentName: 'Mail',
-    additionalData: {},
+    componentname: 'Mail',
+    additionaldata: {},
     multiwindow: true,
     titlebarblurred: false,
     pinned: true,
   },
   {
     id: 'calendar',
-    appName: 'Calendar',
+    appname: 'Calendar',
     icon: '/calendar.png',
     maximizeable: true,
-    componentName: 'apps/Calendar',
-    additionalData: {},
+    componentname: 'apps/Calendar',
+    additionaldata: {},
     multiwindow: true,
     titlebarblurred: false,
     pinned: true,
   },
   {
     id: 'calculator',
-    appName: 'Calculator',
+    appname: 'Calculator',
     icon: '/calculator.png',
     maximizeable: true,
-    componentName: 'Calculator',
-    additionalData: {},
+    componentname: 'Calculator',
+    additionaldata: {},
     multiwindow: false,
     titlebarblurred: false,
     pinned: true,
+    defaultsize: { width: 300, height: 500 }
   },
   {
     id: 'appstore',
-    appName: 'App Store',
+    appname: 'App Store',
     icon: '/appstore.png',
     maximizeable: false,
-    componentName: 'AppStore',
-    additionalData: {},
+    componentname: 'AppStore',
+    additionaldata: {},
     multiwindow: false,
     titlebarblurred: false,
     pinned: true,
   },
   {
     id: 'safari',
-    appName: 'Safari',
+    appname: 'Safari',
     icon: '/safari.png',
     maximizeable: true,
-    componentName: 'apps/Safari',
-    additionalData: {},
+    componentname: 'apps/Safari',
+    additionaldata: {},
+    multiwindow: true,
+    titlebarblurred: true,
+    pinned: true,
+  },
+  {
+    id: 'terminal',
+    appname: 'Terminal',
+    icon: '/terminal.webp',
+    maximizeable: true,
+    componentname: 'apps/Terminal',
+    additionaldata: {},
+    multiwindow: true,
+    titlebarblurred: true,
+    pinned: true,
+  },
+  {
+    id: 'photos',
+    appname: 'Photos',
+    icon: '/photos.webp',
+    maximizeable: true,
+    componentname: 'apps/Photos',
+    additionaldata: {},
     multiwindow: true,
     titlebarblurred: true,
     pinned: true,
   },
   {
     id: 'welcome',
-    appName: 'Welcome',
+    appname: 'Welcome',
     icon: '/info.png',
     maximizeable: false,
-    componentName: 'Welcome',
-    additionalData: {},
+    componentname: 'Welcome',
+    additionaldata: {},
     multiwindow: false,
     titlebarblurred: false,
     pinned: false,
   }
-
-
 ];

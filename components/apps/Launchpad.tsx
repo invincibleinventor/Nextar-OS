@@ -2,15 +2,15 @@ import Image from 'next/image';
 
 
 import { apps } from '../app';
-import { useWindows } from '../WindowContext';
+import { usewindows } from '../WindowContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import React, { useState } from 'react';
 import { IoSearch } from 'react-icons/io5';
 
 const appsperpage = 35;
 
-export default function Launchpad({ onClose }: { onClose: () => void }) {
-    const { addwindow, removewindow, windows, setactivewindow } = useWindows();
+export default function Launchpad({ onclose }: { onclose: () => void }) {
+    const { addwindow, removewindow, windows, setactivewindow } = usewindows();
     const [searchterm, setsearchterm] = useState('');
     const [page, setpage] = useState(0);
 
@@ -20,35 +20,38 @@ export default function Launchpad({ onClose }: { onClose: () => void }) {
 
 
         setTimeout(() => {
-            const appwins = windows.filter((win: any) => win.appName === app.appName);
+            const appwins = windows.filter((win: any) => win.appname === app.appname);
             if (appwins.length === 0 || app.multiwindow) {
-                const startlarge = app.additionalData?.startLarge;
-                const width = startlarge ? 900 : 700;
-                const height = startlarge ? 600 : 500;
-                const newwin = {
-                    id: `${app.appName}-${Date.now()}`,
-                    appName: app.appName,
-                    additionalData: app.additionalData || {},
-                    title: app.appName,
-                    component: app.componentName,
+                const newwin: any = {
+                    id: `${app.appname}-${Date.now()}`,
+                    appname: app.appname,
+                    additionaldata: app.additionaldata || {},
+                    title: app.appname,
+                    component: app.componentname,
                     props: {},
-                    isMinimized: false,
-                    isMaximized: false,
+                    isminimized: false,
+                    ismaximized: false,
                     position: { top: 100, left: 150 },
-                    size: { width, height },
                 };
+
+                if (app.defaultsize) {
+                    newwin.size = app.defaultsize;
+                } else if (app.additionaldata?.startlarge) {
+                    newwin.size = { width: 900, height: 600 };
+                }
+
                 addwindow(newwin);
                 setactivewindow(newwin.id);
             } else {
                 setactivewindow(appwins[0].id);
             }
-            onClose();
+            onclose();
         }, 100);
     };
 
     const filteredapps = apps.filter(a =>
         a.id !== 'launchpad' &&
-        a.appName.toLowerCase().includes(searchterm.toLowerCase())
+        a.appname.toLowerCase().includes(searchterm.toLowerCase())
     );
 
     const totalpages = Math.ceil(filteredapps.length / appsperpage) || 1;
@@ -69,7 +72,7 @@ export default function Launchpad({ onClose }: { onClose: () => void }) {
             className="fixed inset-0 z-[99999] flex flex-col items-center pt-20 pb-12
                 bg-black/40 backdrop-blur-3xl overflow-hidden"
             onClick={() => {
-                onClose();
+                onclose();
             }}
             onPan={(e, info) => {
                 if (info.offset.x < -50) paginate(1);
@@ -120,7 +123,7 @@ export default function Launchpad({ onClose }: { onClose: () => void }) {
                                 <div className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 relative">
                                     <Image
                                         src={app.icon}
-                                        alt={app.appName}
+                                        alt={app.appname}
                                         fill
                                         sizes="(max-width: 768px) 64px, (max-width: 1024px) 80px, 96px"
                                         className="object-contain drop-shadow-2xl"
@@ -128,7 +131,7 @@ export default function Launchpad({ onClose }: { onClose: () => void }) {
                                     />
                                 </div>
                                 <span className="text-white text-[13px] font-medium text-center leading-tight drop-shadow-md truncate max-w-[90px]">
-                                    {app.appName}
+                                    {app.appname}
                                 </span>
                             </motion.div>
                         ))}

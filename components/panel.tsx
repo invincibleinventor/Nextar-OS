@@ -2,29 +2,29 @@
 
 import React, { useState, useEffect } from 'react';
 import Menu from './menu';
-import { useWindows } from './WindowContext';
-import { menus, titleMenu, appleMenu } from './menus';
+import { usewindows } from './WindowContext';
+import { menus, titlemenu, applemenu } from './menus';
 import Control from './controlcenter';
 import Logo from './applelogo';
 
 import { IoWifi, IoBatteryFull, IoToggle, IoSettingsOutline } from 'react-icons/io5';
 import { BsToggles2 } from "react-icons/bs";
-import { useDevice } from './DeviceContext';
-import { IoIosSettings } from 'react-icons/io';
+import { usedevice } from './DeviceContext';
+import { IoIosBatteryFull, IoIosSettings, IoIosWifi } from 'react-icons/io';
 
 export default function Panel({ ontogglenotifications }: { ontogglenotifications?: () => void }) {
-    const { activewindow, windows } = useWindows();
-    const { setosstate } = useDevice();
+    const { activewindow, windows } = usewindows();
+    const { setosstate } = usedevice();
 
     const activeappname =
-        windows.find((window: any) => window.id === activewindow)?.appName || 'Finder';
-    let apptitlemenu: any = titleMenu.find((menu) => menu.title === activeappname);
-    let appmenus: any = menus.find((app) => app.appName === activeappname)?.menus;
+        windows.find((window: any) => window.id === activewindow)?.appname || 'Finder';
+    let apptitlemenu: any = titlemenu.find((menu) => menu.title === activeappname);
+    let appmenus: any = menus.find((app) => app.appname === activeappname)?.menus;
     const [activemenu, setactivemenu] = useState<string | null>(null);
     const [hoverenabled, sethoverenabled] = useState(false);
     const [currentdate, setcurrentdate] = useState<string>('');
     const [currenttime, setcurrenttime] = useState<string>('');
-    const [showControlCenter, setShowControlCenter] = useState(false);
+    const [showcontrolcenter, setshowcontrolcenter] = useState(false);
 
     useEffect(() => {
         if (activemenu !== null) {
@@ -76,7 +76,7 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
     if (!appmenus) {
         const menuslist = [
             {
-                appName: activeappname,
+                appname: activeappname,
                 menus: {
 
                     Window: [
@@ -139,11 +139,11 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
                         <Menu
                             id="appleMenu"
                             title={<div className="flex items-center justify-center h-full"><Logo /></div>}
-                            data={appleMenu}
+                            data={applemenu}
                             visible={activemenu === 'appleMenu'}
-                            onToggle={handletogglemenu}
-                            onHover={handlehovermenu}
-                            onAction={handleapplemenuaction}
+                            ontoggle={handletogglemenu}
+                            onhover={handlehovermenu}
+                            onaction={handleapplemenuaction}
                         />
                     </div>
                     {apptitlemenu && (
@@ -152,9 +152,9 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
                             title={apptitlemenu.title}
                             data={apptitlemenu.menu}
                             visible={activemenu === 'titleMenu'}
-                            onToggle={handletogglemenu}
+                            ontoggle={handletogglemenu}
                             bold={true}
-                            onHover={handlehovermenu}
+                            onhover={handlehovermenu}
                         />
                     )}
                     <div className='hidden md:inline-flex'>
@@ -168,26 +168,26 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
                                     title={menukey.charAt(0).toUpperCase() + menukey.slice(1)}
                                     data={menuitems as any}
                                     visible={activemenu === menukey}
-                                    onToggle={handletogglemenu}
-                                    onHover={handlehovermenu}
+                                    ontoggle={handletogglemenu}
+                                    onhover={handlehovermenu}
                                 />
                             );
                         })}
                     </div>
                 </div>
                 <div className='flex space-x-6 flex-row items-center content-center'>
-                    <div className='hidden md:flex flex-row space-x-6 items-center pl-2'>
-                        <IoWifi className="text-black dark:text-white w-[20px] h-[20px]" />
+                    <div className='hidden md:flex flex-row space-x-7 items-center pl-2'>
+                        <IoIosWifi className="text-black dark:text-white w-[20px] h-[20px]" />
                         <div className='flex items-center space-x-2'>
-                            <IoBatteryFull className="text-black dark:text-white w-[24px] h-[24px]" />
+                            <IoIosBatteryFull className="text-black dark:text-white w-[24px] h-[24px]" />
                         </div>
                     </div>
                     <div className="relative">
                         <div
-                            className={`p-1 rounded flex flex-row items-center content-center space-x-2 cursor-pointer transition-all duration-200 active:opacity-50 ${showControlCenter ? 'bg-white/20 dark:bg-white/10' : 'hover:bg-white/10'}`}
-                            onClick={() => setShowControlCenter(!showControlCenter)}
+                            className={`p-1 rounded flex flex-row items-center content-center space-x-2 cursor-pointer transition-all duration-200 active:opacity-50 ${showcontrolcenter ? 'bg-white/20 dark:bg-white/10' : 'hover:bg-white/10'}`}
+                            onClick={() => setshowcontrolcenter(!showcontrolcenter)}
                         >
-                            <div className={`px-1 rounded-md py-[2px] ${showControlCenter ? 'bg-white/20' : ''}`}>
+                            <div className={`px-1 rounded-md py-[2px] ${showcontrolcenter ? 'bg-white/20' : ''}`}>
                                 <svg className="w-4 h-4 dark:text-white text-black" color="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29 29" id="control-centre">
                                     <path d="M7.5 13h14a5.5 5.5 0 0 0 0-11h-14a5.5 5.5 0 0 0 0 11Zm0-9h14a3.5 3.5 0 0 1 0 7h-14a3.5 3.5 0 0 1 0-7Zm0 6A2.5 2.5 0 1 0 5 7.5 2.5 2.5 0 0 0 7.5 10Zm14 6h-14a5.5 5.5 0 0 0 0 11h14a5.5 5.5 0 0 0 0-11Zm1.434 8a2.5 2.5 0 1 1 2.5-2.5 2.5 2.5 0 0 1-2.5 2.5Z" fill="currentColor"></path>
                                 </svg>
@@ -195,13 +195,13 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
                         </div>
 
 
-                        {showControlCenter && (
+                        {showcontrolcenter && (
                             <>
-                                <div className="fixed inset-0 z-[9998]" onClick={() => setShowControlCenter(false)} />
+                                <div className="fixed inset-0 z-[9998]" onClick={() => setshowcontrolcenter(false)} />
                                 <div className="absolute top-8 right-0 z-[9999]">
                                     <Control
-                                        isOpen={showControlCenter}
-                                        onClose={() => setShowControlCenter(false)}
+                                        isopen={showcontrolcenter}
+                                        onclose={() => setshowcontrolcenter(false)}
                                         ismobile={false}
                                     />
                                 </div>

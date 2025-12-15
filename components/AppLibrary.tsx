@@ -2,25 +2,25 @@
 import React from 'react';
 import Image from 'next/image';
 import { apps } from './app';
-import { useWindows } from './WindowContext';
+import { usewindows } from './WindowContext';
 
 import { IoSearch } from 'react-icons/io5';
 
 const AppLibrary = () => {
-    const { addwindow, windows, setactivewindow, updatewindow } = useWindows();
+    const { addwindow, windows, setactivewindow, updatewindow } = usewindows();
     const categories: { [key: string]: string[] } = {
-        "Social & Communication": ["Mail", "Welcome"],
+        "Social & Communication": ["Mail"],
         "Productivity": ["Safari", "Calendar", "Notes", "Reminders"],
-        "Utilities": ["Finder", "Settings", "Calculator"],
-        "Creativity & Dev": ["XCode", "Photos", "App Store"],
+        "Utilities": ["Finder", "Settings", "Calculator", "Welcome"],
+        "Creativity & Dev": ["Python IDE", "Photos", "App Store"],
     };
 
-    const getCategoryApps = (catApps: string[]) => {
-        return apps.filter(app => catApps.includes(app.appName));
+    const getcategoryapps = (catapps: string[]) => {
+        return apps.filter(app => catapps.includes(app.appname));
     };
 
-    const openApp = (app: any) => {
-        const existingwin = windows.find((win: any) => win.appName === app.appName);
+    const openapp = (app: any) => {
+        const existingwin = windows.find((win: any) => win.appname === app.appname);
         if (existingwin) {
             updatewindow(existingwin.id, { isMinimized: false });
             setactivewindow(existingwin.id);
@@ -28,11 +28,11 @@ const AppLibrary = () => {
         }
 
         const newwin = {
-            id: `${app.appName}-${Date.now()}`,
-            appName: app.appName,
-            additionalData: {},
-            title: app.appName,
-            component: app.componentName,
+            id: `${app.appname}-${Date.now()}`,
+            appname: app.appname,
+            additionaldata: {},
+            title: app.appname,
+            component: app.componentname,
             props: {},
             isMinimized: false,
             isMaximized: true,
@@ -56,7 +56,7 @@ const AppLibrary = () => {
         const dy = Math.abs(e.clientY - startpos.current.y);
 
         if (dx < 10 && dy < 10) {
-            openApp(app);
+            openapp(app);
         }
     };
 
@@ -66,7 +66,7 @@ const AppLibrary = () => {
             style={{ overscrollBehavior: 'contain', touchAction: 'pan-y', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
             <div className="relative w-full text-center mb-6">
-                <div className="relative w-full mx-auto bg-neutral-200/50 dark:bg-neutral-800/50 backdrop-blur-xl rounded-xl h-10 flex items-center px-3">
+                <div className="relative w-full mx-auto bg-neutral-200/50 dark:bg-neutral-800/50 backdrop-blur-xl rounded-2xl h-10 flex items-center px-3">
                     <IoSearch className="text-neutral-500" size={20} />
                     <span className="ml-2 text-neutral-500 text-lg">App Library</span>
                 </div>
@@ -75,18 +75,18 @@ const AppLibrary = () => {
             <div className="grid grid-cols-2 2xs:grid-cols-4 sm:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-6 w-full mx-auto pb-10">
                 {Object.keys(categories).map((category) => (
                     <div key={category} className="flex flex-col gap-2 relative">
-                        <div className="bg-white/40 dark:bg-neutral-800/40 backdrop-blur-xl rounded-2xl p-4 w-auto aspect-square shrink-0 h-auto" style={{ aspectRatio: '1/1' }}>
+                        <div className="bg-white/30 dark:bg-neutral-800/30 backdrop-blur-xl rounded-3xl p-4 w-auto aspect-square shrink-0 h-auto" style={{ aspectRatio: '1/1' }}>
                             <div className="grid grid-cols-2 grid-rows-2 gap-3 w-auto h-auto">
-                                {getCategoryApps(categories[category]).map((app: any) => (
+                                {getcategoryapps(categories[category]).map((app: any) => (
                                     <div
-                                        key={app.appName}
-                                        onClick={() => openApp(app)}
+                                        key={app.appname}
+                                        onClick={() => openapp(app)}
                                         className="relative w-full h-full flex items-center justify-center cursor-pointer active:scale-90 transition-transform"
                                     >
                                         <Image
                                             src={app.icon}
-                                            alt={app.appName}
-                                            
+                                            alt={app.appname}
+
                                             className="object-cover rounded-xl"
                                             width={100}
                                             height={100}

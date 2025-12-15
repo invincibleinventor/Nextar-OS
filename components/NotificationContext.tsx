@@ -2,8 +2,8 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Notification, initialnotifications } from './notifications';
-import { useWindows } from './WindowContext';
-import { useDevice } from './DeviceContext';
+import { usewindows } from './WindowContext';
+import { usedevice } from './DeviceContext';
 
 interface NotificationContextType {
     notifications: Notification[];
@@ -20,8 +20,8 @@ const NotificationContext = createContext<NotificationContextType | undefined>(u
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
     const [notifications, setnotifications] = useState<Notification[]>([]);
-    const { addwindow, setactivewindow, windows, updatewindow } = useWindows();
-    const { osstate } = useDevice();
+    const { addwindow, setactivewindow, windows, updatewindow } = usewindows();
+    const { osstate } = usedevice();
     const [isloaded, setisloaded] = useState(false);
     const [hasshownwelcome, sethasshownwelcome] = useState(false);
 
@@ -36,22 +36,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         setisloaded(true);
     }, []);
 
-    useEffect(() => {
-        if (!hasshownwelcome && !osstate && isloaded) {
-            sethasshownwelcome(true);
-            setTimeout(() => {
-                addnotification({
-                    id: 'demo-welcome',
-                    appId: 'finder',
-                    appName: 'Finder',
-                    title: 'Welcome to macOS',
-                    description: 'Experience the new immersive full screen mode and notifications.',
-                    time: 'Now',
-                    icon: '/finder.png'
-                });
-            }, 1000);
-        }
-    }, [osstate, isloaded, hasshownwelcome]);
+
 
     const addnotification = (n: Notification) => {
         setnotifications(prev => [n, ...prev]);
@@ -82,8 +67,8 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
     const handlenotificationclick = (notif: Notification) => {
         const existing = windows.find((w: any) =>
-            w.appName.toLowerCase() === notif.appName.toLowerCase() ||
-            w.id.startsWith(notif.appId)
+            w.appname.toLowerCase() === notif.appname.toLowerCase() ||
+            w.id.startsWith(notif.appid)
         );
 
         if (existing) {
@@ -91,14 +76,14 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
             setactivewindow(existing.id);
         } else {
             import('./app').then(({ apps }) => {
-                const appdata = apps.find(a => a.id === notif.appId || a.appName === notif.appName);
+                const appdata = apps.find(a => a.id === notif.appid || a.appname === notif.appname);
                 if (appdata) {
                     addwindow({
-                        id: `${appdata.appName}-${Date.now()}`,
-                        appName: appdata.appName,
-                        additionalData: {},
-                        title: appdata.appName,
-                        component: appdata.componentName,
+                        id: `${appdata.appname}-${Date.now()}`,
+                        appname: appdata.appname,
+                        additionaldata: {},
+                        title: appdata.appname,
+                        component: appdata.componentname,
                         props: {},
                         isMinimized: false,
                         isMaximized: true,
@@ -133,7 +118,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     );
 }
 
-export function useNotifications() {
+export function usenotifications() {
     const context = useContext(NotificationContext);
     if (!context) {
         throw new Error('useNotifications must be used within a NotificationProvider');

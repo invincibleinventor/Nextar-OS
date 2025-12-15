@@ -5,19 +5,19 @@ import { FiBatteryCharging, FiCast } from 'react-icons/fi'
 import { IoPlay, IoFlashlight, IoCamera, IoCalculator, IoStopwatch } from 'react-icons/io5'
 import { BiSignal5 } from "react-icons/bi";
 import { FaTowerBroadcast } from 'react-icons/fa6'
-import { useSettings } from './SettingsContext'
-import { useTheme } from './ThemeContext'
+import { usesettings } from './SettingsContext'
+import { usetheme } from './ThemeContext'
 import { motion, AnimatePresence } from 'framer-motion'
 
-export default function ControlCenter({ onClose, ismobile = false, isOpen = true }: { onClose?: () => void, ismobile?: boolean, isOpen?: boolean }) {
+export default function ControlCenter({ onclose, ismobile = false, isopen = true }: { onclose?: () => void, ismobile?: boolean, isopen?: boolean }) {
   const [brightness, setbrightness] = useState(100)
   const [volume, setvolume] = useState(100)
-  const { theme, toggletheme } = useTheme()
-  const { reducemotion, reducetransparency } = useSettings()
+  const { theme, toggletheme } = usetheme()
+  const { reducemotion, reducetransparency } = usesettings()
 
   return (
     <AnimatePresence>
-      {isOpen && (
+      {isopen && (
         <motion.div
           key="control-center"
           initial={ismobile ? { y: "-100%" } : { opacity: 0, scale: 0.9, transformOrigin: "top right" }}
@@ -37,8 +37,8 @@ export default function ControlCenter({ onClose, ismobile = false, isOpen = true
           drag={ismobile ? "y" : false}
           dragConstraints={{ top: 0, bottom: 0 }}
           onDragEnd={(_, info) => {
-            if (info.offset.y < -100 && onClose) {
-              onClose();
+            if (info.offset.y < -100 && onclose) {
+              onclose();
             }
           }}
         >
@@ -103,8 +103,8 @@ export default function ControlCenter({ onClose, ismobile = false, isOpen = true
               <div className="grid grid-cols-2 gap-3">
 
                 <div className="grid grid-cols-2 gap-3 h-36" onPointerDown={(e) => e.stopPropagation()}>
-                  <CCSlider value={brightness} onChange={setbrightness} icon={BsSunFill} />
-                  <CCSlider value={volume} onChange={setvolume} icon={BsFillVolumeUpFill} />
+                  <CCSlider value={brightness} onchange={setbrightness} icon={BsSunFill} />
+                  <CCSlider value={volume} onchange={setvolume} icon={BsFillVolumeUpFill} />
                 </div>
 
 
@@ -267,48 +267,48 @@ export default function ControlCenter({ onClose, ismobile = false, isOpen = true
   )
 }
 
-const CCSlider = ({ value, onChange, icon: Icon }: any) => {
+const CCSlider = ({ value, onchange, icon: Icon }: any) => {
   const ref = useRef<HTMLDivElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
+  const [isdragging, setisdragging] = useState(false);
 
-  const handlePointerDown = (e: React.PointerEvent) => {
+  const handlepointerdown = (e: React.PointerEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsDragging(true);
-    updateValue(e);
+    setisdragging(true);
+    updatevalue(e);
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   };
 
-  const handlePointerMove = (e: React.PointerEvent) => {
-    if (isDragging) {
+  const handlepointermove = (e: React.PointerEvent) => {
+    if (isdragging) {
       e.preventDefault();
       e.stopPropagation();
-      updateValue(e);
+      updatevalue(e);
     }
   };
 
-  const handlePointerUp = (e: React.PointerEvent) => {
+  const handlepointerup = (e: React.PointerEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsDragging(false);
+    setisdragging(false);
     (e.target as HTMLElement).releasePointerCapture(e.pointerId);
   };
 
-  const updateValue = (e: React.PointerEvent) => {
+  const updatevalue = (e: React.PointerEvent) => {
     if (!ref.current) return;
     const rect = ref.current.getBoundingClientRect();
     const percentage = Math.max(0, Math.min(100, ((rect.bottom - e.clientY) / rect.height) * 100));
-    onChange(percentage);
+    onchange(percentage);
   };
 
   return (
     <div
       ref={ref}
-      className={`relative w-full h-36 bg-neutral-800/80 backdrop-blur-xl rounded-[20px] overflow-hidden flex flex-col justify-end shadow-lg cursor-ns-resize touch-none ${isDragging ? 'scale-[0.98]' : ''} transition-transform`}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-      onPointerCancel={handlePointerUp}
+      className={`relative w-full h-36 bg-neutral-800/80 backdrop-blur-xl rounded-[20px] overflow-hidden flex flex-col justify-end shadow-lg cursor-ns-resize touch-none ${isdragging ? 'scale-[0.98]' : ''} transition-transform`}
+      onPointerDown={handlepointerdown}
+      onPointerMove={handlepointermove}
+      onPointerUp={handlepointerup}
+      onPointerCancel={handlepointerup}
     >
       <div className={`absolute bottom-0 w-full bg-white transition-all duration-75 ease-out`} style={{ height: `${value}%` }} />
       <div className="absolute inset-0 flex flex-col items-center justify-between py-4 z-10 pointer-events-none">

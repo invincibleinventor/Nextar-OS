@@ -2,25 +2,25 @@
 
 import Image from 'next/image';
 
-import { useWindows } from './WindowContext';
+import { usewindows } from './WindowContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { apps } from './app';
 import Launchpad from './apps/Launchpad';
 import { useState } from 'react';
 
 const Dock = () => {
-  const { windows, addwindow, setactivewindow, focusortogglewindow } = useWindows();
+  const { windows, addwindow, setactivewindow, focusortogglewindow } = usewindows();
   const [launchpad, setlaunch] = useState(false);
   const [hoverapp, sethoverapp] = useState<string | null>(null);
   const onclick = (id: string, name: string, title?: string) => {
-    const appwins = windows.filter((win: any) => win.appName === name);
-    const app = apps.find((a) => a.appName === name);
-    const startlarge = app && (app.additionalData as any) && (app.additionalData as any).startLarge;
+    const appwins = windows.filter((win: any) => win.appname === name);
+    const app = apps.find((a) => a.appname === name);
+    const startlarge = app && (app.additionaldata as any) && (app.additionaldata as any).startlarge;
     if (appwins.length > 0) {
       focusortogglewindow(name);
     } else {
       let position = { top: 100, left: 100 };
-      let size = { width: 400, height: 300 };
+      let size = (app as any)?.defaultsize || { width: 800, height: 600 };
       const ismaximized = false;
       if (startlarge && typeof window !== 'undefined') {
         const screenwidth = window.innerWidth;
@@ -36,15 +36,15 @@ const Dock = () => {
       }
       const newwin = {
         id: `${name}-${Date.now()}`,
-        appName: name,
-        additionalData: app?.additionalData || {},
-        title: title || app?.appName || name,
-        component: app?.componentName || name,
+        appname: name,
+        additionaldata: app?.additionaldata || {},
+        title: title || app?.appname || name,
+        component: app?.componentname || name,
         props: {},
-        isMinimized: false,
+        isminimized: false,
         position,
         size,
-        isMaximized: ismaximized,
+        ismaximized: ismaximized,
       };
       addwindow(newwin);
       setactivewindow(newwin.id);
@@ -53,18 +53,18 @@ const Dock = () => {
 
 
   const opennewwin = (app: any) => {
-    const startmaximized = (app.additionalData as any) && (app.additionalData as any).startMaximized;
+    const startmaximized = (app.additionaldata as any) && (app.additionaldata as any).startmaximized;
     const newwin = {
-      id: `${app.appName}-${Date.now()}`,
-      appName: app.appName,
-      additionalData: app.additionalData || {},
-      title: app.title || app.appName,
-      component: app.componentName,
+      id: `${app.appname}-${Date.now()}`,
+      appname: app.appname,
+      additionaldata: app.additionaldata || {},
+      title: app.title || app.appname,
+      component: app.componentname,
       props: {},
-      isMinimized: false,
+      isminimized: false,
       position: { top: 100, left: 100 },
-      size: { width: 400, height: 300 },
-      isMaximized: !!startmaximized,
+      size: (app as any).defaultsize || { width: 800, height: 600 },
+      ismaximized: !!startmaximized,
     };
     addwindow(newwin);
     setactivewindow(newwin.id);
@@ -74,18 +74,30 @@ const Dock = () => {
   const basesize = 55;
   const gap = 10;
   const pinnedapps = apps.filter((app) => app.pinned);
-  const applist = apps.filter((app) => app.appName !== 'LaunchPad')
+  const applist = apps;
   const unpinnedopenapps = windows
-    .map((win: any) => apps.find((app) => app.appName === win.appName))
+    .map((win: any) => apps.find((app) => app.appname === win.appname))
     .filter((app: any) => app && !app.pinned);
   let dockapps = [...pinnedapps, ...unpinnedopenapps];
   dockapps = dockapps.filter((value, index, self) =>
-    index === self.findIndex((t) => t.appName === value.appName)
+    index === self.findIndex((t) => t.appname === value.appname)
   );
+
+  // Add Launchpad as the first item
+  const allDockItems = [
+    {
+      id: 'launchpad-item',
+      appname: 'LaunchPad',
+      icon: '/launchpad.png',
+      pinned: true,
+      componentname: 'apps/Launchpad'
+    },
+    ...dockapps
+  ];
 
   const getprops = (i: number) => {
     if (hoverapp) {
-      const idx = dockapps.findIndex((app) => app.appName === hoverapp);
+      const idx = allDockItems.findIndex((app) => app.appname === hoverapp);
       if (i === idx) {
         return { size: basesize * 1.6, y: -basesize * 0.45 };
       }
@@ -104,7 +116,7 @@ const Dock = () => {
   return (
     <div className=''>
       <AnimatePresence>
-        {launchpad && <Launchpad onClose={() => setlaunch(false)} />}
+        {launchpad && <Launchpad onclose={() => setlaunch(false)} />}
       </AnimatePresence>
 
       <motion.div
@@ -120,122 +132,67 @@ const Dock = () => {
         }}
       >
         <div className="flex items-center">
-          {dockapps.map((app, i) => {
+          {allDockItems.map((app, i) => {
             const { size: iconsize, y: icony } = getprops(i);
-            const ishover = hoverapp === app.appName;
-            const haswin = windows.some((win: any) => win.appName === app.appName);
+            const ishover = hoverapp === app.appname;
+            const haswin = windows.some((win: any) => win.appname === app.appname);
+            const islaunchpad = app.appname === 'LaunchPad';
 
-            if (i === 0) {
-              return (
-                <motion.div
-                  id="launchpad"
-                  key={app.id}
-                  className="relative flex flex-col items-center cursor-pointer"
-                  onClick={() => setlaunch(!launchpad)}
-                  onMouseEnter={() => sethoverapp(app.appName)}
-                  onMouseLeave={() => sethoverapp(null)}
-                  animate={{
-                    width: iconsize,
-                    height: iconsize,
-                    y: icony,
-                  }}
-                  whileTap={{ scale: 0.9 }}
-                  transition={{
-                    type: 'spring',
-                    stiffness: 150,
-                    damping: 20,
-                    mass: 1,
-                  }}
-                  style={{
-                    position: 'relative',
-                    zIndex: ishover ? 10 : undefined,
-                  }}
-                >
-                  {ishover && (
-                    <motion.div
-                      className="absolute bottom-full mb-2 text-sm dark:bg-black dark:text-white dark:bg-opacity-10 bg-white text-black bg-opacity-30 backdrop-blur-lg px-2 py-1 rounded-md shadow-lg"
-                      style={{
-                        whiteSpace: 'nowrap',
-                      }}
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0 }}
-                      transition={{
-                        type: 'spring',
-                        stiffness: 150,
-                        damping: 20,
-                      }}
-                    >
-                      {app.appName}
-                    </motion.div>
-                  )}
-                  <Image
-                    src={app.icon}
-                    alt={app.appName}
-                    fill
-                    sizes="80px"
-                    className="rounded-xl transition-all duration-200 object-cover"
-                    draggable={false}
-                  />
-                </motion.div>
-              );
-            } else {
-              return (
-                <motion.div
-                  key={app.id}
-                  className="relative flex flex-col items-center cursor-pointer"
-                  onClick={() => onclick(app.id, app.appName)}
-                  onMouseEnter={() => sethoverapp(app.appName)}
-                  onMouseLeave={() => sethoverapp(null)}
-                  animate={{
-                    width: iconsize,
-                    height: iconsize,
-                    y: icony,
-                  }}
-                  whileTap={{ scale: 0.9 }}
-                  transition={{
-                    type: 'spring',
-                    stiffness: 150,
-                    damping: 20,
-                    mass: 1,
-                  }}
-                  style={{
-                    position: 'relative',
-                    zIndex: ishover ? 10 : undefined,
-                  }}
-                >
-                  {ishover && (
-                    <motion.div
-                      className="absolute bottom-full mb-2 text-sm dark:bg-black dark:text-white dark:bg-opacity-10 bg-white text-black bg-opacity-30 backdrop-blur-lg px-2 py-1 rounded-md shadow-lg"
-                      style={{
-                        whiteSpace: 'nowrap',
-                      }}
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0 }}
-                      transition={{
-                        type: 'spring',
-                        stiffness: 150,
-                        damping: 20,
-                      }}
-                    >
-                      {app.appName}
-                    </motion.div>
-                  )}
-                  <Image
-                    src={app.icon}
-                    alt={app.appName}
-                    fill
-                    sizes="80px"
-                    className="rounded-xl transition-all duration-200 object-cover"
-                    draggable={false}
-                  />
-                  {haswin && (
-                    <div className="absolute bottom-0 w-[3px] h-[3px] bg-neutral-600 dark:bg-white rounded-md -mb-[4px] transition-all duration-200"></div>
-                  )}
-                </motion.div>
-              );
-            }
+            return (
+              <motion.div
+                key={app.id || i}
+                className="relative flex flex-col items-center cursor-pointer"
+                onClick={() => islaunchpad ? setlaunch(!launchpad) : onclick(app.id, app.appname)}
+                onMouseEnter={() => sethoverapp(app.appname)}
+                onMouseLeave={() => sethoverapp(null)}
+                animate={{
+                  width: iconsize,
+                  height: iconsize,
+                  y: icony,
+                }}
+                whileTap={{ scale: 0.9 }}
+                transition={{
+                  type: 'spring',
+                  stiffness: 150,
+                  damping: 20,
+                  mass: 1,
+                }}
+                style={{
+                  position: 'relative',
+                  zIndex: ishover ? 10 : undefined,
+                }}
+              >
+                {ishover && (
+                  <motion.div
+                    className="absolute bottom-full mb-2 text-sm dark:bg-black dark:text-white dark:bg-opacity-10 bg-white text-black bg-opacity-30 backdrop-blur-lg px-2 py-1 rounded-md shadow-lg"
+                    style={{
+                      whiteSpace: 'nowrap',
+                    }}
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    transition={{
+                      type: 'spring',
+                      stiffness: 150,
+                      damping: 20,
+                    }}
+                  >
+                    {app.appname}
+                  </motion.div>
+                )}
+                <Image
+                  src={app.icon}
+                  alt={app.appname}
+                  fill
+                  sizes="80px"
+                  className="rounded-xl transition-all duration-200 object-cover"
+                  draggable={false}
+                />
+                {haswin && !islaunchpad && (
+                  <div className="absolute bottom-0 w-[3px] h-[3px] bg-neutral-600 dark:bg-white rounded-md -mb-[4px] transition-all duration-200"></div>
+                )}
+              </motion.div>
+            );
           })}
         </div>
       </motion.div>

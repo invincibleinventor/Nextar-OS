@@ -3,7 +3,7 @@ import React, { createContext, useState, useContext } from 'react';
 
 const WindowContext = createContext<any>(null);
 
-export const useWindows = () => useContext(WindowContext);
+export const usewindows = () => useContext(WindowContext);
 
 export const WindowProvider = ({ children }: any) => {
   const [windows, setwindows] = useState<any[]>([]);
@@ -38,20 +38,20 @@ export const WindowProvider = ({ children }: any) => {
 
   const focusortogglewindow = (appname: string) => {
     setwindows((prevwindows) => {
-      const appwindows = prevwindows.filter((win) => win.appName === appname);
+      const appwindows = prevwindows.filter((win) => win.appname === appname);
       if (appwindows.length === 0) return prevwindows;
       const topmost = appwindows.find((win) => win.id === activewindow);
 
       if (topmost) {
         return prevwindows.map((win) =>
-          win.appName === appname ? { ...win, isMinimized: !win.isMinimized } : win
+          win.appname === appname ? { ...win, isMinimized: !win.isMinimized } : win
         );
       } else {
         const lastWindow = appwindows[appwindows.length - 1];
         setactivewindow(lastWindow.id);
 
         return prevwindows.map((win) =>
-          win.appName === appname ? { ...win, isMinimized: false } : win
+          win.appname === appname ? { ...win, isMinimized: false } : win
         );
       }
     });

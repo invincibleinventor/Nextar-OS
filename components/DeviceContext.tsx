@@ -17,7 +17,7 @@ interface DeviceContextType {
 
 const DeviceContext = createContext<DeviceContextType | null>(null);
 
-export const useDevice = () => {
+export const usedevice = () => {
     const context = useContext(DeviceContext);
     if (!context) {
         throw new Error('useDevice must be used within a DeviceProvider');

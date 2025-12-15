@@ -1,6 +1,6 @@
 export const menus = [
   {
-    appName: "Finder",
+    appname: "Finder",
     menus: {
       File: [
         { title: "New Finder Window", disabled: false },
@@ -63,7 +63,7 @@ export const menus = [
   }
 ];
 
-export const titleMenu = [
+export const titlemenu = [
   {
     title: "Finder",
     menu: [
@@ -80,7 +80,7 @@ export const titleMenu = [
   }
 ];
 
-export const appleMenu = [
+export const applemenu = [
   { title: "About This Mac", disabled: false },
   { separator: true },
   { title: "System Settings...", disabled: false },

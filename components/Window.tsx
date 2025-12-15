@@ -1,10 +1,10 @@
 'use client'
 import React, { useState, useEffect, useRef, memo } from 'react';
-import { useWindows } from './WindowContext';
+import { usewindows } from './WindowContext';
 import { apps } from './app';
 import { motion } from 'framer-motion';
-import { useDevice } from './DeviceContext';
-import { useSettings } from './SettingsContext';
+import { usedevice } from './DeviceContext';
+import { usesettings } from './SettingsContext';
 
 const panelheight = 35;
 const dockheight = 70;
@@ -16,11 +16,9 @@ const componentmap: { [key: string]: any } = {
   'apps/Settings': dynamic(() => import('./apps/Settings')),
   'apps/Calendar': dynamic(() => import('./apps/Calendar')),
   'apps/Safari': dynamic(() => import('./apps/Safari')),
-  'apps/Messages': dynamic(() => import('./apps/Messages')),
   'apps/Photos': dynamic(() => import('./apps/Photos')),
   'apps/Terminal': dynamic(() => import('./apps/Terminal')),
   'apps/Launchpad': dynamic(() => import('./apps/Launchpad')),
-  'apps/News': dynamic(() => import('./apps/News')),
   'apps/Python': dynamic(() => import('./apps/Python')),
 
   'AppStore': dynamic(() => import('./AppStore')),
@@ -33,7 +31,7 @@ const componentmap: { [key: string]: any } = {
 
 
 const MemoizedDynamicComponent = memo(
-  ({ icon, component, appname, appProps, isFocused }: { icon: string, component: string; appname: string, appProps: any; isFocused: boolean }) => {
+  ({ icon, component, appname, appprops, isFocused }: { icon: string, component: string; appname: string, appprops: any; isFocused: boolean }) => {
     const DynamicComponent = componentmap[component];
 
     if (!DynamicComponent) {
@@ -47,7 +45,7 @@ const MemoizedDynamicComponent = memo(
       );
     }
 
-    return <DynamicComponent {...appProps} isFocused={isFocused} />;
+    return <DynamicComponent {...appprops} isFocused={isFocused} />;
   },
   (prevprops, nextprops) => prevprops.isFocused === nextprops.isFocused
 );
@@ -55,15 +53,17 @@ MemoizedDynamicComponent.displayName = 'MemoizedDynamicComponent';
 
 
 
-const Window = ({ id, appName, title, component, props, isMinimized, isMaximized, shouldBlur = true, isSystemGestureActive = false }: any) => {
+const Window = ({ id, appname, title, component, props, isminimized, ismaximized, shouldblur = true, issystemgestureactive = false, size: initialsize, position: initialposition }: any) => {
 
-  const { removewindow, updatewindow, activewindow, setactivewindow, windows } = useWindows();
-  const { ismobile } = useDevice();
-  const { reducemotion, reducetransparency } = useSettings();
-  const app = apps.find((app) => app.appName === appName);
+  const { removewindow, updatewindow, activewindow, setactivewindow, windows } = usewindows();
+  const { ismobile } = usedevice();
+  const { reducemotion, reducetransparency } = usesettings();
+  const app = apps.find((app) => app.appname === appname);
 
   const [position, setposition] = useState(() => {
-    if (app && (app.additionalData as any) && (app.additionalData as any).startLarge && typeof window !== 'undefined') {
+    if (initialposition) return initialposition;
+
+    if (app && (app.additionaldata as any) && (app.additionaldata as any).startlarge && typeof window !== 'undefined') {
       const screenwidth = window.innerWidth;
       const screenheight = window.innerHeight;
       const width = Math.round(screenwidth * 0.85);
@@ -73,10 +73,12 @@ const Window = ({ id, appName, title, component, props, isMinimized, isMaximized
         left: Math.round((screenwidth - width) / 2),
       };
     }
-    return { top: 100, left: 100 };
+    return { top: window.innerHeight / 8, left: window.innerWidth / 4 };
   });
   const [size, setsize] = useState(() => {
-    if (app && (app.additionalData as any) && (app.additionalData as any).startLarge && typeof window !== 'undefined') {
+    if (initialsize) return initialsize;
+
+    if (app && (app.additionaldata as any) && (app.additionaldata as any).startlarge && typeof window !== 'undefined') {
       const screenwidth = window.innerWidth;
       const screenheight = window.innerHeight;
       return {
@@ -84,7 +86,7 @@ const Window = ({ id, appName, title, component, props, isMinimized, isMaximized
         height: Math.round((screenheight - panelheight - dockheight) * 0.85),
       };
     }
-    return { width: 400, height: 300 };
+    return { width: 800, height: 600 };
   });
   const [previousstate, setpreviousstate] = useState({ position, size });
   const [isdragging, setisdragging] = useState(false);
@@ -100,9 +102,9 @@ const Window = ({ id, appName, title, component, props, isMinimized, isMaximized
       setsize({ width: window.innerWidth, height: window.innerHeight - 44 });
       return;
     }
-    if (isMinimized) {
+    if (isminimized) {
       const { innerWidth: screenwidth, innerHeight: screenheight } = window;
-      if (!isMaximized) {
+      if (!ismaximized) {
         setpreviousstate({
           position, size
         })
@@ -111,7 +113,7 @@ const Window = ({ id, appName, title, component, props, isMinimized, isMaximized
         top: screenheight,
         left: (screenwidth - size.width) / 2,
       });
-    } else if (isMaximized) {
+    } else if (ismaximized) {
       const { innerWidth: screenwidth, innerHeight: screenheight } = window;
       setposition({ top: panelheight, left: 0 });
       setsize({
@@ -121,15 +123,14 @@ const Window = ({ id, appName, title, component, props, isMinimized, isMaximized
     } else {
       setsize(previousstate.size);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMinimized, isMaximized, ismobile]);
+  }, [isminimized, ismaximized, ismobile]);
 
   const handlemaximize = () => {
-    if (!isMaximized) {
+    if (!ismaximized) {
       setpreviousstate({ position, size });
-      updatewindow(id, { isMaximized: true });
+      updatewindow(id, { ismaximized: true });
     } else {
-      updatewindow(id, { isMaximized: false });
+      updatewindow(id, { ismaximized: false });
       setposition(previousstate.position);
       setsize(previousstate.size);
     }
@@ -139,7 +140,7 @@ const Window = ({ id, appName, title, component, props, isMinimized, isMaximized
     if (e.detail === 2) return;
 
     let dragstarted = false;
-    const wasmaximized = isMaximized;
+    const wasmaximized = ismaximized;
     let dragoffsetx = 0;
     let dragoffsety = 0;
     let startx = 0;
@@ -176,7 +177,7 @@ const Window = ({ id, appName, title, component, props, isMinimized, isMaximized
 
       if (!dragstarted && wasmaximized && Math.abs(movey - starty) > 10) {
         dragstarted = true;
-        updatewindow(id, { isMaximized: false });
+        updatewindow(id, { ismaximized: false });
 
         setTimeout(() => {
           setsize(prevsize);
@@ -221,7 +222,8 @@ const Window = ({ id, appName, title, component, props, isMinimized, isMaximized
 
 
       if (!wasmaximized && lasttop <= panelheight) {
-        updatewindow(id, { isMaximized: true });
+        setpreviousstate({ position, size });
+        updatewindow(id, { ismaximized: true });
       } else if (wasmaximized && dragstarted) {
 
       }
@@ -301,10 +303,10 @@ const Window = ({ id, appName, title, component, props, isMinimized, isMaximized
     <motion.div
       ref={windowref}
       initial={{ opacity: 0, y: 0 }}
-      animate={{ opacity: isMinimized ? 0 : 1, y: isMinimized ? 400 : 0, scale: isMinimized ? 0.5 : 1 }}
+      animate={{ opacity: isminimized ? 0 : 1, y: isminimized ? 400 : 0, scale: isminimized ? 0.5 : 1 }}
       exit={{ opacity: 0, y: -10 }}
       onAnimationComplete={(definition) => {
-        if (isMinimized) {
+        if (isminimized) {
         }
       }}
       transition={{
@@ -314,21 +316,21 @@ const Window = ({ id, appName, title, component, props, isMinimized, isMaximized
         duration: reducemotion ? 0.2 : undefined
       }}
       className={`border dark:border-neutral-600 border-neutral-500 overflow-hidden flex flex-col ${app?.titlebarblurred
-        ? `dark:bg-opacity-40 absolute bg-opacity-80  dark:bg-black bg-white ${shouldBlur ? 'backdrop-blur-lg' : ''}`
-        : `dark:bg-neutral-900 bg-white ${shouldBlur ? 'backdrop-blur-sm' : ''}`}  absolute ${isMaximized || ismobile ? '' : 'rounded-3xl'} ${isdragging ? 'cursor-grabbing' : 'cursor-default'} ${isMinimized ? 'pointer-events-none' : 'pointer-events-auto'}`}
+        ? `dark:bg-opacity-80 absolute bg-opacity-80  dark:bg-neutral-900 bg-white ${shouldblur ? 'backdrop-blur-md' : ''}`
+        : `dark:bg-neutral-900 bg-white ${shouldblur ? 'backdrop-blur-sm' : ''}`}  absolute ${ismaximized || ismobile ? '' : 'rounded-3xl'} ${isdragging ? 'cursor-grabbing' : 'cursor-default'} ${isminimized ? 'pointer-events-none' : 'pointer-events-auto'}`}
       style={{
         top: position.top,
-        left: isMaximized ? 0 : position.left,
-        width: isMaximized ? '100vw' : size.width,
+        left: ismaximized ? 0 : position.left,
+        width: ismaximized ? '100vw' : size.width,
         height: size.height,
-        zIndex: isMinimized ? -1 : zindex,
+        zIndex: isminimized ? -1 : zindex,
         willChange: 'transform',
       }}
       onMouseDown={() => setactivewindow(id)}
     >
       {!ismobile && (
         <div
-          className={`cursor-grab  ${isMaximized ? '' : 'rounded-t-3xl'} ${app?.titlebarblurred
+          className={`cursor-grab  ${ismaximized ? '' : 'rounded-t-3xl'} ${app?.titlebarblurred
             ? ' relative '
             : 'dark:bg-neutral-800 bg-white relative backdrop-blur-sm'
             } px-5 py-[16px] flex justify-between`}
@@ -353,7 +355,7 @@ const Window = ({ id, appName, title, component, props, isMinimized, isMaximized
               className={`${activewindow == id ? app?.titlebarblurred ? 'bg-yellow-500' : 'bg-yellow-400' : 'bg-neutral-400'} w-[14px] h-[14px] rounded-full  window-button`}
               onClick={(e) => {
                 e.stopPropagation();
-                updatewindow(id, { isMinimized: true });
+                updatewindow(id, { isminimized: true });
               }}
             ></button>
             <button
@@ -371,10 +373,10 @@ const Window = ({ id, appName, title, component, props, isMinimized, isMaximized
       )}
 
       <div
-        className={`w-full dark:border-neutral-600 border-neutral-500 overflow-hidden flex-1 h-full ${isMaximized || ismobile ? '' : 'rounded-b-3xl'} ${app?.titlebarblurred ? '' : 'bg-white  dark:bg-neutral-800'} ${(isMinimized || isSystemGestureActive) ? 'pointer-events-none' : 'pointer-events-auto'}`}
+        className={`w-full dark:border-neutral-600 border-neutral-500 overflow-hidden flex-1 h-full ${ismaximized || ismobile ? '' : 'rounded-b-3xl'} ${app?.titlebarblurred ? '' : 'bg-white  dark:bg-neutral-800'} ${(isminimized || issystemgestureactive) ? 'pointer-events-none' : 'pointer-events-auto'}`}
       >
 
-        <MemoizedDynamicComponent appname={app ? app.appName : ''} icon={app ? app.icon : ''} component={app?.componentName ? app.componentName : component} appProps={props} isFocused={activewindow === id} />
+        <MemoizedDynamicComponent appname={app ? app.appname : ''} icon={app ? app.icon : ''} component={app?.componentname ? app.componentname : component} appprops={props} isFocused={activewindow === id} />
       </div>
 
       {!ismobile && (

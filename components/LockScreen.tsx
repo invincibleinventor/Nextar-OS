@@ -1,12 +1,12 @@
 'use client';
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useDevice } from './DeviceContext';
+import { usedevice } from './DeviceContext';
 import { IoMdCamera, IoMdFlashlight } from "react-icons/io";
-import { useNotifications } from './NotificationContext';
+import { usenotifications } from './NotificationContext';
 
 export default function LockScreen() {
-    const { osstate, setosstate, ismobile } = useDevice();
+    const { osstate, setosstate, ismobile } = usedevice();
     const [password, setpassword] = useState('');
     const [error, seterror] = useState(false);
     const [hint, sethint] = useState(false);
@@ -14,7 +14,7 @@ export default function LockScreen() {
     const [shaking, setshaking] = useState(false);
     const [time, settime] = useState(new Date());
     const [dragy, setdragy] = useState(0);
-    const { notifications } = useNotifications();
+    const { notifications } = usenotifications();
 
     useEffect(() => {
         const timer = setInterval(() => settime(new Date()), 1000);
@@ -54,7 +54,7 @@ export default function LockScreen() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0, y: -50, scale: 1.02, transition: { duration: 0.4 } }}
-                    className="fixed inset-0 bg-cover bg-no-repeat dark:bg-[url('/bg-dark.jpg')] bg-[url('/bg-light.jpg')] z-[9990] flex flex-col items-center text-white select-none"
+                    className="fixed inset-0 bg-cover bg-no-repeat dark:bg-[url('/bg-dark.jpg')] bg-[url('/bg.jpg')] z-[9990] flex flex-col items-center text-white select-none"
 
                 >
                     {!ismobile && <div className="absolute inset-0 bg-black/20 backdrop-blur-[80px]" />}
@@ -68,7 +68,7 @@ export default function LockScreen() {
 
                             <div className="flex flex-col items-center mb-10">
                                 <div className="w-24 h-24 rounded-full mb-5 shadow-2xl relative group overflow-hidden border border-white/10">
-                                    <img src="/user.jpg" className="w-full h-full object-cover" onError={(e) => e.currentTarget.src = 'https://github.com/shadcn.png'} />
+                                    <img src="/pfp.png" className="w-full h-full object-cover" alt="User Profile" />
                                 </div>
                                 <div className="text-xl text-white font-semibold mb-5 drop-shadow-md tracking-wide">Administrator</div>
 
@@ -130,10 +130,10 @@ export default function LockScreen() {
                                     <div className="w-full flex hidden flex-col items-center space-y-2 mt-4">
                                         {notifications.slice(0, 3).map(n => (
                                             <div key={n.id} className="w-full max-w-sm bg-white/20 backdrop-blur-md border border-white/10 p-3 rounded-xl flex items-center space-x-3 shadow-sm">
-                                                <img src={n.icon} className="w-8 h-8 rounded-lg" />
+                                                <img src={n.icon} className="w-8 h-8 rounded-lg" alt={n.appname} />
                                                 <div className="flex-1 min-w-0 text-white text-left">
                                                     <div className="flex justify-between items-baseline">
-                                                        <span className="text-xs font-bold">{n.appName}</span>
+                                                        <span className="text-xs font-bold">{n.appname}</span>
                                                         <span className="text-[10px] opacity-70">{n.time}</span>
                                                     </div>
                                                     <div className="text-xs opacity-90 truncate">{n.title}</div>

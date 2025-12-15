@@ -1,117 +1,122 @@
 import React, { useState } from 'react';
-import { FaInbox, FaStar, FaPaperPlane, FaTrash, FaPen } from 'react-icons/fa';
+import { portfoliodata } from './portfolioData';
+import { IoMailOutline, IoLogoGithub, IoLogoTwitter, IoLogoLinkedin, IoCallOutline, IoLocationOutline, IoPaperPlaneOutline, IoChevronBack } from "react-icons/io5";
+import { PiThreadsLogo } from 'react-icons/pi';
 
 export default function Mail() {
-    const [selectedmail, setselectedmail] = useState<number | null>(null);
-
-    const mails = [
-        { id: 1, sender: 'Apple', subject: 'Welcome to your new Mac', time: '9:41 AM', preview: 'Explore all the new features and get the most out of your MacBook Pro. Discover tips, tricks, and more.' },
-        { id: 2, sender: 'GitHub', subject: '[GitHub] A new repository was created', time: 'Yesterday', preview: 'You created a new repository "macos-web". Check it out and start contributing today.' },
-        { id: 3, sender: 'Vercel', subject: 'Deployment Successful', time: 'Yesterday', preview: 'Your project "macos-web" was successfully deployed to production. View your deployment.' },
-    ];
+    const [showsidebar, setshowsidebar] = useState(true);
 
     return (
-        <div className="flex h-full w-full bg-white dark:bg-[#1e1e1e] font-sf text-black dark:text-white rounded-lg overflow-hidden">
-
-            <div className="w-[200px] bg-neutral-100/80 dark:bg-[#2d2d2d]/80 backdrop-blur-2xl border-r border-black/5 dark:border-white/5 flex flex-col pt-10 hidden md:flex">
-                <div className="px-3 mb-2">
-                    <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide px-2">Favorites</span>
+        <div className="flex h-full w-full bg-white dark:bg-[#1e1e1e] font-sf text-black dark:text-white relative overflow-hidden">
+            {/* Sidebar (List View Imitation) */}
+            <div className={`
+                w-full md:w-[240px] border-r border-gray-200 dark:border-white/10 flex flex-col bg-[#f5f5f7] dark:bg-[#2d2d2d]/50 backdrop-blur-xl
+                absolute md:relative z-20 h-full transition-transform duration-300 ease-in-out
+                ${showsidebar ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+            `}>
+                <div className="h-[52px] border-b border-gray-200 dark:border-white/10 flex items-center px-4 shrink-0">
+                    <span className="font-semibold text-sm text-gray-500 dark:text-gray-400">All Contacts</span>
                 </div>
-                <div className="px-2 space-y-0.5">
-                    <div className="flex items-center gap-2.5 px-3 py-1.5 bg-black/5 dark:bg-white/10 rounded-lg cursor-pointer">
-                        <FaInbox size={14} className="text-blue-500" />
-                        <span className="text-[13px] font-medium">Inbox</span>
-                        <span className="ml-auto text-[11px] text-gray-500 font-medium">3</span>
-                    </div>
-                    <div className="flex items-center gap-2.5 px-3 py-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg cursor-pointer text-black/70 dark:text-white/70 transition-colors">
-                        <FaPaperPlane size={14} />
-                        <span className="text-[13px]">Sent</span>
-                    </div>
-                    <div className="flex items-center gap-2.5 px-3 py-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg cursor-pointer text-black/70 dark:text-white/70 transition-colors">
-                        <FaStar size={14} />
-                        <span className="text-[13px]">Starred</span>
-                    </div>
-                    <div className="flex items-center gap-2.5 px-3 py-1.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg cursor-pointer text-black/70 dark:text-white/70 transition-colors">
-                        <FaTrash size={14} />
-                        <span className="text-[13px]">Trash</span>
+                <div className="flex-1 overflow-y-auto p-2">
+                    <div
+                        className="bg-[#007AFF] text-white rounded-md px-3 py-2 flex items-center gap-3 cursor-pointer"
+                        onClick={() => {
+                            if (window.innerWidth < 768) setshowsidebar(false);
+                        }}
+                    >
+                        <span className="font-bold text-sm">{portfoliodata.personal.name}</span>
                     </div>
                 </div>
             </div>
 
-
-            <div className="w-[300px] md:w-[320px] bg-white dark:bg-[#1e1e1e] border-r border-black/5 dark:border-white/5 flex flex-col z-10">
-                <div className="h-[52px] border-b border-black/5 dark:border-white/5 flex items-center justify-between px-4 bg-white/95 dark:bg-[#1e1e1e]/95 backdrop-blur">
-                    <span className="font-bold text-[16px]">Inbox</span>
-                    <button className="text-gray-400 hover:text-blue-500 transition"><FaPen size={14} /></button>
+            <div className="flex-1 flex flex-col bg-white dark:bg-[#1e1e1e] w-full min-w-0">
+                <div className="md:hidden h-12 border-b border-gray-200 dark:border-white/10 flex items-center px-4 bg-white/80 dark:bg-[#1e1e1e]/80 backdrop-blur-md sticky top-0 z-10">
+                    <button
+                        onClick={() => setshowsidebar(true)}
+                        className="flex items-center gap-1 text-[#007AFF] font-medium text-[15px]"
+                    >
+                        <IoChevronBack /> Contacts
+                    </button>
                 </div>
-                <div className="flex-1 overflow-y-auto">
-                    {mails.map(mail => (
-                        <div
-                            key={mail.id}
-                            onClick={() => setselectedmail(mail.id)}
-                            className={`p-4 border-b border-black/5 dark:border-white/5 cursor-pointer transition-colors relative
-                                ${selectedmail === mail.id
-                                    ? 'bg-blue-500 text-white z-10'
-                                    : 'hover:bg-black/[0.03] dark:hover:bg-white/[0.03]'}`}
-                        >
-                            <div className="flex justify-between items-baseline mb-0.5">
-                                <span className={`text-[13px] font-bold ${selectedmail === mail.id ? 'text-white' : 'text-black dark:text-white'}`}>{mail.sender}</span>
-                                <span className={`text-[11px] ${selectedmail === mail.id ? 'text-white/90' : 'text-gray-500 dark:text-gray-400'}`}>{mail.time}</span>
+
+                <div className="flex-1 overflow-y-auto w-full">
+                    <div className="p-8 max-w-2xl mx-auto">
+                        <div className="flex items-start gap-6 mb-8">
+                            <div className="w-24 h-24 rounded-full overflow-hidden shadow-md border dark:border-white/10 shrink-0">
+                                <img src="/pfp.png" alt="Profile" className="w-full h-full object-cover" />
                             </div>
-                            <div className={`text-[13px] font-medium mb-1 truncate ${selectedmail === mail.id ? 'text-white' : 'text-black dark:text-white'}`}>{mail.subject}</div>
-                            <div className={`text-[13px] leading-snug line-clamp-2 ${selectedmail === mail.id ? 'text-white/80' : 'text-gray-500 dark:text-gray-400'}`}>{mail.preview}</div>
-                        </div>
-                    ))}
-                </div>
-            </div>
+                            <div className="pt-2 min-w-0">
+                                <h1 className="text-2xl font-bold text-black dark:text-white truncate">{portfoliodata.personal.name}</h1>
+                                <p className="text-gray-500 dark:text-gray-400 text-sm mt-0.5">{portfoliodata.personal.role}</p>
 
-
-            <div className="flex-1 bg-white dark:bg-[#1e1e1e] flex flex-col min-w-0">
-                {selectedmail ? (
-                    <div className="flex flex-col h-full">
-
-                        <div className="h-[52px] border-b border-black/5 dark:border-white/5 flex items-center px-6 justify-between bg-white dark:bg-[#1e1e1e]">
-                            <div className="flex gap-4 text-gray-400">
-                                <FaTrash className="hover:text-red-500 cursor-pointer transition" size={14} />
-                                <FaStar className="hover:text-yellow-500 cursor-pointer transition" size={14} />
-                            </div>
-                            <div className="flex gap-4 text-gray-400">
-                                <FaPaperPlane className="hover:text-blue-500 cursor-pointer transition" size={14} />
-                            </div>
-                        </div>
-
-                        <div className="p-8 overflow-y-auto flex-1">
-                            <div className="flex items-start justify-between mb-6">
-                                <h1 className="text-2xl font-bold text-black dark:text-white leading-tight">{mails.find(m => m.id === selectedmail)?.subject}</h1>
-                                <span className="text-xs text-gray-400 mt-1 whitespace-nowrap ml-4">{mails.find(m => m.id === selectedmail)?.time}</span>
-                            </div>
-
-                            <div className="flex items-center gap-3 mb-8 border-b border-black/5 dark:border-white/5 pb-6">
-                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center font-bold text-white text-lg shadow-sm">
-                                    {mails.find(m => m.id === selectedmail)?.sender[0]}
+                                <div className="flex gap-3 mt-4 flex-wrap">
+                                    <a href={`mailto:${portfoliodata.personal.email}`} className="flex flex-col items-center gap-1 min-w-[60px] p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 transition-colors group">
+                                        <div className="w-8 h-8 bg-[#007AFF] rounded-full flex items-center justify-center text-white shadow-sm group-hover:bg-[#0062cc]">
+                                            <IoMailOutline size={16} />
+                                        </div>
+                                        <span className="text-[11px] text-[#007AFF]">mail</span>
+                                    </a>
+                                    <a href={portfoliodata.personal.socials.github} target="_blank" rel="noreferrer" className="flex flex-col items-center gap-1 min-w-[60px] p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 transition-colors group">
+                                        <div className="w-8 h-8 bg-gray-500 rounded-full flex items-center justify-center text-white shadow-sm group-hover:bg-gray-600">
+                                            <IoLogoGithub size={16} />
+                                        </div>
+                                        <span className="text-[11px] text-[#007AFF]">github</span>
+                                    </a>
+                                    <a href={portfoliodata.personal.socials.threads} target="_blank" rel="noreferrer" className="flex flex-col items-center gap-1 min-w-[60px] p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 transition-colors group">
+                                        <div className="w-8 h-8 bg-black dark:bg-white dark:text-black rounded-full flex items-center justify-center text-white shadow-sm">
+                                            <PiThreadsLogo size={16} />
+                                        </div>
+                                        <span className="text-[11px] text-[#007AFF]">social</span>
+                                    </a>
                                 </div>
+                            </div>
+                        </div>
+
+                        <div className="h-px bg-gray-200 dark:bg-white/10 mb-6" />
+
+                        <div className="space-y-6">
+                            <div className="grid grid-cols-[80px_1fr] gap-4 items-baseline">
+                                <span className="text-right text-xs font-medium text-gray-500 dark:text-gray-400">home</span>
                                 <div>
-                                    <div className="text-[14px] font-semibold text-black dark:text-white">{mails.find(m => m.id === selectedmail)?.sender}</div>
-                                    <div className="text-[12px] text-gray-500">to me</div>
+                                    <a href={`mailto:${portfoliodata.personal.email}`} className="text-[15px] text-[#007AFF] hover:underline block mb-0.5 break-all">
+                                        {portfoliodata.personal.email}
+                                    </a>
                                 </div>
                             </div>
 
-                            <div className="text-[15px] leading-relaxed text-gray-800 dark:text-gray-200 space-y-4 max-w-3xl">
-                                <p>Hi there,</p>
-                                <p>This is a demo email content used for the portfolio preview. In a real application, this would fetch the actual body of the email.</p>
-                                <p>{mails.find(m => m.id === selectedmail)?.preview}</p>
-                                <p>Feel free to browse around the other apps and explore the interface!</p>
-                                <br />
-                                <p className="font-medium text-black dark:text-white">Best,<br />{mails.find(m => m.id === selectedmail)?.sender} Team</p>
+                            <div className="grid grid-cols-[80px_1fr] gap-4 items-baseline">
+                                <span className="text-right text-xs font-medium text-gray-500 dark:text-gray-400">location</span>
+                                <div>
+                                    <span className="text-[15px] text-black dark:text-white block mb-0.5">
+                                        {portfoliodata.personal.location}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-[80px_1fr] gap-4 items-baseline">
+                                <span className="text-right text-xs font-medium text-gray-500 dark:text-gray-400">bio</span>
+                                <div>
+                                    <span className="text-[15px] text-black dark:text-white block leading-relaxed">
+                                        {portfoliodata.personal.bio}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-[80px_1fr] gap-4 items-baseline">
+                                <span className="text-right text-xs font-medium text-gray-500 dark:text-gray-400">profiles</span>
+                                <div className="space-y-2">
+                                    <a href={portfoliodata.personal.socials.github} target="_blank" rel="noreferrer" className="block text-[15px] text-[#007AFF] hover:underline">
+                                        Github
+                                    </a>
+                                    <a href={portfoliodata.personal.socials.threads || '#'} target="_blank" rel="noreferrer" className="block text-[15px] text-[#007AFF] hover:underline">
+                                        Threads
+                                    </a>
+                                </div>
                             </div>
                         </div>
+
                     </div>
-                ) : (
-                    <div className="h-full flex flex-col items-center justify-center text-gray-300 dark:text-gray-600">
-                        <FaInbox size={64} className="mb-4 opacity-20" />
-                        <p className="text-lg font-medium">No Message Selected</p>
-                    </div>
-                )}
+                </div>
             </div>
         </div>
     );

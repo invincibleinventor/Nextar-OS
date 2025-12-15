@@ -1,17 +1,17 @@
 'use client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNotifications } from './NotificationContext';
-import { useDevice } from './DeviceContext';
+import { usenotifications } from './NotificationContext';
+import { usedevice } from './DeviceContext';
 
-export default function MacOSNotifications({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
-    const { handlenotificationclick, notifications, clearnotification, markasviewed } = useNotifications();
-    const { ismobile, osstate } = useDevice();
+export default function MacOSNotifications({ isopen, onclose }: { isopen: boolean; onclose: () => void }) {
+    const { handlenotificationclick, notifications, clearnotification, markasviewed } = usenotifications();
+    const { ismobile, osstate } = usedevice();
 
     if (ismobile || osstate !== 'unlocked') return null;
 
     return (
         <>
-
+            {/* Toast Notifications */}
             <div className="fixed top-12 right-4 z-[99999] flex flex-col items-end space-y-2 pointer-events-none">
                 <AnimatePresence>
                     {notifications.filter(n => !n.viewed).slice(0, 4).map((n, index) => (
@@ -37,10 +37,10 @@ export default function MacOSNotifications({ isOpen, onClose }: { isOpen: boolea
                             </div>
 
                             <div className="flex items-start gap-3.5">
-                                <img src={n.icon} className="w-10 h-10 rounded-xl object-cover" />
+                                <img src={n.icon} className="w-10 h-10 rounded-xl object-cover" alt={n.appname} />
                                 <div className="flex-1 min-w-0 text-left">
                                     <div className="flex justify-between items-baseline mb-0.5">
-                                        <h4 className="font-bold text-[13px] text-black dark:text-white leading-tight">{n.appName}</h4>
+                                        <h4 className="font-bold text-[13px] text-black dark:text-white leading-tight">{n.appname}</h4>
                                         <span className="text-[10px] text-neutral-500">{n.time}</span>
                                     </div>
                                     <h4 className="font-semibold text-[13px] text-black dark:text-white leading-tight">{n.title}</h4>
@@ -52,31 +52,37 @@ export default function MacOSNotifications({ isOpen, onClose }: { isOpen: boolea
                 </AnimatePresence>
             </div>
 
+            {/* Notification Center Panel */}
             <AnimatePresence>
-                {isOpen && (
+                {isopen && (
                     <>
-                        <div className="fixed inset-0 w-screen h-screen z-[999998] bg-black/5 pointer-events-auto cursor-default" onClick={onClose} onPointerDown={onClose} />
+                        <div className="fixed inset-0 w-screen h-screen z-[999998] bg-black/20 hidden pointer-events-auto cursor-default" onClick={onclose} onPointerDown={onclose} />
                         <motion.div
                             initial={{ x: '100%' }}
                             animate={{ x: 0 }}
                             exit={{ x: '100%' }}
                             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                            className="fixed top-0 right-0 bottom-0 z-[999999] w-[360px] h-full bg-white/70 dark:bg-black/60 backdrop-blur-2xl border-l border-white/10 shadow-2xl p-4 pt-12 overflow-y-auto scrollbar-hide"
+                            className="fixed top-0 right-0 bottom-0 z-[999999] w-[360px] h-full bg-white/10 dark:bg-black/10 backdrop-blur-2xl border-l border-white/10 shadow-2xl p-4 pt-12 overflow-y-auto scrollbar-hide"
                         >
-                            <div className="flex justify-between items-end mb-6 px-2">
-                                <h2 className="text-xl font-semibold text-neutral-800 dark:text-white mb-1">Notifications</h2>
-                                <button onClick={onClose} className="text-xs bg-black/10 text-black/80 hover:text-black/60 dark:text-white/80 dark:hover:text-black/80 px-4 py-2 rounded transition">Close</button>
-                            </div>
-
                             <div className="flex flex-col gap-3">
+                                <div className="flex justify-between items-end mb-2 px-2">
+                                    <h3 className="text-xl font-bold text-black dark:text-white">Notifications</h3>
+                                    {notifications.length > 0 && (
+                                        <button onClick={() => notifications.forEach(n => markasviewed(n.id))} className="text-xs text-blue-500 hover:underline">
+                                            Clear All
+                                        </button>
+                                    )}
+                                </div>
+
                                 {notifications.length === 0 && <div className="text-center text-black/80 dark:text-white/40 mt-10">No New Notifications</div>}
+
                                 {notifications.map(n => (
                                     <div key={n.id} className="group relative w-full bg-white/40 dark:bg-neutral-800/60 backdrop-blur-xl rounded-xl p-3 shadow-sm hover:shadow-md transition-all">
                                         <div className="flex items-start gap-3" onClick={() => handlenotificationclick(n)}>
-                                            <img src={n.icon} className="w-9 h-9 rounded-lg" />
+                                            <img src={n.icon} className="w-9 h-9 rounded-lg" alt={n.appname} />
                                             <div className="flex-1 min-w-0 text-left">
                                                 <div className="flex justify-between items-baseline">
-                                                    <span className="text-[12px] font-bold text-black dark:text-white/90">{n.appName}</span>
+                                                    <span className="text-[12px] font-bold text-black dark:text-white/90">{n.appname}</span>
                                                     <span className="text-[10px] text-black/50 dark:text-white/50">{n.time}</span>
                                                 </div>
                                                 <h4 className="font-medium text-[13px] text-black dark:text-white leading-tight mt-0.5">{n.title}</h4>

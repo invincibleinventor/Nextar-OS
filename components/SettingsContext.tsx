@@ -45,7 +45,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     );
 }
 
-export function useSettings() {
+export function usesettings() {
     const context = useContext(SettingsContext);
     if (context === undefined) {
         throw new Error('useSettings must be used within a SettingsProvider');
