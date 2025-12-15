@@ -67,7 +67,7 @@ export default function MacOSNotifications({ isopen, onclose }: { isopen: boolea
                                 <div className="flex justify-between items-end mb-2 px-2">
                                     <h3 className="text-xl font-bold text-black dark:text-white">Notifications</h3>
                                     {notifications.length > 0 && (
-                                        <button onClick={() => notifications.forEach(n => markasviewed(n.id))} className="text-xs text-blue-500 hover:underline">
+                                        <button onClick={() => notifications.forEach(n => markasviewed(n.id))} className=" font-medium text-xs dark:text-blue-500 text-blue-900 hover:underline">
                                             Clear All
                                         </button>
                                     )}
