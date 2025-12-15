@@ -6,7 +6,11 @@ import { useWindows } from './WindowContext';
 import { menus, titleMenu, appleMenu } from './menus';
 import Control from './controlcenter';
 import Logo from './applelogo';
+
+import { IoWifi, IoBatteryFull, IoToggle, IoSettingsOutline } from 'react-icons/io5';
+import { BsToggles2 } from "react-icons/bs";
 import { useDevice } from './DeviceContext';
+import { IoIosSettings } from 'react-icons/io';
 
 export default function Panel({ ontogglenotifications }: { ontogglenotifications?: () => void }) {
     const { activewindow, windows } = useWindows();
@@ -20,6 +24,7 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
     const [hoverenabled, sethoverenabled] = useState(false);
     const [currentdate, setcurrentdate] = useState<string>('');
     const [currenttime, setcurrenttime] = useState<string>('');
+    const [showControlCenter, setShowControlCenter] = useState(false);
 
     useEffect(() => {
         if (activemenu !== null) {
@@ -170,8 +175,40 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
                         })}
                     </div>
                 </div>
-                <div className='flex space-x-4 flex-row items-center content-center'>
-                    <Control />
+                <div className='flex space-x-6 flex-row items-center content-center'>
+                    <div className='hidden md:flex flex-row space-x-6 items-center pl-2'>
+                        <IoWifi className="text-black dark:text-white w-[20px] h-[20px]" />
+                        <div className='flex items-center space-x-2'>
+                            <IoBatteryFull className="text-black dark:text-white w-[24px] h-[24px]" />
+                        </div>
+                    </div>
+                    <div className="relative">
+                        <div
+                            className={`p-1 rounded flex flex-row items-center content-center space-x-2 cursor-pointer transition-all duration-200 active:opacity-50 ${showControlCenter ? 'bg-white/20 dark:bg-white/10' : 'hover:bg-white/10'}`}
+                            onClick={() => setShowControlCenter(!showControlCenter)}
+                        >
+                            <div className={`px-1 rounded-md py-[2px] ${showControlCenter ? 'bg-white/20' : ''}`}>
+                                <svg className="w-4 h-4 dark:text-white text-black" color="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29 29" id="control-centre">
+                                    <path d="M7.5 13h14a5.5 5.5 0 0 0 0-11h-14a5.5 5.5 0 0 0 0 11Zm0-9h14a3.5 3.5 0 0 1 0 7h-14a3.5 3.5 0 0 1 0-7Zm0 6A2.5 2.5 0 1 0 5 7.5 2.5 2.5 0 0 0 7.5 10Zm14 6h-14a5.5 5.5 0 0 0 0 11h14a5.5 5.5 0 0 0 0-11Zm1.434 8a2.5 2.5 0 1 1 2.5-2.5 2.5 2.5 0 0 1-2.5 2.5Z" fill="currentColor"></path>
+                                </svg>
+                            </div>
+                        </div>
+
+                        {/* Control Center Dropdown */}
+                        {showControlCenter && (
+                            <>
+                                <div className="fixed inset-0 z-[9998]" onClick={() => setShowControlCenter(false)} />
+                                <div className="absolute top-8 right-0 z-[9999]">
+                                    <Control
+                                        isOpen={showControlCenter}
+                                        onClose={() => setShowControlCenter(false)}
+                                        ismobile={false}
+                                    />
+                                </div>
+                            </>
+                        )}
+                    </div>
+
                     <div
                         className='flex flex-row items-center content-center space-x-2 text-[14px] font-sf font-semibold dark:text-white text-black cursor-pointer hover:opacity-70 transition-opacity'
                         onClick={ontogglenotifications}

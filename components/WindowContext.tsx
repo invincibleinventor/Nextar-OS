@@ -10,12 +10,14 @@ export const WindowProvider = ({ children }: any) => {
   const [activewindow, setactivewindow] = useState<string | null>(null);
 
   const addwindow = (newwindow: any) => {
+    setactivewindow(newwindow.id);
     setwindows((prevwindows) => {
+      const filtered = prevwindows.filter(w => w.id !== newwindow.id);
       if (typeof window !== 'undefined' && window.innerWidth < 768) {
-        const minimizedprev = prevwindows.map(w => ({ ...w, isMinimized: true }));
+        const minimizedprev = filtered.map(w => ({ ...w, isMinimized: true }));
         return [...minimizedprev, newwindow];
       }
-      return [...prevwindows, newwindow];
+      return [...filtered, newwindow];
     });
   };
   const removewindow = (id: string) => {
@@ -39,14 +41,19 @@ export const WindowProvider = ({ children }: any) => {
       const appwindows = prevwindows.filter((win) => win.appName === appname);
       if (appwindows.length === 0) return prevwindows;
       const topmost = appwindows.find((win) => win.id === activewindow);
+
       if (topmost) {
+        // If the app is currently active, toggle minimization for ALL its windows
         return prevwindows.map((win) =>
           win.appName === appname ? { ...win, isMinimized: !win.isMinimized } : win
         );
       } else {
-        setactivewindow(appwindows[0].id);
+        // If app is not active, Bring ALL to front (restore) and focus the last one
+        const lastWindow = appwindows[appwindows.length - 1]; // Focus the newest/last window
+        setactivewindow(lastWindow.id);
+
         return prevwindows.map((win) =>
-          win.id === appwindows[0].id ? { ...win, isMinimized: false } : win
+          win.appName === appname ? { ...win, isMinimized: false } : win
         );
       }
     });

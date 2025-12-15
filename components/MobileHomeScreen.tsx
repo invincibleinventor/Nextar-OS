@@ -1,12 +1,16 @@
 'use client';
 import React, { useState } from 'react';
 import { apps } from './app';
-import { useWindows } from './WindowContext';
+import { useTheme } from './ThemeContext';
+import { useSettings } from './SettingsContext';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import AppLibrary from './AppLibrary';
+import { useWindows } from './WindowContext';
 
 export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayopen?: boolean }) {
     const { addwindow, windows, setactivewindow, updatewindow } = useWindows();
+    const { reduceMotion } = useSettings();
     const [page, setpage] = useState(0);
 
     const handleappclick = (app: any) => {
@@ -52,10 +56,16 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                 style={{ willChange: 'transform', touchAction: 'pan-y' }}
                 animate={{ x: `-${page * 100}vw` }}
                 initial={{ x: 0 }}
-                transition={{ type: "spring", stiffness: 250, damping: 25, mass: 0.8 }}
+                transition={{
+                    type: reduceMotion ? "tween" : "spring",
+                    stiffness: reduceMotion ? undefined : 350,
+                    damping: reduceMotion ? undefined : 30,
+                    mass: 1,
+                    duration: reduceMotion ? 0.2 : undefined
+                }}
                 drag="x"
                 dragConstraints={{ left: -window.innerWidth, right: 0 }}
-                dragElastic={0.2}
+                dragElastic={0.15}
                 dragMomentum={true}
                 dragDirectionLock={false}
                 onDragEnd={(_, info) => {
@@ -82,11 +92,13 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                                     onClick={() => handleappclick(app)}
                                     whileTap={{ scale: 0.9 }}
                                 >
-                                    <div className="w-[60px] h-[60px] rounded-[14px] overflow-hidden dark:bg-black/10 bg-white/10 shadow-sm ring-1 ring-white/5">
-                                        <img
+                                    <div className="w-[60px] h-[60px] rounded-[14px] overflow-hidden dark:bg-black/10 bg-white/10 shadow-sm ring-1 ring-white/5 relative">
+                                        <Image
                                             src={app.icon}
                                             alt={app.appName}
-                                            className="w-full h-full object-cover"
+                                            fill
+                                            sizes="60px"
+                                            className="object-cover"
                                             draggable={false}
                                         />
                                     </div>
@@ -106,10 +118,12 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                                 whileTap={{ scale: 0.85 }}
                                 className="w-[65px] h-[65px] aspect-square rounded-[18px] overflow-hidden relative"
                             >
-                                <img
+                                <Image
                                     src={app.icon}
                                     alt={app.appName}
-                                    className="w-full h-full object-cover"
+                                    fill
+                                    sizes="65px"
+                                    className="object-cover"
                                     draggable={false}
                                 />
                             </motion.button>

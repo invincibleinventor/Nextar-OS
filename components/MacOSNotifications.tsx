@@ -11,6 +11,7 @@ export default function MacOSNotifications({ isOpen, onClose }: { isOpen: boolea
 
     return (
         <>
+
             <div className="fixed top-12 right-4 z-[99999] flex flex-col items-end space-y-2 pointer-events-none">
                 <AnimatePresence>
                     {notifications.filter(n => !n.viewed).slice(0, 4).map((n, index) => (
@@ -54,17 +55,17 @@ export default function MacOSNotifications({ isOpen, onClose }: { isOpen: boolea
             <AnimatePresence>
                 {isOpen && (
                     <>
-                        <div className="fixed inset-0 z-[9998] bg-transparent" onClick={onClose} />
+                        <div className="fixed inset-0 w-screen h-screen z-[999998] bg-black/5 pointer-events-auto cursor-default" onClick={onClose} onPointerDown={onClose} />
                         <motion.div
                             initial={{ x: '100%' }}
                             animate={{ x: 0 }}
                             exit={{ x: '100%' }}
                             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                            className="fixed top-0 right-0 bottom-0 z-[9999] w-[360px] h-full bg-white/30 dark:bg-black/30 backdrop-blur-[50px] border-l border-white/10 shadow-2xl p-4 pt-12 overflow-y-auto scrollbar-hide"
+                            className="fixed top-0 right-0 bottom-0 z-[999999] w-[360px] h-full bg-white/70 dark:bg-black/60 backdrop-blur-2xl border-l border-white/10 shadow-2xl p-4 pt-12 overflow-y-auto scrollbar-hide"
                         >
                             <div className="flex justify-between items-end mb-6 px-2">
                                 <h2 className="text-xl font-semibold text-neutral-800 dark:text-white mb-1">Notifications</h2>
-                                <button onClick={onClose} className="text-xs bg-black/20 text-black/80 hover:text-black/60 dark:text-white/60 dark:hover:text-white/50 px-4 py-1 rounded transition">Close</button>
+                                <button onClick={onClose} className="text-xs bg-black/10 text-black/80 hover:text-black/60 dark:text-white/80 dark:hover:text-black/80 px-4 py-2 rounded transition">Close</button>
                             </div>
 
                             <div className="flex flex-col gap-3">

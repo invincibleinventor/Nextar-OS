@@ -1,20 +1,21 @@
 'use client';
 
+import Image from 'next/image';
+
 import { useWindows } from './WindowContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { apps } from './app';
+import Launchpad from './apps/Launchpad';
 import { useState } from 'react';
 
 const Dock = () => {
   const { windows, addwindow, setactivewindow, focusortogglewindow } = useWindows();
   const [launchpad, setlaunch] = useState(false);
   const [hoverapp, sethoverapp] = useState<string | null>(null);
-  const [searchterm, setsearchterm] = useState('');
-
   const onclick = (id: string, name: string, title?: string) => {
     const appwins = windows.filter((win: any) => win.appName === name);
     const app = apps.find((a) => a.appName === name);
-    const startlarge = app && app.additionalData && app.additionalData.startLarge;
+    const startlarge = app && (app.additionalData as any) && (app.additionalData as any).startLarge;
     if (appwins.length > 0) {
       focusortogglewindow(name);
     } else {
@@ -52,7 +53,7 @@ const Dock = () => {
 
 
   const opennewwin = (app: any) => {
-    const startmaximized = app.additionalData && app.additionalData.startMaximized;
+    const startmaximized = (app.additionalData as any) && (app.additionalData as any).startMaximized;
     const newwin = {
       id: `${app.appName}-${Date.now()}`,
       appName: app.appName,
@@ -98,43 +99,12 @@ const Dock = () => {
     return { size: basesize, y: 0 };
   };
 
-  const filteredapps = applist.filter(app =>
-    app.appName.toLowerCase().includes(searchterm.toLowerCase())
-  );
+
 
   return (
     <div className=''>
       <AnimatePresence>
-        {launchpad &&
-          <div className="fixed inset-0 z-50" onClick={() => setlaunch(false)}>
-            <motion.div
-              id="launchpad"
-              style={{ zIndex: 99999 }}
-              className={` absolute  w-[calc(100vw-80px)]  px-10 md:w-[580px] mx-auto my-auto left-0 right-0 top-0 bottom-0 py-5 h-max md:h-96 rounded-3xl bg-opacity-50 border-[0.01px] border-neutral-500 dark:bg-black bg-white dark:border-neutral-600 dark:bg-opacity-20  backdrop-blur-[12px]`}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{
-                ease: 'easeInOut',
-                duration: 0.3,
-              }}
-              onClick={(e: any) => e.stopPropagation()}
-            >
-              <div className='mx-auto relative'>
-                <svg xmlns="http://www.w3.org/2000/svg" className='absolute w-4 text-black dark:text-white left-4 h-4 top-0 bottom-0 my-auto' width="32" height="32" viewBox="0 0 32 32"><path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m5 27l7.5-7.5M28 13a9 9 0 1 1-18 0a9 9 0 0 1 18 0" /></svg>
-                <input onChange={e => setsearchterm(e.target.value)} className='px-2 pl-10 dark:text-white text-black placeholder:text-black dark:placeholder:text-neutral-200 font-medium placeholder:font-semibold outline-none   rounded-xl  font-sf   w-full text-sm w-full py-3 bg-transparent' placeholder='Search Apps'></input>
-              </div>
-              <div className='grid grid-cols-2 md:grid-cols-5 py-5 pt-5  gap-6'>
-                {filteredapps.map((app, index) => (
-                  <div onClick={() => (opennewwin(app))} key={index} className='flex cursor-pointer rounded-xl py-2 flex-col gap-1 items-center content-center w-full h-full'>
-                    <img className='w-[60px] md:w-[70px] md:h-[70px] lg:w-[80px] lg:h-[80px] h-[60px]' src={app.icon}></img>
-                    <div className='text-[13px] text-black  dark:text-white font-sf font-medium'>{app.appName}</div>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          </div>
-        }
+        {launchpad && <Launchpad onClose={() => setlaunch(false)} />}
       </AnimatePresence>
 
       <motion.div
@@ -199,13 +169,13 @@ const Dock = () => {
                       {app.appName}
                     </motion.div>
                   )}
-                  <motion.img
+                  <Image
                     src={app.icon}
-                    className="rounded-xl transition-all duration-200"
-                    style={{
-                      width: iconsize,
-                      height: iconsize,
-                    }}
+                    alt={app.appName}
+                    fill
+                    sizes="80px"
+                    className="rounded-xl transition-all duration-200 object-cover"
+                    draggable={false}
                   />
                 </motion.div>
               );
@@ -252,13 +222,13 @@ const Dock = () => {
                       {app.appName}
                     </motion.div>
                   )}
-                  <motion.img
+                  <Image
                     src={app.icon}
-                    className="rounded-xl transition-all duration-200"
-                    style={{
-                      width: iconsize,
-                      height: iconsize,
-                    }}
+                    alt={app.appName}
+                    fill
+                    sizes="80px"
+                    className="rounded-xl transition-all duration-200 object-cover"
+                    draggable={false}
                   />
                   {haswin && (
                     <div className="absolute bottom-0 w-[3px] h-[3px] bg-neutral-600 dark:bg-white rounded-md -mb-[4px] transition-all duration-200"></div>

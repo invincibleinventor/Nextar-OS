@@ -50,7 +50,7 @@ MemoizedDynamicComponent.displayName = 'MemoizedDynamicComponent';
 const RecentApps = React.memo(({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
     const { windows, removewindow, setactivewindow, updatewindow } = useWindows();
     const containerref = useRef<HTMLDivElement>(null);
-
+    const ignoreClickRef = useRef(false);
 
     useEffect(() => {
         if (isOpen && containerref.current) {
@@ -94,33 +94,40 @@ const RecentApps = React.memo(({ isOpen, onClose }: { isOpen: boolean, onClose: 
 
                     <motion.div
                         ref={containerref}
-                        className="relative w-full h-full flex items-center overflow-x-auto snap-x snap-mandatory scrollbar-hide px-[10vw] py-8 z-[9991]"
+                        layoutScroll
+                        className="relative w-full h-full flex items-center overflow-x-auto scrollbar-hide px-[10vw] py-8 z-[9991]"
                         initial={{ scale: 1.1, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0.9, opacity: 0 }}
                         transition={springtransition}
-                        onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+                        onClick={(e) => { if (!ignoreClickRef.current && e.target === e.currentTarget) onClose(); }}
                     >
                         <div className="flex flex-row gap-6 md:gap-10 h-[65vh] items-center">
-                            {[...windows].reverse().map((win: any) => {
-                                const appdata = apps.find(a => a.appName === win.appName);
-                                const icon = appdata?.icon || '';
+                            <AnimatePresence mode='popLayout'>
+                                {[...windows].reverse().map((win: any) => {
+                                    const appdata = apps.find(a => a.appName === win.appName);
+                                    const icon = appdata?.icon || '';
 
-                                return (
-                                    <AppCard
-                                        key={win.id}
-                                        win={win}
-                                        icon={icon}
-                                        onClose={onClose}
-                                        onKill={() => removewindow(win.id)}
-                                        onOpen={() => {
-                                            updatewindow(win.id, { isMinimized: false });
-                                            setactivewindow(win.id);
-                                            onClose();
-                                        }}
-                                    />
-                                );
-                            })}
+                                    return (
+                                        <AppCard
+                                            key={win.id}
+                                            win={win}
+                                            icon={icon}
+                                            onClose={onClose}
+                                            onKill={() => {
+                                                ignoreClickRef.current = true;
+                                                setTimeout(() => ignoreClickRef.current = false, 500);
+                                                removewindow(win.id);
+                                            }}
+                                            onOpen={() => {
+                                                updatewindow(win.id, { isMinimized: false });
+                                                setactivewindow(win.id);
+                                                onClose();
+                                            }}
+                                        />
+                                    );
+                                })}
+                            </AnimatePresence>
                         </div>
                     </motion.div>
                 </motion.div>
@@ -135,15 +142,25 @@ const AppCard = ({ win, icon, onKill, onOpen }: any) => {
 
     return (
         <motion.div
-            layout
             layoutId={win.id}
-            className="snap-center relative flex-shrink-0 w-[75vw] md:w-[45vw] lg:w-[350px] h-full flex flex-col"
+            layout
+            className="relative flex-shrink-0 w-[75vw] md:w-[45vw] lg:w-[350px] h-full flex flex-col"
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+            exit={{
+                opacity: 0,
+                scale: 0.9,
+                filter: "blur(10px)",
+                transition: {
+                    type: "spring",
+                    stiffness: 400,
+                    damping: 30,
+                    mass: 1
+                }
+            }}
             drag="y"
             dragConstraints={{ top: 0, bottom: 0 }}
-            dragElastic={{ top: 0.5, bottom: 0.5 }}
+            dragElastic={0.1}
             dragDirectionLock={true}
             onDragStart={() => { isdragging.current = true; }}
             onDragEnd={(_, info) => {
@@ -170,6 +187,11 @@ const AppCard = ({ win, icon, onKill, onOpen }: any) => {
 
 
             style={{ touchAction: 'pan-x' }}
+            transition={{
+                type: "spring",
+                stiffness: 350,
+                damping: 30
+            }}
         >
             <div className="flex items-center gap-2 mb-3 px-1 pointer-events-none">
                 {icon && <img src={icon} className="w-8 h-8 drop-shadow-md" />}

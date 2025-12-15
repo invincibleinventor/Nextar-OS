@@ -29,14 +29,22 @@ const Page = () => {
   const [issystemgestureactive, setissystemgestureactive] = useState(false);
 
 
-  const handleaddwindow = () => {
-    const newwindow = {
-      id: Date.now(),
-      appName: 'XCode',
-      component: apps.find((app) => app.appName === 'XCode')?.componentName,
-      props: {},
-    };
-    addwindow(newwindow);
+  const openOldPortfolio = () => {
+    const safariapp = apps.find((app) => app.id === 'safari');
+    if (!safariapp) return;
+
+    addwindow({
+      id: `safari-oldportfolio-${Date.now()}`,
+      appName: 'Old Portfolio', // Title for the window
+      title: 'Old Portfolio',
+      component: safariapp.componentName,
+      icon: '/code.png', // Window icon
+      isMinimized: false,
+      isMaximized: false,
+      position: { top: 50, left: 50 },
+      size: { width: 1024, height: 768 },
+      props: { initialurl: 'https://baladev.vercel.app' }
+    });
   };
 
   const StatusBar = () => {
@@ -75,7 +83,6 @@ const Page = () => {
 
   return (
     <>
-      <MacOSNotifications isOpen={shownotificationcenter} onClose={() => setshownotificationcenter(false)} />
       <BootScreen />
       <LockScreen />
 
@@ -95,12 +102,12 @@ const Page = () => {
               }}
             >
               <div className='p-4 py-10 flex flex-col items-end content-end '>
-                <button onClick={(e) => { e.stopPropagation(); handleaddwindow(); }} className="p-2 flex hover:bg-neutral-400/20 rounded-2xl hover:backdrop-blur-lg hover:filter px-4 flex-col items-center content-center text-white">
-                  <img className='w-16 h-16' src="/code.png"></img>
-                  <span className='text-xs font-medium text-white mt-2'>XCode</span>
+                <button onClick={(e) => { e.stopPropagation(); openOldPortfolio(); }} className="p-2 flex hover:bg-neutral-400/20 rounded-2xl hover:backdrop-blur-lg hover:filter px-4 flex-col items-center content-center text-white">
+                  <img className='w-16 h-16 shadow-sm drop-shadow-lg' src="/code.png" alt="Old Portfolio"></img>
+                  <span className='text-xs font-semibold text-white mt-1.5 drop-shadow-md'>Old Portfolio</span>
                 </button>
-                {windows.map((window: any, index: any) => (
-                  <div key={index} onClick={(e) => e.stopPropagation()}>
+                {windows.map((window: any) => (
+                  <div key={window.id} onClick={(e) => e.stopPropagation()}>
                     <Window {...window} />
                   </div>
                 ))}
@@ -114,7 +121,7 @@ const Page = () => {
           <div className="relative w-full h-full">
 
             <div className={`absolute top-0 right-0 z-[60] ${showrecentapps ? 'invisible' : 'visible'}`}>
-              <Control isOpen={showcontrolcenter} onClose={() => setshowcontrolcenter(false)} />
+              <Control isOpen={showcontrolcenter} onClose={() => setshowcontrolcenter(false)} ismobile={true} />
             </div>
 
             <div className={`absolute top-0 left-0 z-[60] w-full h-full pointer-events-none ${showrecentapps ? 'invisible' : 'visible'}`}>
@@ -134,9 +141,9 @@ const Page = () => {
             {windows.length > 0 && (
               <div className="absolute inset-0 z-40 pointer-events-none">
                 <div className="w-full h-full pointer-events-none">
-                  {windows.map((window: any, index: any) => (
+                  {windows.map((window: any) => (
                     <Window
-                      key={index}
+                      key={window.id}
                       {...window}
                       shouldBlur={!showcontrolcenter && !showrecentapps}
                       isSystemGestureActive={issystemgestureactive}
@@ -148,7 +155,7 @@ const Page = () => {
 
             <RecentApps isOpen={showrecentapps} onClose={() => setshowrecentapps(false)} />
 
-            <div className="absolute bottom-0 left-0 right-0 h-10 flex items-end justify-center z-[9999] pointer-events-auto">
+            <div className={`absolute bottom-0 left-0 right-0 h-10 flex items-end justify-center z-[9999] ${(shownotificationcenter || showcontrolcenter) ? 'pointer-events-none' : 'pointer-events-auto'}`}>
               <motion.div
                 className="w-[140px] h-[5px] bg-white/80 rounded-full mb-[12px] cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.3)] backdrop-blur-md"
                 whileTap={{ scale: 0.95 }}
@@ -201,6 +208,7 @@ const Page = () => {
           </div>
         )}
       </div>
+      <MacOSNotifications isOpen={shownotificationcenter} onClose={() => setshownotificationcenter(false)} />
     </>
   );
 };

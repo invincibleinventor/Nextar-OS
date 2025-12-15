@@ -4,9 +4,10 @@ import { useWindows } from './WindowContext';
 import { apps } from './app';
 import { motion } from 'framer-motion';
 import { useDevice } from './DeviceContext';
+import { useSettings } from './SettingsContext';
 
 const panelheight = 35;
-const dockheight = 75;
+const dockheight = 70;
 
 import dynamic from 'next/dynamic';
 
@@ -20,6 +21,7 @@ const componentmap: { [key: string]: any } = {
   'apps/Terminal': dynamic(() => import('./apps/Terminal')),
   'apps/Launchpad': dynamic(() => import('./apps/Launchpad')),
   'apps/News': dynamic(() => import('./apps/News')),
+  'apps/Python': dynamic(() => import('./apps/Python')),
 
   'AppStore': dynamic(() => import('./AppStore')),
   'BalaDev': dynamic(() => import('./BalaDev')),
@@ -57,10 +59,11 @@ const Window = ({ id, appName, title, component, props, isMinimized, isMaximized
 
   const { removewindow, updatewindow, activewindow, setactivewindow, windows } = useWindows();
   const { ismobile } = useDevice();
+  const { reduceMotion, reduceTransparency } = useSettings();
   const app = apps.find((app) => app.appName === appName);
 
   const [position, setposition] = useState(() => {
-    if (app && app.additionalData && app.additionalData.startLarge && typeof window !== 'undefined') {
+    if (app && (app.additionalData as any) && (app.additionalData as any).startLarge && typeof window !== 'undefined') {
       const screenwidth = window.innerWidth;
       const screenheight = window.innerHeight;
       const width = Math.round(screenwidth * 0.85);
@@ -73,7 +76,7 @@ const Window = ({ id, appName, title, component, props, isMinimized, isMaximized
     return { top: 100, left: 100 };
   });
   const [size, setsize] = useState(() => {
-    if (app && app.additionalData && app.additionalData.startLarge && typeof window !== 'undefined') {
+    if (app && (app.additionalData as any) && (app.additionalData as any).startLarge && typeof window !== 'undefined') {
       const screenwidth = window.innerWidth;
       const screenheight = window.innerHeight;
       return {
@@ -133,6 +136,9 @@ const Window = ({ id, appName, title, component, props, isMinimized, isMaximized
   };
 
   const handledragstart = (e: any) => {
+    // Check if it's a double click (prevent drag start if so)
+    if (e.detail === 2) return;
+
     let dragstarted = false;
     const wasmaximized = isMaximized;
     let dragoffsetx = 0;
@@ -158,15 +164,21 @@ const Window = ({ id, appName, title, component, props, isMinimized, isMaximized
     }
 
     let lasttop = wasmaximized ? panelheight : position.top;
-    let maximizedondrag = false;
+    const maximizedondrag = false;
 
+    // Throttle / Debounce standard drag setup
     const onmousemove = (moveevent: any) => {
       const movex = 'touches' in moveevent ? moveevent.touches[0].clientX : moveevent.clientX;
       const movey = 'touches' in moveevent ? moveevent.touches[0].clientY : moveevent.clientY;
 
-      if (!dragstarted && wasmaximized && Math.abs(movey - starty) > 3) {
+      if (!isdragging && Math.abs(movex - startx) < 5 && Math.abs(movey - starty) < 5) {
+        return; // Threshold to detect drag vs click
+      }
+
+      if (!dragstarted && wasmaximized && Math.abs(movey - starty) > 10) {
         dragstarted = true;
         updatewindow(id, { isMaximized: false });
+        // Immediate position update to prevent jump
         setTimeout(() => {
           setsize(prevsize);
           setposition({
@@ -185,15 +197,14 @@ const Window = ({ id, appName, title, component, props, isMinimized, isMaximized
       let newleft = movex - dragoffsetx;
       let newtop = movey - dragoffsety;
 
-      if (!wasmaximized && newtop <= panelheight + 5) {
-        maximizedondrag = true;
-        setTimeout(() => {
-          updatewindow(id, { isMaximized: true });
-        }, 80);
+      // Snap to maximize logic (less sensitive)
+      if (!wasmaximized && newtop <= panelheight - 10) { // Must drag slightly PAST the panel
+        // Visual hint or preparation could go here
       }
 
+      // Constrain within screen
       newleft = Math.max(-size.width / 2.0, Math.min(screenwidth - size.width / 2.0, newleft));
-      newtop = Math.max(panelheight, Math.min(screenheight - dockheight - size.height / 4.0, newtop));
+      newtop = Math.max(panelheight - 20, Math.min(screenheight - dockheight - size.height / 4.0, newtop));
 
       setposition({
         top: newtop,
@@ -208,8 +219,12 @@ const Window = ({ id, appName, title, component, props, isMinimized, isMaximized
       document.removeEventListener('mouseup', onmouseup);
       document.removeEventListener('touchmove', onmousemove);
       document.removeEventListener('touchend', onmouseup);
-      if (!wasmaximized && lasttop <= panelheight + 5 && !maximizedondrag) {
+
+      // Snap logic on release
+      if (!wasmaximized && lasttop <= panelheight) {
         updatewindow(id, { isMaximized: true });
+      } else if (wasmaximized && dragstarted) {
+        // Keep it unmaximized (already handled in drag)
       }
     };
 
@@ -287,10 +302,20 @@ const Window = ({ id, appName, title, component, props, isMinimized, isMaximized
     <motion.div
       ref={windowref}
       initial={{ opacity: 0, y: 0 }}
-      animate={{ opacity: isMinimized ? 0 : 1, y: isMinimized ? 100 : 0, scale: isMinimized ? 0.8 : 1 }}
+      animate={{ opacity: isMinimized ? 0 : 1, y: isMinimized ? 400 : 0, scale: isMinimized ? 0.5 : 1 }}
       exit={{ opacity: 0, y: -10 }}
-
-      transition={{ type: "spring", stiffness: 250, damping: 25 }}
+      onAnimationComplete={(definition) => {
+        // Optional: Adding a log or logic if needed, but the 100vh move is robust
+        if (isMinimized) {
+          // Ensure it stays off
+        }
+      }}
+      transition={{
+        type: reduceMotion ? "tween" : "spring",
+        stiffness: reduceMotion ? undefined : 350,
+        damping: reduceMotion ? undefined : 30,
+        duration: reduceMotion ? 0.2 : undefined
+      }}
       className={`border dark:border-neutral-600 border-neutral-500 overflow-hidden flex flex-col ${app?.titlebarblurred
         ? `dark:bg-opacity-40 absolute bg-opacity-80  dark:bg-black bg-white ${shouldBlur ? 'backdrop-blur-lg' : ''}`
         : `dark:bg-neutral-900 bg-white ${shouldBlur ? 'backdrop-blur-sm' : ''}`}  absolute ${isMaximized || ismobile ? '' : 'rounded-3xl'} ${isdragging ? 'cursor-grabbing' : 'cursor-default'} ${isMinimized ? 'pointer-events-none' : 'pointer-events-auto'}`}
@@ -299,8 +324,7 @@ const Window = ({ id, appName, title, component, props, isMinimized, isMaximized
         left: isMaximized ? 0 : position.left,
         width: isMaximized ? '100vw' : size.width,
         height: size.height,
-        zIndex: zindex,
-        display: isMinimized ? 'none' : 'flex',
+        zIndex: isMinimized ? -1 : zindex,
         willChange: 'transform',
       }}
       onMouseDown={() => setactivewindow(id)}
@@ -350,7 +374,7 @@ const Window = ({ id, appName, title, component, props, isMinimized, isMaximized
       )}
 
       <div
-        className={`w-full dark:border-neutral-600 border-neutral-500 overflow-hidden flex-1 h-full ${isMaximized || ismobile ? '' : 'rounded-b-3xl'} ${app?.titlebarblurred ? '' : 'bg-white  dark:bg-neutral-800'} ${isSystemGestureActive ? 'pointer-events-none' : 'pointer-events-auto'}`}
+        className={`w-full dark:border-neutral-600 border-neutral-500 overflow-hidden flex-1 h-full ${isMaximized || ismobile ? '' : 'rounded-b-3xl'} ${app?.titlebarblurred ? '' : 'bg-white  dark:bg-neutral-800'} ${(isMinimized || isSystemGestureActive) ? 'pointer-events-none' : 'pointer-events-auto'}`}
       >
 
         <MemoizedDynamicComponent appname={app ? app.appName : ''} icon={app ? app.icon : ''} component={app?.componentName ? app.componentName : component} appProps={props} isFocused={activewindow === id} />

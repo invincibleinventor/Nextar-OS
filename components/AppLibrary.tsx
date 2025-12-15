@@ -1,13 +1,25 @@
 'use client';
 import React from 'react';
+import Image from 'next/image';
 import { apps } from './app';
 import { useWindows } from './WindowContext';
 
+import { IoSearch } from 'react-icons/io5';
+
 const AppLibrary = () => {
     const { addwindow, windows, setactivewindow, updatewindow } = useWindows();
-    const categories = ['Social', 'Utilities', 'Creativity', 'Entertainment'];
+    const categories: { [key: string]: string[] } = {
+        "Social & Communication": ["Mail", "Welcome"],
+        "Productivity": ["Safari", "Calendar", "Notes", "Reminders"],
+        "Utilities": ["Finder", "Settings", "Calculator"],
+        "Creativity & Dev": ["XCode", "Photos", "App Store"],
+    };
 
-    const handleapplaunch = (app: any) => {
+    const getCategoryApps = (catApps: string[]) => {
+        return apps.filter(app => catApps.includes(app.appName));
+    };
+
+    const openApp = (app: any) => {
         const existingwin = windows.find((win: any) => win.appName === app.appName);
         if (existingwin) {
             updatewindow(existingwin.id, { isMinimized: false });
@@ -43,44 +55,50 @@ const AppLibrary = () => {
         const dx = Math.abs(e.clientX - startpos.current.x);
         const dy = Math.abs(e.clientY - startpos.current.y);
 
-
         if (dx < 10 && dy < 10) {
-            handleapplaunch(app);
+            openApp(app);
         }
     };
 
     return (
         <div
-            className="w-full h-full overflow-y-auto overflow-x-hidden pt-14 px-5 pb-24 scrollbar-hide select-none"
-            style={{ overscrollBehavior: 'contain', touchAction: 'pan-y' }}
+            className="w-full h-full overflow-y-auto overflow-x-hidden pt-14 px-5 pb-32 scrollbar-hide select-none [&::-webkit-scrollbar]:hidden"
+            style={{ overscrollBehavior: 'contain', touchAction: 'pan-y', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-            <div className="w-full h-10 bg-neutral-200/30 dark:bg-neutral-800/30 backdrop-blur-md rounded-[10px] flex items-center px-3 mb-8 mx-auto shadow-sm">
-                <svg className="w-4 h-4 text-neutral-700 dark:text-neutral-300 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                <span className="text-neutral-700 dark:text-neutral-300 text-[17px]">App Library</span>
+            <div className="relative w-full text-center mb-6">
+                <div className="relative w-full mx-auto bg-neutral-200/50 dark:bg-neutral-800/50 backdrop-blur-xl rounded-xl h-10 flex items-center px-3">
+                    <IoSearch className="text-neutral-500" size={20} />
+                    <span className="ml-2 text-neutral-500 text-lg">App Library</span>
+                </div>
             </div>
 
-            <div className="grid grid-cols-2 2xs:grid-cols-4 sm:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-4">
-                {categories.map((cat, i) => (
-                    <div key={i} className="flex flex-col">
-                        <div className="w-full aspect-square bg-white/40 dark:bg-neutral-800/40 backdrop-blur-md rounded-[22px] p-4 flex flex-col justify-between shadow-sm">
-                            <div className="grid grid-cols-2 gap-2">
-                                {apps.slice(i * 4, i * 4 + 4).map((app, idx) => (
+            <div className="grid grid-cols-2 2xs:grid-cols-4 sm:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-6 w-full mx-auto pb-10">
+                {Object.keys(categories).map((category) => (
+                    <div key={category} className="flex flex-col gap-2 relative">
+                        <div className="bg-white/40 dark:bg-neutral-800/40 backdrop-blur-xl rounded-2xl p-4 w-auto aspect-square shrink-0 h-auto" style={{ aspectRatio: '1/1' }}>
+                            <div className="grid grid-cols-2 grid-rows-2 gap-3 w-auto h-auto">
+                                {getCategoryApps(categories[category]).map((app: any) => (
                                     <div
-                                        key={idx}
-                                        className="cursor-pointer flex items-center justify-center"
-                                        onPointerDown={handlepointerdown}
-                                        onPointerUp={(e) => handlepointerup(e, app)}
+                                        key={app.appName}
+                                        onClick={() => openApp(app)}
+                                        className="relative w-full h-full flex items-center justify-center cursor-pointer active:scale-90 transition-transform"
                                     >
-                                        <img
+                                        <Image
                                             src={app.icon}
-                                            className="w-full h-full object-cover rounded-[10px] pointer-events-none"
                                             alt={app.appName}
+                                            
+                                            className="object-cover rounded-xl"
+                                            width={100}
+                                            height={100}
+                                            draggable={false}
                                         />
                                     </div>
                                 ))}
                             </div>
                         </div>
-                        <span className="text-[13px] font-medium text-neutral-300 dark:text-neutral-300 mt-2 px-1 text-center">{cat}</span>
+                        <span className="text-center text-neutral-200 text-[13px] font-semibold leading-none px-1 truncate">
+                            {category}
+                        </span>
                     </div>
                 ))}
             </div>

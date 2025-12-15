@@ -1,13 +1,15 @@
-'use client';
-import React, { useState } from 'react';
+import Image from 'next/image';
+
+
 import { apps } from '../app';
 import { useWindows } from '../WindowContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState } from 'react';
 import { IoSearch } from 'react-icons/io5';
 
 const appsperpage = 35;
 
-export default function Launchpad() {
+export default function Launchpad({ onClose }: { onClose: () => void }) {
     const { addwindow, removewindow, windows, setactivewindow } = useWindows();
     const [searchterm, setsearchterm] = useState('');
     const [page, setpage] = useState(0);
@@ -15,8 +17,7 @@ export default function Launchpad() {
     const handleappclick = (app: any) => {
         if (app.id === 'launchpad') return;
 
-        const mywin = windows.find((w: any) => w.appName === 'LaunchPad');
-        if (mywin) removewindow(mywin.id);
+
 
         setTimeout(() => {
             const appwins = windows.filter((win: any) => win.appName === app.appName);
@@ -41,6 +42,7 @@ export default function Launchpad() {
             } else {
                 setactivewindow(appwins[0].id);
             }
+            onClose();
         }, 100);
     };
 
@@ -60,15 +62,14 @@ export default function Launchpad() {
 
     return (
         <motion.div
-            initial={{ opacity: 0, scale: 1.05 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ type: "spring", stiffness: 250, damping: 25 }}
+            initial={{ opacity: 0, scale: 1.1, filter: "blur(20px)" }}
+            animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+            exit={{ opacity: 0, scale: 1.1, filter: "blur(20px)" }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
             className="fixed inset-0 z-[99999] flex flex-col items-center pt-20 pb-12
                 bg-black/40 backdrop-blur-3xl overflow-hidden"
             onClick={() => {
-                const mywin = windows.find((w: any) => w.appName === 'LaunchPad');
-                if (mywin) removewindow(mywin.id);
+                onClose();
             }}
             onPan={(e, info) => {
                 if (info.offset.x < -50) paginate(1);
@@ -96,15 +97,19 @@ export default function Launchpad() {
 
             <div
                 className="flex-1 w-full max-w-[1100px] px-8 sm:px-16 flex items-center justify-center"
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                    // Allow click to pass through to parent (which closes launchpad) 
+                    // unless it's on an app (handled by app click)
+                    // e.stopPropagation(); // REMOVED
+                }}
             >
                 <AnimatePresence mode='wait'>
                     <motion.div
                         key={page}
-                        initial={{ opacity: 0, x: 100 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -100 }}
-                        transition={{ type: "tween", duration: 0.3 }}
+                        initial={{ opacity: 0 }} /* Removed x: 100 to prevent slide */
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}    /* Removed x: -100 */
+                        transition={{ duration: 0.2 }}
                         className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-x-6 gap-y-10 w-full"
                     >
                         {currentapps.map(app => (
@@ -115,11 +120,13 @@ export default function Launchpad() {
                                 className="flex flex-col items-center gap-3 cursor-pointer"
                                 onClick={() => handleappclick(app)}
                             >
-                                <div className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24">
-                                    <img
+                                <div className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 relative">
+                                    <Image
                                         src={app.icon}
                                         alt={app.appName}
-                                        className="w-full h-full object-contain drop-shadow-2xl"
+                                        fill
+                                        sizes="(max-width: 768px) 64px, (max-width: 1024px) 80px, 96px"
+                                        className="object-contain drop-shadow-2xl"
                                         draggable={false}
                                     />
                                 </div>

@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSettings } from './SettingsContext';
 import { useNotifications } from './NotificationContext';
 
 interface NotificationCenterProps {
@@ -10,6 +11,7 @@ interface NotificationCenterProps {
 
 export default function NotificationCenter({ isOpen, onClose }: NotificationCenterProps) {
     const { notifications, clearnotification, handlenotificationclick } = useNotifications();
+    const { reduceMotion, reduceTransparency } = useSettings();
 
     const formattime = () => {
         const date = new Date();
@@ -28,17 +30,22 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
                     initial={{ y: '-100%' }}
                     animate={{ y: 0 }}
                     exit={{ y: '-100%' }}
-                    transition={{ type: "spring", stiffness: 250, damping: 25 }}
+                    transition={{
+                        type: reduceMotion ? "tween" : "spring",
+                        stiffness: reduceMotion ? undefined : 250,
+                        damping: reduceMotion ? undefined : 25,
+                        duration: reduceMotion ? 0.3 : undefined
+                    }}
                     drag="y"
                     dragConstraints={{ top: -1000, bottom: 0 }}
                     dragElastic={0.05}
                     onDragEnd={(_, info) => {
-
                         if (info.offset.y < -100 || info.velocity.y < -500) {
                             onClose();
                         }
                     }}
-                    className="absolute inset-0 z-[60] bg-white/40 dark:bg-black/40 backdrop-blur-md flex flex-col h-full w-full pointer-events-auto"
+                    className={`absolute inset-0 z-[60] flex flex-col h-full w-full pointer-events-auto ${reduceTransparency ? 'bg-neutral-900' : 'backdrop-blur-2xl bg-white/70 dark:bg-black/60'
+                        }`}
                 >
                     <div className="flex flex-col items-center mt-16 mb-8 shrink-0">
                         <h1 className="text-7xl font-medium text-neutral-700 dark:text-white tracking-tight drop-shadow-lg">{time.split(' ')[0]}</h1>
@@ -92,19 +99,7 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
                         )}
                     </div>
 
-                    <motion.div
-                        className="absolute bottom-0 left-0 right-0 h-24 z-50 flex flex-col items-center justify-end pb-8 bg-gradient-to-t from-black/20 to-transparent touch-none"
-                        drag="y"
-                        dragConstraints={{ top: -1000, bottom: 0 }}
-                        dragElastic={0.05}
-                        onDragEnd={(_, info) => {
-                            if (info.offset.y < -50 || info.velocity.y < -300) {
-                                onClose();
-                            }
-                        }}
-                    >
-                        <span className="text-[10px] text-black/50 dark:text-white/50 font-medium uppercase tracking-widest text-shadow-sm">Swipe Up to Close</span>
-                    </motion.div>
+
                 </motion.div>
             )
             }

@@ -3,7 +3,7 @@ import './globals.css';
 import { WindowProvider } from '@/components/WindowContext';
 import { ThemeProvider } from '@/components/ThemeContext';
 import { DeviceProvider } from '@/components/DeviceContext';
-
+import { SettingsProvider } from '@/components/SettingsContext';
 
 
 export const metadata: Metadata = {
@@ -36,12 +36,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <body className="font-sf w-screen h-screen overflow-hidden bg-black antialiased">
           <WindowProvider>
             <div className="fixed inset-0 bg-black bg-cover bg-no-repeat bg-[url('/bg.jpg')] dark:bg-[url('/bg-dark.jpg')] h-[100dvh] w-screen overflow-hidden transition-colors duration-500">
-              {}
-              <DeviceProvider>
-                <NotificationProvider>
-                  {children}
-                </NotificationProvider>
-              </DeviceProvider>
+           
+              <SettingsProvider> 
+                <DeviceProvider>
+                  <NotificationProvider>
+                    {children}
+                  </NotificationProvider>
+                </DeviceProvider>
+              </SettingsProvider>
             </div>
           </WindowProvider>
         </body>

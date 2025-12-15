@@ -20,46 +20,49 @@ export default function Safari({ initialurl = 'https://baladev.vercel.app' }: sa
     };
 
     return (
-        <div className="flex flex-col h-full w-full bg-white dark:bg-[#232323] text-black dark:text-white font-sf">
-            <div className="h-[44px] bg-[#f2f2f2] dark:bg-[#343434] flex items-center px-2 md:px-4 gap-2 md:gap-4 border-b border-black/5 dark:border-white/5">
-                <div className="flex gap-2 md:gap-4 text-gray-500 dark:text-gray-400">
+        <div className="flex flex-col h-full w-full bg-[#f2f2f2] dark:bg-[#262626] text-black dark:text-white font-sf">
+            {/* Unified Toolbar */}
+            <div className="h-[52px] bg-[#f2f2f2] dark:bg-[#343434] flex items-center px-3 gap-4 border-b border-black/5 dark:border-white/5 pt-1">
+                <div className="flex gap-4 text-gray-500 dark:text-gray-400">
                     <button className="hover:text-black dark:hover:text-white transition"><FaArrowLeft size={14} /></button>
                     <button className="hover:text-black dark:hover:text-white transition"><FaArrowRight size={14} /></button>
+                    <button className="hover:text-black dark:hover:text-white transition hidden md:block"><FaBookOpen size={14} /></button>
                 </div>
-                <button className="text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition hidden md:block"><FaBookOpen size={14} /></button>
 
-                <form onSubmit={handlenavigate} className="flex-1 max-w-2xl mx-auto flex items-center bg-white dark:bg-[#232323] rounded-md px-3 h-[28px] shadow-sm border border-black/5 dark:border-white/5 focus-within:ring-2 ring-blue-500/50 min-w-0">
+                <form onSubmit={handlenavigate} className="flex-1 max-w-3xl mx-auto flex items-center bg-white dark:bg-[#1e1e1e] rounded-[10px] px-3 h-[34px] shadow-sm hover:shadow-md transition-all border border-black/5 dark:border-white/5 focus-within:ring-2 ring-blue-500/30 min-w-0">
                     <FaLock size={10} className="text-gray-400 mr-2 flex-shrink-0" />
                     <input
                         type="text"
                         value={inputvalue}
                         onChange={(e) => setinputvalue(e.target.value)}
-                        className="flex-1 bg-transparent border-none outline-none text-[13px] text-center placeholder-gray-400 min-w-0 truncate"
+                        className="flex-1 bg-transparent border-none outline-none text-[13px] text-center placeholder-gray-400 min-w-0 truncate text-black dark:text-white"
                         placeholder="Search or enter website name"
                     />
                     <FaRedo size={10} className="text-gray-400 ml-2 cursor-pointer hover:text-black dark:hover:text-white flex-shrink-0" onClick={() => seturl(inputvalue)} />
                 </form>
 
-                <div className="flex gap-2 md:gap-4 text-gray-500 dark:text-gray-400">
+                <div className="flex gap-4 text-gray-500 dark:text-gray-400">
                     <button className="hover:text-black dark:hover:text-white transition hidden md:block"><FaShareSquare size={14} /></button>
                     <button className="hover:text-black dark:hover:text-white transition"><FaPlus size={14} /></button>
                 </div>
             </div>
 
-            <div className="flex-1 w-full h-full bg-white relative">
+            <div className="flex-1 w-full h-full bg-white dark:bg-[#1e1e1e] relative">
                 {url ? (
                     url.includes('github.com') ? (
                         <div className="flex flex-col items-center justify-center h-full text-center p-8 bg-gray-50 dark:bg-[#1e1e1e]">
-                            <FaLock size={48} className="text-gray-400 mb-4" />
-                            <h2 className="text-xl font-semibold mb-2 text-black dark:text-white">GitHub Security</h2>
-                            <p className="text-gray-500 max-w-sm mb-6">
-                                GitHub does not allow their website to be embedded.
+                            <div className="w-16 h-16 bg-gray-100 dark:bg-[#2d2d2d] rounded-full flex items-center justify-center mb-4">
+                                <FaLock size={32} className="text-gray-400" />
+                            </div>
+                            <h2 className="text-xl font-bold mb-2 text-black dark:text-white">GitHub Security</h2>
+                            <p className="text-gray-500 max-w-sm mb-6 text-sm">
+                                Browsing GitHub recursively is restricted.
                             </p>
                             <a
                                 href={url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="px-5 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition font-medium"
+                                className="px-6 py-2.5 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition font-medium text-sm shadow-lg hover:shadow-blue-500/25"
                             >
                                 Open in New Tab
                             </a>
@@ -73,8 +76,20 @@ export default function Safari({ initialurl = 'https://baladev.vercel.app' }: sa
                         />
                     )
                 ) : (
-                    <div className="flex items-center justify-center h-full text-gray-400">
-                        Start Page
+                    <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                        <img src="/icons/safari.png" className="w-24 h-24 mb-8 opacity-20 filter grayscale" alt="Safari" />
+                        <h1 className="text-2xl font-bold text-black/20 dark:text-white/20 mb-8">Favorites</h1>
+                        {/* Dummy Favorites Grid */}
+                        <div className="grid grid-cols-4 gap-8">
+                            {['Apple', 'iCloud', 'GitHub', 'LinkedIn'].map(site => (
+                                <div key={site} className="flex flex-col items-center gap-2 group cursor-pointer">
+                                    <div className="w-14 h-14 bg-gray-100 dark:bg-[#2d2d2d] rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform shadow-sm">
+                                        <span className="text-xl font-bold text-gray-400">{site[0]}</span>
+                                    </div>
+                                    <span className="text-xs text-gray-400">{site}</span>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 )}
             </div>

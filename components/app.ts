@@ -34,15 +34,16 @@ export const apps = [
     titlebarblurred: true,
     pinned: true,
   },
+
   {
-    id: 'xcode',
-    appName: 'XCode',
+    id: 'python',
+    appName: 'Python IDE',
     icon: '/code.png',
     maximizeable: true,
-    componentName: 'BalaDev',
-    additionalData: { startLarge: true },
+    componentName: 'apps/Python',
+    additionalData: {},
     multiwindow: true,
-    titlebarblurred: true,
+    titlebarblurred: false,
     pinned: true,
   },
   {
