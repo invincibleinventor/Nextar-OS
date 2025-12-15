@@ -60,7 +60,7 @@ export default function Finder() {
                 size: '--',
                 kind: 'Folder', // Treat projects as Folders in Finder
                 // Using a high-quality macOS folder icon image
-                icon: <img src="https://upload.wikimedia.org/wikipedia/commons/5/59/Mac_OS_X_Folder_Icon.png" alt="folder" className="w-full h-full object-contain drop-shadow-md" />,
+                icon: <img src="/folder.png" alt="folder" className="w-full h-full object-contain drop-shadow-md" />,
                 link: p.link
             }));
         }

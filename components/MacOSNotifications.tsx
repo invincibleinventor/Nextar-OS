@@ -22,7 +22,7 @@ export default function MacOSNotifications({ isOpen, onClose }: { isOpen: boolea
                             animate={{ opacity: 1, x: 0, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
                             transition={{ type: "spring", stiffness: 400, damping: 30, delay: index * 0.1 }}
-                            className="group relative w-[340px] bg-white/30 dark:bg-neutral-800/30 backdrop-blur-2xl border border-white/20 shadow-2xl rounded-2xl p-3.5 cursor-pointer select-none pointer-events-auto hover:bg-white/40 dark:hover:bg-neutral-800/40 transition-colors"
+                            className="group relative w-[340px] bg-white/30 dark:bg-neutral-800/10 backdrop-blur-2xl border border-white/20 shadow-2xl rounded-2xl p-3.5 cursor-pointer select-none pointer-events-auto hover:bg-white/40 dark:hover:bg-neutral-800/40 transition-colors"
                             onClick={() => { handlenotificationclick(n); markasviewed(n.id); }}
                             drag="x"
                             dragConstraints={{ left: 0, right: 0 }}

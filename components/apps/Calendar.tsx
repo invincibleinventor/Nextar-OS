@@ -2,10 +2,8 @@
 import React from 'react';
 
 const events = [
-    { year: "2024", title: "Senior Developer", desc: "Leading frontend architecture at a startup", color: "#007AFF" },
-    { year: "2023", title: "Full Stack Engineer", desc: "Building scalable web applications", color: "#34C759" },
-    { year: "2022", title: "Frontend Developer", desc: "Crafting pixel-perfect user interfaces", color: "#FF9500" },
-    { year: "2021", title: "Graduated", desc: "Computer Science Degree", color: "#AF52DE" },
+    { year: "2024", title: "Full Stack Developer", desc: "Building scalable web applications", color: "#007AFF" },
+   
 ];
 
 const today = new Date();

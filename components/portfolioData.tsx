@@ -26,7 +26,7 @@ export const portfolioData = {
             title: "MacOS Next",
             desc: "A simulation of macOS Sonoma UI in the web. Features dock, window management, and animations.",
             stack: ["Next.js", "TailwindCSS"],
-            link: "https://macos-web.vercel.app",
+            link: "https://baladev.in",
             icon: <FaReact className="text-blue-500" />
         },
         {
