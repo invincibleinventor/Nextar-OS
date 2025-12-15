@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import { portfoliodata } from '../portfolioData';
-import { usewindows } from '../WindowContext';
+import { useWindows } from '../WindowContext';
 import { IoCalendarOutline, IoTimeOutline, IoGolfOutline, IoRocketOutline } from "react-icons/io5";
 
 const today = new Date();
@@ -9,10 +9,9 @@ const daynum = today.getDate();
 const weekday = today.toLocaleDateString('en-US', { weekday: 'short' });
 
 export default function Calendar() {
-    const { addwindow } = usewindows();
+    const { addwindow } = useWindows();
     const [view, setview] = useState<'timeline' | 'grid'>('timeline');
 
-    // Map projects to events for the timeline
     const events = portfoliodata.projects.map((proj, i) => ({
         id: i,
         year: proj.date,

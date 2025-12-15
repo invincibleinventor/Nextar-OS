@@ -1,7 +1,8 @@
 'use client';
+import Image from 'next/image';
 import React, { useState, useEffect } from 'react';
 import { portfoliodata } from '../portfolioData';
-import { usewindows } from '../WindowContext';
+import { useWindows } from '../WindowContext';
 import { IoImagesOutline, IoHeartOutline, IoTimeOutline, IoAlbumsOutline, IoTrashOutline, IoMenu } from "react-icons/io5";
 
 export default function Photos() {
@@ -27,6 +28,7 @@ export default function Photos() {
         });
         observer.observe(containerRef.current);
         return () => observer.disconnect();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const allCategories = Array.from(new Set(portfoliodata.projects.map(p => p.stack[0] || 'Uncategorized')));
@@ -54,7 +56,7 @@ export default function Photos() {
 
 
 
-    const { addwindow } = usewindows();
+    const { addwindow } = useWindows();
 
     return (
         <div ref={containerRef} className="flex h-full w-full bg-white dark:bg-[#1e1e1e] font-sf text-black dark:text-white relative overflow-hidden">
@@ -131,11 +133,10 @@ export default function Photos() {
                             }}
                             className="aspect-square bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden relative group cursor-pointer shadow-sm"
                         >
-                            <img
+                            <Image
                                 src={photo.src}
-                                onError={(e) => {
-                                    e.currentTarget.style.display = 'none';
-                                }}
+                                width={300}
+                                height={300}
                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                 alt={photo.title}
                             />

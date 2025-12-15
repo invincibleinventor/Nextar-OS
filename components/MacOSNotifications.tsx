@@ -1,17 +1,17 @@
 'use client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { usenotifications } from './NotificationContext';
-import { usedevice } from './DeviceContext';
+import Image from 'next/image';
+import { useNotifications } from './NotificationContext';
+import { useDevice } from './DeviceContext';
 
 export default function MacOSNotifications({ isopen, onclose }: { isopen: boolean; onclose: () => void }) {
-    const { handlenotificationclick, notifications, clearnotification, markasviewed } = usenotifications();
-    const { ismobile, osstate } = usedevice();
+    const { handlenotificationclick, notifications, clearnotification, markasviewed } = useNotifications();
+    const { ismobile, osstate } = useDevice();
 
     if (ismobile || osstate !== 'unlocked') return null;
 
     return (
         <>
-            {/* Toast Notifications */}
             <div className="fixed top-12 right-4 z-[99999] flex flex-col items-end space-y-2 pointer-events-none">
                 <AnimatePresence>
                     {notifications.filter(n => !n.viewed).slice(0, 4).map((n, index) => (
@@ -37,7 +37,7 @@ export default function MacOSNotifications({ isopen, onclose }: { isopen: boolea
                             </div>
 
                             <div className="flex items-start gap-3.5">
-                                <img src={n.icon} className="w-10 h-10 rounded-xl object-cover" alt={n.appname} />
+                                <Image src={n.icon} width={40} height={40} className="w-10 h-10 rounded-xl object-cover" alt={n.appname} />
                                 <div className="flex-1 min-w-0 text-left">
                                     <div className="flex justify-between items-baseline mb-0.5">
                                         <h4 className="font-bold text-[13px] text-black dark:text-white leading-tight">{n.appname}</h4>
@@ -52,7 +52,6 @@ export default function MacOSNotifications({ isopen, onclose }: { isopen: boolea
                 </AnimatePresence>
             </div>
 
-            {/* Notification Center Panel */}
             <AnimatePresence>
                 {isopen && (
                     <>
@@ -79,7 +78,7 @@ export default function MacOSNotifications({ isopen, onclose }: { isopen: boolea
                                 {notifications.map(n => (
                                     <div key={n.id} className="group relative w-full bg-white/40 dark:bg-neutral-800/60 backdrop-blur-xl rounded-xl p-3 shadow-sm hover:shadow-md transition-all">
                                         <div className="flex items-start gap-3" onClick={() => handlenotificationclick(n)}>
-                                            <img src={n.icon} className="w-9 h-9 rounded-lg" alt={n.appname} />
+                                            <Image src={n.icon} width={36} height={36} className="w-9 h-9 rounded-lg" alt={n.appname} />
                                             <div className="flex-1 min-w-0 text-left">
                                                 <div className="flex justify-between items-baseline">
                                                     <span className="text-[12px] font-bold text-black dark:text-white/90">{n.appname}</span>

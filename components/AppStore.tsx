@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { IoSearch, IoPersonCircleOutline, IoGameControllerOutline, IoRocketOutline, IoBrushOutline, IoConstructOutline, IoCodeSlashOutline } from "react-icons/io5";
+import Image from 'next/image';
 import { FaApple } from "react-icons/fa";
 import { apps } from './app';
-import { usewindows } from './WindowContext';
+import { useWindows } from './WindowContext';
 
 export default function AppStore() {
     const [activetab, setactivetab] = useState('Discover');
-    const { addwindow } = usewindows();
+    const { addwindow } = useWindows();
 
     const sidebaritems = [
         { name: 'Discover', icon: IoRocketOutline },
@@ -58,13 +59,12 @@ export default function AppStore() {
 
             <div className="flex-1 flex flex-col h-full overflow-y-auto relative">
 
-                {/* Hero Section */}
                 <div className="p-8 pb-4">
                     <h1 className="text-3xl font-bold mb-6">{activetab}</h1>
 
                     <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide snap-x">
                         <div className="snap-center min-w-[60%] h-[300px] rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 p-8 text-white flex flex-col justify-end shadow-xl cursor-pointer hover:scale-[1.01] transition-transform">
-                            <span className="uppercase text-xs font-bold opacity-80 mb-2">Editor's Choice</span>
+                            <span className="uppercase text-xs font-bold opacity-80 mb-2">Editor&apos;s Choice</span>
                             <h2 className="text-3xl font-bold mb-2">The Future of Portfolios</h2>
                             <p className="opacity-90 max-w-md">Experience a fully functional macOS simulation directly in your browser. Built with Next.js.</p>
                         </div>
@@ -89,7 +89,7 @@ export default function AppStore() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {apps.slice(0, 6).map((app) => (
                         <div key={app.id} className="flex items-center gap-4 group p-3 rounded-xl hover:bg-white dark:hover:bg-[#2d2d2d] transition-colors border border-transparent hover:border-black/5 dark:hover:border-white/5">
-                            <img src={app.icon} alt={app.appname} className="w-16 h-16 object-contain drop-shadow-md rounded-[14px]" />
+                            <Image src={app.icon} alt={app.appname} width={64} height={64} className="w-16 h-16 object-contain drop-shadow-md rounded-[14px]" />
                             <div className="flex-1 min-w-0">
                                 <h4 className="font-semibold text-base truncate">{app.appname}</h4>
                                 <p className="text-xs text-gray-500 truncate">Productivity</p>
@@ -127,7 +127,7 @@ export default function AppStore() {
                     {apps.slice(3, 8).map((app, i) => (
                         <div key={app.id} className="flex items-center gap-4 px-2 py-2 border-b border-dashed border-gray-100 dark:border-white/5 last:border-0">
                             <span className="font-bold text-gray-400 w-4 text-center">{i + 1}</span>
-                            <img src={app.icon} alt={app.appname} className="w-10 h-10 object-contain drop-shadow-sm rounded-[10px]" />
+                            <Image src={app.icon} alt={app.appname} width={40} height={40} className="w-10 h-10 object-contain drop-shadow-sm rounded-[10px]" />
                             <div className="flex-1 min-w-0">
                                 <h4 className="font-medium text-sm truncate">{app.appname}</h4>
                                 <p className="text-xs text-gray-500">Utilities</p>

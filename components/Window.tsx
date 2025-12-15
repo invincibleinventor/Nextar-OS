@@ -1,10 +1,11 @@
 'use client'
 import React, { useState, useEffect, useRef, memo } from 'react';
-import { usewindows } from './WindowContext';
+import Image from 'next/image';
+import { useWindows } from './WindowContext';
 import { apps } from './app';
 import { motion } from 'framer-motion';
-import { usedevice } from './DeviceContext';
-import { usesettings } from './SettingsContext';
+import { useDevice } from './DeviceContext';
+import { useSettings } from './SettingsContext';
 
 const panelheight = 35;
 const dockheight = 70;
@@ -38,7 +39,7 @@ const MemoizedDynamicComponent = memo(
       return (
         <div className="flex flex-row h-full w-full items-center content-center">
           <div className="flex flex-col space-y-5 font-sf mx-auto items-center content-center">
-            <img className="w-24 h-24" src={icon} alt={appname} />
+            <Image className="w-24 h-24" src={icon} width={96} height={96} alt={appname} />
             <div className="text-sm dark:text-white">{appname} is coming soon</div>
           </div>
         </div>
@@ -55,9 +56,9 @@ MemoizedDynamicComponent.displayName = 'MemoizedDynamicComponent';
 
 const Window = ({ id, appname, title, component, props, isminimized, ismaximized, shouldblur = true, issystemgestureactive = false, size: initialsize, position: initialposition }: any) => {
 
-  const { removewindow, updatewindow, activewindow, setactivewindow, windows } = usewindows();
-  const { ismobile } = usedevice();
-  const { reducemotion, reducetransparency } = usesettings();
+  const { removewindow, updatewindow, activewindow, setactivewindow, windows } = useWindows();
+  const { ismobile } = useDevice();
+  const { reducemotion, reducetransparency } = useSettings();
   const app = apps.find((app) => app.appname === appname);
 
   const [position, setposition] = useState(() => {
@@ -123,6 +124,7 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
     } else {
       setsize(previousstate.size);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isminimized, ismaximized, ismobile]);
 
   const handlemaximize = () => {

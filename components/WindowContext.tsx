@@ -3,7 +3,7 @@ import React, { createContext, useState, useContext } from 'react';
 
 const WindowContext = createContext<any>(null);
 
-export const usewindows = () => useContext(WindowContext);
+export const useWindows = () => useContext(WindowContext);
 
 export const WindowProvider = ({ children }: any) => {
   const [windows, setwindows] = useState<any[]>([]);
@@ -14,7 +14,7 @@ export const WindowProvider = ({ children }: any) => {
     setwindows((prevwindows) => {
       const filtered = prevwindows.filter(w => w.id !== newwindow.id);
       if (typeof window !== 'undefined' && window.innerWidth < 768) {
-        const minimizedprev = filtered.map(w => ({ ...w, isMinimized: true }));
+        const minimizedprev = filtered.map(w => ({ ...w, isminimized: true }));
         return [...minimizedprev, newwindow];
       }
       return [...filtered, newwindow];
@@ -44,14 +44,14 @@ export const WindowProvider = ({ children }: any) => {
 
       if (topmost) {
         return prevwindows.map((win) =>
-          win.appname === appname ? { ...win, isMinimized: !win.isMinimized } : win
+          win.appname === appname ? { ...win, isminimized: !win.isminimized } : win
         );
       } else {
         const lastWindow = appwindows[appwindows.length - 1];
         setactivewindow(lastWindow.id);
 
         return prevwindows.map((win) =>
-          win.appname === appname ? { ...win, isMinimized: false } : win
+          win.appname === appname ? { ...win, isminimized: false } : win
         );
       }
     });
@@ -62,7 +62,7 @@ export const WindowProvider = ({ children }: any) => {
         window.id === id ? { ...window, ...updatedprops } : window
       )
     );
-    if (updatedprops.isMinimized === false) {
+    if (updatedprops.isminimized === false) {
       setactivewindow(id);
     }
   };

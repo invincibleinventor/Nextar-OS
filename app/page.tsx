@@ -1,9 +1,10 @@
 'use client'
 import React, { useState, useEffect } from 'react';
-import { usewindows } from '@/components/WindowContext';
+import Image from 'next/image';
+import { useWindows } from '@/components/WindowContext';
 import Window from '@/components/Window';
 import { apps } from '@/components/app'
-import { usedevice } from '../components/DeviceContext';
+import { useDevice } from '../components/DeviceContext';
 import Panel from '@/components/panel';
 import Dock from '@/components/Dock';
 import BootScreen from '@/components/BootScreen';
@@ -16,13 +17,13 @@ import { motion } from 'framer-motion';
 import { BiSignal5 } from "react-icons/bi";
 
 import NotificationCenter from '@/components/NotificationCenter';
-import { usenotifications } from '@/components/NotificationContext';
+import { useNotifications } from '@/components/NotificationContext';
 import MacOSNotifications from '@/components/MacOSNotifications';
 
 const Page = () => {
-  const { windows, addwindow, setwindows } = usewindows();
-  const { osstate, ismobile } = usedevice();
-  const { } = usenotifications();
+  const { windows, addwindow, setwindows } = useWindows();
+  const { osstate, ismobile } = useDevice();
+  const { } = useNotifications();
   const [showcontrolcenter, setshowcontrolcenter] = useState(false);
   const [shownotificationcenter, setshownotificationcenter] = useState(false);
   const [showrecentapps, setshowrecentapps] = useState(false);
@@ -126,7 +127,7 @@ const Page = () => {
             >
               <div className='p-4 py-10 flex flex-col items-end content-end '>
                 <button onClick={(e) => { e.stopPropagation(); openOldPortfolio(); }} className="p-2 flex hover:bg-neutral-400/20 rounded-2xl hover:backdrop-blur-lg hover:filter px-4 flex-col items-center content-center text-white">
-                  <img className='w-16 h-16 shadow-sm drop-shadow-lg' src="/code.png" alt="Old Portfolio"></img>
+                  <Image className='w-16 h-16 shadow-sm drop-shadow-lg' src="/code.png" width={64} height={64} alt="Old Portfolio"></Image>
                   <span className='text-xs font-semibold text-white mt-1.5 drop-shadow-md'>Old Portfolio</span>
                 </button>
                 {windows.map((window: any) => (

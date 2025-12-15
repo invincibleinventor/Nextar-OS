@@ -11,7 +11,8 @@ export const portfoliodata = {
         email: "invincibleinventor@gmail.com",
         socials: {
             github: "https://github.com/invincibleinventor",
-            threads: "https://threads.com/balatbr"
+            threads: "https://threads.com/balatbr",
+            linkedin: "https://www.linkedin.com/in/balasubramaniantbr/"
         }
     },
     projects: [
@@ -121,3 +122,28 @@ export const portfoliodata = {
         "Git", "Docker", "Figma", "Firebase/Supabase"
     ]
 };
+
+export interface PortfolioData {
+    personal: {
+        name: string;
+        role: string;
+        bio: string;
+        location: string;
+        email: string;
+        socials: {
+            github: string;
+            threads: string;
+            linkedin: string;
+        };
+    };
+    projects: Array<{
+        title: string;
+        date: number;
+        desc: string;
+        stack: string[];
+        link: string;
+        github: string;
+        icon: React.ReactNode;
+    }>;
+    skills: string[];
+}

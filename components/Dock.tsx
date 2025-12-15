@@ -2,14 +2,14 @@
 
 import Image from 'next/image';
 
-import { usewindows } from './WindowContext';
+import { useWindows } from './WindowContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { apps } from './app';
 import Launchpad from './apps/Launchpad';
 import { useState } from 'react';
 
 const Dock = () => {
-  const { windows, addwindow, setactivewindow, focusortogglewindow } = usewindows();
+  const { windows, addwindow, setactivewindow, focusortogglewindow } = useWindows();
   const [launchpad, setlaunch] = useState(false);
   const [hoverapp, sethoverapp] = useState<string | null>(null);
   const onclick = (id: string, name: string, title?: string) => {
@@ -83,7 +83,6 @@ const Dock = () => {
     index === self.findIndex((t) => t.appname === value.appname)
   );
 
-  // Add Launchpad as the first item
   const allDockItems = [
     {
       id: 'launchpad-item',

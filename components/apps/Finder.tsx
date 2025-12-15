@@ -5,15 +5,17 @@ import {
     IoGridOutline, IoListOutline, IoChevronBack, IoChevronForward,
     IoSearch, IoGlobeOutline, IoInformationCircleOutline, IoChevronDown, IoChevronUp
 } from "react-icons/io5";
-import { FaApple, FaGithub, FaSafari } from "react-icons/fa";
-import { usewindows } from '../WindowContext';
+import Image from 'next/image';
+import { FaApple, FaGithub, FaSafari, FaLinkedin } from "react-icons/fa";
+import { PiThreadsLogo } from "react-icons/pi";
+import { useWindows } from '../WindowContext';
 import { portfoliodata } from '../portfolioData';
 import { apps } from '../app';
 
 const getfileicon = (kind: string, name: string) => {
     if (kind === 'Application') return null;
-    if (kind === 'Folder') return <img src="/folder.png" alt="folder" className="w-full h-full object-contain drop-shadow-md" />;
-    if (name.endsWith('png') || name.endsWith('jpg')) return <img src="/photos.png" alt="image" className="w-full h-full object-contain" />;
+    if (kind === 'Folder') return <Image src="/folder.png" alt="folder" width={64} height={64} className="w-full h-full object-contain drop-shadow-md" />;
+    if (name.endsWith('png') || name.endsWith('jpg')) return <Image src="/photos.png" alt="image" width={64} height={64} className="w-full h-full object-contain" />;
     return <IoDocumentTextOutline className="w-full h-full text-gray-500" />;
 };
 
@@ -60,7 +62,7 @@ export default function Finder({ initialpath }: { initialpath?: string[] }) {
     const [selectedfile, setselectedfile] = useState<string | null>(null);
     const [showsidebar, setshowsidebar] = useState(true);
     const [showpreview, setshowpreview] = useState(true);
-    const { addwindow, windows, updatewindow, setactivewindow } = usewindows();
+    const { addwindow, windows, updatewindow, setactivewindow } = useWindows();
 
     const [currentpath, setcurrentpath] = useState<string[]>(initialpath || ['Projects']);
     const [searchquery, setsearchquery] = useState("");
@@ -106,7 +108,7 @@ export default function Finder({ initialpath }: { initialpath?: string[] }) {
                         date: 'Today',
                         size: '--',
                         kind: 'Folder',
-                        icon: <img src="/folder.png" alt="folder" className="w-full h-full object-contain drop-shadow-md" />,
+                        icon: <Image src="/folder.png" alt="folder" width={64} height={64} className="w-full h-full object-contain drop-shadow-md" />,
                         link: p.link,
                         description: p.desc
                     }));
@@ -121,7 +123,7 @@ export default function Finder({ initialpath }: { initialpath?: string[] }) {
                             kind: 'Web Link',
                             icon: (
                                 <div className="relative w-full h-full">
-                                    <img src="/folder.png" alt="folder" className="w-full h-full object-contain drop-shadow-md" />
+                                    <Image src="/folder.png" alt="folder" width={64} height={64} className="w-full h-full object-contain drop-shadow-md" />
                                     <div className="absolute -bottom-1 -right-1 bg-white dark:bg-[#1e1e1e] rounded-full p-1 shadow-sm">
                                         <FaGithub className="text-black dark:text-white text-[12px]" />
                                     </div>
@@ -137,7 +139,7 @@ export default function Finder({ initialpath }: { initialpath?: string[] }) {
                             kind: 'Web Link',
                             icon: (
                                 <div className="relative w-full h-full">
-                                    <img src="/folder.png" alt="folder" className="w-full h-full object-contain drop-shadow-md" />
+                                    <Image src="/folder.png" alt="folder" width={64} height={64} className="w-full h-full object-contain drop-shadow-md" />
                                     <div className="absolute -bottom-1 -right-1 bg-white dark:bg-[#1e1e1e] rounded-full p-1 shadow-sm">
                                         <FaSafari className="text-[#007AFF] text-[12px]" />
                                     </div>
@@ -152,9 +154,9 @@ export default function Finder({ initialpath }: { initialpath?: string[] }) {
         }
         if (selected === 'About Me') {
             return [
-                { name: 'Bio.txt', date: 'Today', size: '2 KB', kind: 'Text Document', content: portfoliodata.personal.bio, description: "A brief biography." },
-                { name: 'Skills.md', date: 'Today', size: '4 KB', kind: 'Markdown', content: portfoliodata.skills.join(', '), description: "List of technical skills." },
-                { name: 'Resume.pdf', date: 'Yesterday', size: '2.4 MB', kind: 'PDF', link: '#', description: "Full professional resume." }
+              { name: 'Github', date: 'Today', size: 'Web Link', kind: 'Web Link', link: portfoliodata.personal.socials.github, icon: <FaGithub className="w-10 h-10 text-gray-700 dark:text-gray-300" />, description: "My Github Profile" },
+                { name: 'LinkedIn', date: 'Today', size: 'Web Link', kind: 'Web Link', link: portfoliodata.personal.socials.linkedin, icon: <FaLinkedin className="w-10 h-10 text-[#0077b5]" />, description: "My LinkedIn Profile" },
+                { name: 'Threads', date: 'Today', size: 'Web Link', kind: 'Web Link', link: portfoliodata.personal.socials.threads, icon: <PiThreadsLogo className="w-10 h-10 text-black dark:text-white" />, description: "My Threads Profile" }
             ].filter(i => !searchquery || i.name.toLowerCase().includes(searchquery.toLowerCase()));
         }
         if (selected === 'Applications') {
@@ -165,7 +167,7 @@ export default function Finder({ initialpath }: { initialpath?: string[] }) {
                     date: 'Today',
                     size: 'App',
                     kind: 'Application',
-                    icon: <img src={a.icon} className="w-full h-full object-contain drop-shadow-md" alt={a.appname} />,
+                    icon: <Image src={a.icon} width={64} height={64} className="w-full h-full object-contain drop-shadow-md" alt={a.appname} />,
                     link: '#',
                     description: `Launch ${a.appname} application.`
                 }));
@@ -206,7 +208,7 @@ export default function Finder({ initialpath }: { initialpath?: string[] }) {
         } else if (file.link) {
             const safariapp = apps.find(a => a.id === 'safari');
             if (safariapp) {
-                if (file.name === 'Source Code') {
+                if (file.name === 'Source Code' || ['Github', 'LinkedIn', 'Threads'].includes(file.name)) {
                     window.open(file.link, '_blank');
                 } else {
                     addwindow({
@@ -229,7 +231,6 @@ export default function Finder({ initialpath }: { initialpath?: string[] }) {
     return (
         <div ref={containerRef} className="flex h-full w-full bg-transparent text-black dark:text-white font-sf text-[13px] overflow-hidden rounded-b-xl relative select-none">
 
-            {/* Sidebar */}
             <div className={`
                 ${showsidebar
                     ? isnarrow ? 'absolute inset-y-0 left-0 z-20 w-[200px] shadow-2xl bg-[#f5f5f7] dark:bg-[#1e1e1e] border-r border-gray-200 dark:border-white/10'
@@ -265,10 +266,8 @@ export default function Finder({ initialpath }: { initialpath?: string[] }) {
                 </div>
             </div>
 
-            {/* Main Content Area + Preview (Flex Row on Desktop, Flex Col on Mobile) */}
             <div className={`flex-1 flex ${isnarrow ? 'flex-col' : 'flex-row'} min-w-0 dark:bg-neutral-900 bg-white relative overflow-hidden`}>
 
-                {/* Content Column */}
                 <div className="flex-1 flex flex-col min-w-0 min-h-0">
                     <div className="h-[50px] shrink-0 flex items-center justify-between px-4 border-b border-black/5 dark:border-white/5">
                         <div className="flex items-center gap-2 text-gray-500">

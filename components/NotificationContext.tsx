@@ -2,8 +2,8 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Notification, initialnotifications } from './notifications';
-import { usewindows } from './WindowContext';
-import { usedevice } from './DeviceContext';
+import { useWindows } from './WindowContext';
+import { useDevice } from './DeviceContext';
 
 interface NotificationContextType {
     notifications: Notification[];
@@ -20,8 +20,8 @@ const NotificationContext = createContext<NotificationContextType | undefined>(u
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
     const [notifications, setnotifications] = useState<Notification[]>([]);
-    const { addwindow, setactivewindow, windows, updatewindow } = usewindows();
-    const { osstate } = usedevice();
+    const { addwindow, setactivewindow, windows, updatewindow } = useWindows();
+    const { osstate } = useDevice();
     const [isloaded, setisloaded] = useState(false);
     const [hasshownwelcome, sethasshownwelcome] = useState(false);
 
@@ -118,7 +118,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     );
 }
 
-export function usenotifications() {
+export function useNotifications() {
     const context = useContext(NotificationContext);
     if (!context) {
         throw new Error('useNotifications must be used within a NotificationProvider');

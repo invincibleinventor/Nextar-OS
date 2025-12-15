@@ -1,13 +1,14 @@
 'use client';
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import {
     IoChevronForward, IoColorPaletteOutline, IoNotificationsOutline, IoPerson, IoSettingsOutline,
     IoWifi, IoBluetooth, IoGlobeOutline, IoMoon, IoHourglassOutline, IoAccessibilityOutline, IoToggle,
     IoMicOutline, IoHandLeftOutline, IoDesktopOutline, IoImageOutline, IoSearch
 } from 'react-icons/io5';
-import { usesettings } from '../SettingsContext';
-import { usetheme } from '../ThemeContext';
-import { usewindows } from '../WindowContext';
+import { useSettings } from '../SettingsContext';
+import { useTheme } from '../ThemeContext';
+import { useWindows } from '../WindowContext';
 
 const specs = [
     { label: "Processor", value: "Neural Brain 2.0 (Creative Core)" },
@@ -39,7 +40,7 @@ const sidebaritems = [
     { type: 'spacer' },
 
     { id: 'controlcenter', label: 'Control Center', icon: IoToggle, color: '#8E8E93' },
-    { id: 'siri', label: 'Siri & Spotlight', icon: IoMicOutline, color: '#000000' }, // Custom color usually
+    { id: 'siri', label: 'Siri & Spotlight', icon: IoMicOutline, color: '#000000' },
     { id: 'privacy', label: 'Privacy & Security', icon: IoHandLeftOutline, color: '#007AFF' },
 
     { type: 'spacer' },
@@ -57,11 +58,10 @@ const accentcolors = [
 export default function Settings() {
     const [searchquery, setsearchquery] = useState("");
     const [activetab, setactivetab] = useState("general");
-    const { reducemotion, setreducemotion, reducetransparency, setreducetransparency } = usesettings();
-    const { theme, toggletheme } = usetheme();
-    const { addwindow } = usewindows();
+    const { reducemotion, setreducemotion, reducetransparency, setreducetransparency } = useSettings();
+    const { theme, toggletheme } = useTheme();
+    const { addwindow } = useWindows();
 
-    // Container-based responsiveness
     const [isnarrow, setisnarrow] = useState(false);
     const [showsidebar, setshowsidebar] = useState(true);
     const containerRef = React.useRef<HTMLDivElement>(null);
@@ -86,7 +86,8 @@ export default function Settings() {
 
         observer.observe(containerRef.current);
         return () => observer.disconnect();
-    }, []); // Removed isNarrow dependency to avoid loops
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); 
 
     const handleitemclick = (id: string) => {
         setactivetab(id);
@@ -138,7 +139,6 @@ export default function Settings() {
     return (
         <div ref={containerRef} className="flex h-full w-full  font-sf text-[13px] text-black dark:text-white overflow-hidden relative">
 
-            {/* Sidebar */}
             <div className={`
                 ${isnarrow ? 'absolute inset-y-0 left-0 z-30 w-full transition-transform duration-300 dark:bg-neutral-900 bg-white' : 'relative w-[240px] shrink-0 bg-transparent'}
                 ${isnarrow && !showsidebar ? '-translate-x-full pointer-events-none' : 'translate-x-0'}
@@ -176,7 +176,7 @@ export default function Settings() {
                         }}
                     >
                         <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 shrink-0">
-                            <img src="/pfp.png" alt="Profile" className="w-full h-full object-cover" />
+                            <Image src="/pfp.png" alt="Profile" width={40} height={40} className="w-full h-full object-cover" />
                         </div>
                         <div className="flex flex-col truncate">
                             <span className="font-semibold text-[13px] leading-tight truncate">BalaTBR</span>
@@ -219,7 +219,6 @@ export default function Settings() {
                 </div>
             </div>
 
-            {/* Content Content - Mobile Back Button */}
             <div className={`flex-1 flex flex-col bg-[#f5f5f7] dark:bg-[#1e1e1e] w-full min-w-0 h-full relative`}>
                 {isnarrow && (
                     <div className="h-[44px] shrink-0 border-b border-black/10 dark:border-white/10 flex items-center px-2 bg-[#f5f5f7]/80 dark:bg-[#1e1e1e]/80 backdrop-blur-md sticky top-0 z-20 transition-all">
@@ -327,7 +326,6 @@ export default function Settings() {
                             </>
                         )}
 
-                        {/* Placeholder for other sections */}
                         {activetab !== 'general' && activetab !== 'appearance' && (
                             <div className="flex flex-col items-center justify-center p-12 text-center opacity-60">
                                 <div className="w-20 h-20 rounded-2xl bg-gray-200 dark:bg-gray-700 mb-6 flex items-center justify-center text-4xl shadow-sm">

@@ -1,16 +1,16 @@
 'use client';
 import React, { useState } from 'react';
 import { apps } from './app';
-import { usetheme } from './ThemeContext';
-import { usesettings } from './SettingsContext';
+import { useTheme } from './ThemeContext';
+import { useSettings } from './SettingsContext';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import AppLibrary from './AppLibrary';
-import { usewindows } from './WindowContext';
+import { useWindows } from './WindowContext';
 
 export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayopen?: boolean }) {
-    const { addwindow, windows, setactivewindow, updatewindow } = usewindows();
-    const { reducemotion } = usesettings();
+    const { addwindow, windows, setactivewindow, updatewindow } = useWindows();
+    const { reducemotion } = useSettings();
     const [page, setpage] = useState(0);
 
     const handleappclick = (app: any) => {

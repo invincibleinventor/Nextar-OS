@@ -1,5 +1,6 @@
 'use client';
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { FaArrowLeft, FaArrowRight, FaRedo, FaLock, FaBookOpen, FaShareSquare, FaPlus } from 'react-icons/fa';
 
 interface safariprops {
@@ -77,7 +78,7 @@ export default function Safari({ initialurl = 'https://baladev.vercel.app' }: sa
                     )
                 ) : (
                     <div className="flex flex-col items-center justify-center h-full text-gray-400">
-                        <img src="/icons/safari.png" className="w-24 h-24 mb-8 opacity-20 filter grayscale" alt="Safari" />
+                        <Image src="/icons/safari.png" width={96} height={96} className="w-24 h-24 mb-8 opacity-20 filter grayscale" alt="Safari" />
                         <h1 className="text-2xl font-bold text-black/20 dark:text-white/20 mb-8">Favorites</h1>
 
                         <div className="grid grid-cols-4 gap-8">

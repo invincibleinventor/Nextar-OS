@@ -2,12 +2,12 @@
 import React from 'react';
 import Image from 'next/image';
 import { apps } from './app';
-import { usewindows } from './WindowContext';
+import { useWindows } from './WindowContext';
 
 import { IoSearch } from 'react-icons/io5';
 
 const AppLibrary = () => {
-    const { addwindow, windows, setactivewindow, updatewindow } = usewindows();
+    const { addwindow, windows, setactivewindow, updatewindow } = useWindows();
     const categories: { [key: string]: string[] } = {
         "Social & Communication": ["Mail"],
         "Productivity": ["Safari", "Calendar", "Notes", "Reminders"],

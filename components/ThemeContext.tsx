@@ -10,7 +10,7 @@ const ThemeContext = createContext({
   toggletheme: () => { },
 });
 
-export const usetheme = () => useContext(ThemeContext);
+export const useTheme = () => useContext(ThemeContext);
 
 const setapptheme = (theme: string) => {
   const html = document.documentElement;

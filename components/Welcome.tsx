@@ -1,13 +1,14 @@
 'use client';
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { usewindows } from './WindowContext';
+import { useWindows } from './WindowContext';
 import { portfoliodata } from './portfolioData';
 import { apps } from './app';
 import { IoArrowForward, IoCheckmarkCircle, IoLogoApple, IoConstructOutline, IoAppsOutline, IoRocketOutline } from "react-icons/io5";
 
 export default function Welcome(props: any) {
-    const { removewindow, addwindow } = usewindows();
+    const { removewindow, addwindow } = useWindows();
     const [step, setstep] = useState(0);
 
     const steps = [
@@ -44,15 +45,15 @@ export default function Welcome(props: any) {
             content: (
                 <div className="text-left space-y-4 max-w-md mx-auto h-full overflow-y-auto pr-2 scrollbar-thin">
                     <div className="flex items-center gap-4 p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                        <img src="/finder.png" alt="Finder" className="w-10 h-10 object-contain drop-shadow-md" />
+                        <Image src="/finder.png" alt="Finder" width={40} height={40} className="w-10 h-10 object-contain drop-shadow-md" />
                         <div><h4 className="text-sm font-semibold">Finder</h4><p className="text-xs text-gray-500">File management and project browsing.</p></div>
                     </div>
                     <div className="flex items-center gap-4 p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                        <img src="/photos.webp" alt="Photos" className="w-10 h-10 object-contain drop-shadow-md" />
+                        <Image src="/photos.webp" alt="Photos" width={40} height={40} className="w-10 h-10 object-contain drop-shadow-md" />
                         <div><h4 className="text-sm font-semibold">Photos</h4><p className="text-xs text-gray-500">Visual portfolio gallery.</p></div>
                     </div>
                     <div className="flex items-center gap-4 p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                        <img src="/calendar.png" alt="Calendar" className="w-10 h-10 object-contain drop-shadow-md" />
+                        <Image src="/calendar.png" alt="Calendar" width={40} height={40} className="w-10 h-10 object-contain drop-shadow-md" />
                         <div><h4 className="text-sm font-semibold">Calendar</h4><p className="text-xs text-gray-500">Schedule and timeline visualization.</p></div>
                     </div>
                 </div>
@@ -82,7 +83,7 @@ export default function Welcome(props: any) {
             content: (
                 <div className="grid grid-cols-4 gap-4 p-2 h-full content-center">
                     {apps.filter(a => ['finder', 'calendar', 'photos', 'terminal', 'mail', 'calculator'].includes(a.id)).map(app => (
-                        <button
+                        <div
                             key={app.id}
                             onClick={() => {
                                 addwindow({
@@ -98,11 +99,11 @@ export default function Welcome(props: any) {
                                     props: {}
                                 });
                             }}
-                            className="flex flex-col items-center gap-2 hover:scale-105 transition-transform group"
+                            className="flex flex-col items-center gap-2 hover:scale-105 transition-transform group cursor-pointer"
                         >
-                            <img src={app.icon} className="w-10 h-10 shadow-sm rounded-[10px]" alt={app.appname} />
+                            <Image src={app.icon} width={40} height={40} className="w-10 h-10 shadow-sm rounded-[10px]" alt={app.appname} />
                             <span className="text-[10px] whitespace-nowrap group-hover:text-blue-500 transition-colors">{app.appname}</span>
-                        </button>
+                        </div>
                     ))}
                 </div>
             )
@@ -115,7 +116,7 @@ export default function Welcome(props: any) {
                 <div className="text-center space-y-3 max-w-md mx-auto h-full flex flex-col items-center justify-center">
                     <div className="flex flex-col items-center mb-2">
                         <div className="w-16 h-16 rounded-full overflow-hidden shadow-lg border-2 border-white/20 mb-2">
-                            <img src="/pfp.png" alt="Profile" className="w-full h-full object-cover" />
+                            <Image src="/pfp.png" alt="Profile" width={64} height={64} className="w-full h-full object-cover" />
                         </div>
                         <h3 className="font-bold text-lg">Bala TBR</h3>
                         <p className="text-xs text-blue-500 font-medium">@invincibleinventor</p>
@@ -170,7 +171,6 @@ export default function Welcome(props: any) {
                         transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
                         className="flex flex-col items-center w-full h-full"
                     >
-                        {/* Huge Icon */}
                         <motion.div
                             initial={{ y: 20, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
@@ -180,7 +180,6 @@ export default function Welcome(props: any) {
                             {React.createElement(steps[step].icon)}
                         </motion.div>
 
-                        {/* Typography */}
                         <div className="text-center space-y-3 mb-12 max-w-lg">
                             <h1 className="text-4xl font-semibold tracking-tight text-black dark:text-white">
                                 {steps[step].title}
@@ -190,7 +189,6 @@ export default function Welcome(props: any) {
                             </p>
                         </div>
 
-                        {/* Content Area - Scrollable but safely contained */}
                         <div className="flex-1 w-full overflow-y-auto px-4 pb-4 min-h-0 scrollbar-hide">
                             <div className="w-full max-w-lg mx-auto">
                                 {steps[step].content}
@@ -200,10 +198,8 @@ export default function Welcome(props: any) {
                 </AnimatePresence>
             </div>
 
-            {/* Footer Navigation */}
             <div className="h-24 shrink-0 flex items-center justify-between px-12 bg-[#fbfbfd] dark:bg-[#1e1e1e] z-20">
                 <div className="flex gap-2">
-                    {/* Safe back button if looking for it, or just empty space */}
                 </div>
 
                 <button

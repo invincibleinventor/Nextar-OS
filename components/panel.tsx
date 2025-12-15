@@ -2,19 +2,19 @@
 
 import React, { useState, useEffect } from 'react';
 import Menu from './menu';
-import { usewindows } from './WindowContext';
+import { useWindows } from './WindowContext';
 import { menus, titlemenu, applemenu } from './menus';
 import Control from './controlcenter';
 import Logo from './applelogo';
 
 import { IoWifi, IoBatteryFull, IoToggle, IoSettingsOutline } from 'react-icons/io5';
 import { BsToggles2 } from "react-icons/bs";
-import { usedevice } from './DeviceContext';
+import { useDevice } from './DeviceContext';
 import { IoIosBatteryFull, IoIosSettings, IoIosWifi } from 'react-icons/io';
 
 export default function Panel({ ontogglenotifications }: { ontogglenotifications?: () => void }) {
-    const { activewindow, windows } = usewindows();
-    const { setosstate } = usedevice();
+    const { activewindow, windows } = useWindows();
+    const { setosstate } = useDevice();
 
     const activeappname =
         windows.find((window: any) => window.id === activewindow)?.appname || 'Finder';

@@ -1,14 +1,15 @@
 'use client';
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { usesettings } from './SettingsContext';
-import { usenotifications } from './NotificationContext';
+import Image from 'next/image';
+import { useSettings } from './SettingsContext';
+import { useNotifications } from './NotificationContext';
 
 
 
 export default function NotificationCenter({ isopen, onclose }: { isopen: boolean; onclose: () => void }) {
-    const { notifications, clearnotification, handlenotificationclick } = usenotifications();
-    const { reducemotion, reducetransparency } = usesettings();
+    const { notifications, clearnotification, handlenotificationclick } = useNotifications();
+    const { reducemotion, reducetransparency } = useSettings();
 
     const formattime = () => {
         const date = new Date();
@@ -78,7 +79,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                         >
                                             <div className="flex items-start gap-4">
                                                 <div className="w-[42px] h-[42px] rounded-[10px] bg-white overflow-hidden shrink-0 shadow-sm">
-                                                    <img src={n.icon} className="w-full h-full object-cover" alt={n.appname} />
+                                                    <Image src={n.icon} width={42} height={42} className="w-full h-full object-cover" alt={n.appname} />
                                                 </div>
                                                 <div className="flex-1 min-w-0 pt-0.5">
                                                     <div className="flex justify-between items-baseline mb-0.5">

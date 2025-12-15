@@ -2,7 +2,7 @@ import Image from 'next/image';
 
 
 import { apps } from '../app';
-import { usewindows } from '../WindowContext';
+import { useWindows } from '../WindowContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import React, { useState } from 'react';
 import { IoSearch } from 'react-icons/io5';
@@ -10,7 +10,7 @@ import { IoSearch } from 'react-icons/io5';
 const appsperpage = 35;
 
 export default function Launchpad({ onclose }: { onclose: () => void }) {
-    const { addwindow, removewindow, windows, setactivewindow } = usewindows();
+    const { addwindow, removewindow, windows, setactivewindow } = useWindows();
     const [searchterm, setsearchterm] = useState('');
     const [page, setpage] = useState(0);
 

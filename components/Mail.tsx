@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { portfoliodata } from './portfolioData';
 import { IoMailOutline, IoLogoGithub, IoLogoTwitter, IoLogoLinkedin, IoCallOutline, IoLocationOutline, IoPaperPlaneOutline, IoChevronBack } from "react-icons/io5";
 import { PiThreadsLogo } from 'react-icons/pi';
@@ -8,7 +9,6 @@ export default function Mail() {
 
     return (
         <div className="flex h-full w-full bg-white dark:bg-[#1e1e1e] font-sf text-black dark:text-white relative overflow-hidden">
-            {/* Sidebar (List View Imitation) */}
             <div className={`
                 w-full md:w-[240px] border-r border-gray-200 dark:border-white/10 flex flex-col bg-[#f5f5f7] dark:bg-[#2d2d2d]/50 backdrop-blur-xl
                 absolute md:relative z-20 h-full transition-transform duration-300 ease-in-out
@@ -43,7 +43,7 @@ export default function Mail() {
                     <div className="p-8 max-w-2xl mx-auto">
                         <div className="flex items-start gap-6 mb-8">
                             <div className="w-24 h-24 rounded-full overflow-hidden shadow-md border dark:border-white/10 shrink-0">
-                                <img src="/pfp.png" alt="Profile" className="w-full h-full object-cover" />
+                                <Image src="/pfp.png" alt="Profile" width={96} height={96} className="w-full h-full object-cover" />
                             </div>
                             <div className="pt-2 min-w-0">
                                 <h1 className="text-2xl font-bold text-black dark:text-white truncate">{portfoliodata.personal.name}</h1>
@@ -61,6 +61,12 @@ export default function Mail() {
                                             <IoLogoGithub size={16} />
                                         </div>
                                         <span className="text-[11px] text-[#007AFF]">github</span>
+                                    </a>
+                                    <a href={portfoliodata.personal.socials.linkedin} target="_blank" rel="noreferrer" className="flex flex-col items-center gap-1 min-w-[60px] p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 transition-colors group">
+                                        <div className="w-8 h-8 bg-[#0077b5] rounded-full flex items-center justify-center text-white shadow-sm group-hover:bg-[#006097]">
+                                            <IoLogoLinkedin size={16} />
+                                        </div>
+                                        <span className="text-[11px] text-[#007AFF]">linkedin</span>
                                     </a>
                                     <a href={portfoliodata.personal.socials.threads} target="_blank" rel="noreferrer" className="flex flex-col items-center gap-1 min-w-[60px] p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 transition-colors group">
                                         <div className="w-8 h-8 bg-black dark:bg-white dark:text-black rounded-full flex items-center justify-center text-white shadow-sm">
@@ -107,6 +113,9 @@ export default function Mail() {
                                 <div className="space-y-2">
                                     <a href={portfoliodata.personal.socials.github} target="_blank" rel="noreferrer" className="block text-[15px] text-[#007AFF] hover:underline">
                                         Github
+                                    </a>
+                                    <a href={portfoliodata.personal.socials.linkedin} target="_blank" rel="noreferrer" className="block text-[15px] text-[#007AFF] hover:underline">
+                                        LinkedIn
                                     </a>
                                     <a href={portfoliodata.personal.socials.threads || '#'} target="_blank" rel="noreferrer" className="block text-[15px] text-[#007AFF] hover:underline">
                                         Threads

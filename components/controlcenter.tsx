@@ -5,15 +5,15 @@ import { FiBatteryCharging, FiCast } from 'react-icons/fi'
 import { IoPlay, IoFlashlight, IoCamera, IoCalculator, IoStopwatch } from 'react-icons/io5'
 import { BiSignal5 } from "react-icons/bi";
 import { FaTowerBroadcast } from 'react-icons/fa6'
-import { usesettings } from './SettingsContext'
-import { usetheme } from './ThemeContext'
+import { useSettings } from './SettingsContext'
+import { useTheme } from './ThemeContext'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function ControlCenter({ onclose, ismobile = false, isopen = true }: { onclose?: () => void, ismobile?: boolean, isopen?: boolean }) {
   const [brightness, setbrightness] = useState(100)
   const [volume, setvolume] = useState(100)
-  const { theme, toggletheme } = usetheme()
-  const { reducemotion, reducetransparency } = usesettings()
+  const { theme, toggletheme } = useTheme()
+  const { reducemotion, reducetransparency } = useSettings()
 
   return (
     <AnimatePresence>

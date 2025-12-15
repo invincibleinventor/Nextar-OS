@@ -1,12 +1,13 @@
 'use client';
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { usedevice } from './DeviceContext';
+import Image from 'next/image';
+import { useDevice } from './DeviceContext';
 import { IoMdCamera, IoMdFlashlight } from "react-icons/io";
-import { usenotifications } from './NotificationContext';
+import { useNotifications } from './NotificationContext';
 
 export default function LockScreen() {
-    const { osstate, setosstate, ismobile } = usedevice();
+    const { osstate, setosstate, ismobile } = useDevice();
     const [password, setpassword] = useState('');
     const [error, seterror] = useState(false);
     const [hint, sethint] = useState(false);
@@ -14,7 +15,7 @@ export default function LockScreen() {
     const [shaking, setshaking] = useState(false);
     const [time, settime] = useState(new Date());
     const [dragy, setdragy] = useState(0);
-    const { notifications } = usenotifications();
+    const { notifications } = useNotifications();
 
     useEffect(() => {
         const timer = setInterval(() => settime(new Date()), 1000);
@@ -68,7 +69,7 @@ export default function LockScreen() {
 
                             <div className="flex flex-col items-center mb-10">
                                 <div className="w-24 h-24 rounded-full mb-5 shadow-2xl relative group overflow-hidden border border-white/10">
-                                    <img src="/pfp.png" className="w-full h-full object-cover" alt="User Profile" />
+                                    <Image src="/pfp.png" width={96} height={96} className="w-full h-full object-cover" alt="User Profile" />
                                 </div>
                                 <div className="text-xl text-white font-semibold mb-5 drop-shadow-md tracking-wide">Administrator</div>
 
@@ -130,7 +131,7 @@ export default function LockScreen() {
                                     <div className="w-full flex hidden flex-col items-center space-y-2 mt-4">
                                         {notifications.slice(0, 3).map(n => (
                                             <div key={n.id} className="w-full max-w-sm bg-white/20 backdrop-blur-md border border-white/10 p-3 rounded-xl flex items-center space-x-3 shadow-sm">
-                                                <img src={n.icon} className="w-8 h-8 rounded-lg" alt={n.appname} />
+                                                <Image src={n.icon} width={32} height={32} className="w-8 h-8 rounded-lg" alt={n.appname} />
                                                 <div className="flex-1 min-w-0 text-white text-left">
                                                     <div className="flex justify-between items-baseline">
                                                         <span className="text-xs font-bold">{n.appname}</span>

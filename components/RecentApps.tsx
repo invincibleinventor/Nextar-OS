@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, memo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { usewindows } from './WindowContext';
+import Image from 'next/image';
+import { useWindows } from './WindowContext';
 import { apps } from './app';
 
 
@@ -32,7 +33,7 @@ const MemoizedDynamicComponent = memo(
         if (!dynamiccomponent) {
             return (
                 <div className="w-full h-full flex items-center justify-center bg-white/50 dark:bg-neutral-800/50">
-                    {icon ? <img src={icon} className="w-16 h-16 opacity-50 grayscale" alt="App Icon" /> : <div className="text-xs opacity-50">Loading...</div>}
+                    {icon ? <Image src={icon} width={64} height={64} className="w-16 h-16 opacity-50 grayscale" alt="App Icon" /> : <div className="text-xs opacity-50">Loading...</div>}
                 </div>
             );
         }
@@ -50,7 +51,7 @@ const MemoizedDynamicComponent = memo(
 MemoizedDynamicComponent.displayName = 'MemoizedDynamicComponent';
 
 const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: () => void }) => {
-    const { windows, removewindow, setactivewindow, updatewindow } = usewindows();
+    const { windows, removewindow, setactivewindow, updatewindow } = useWindows();
     const containerref = useRef<HTMLDivElement>(null);
     const ignoreclickref = useRef(false);
 
@@ -195,7 +196,7 @@ const AppCard = ({ win, icon, onkill, onopen }: any) => {
             }}
         >
             <div className="flex items-center gap-2 mb-3 px-1 pointer-events-none">
-                {icon && <img src={icon} className="w-8 h-8 drop-shadow-md" alt={win.title} />}
+                {icon && <Image src={icon} width={32} height={32} className="w-8 h-8 drop-shadow-md" alt={win.title} />}
                 <span className="text-white font-semibold text-sm tracking-wide drop-shadow-md">{win.title}</span>
             </div>
 
