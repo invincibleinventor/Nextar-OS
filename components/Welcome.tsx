@@ -146,7 +146,7 @@ export default function Welcome(props: any) {
                         Contact Me
                     </button>
                     <div className="flex flex-wrap justify-center gap-2 mt-2">
-                        {portfoliodata.skills.slice(0, 4).map((skill, i) => (
+                        {portfoliodata.skills.slice(1, 5).map((skill, i) => (
                             <span key={i} className="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-300 rounded-full text-[9px] border border-blue-100 dark:border-blue-800/30">
                                 {skill.split('(')[0]}
                             </span>
