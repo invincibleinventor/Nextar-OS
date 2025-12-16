@@ -3,8 +3,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWindows } from './WindowContext';
-import { portfoliodata } from './portfolioData';
-import { apps } from './app';
+import { personal, apps } from './data';
 import { IoArrowForward, IoCheckmarkCircle, IoLogoApple, IoConstructOutline, IoAppsOutline, IoRocketOutline, IoDesktopOutline, IoLaptopOutline, IoPhonePortraitOutline, IoLogoGithub } from "react-icons/io5";
 
 export default function Welcome(props: any) {
@@ -42,11 +41,11 @@ export default function Welcome(props: any) {
         {
             title: "Adaptive Interface",
             subtitle: "macOS on Desktop. iOS on Mobile.",
-            icon: IoPhonePortraitOutline, // Changed icon to represent mobile end-state or keep desktop? Let's use Phone to show the 'convergence' destination or just generic.
+            icon: IoPhonePortraitOutline,
             content: (
                 <div className="flex flex-col items-center justify-center h-full gap-8">
                     <div className="flex items-end justify-center gap-6 h-32 relative">
-                        {/* Desktop */}
+
                         <motion.div
                             initial={{ scale: 0, opacity: 0, x: -50 }}
                             animate={{ scale: 1, opacity: 1, x: 0 }}
@@ -59,7 +58,7 @@ export default function Welcome(props: any) {
                             <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">macOS</span>
                         </motion.div>
 
-                        {/* Arrow */}
+
                         <motion.div
                             initial={{ scale: 0, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
@@ -69,7 +68,7 @@ export default function Welcome(props: any) {
                             <IoArrowForward size={24} />
                         </motion.div>
 
-                        {/* Mobile */}
+
                         <motion.div
                             initial={{ scale: 0, opacity: 0, x: 50 }}
                             animate={{ scale: 1, opacity: 1, x: 0 }}
@@ -142,8 +141,8 @@ export default function Welcome(props: any) {
                                     title: app.appname,
                                     component: app.componentname,
                                     icon: app.icon,
-                                    isMinimized: false,
-                                    isMaximized: false,
+                                    isminimized: false,
+                                    ismaximized: false,
                                     position: { top: 100, left: 100 },
                                     size: app.defaultsize || { width: 900, height: 600 },
                                     props: {}
@@ -172,7 +171,7 @@ export default function Welcome(props: any) {
                         <p className="text-xs text-blue-500 font-medium">@invincibleinventor</p>
                     </div>
                     <p className="text-xs text-gray-600 dark:text-gray-300 italic line-clamp-2">
-                        &quot;{portfoliodata.personal.bio}&quot;
+                        &quot;{personal.personal.bio}&quot;
                     </p>
 
                     <button
@@ -184,8 +183,8 @@ export default function Welcome(props: any) {
                                 title: 'Mail',
                                 component: 'Mail',
                                 icon: '/mail.png',
-                                isMinimized: false,
-                                isMaximized: false,
+                                isminimized: false,
+                                ismaximized: false,
                                 position: { top: 100, left: 100 },
                                 size: mailapp?.defaultsize || { width: 900, height: 600 },
                                 props: {}
@@ -196,7 +195,7 @@ export default function Welcome(props: any) {
                         Contact Me
                     </button>
                     <div className="flex flex-wrap justify-center gap-2 mt-2">
-                        {portfoliodata.skills.slice(1, 5).map((skill, i) => (
+                        {personal.skills.slice(1, 4).map((skill, i) => (
                             <span key={i} className="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-300 rounded-full text-[9px] border border-blue-100 dark:border-blue-800/30">
                                 {skill.split('(')[0]}
                             </span>

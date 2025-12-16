@@ -6,7 +6,7 @@ import { DeviceProvider } from '@/components/DeviceContext';
 import { SettingsProvider } from '@/components/SettingsContext';
 
 
-import { portfoliodata } from '@/components/portfolioData';
+import { personal as portfoliodata } from '@/components/data';
 
 export const metadata: Metadata = {
   title: {
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: '/og-image.jpg', 
+        url: '/og-image.jpg',
         width: 1200,
         height: 630,
         alt: `${portfoliodata.personal.name} Portfolio`,

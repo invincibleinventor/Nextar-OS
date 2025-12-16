@@ -1,12 +1,12 @@
 import { MetadataRoute } from 'next';
-import { portfoliodata } from '@/components/portfolioData';
+import { personal as portfoliodata } from '@/components/data';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-    const baseUrl = 'https://baladev.in'; 
+    const baseurl = 'https://baladev.in';
 
     return [
         {
-            url: baseUrl,
+            url: baseurl,
             lastModified: new Date(),
             changeFrequency: 'daily',
             priority: 1,

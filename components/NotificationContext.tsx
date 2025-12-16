@@ -75,7 +75,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
             updatewindow(existing.id, { isMinimized: false });
             setactivewindow(existing.id);
         } else {
-            import('./app').then(({ apps }) => {
+            import('./data').then(({ apps }) => {
                 const appdata = apps.find(a => a.id === notif.appid || a.appname === notif.appname);
                 if (appdata) {
                     addwindow({

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Menu from './menu';
 import { useWindows } from './WindowContext';
-import { menus, titlemenu, applemenu } from './menus';
+import { menus, titlemenu, applemenu } from './data';
 import Control from './controlcenter';
 import Logo from './applelogo';
 

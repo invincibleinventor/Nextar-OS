@@ -8,10 +8,8 @@ export default function Terminal({ isFocused = true }: { isFocused?: boolean }) 
     const endref = useRef<HTMLDivElement>(null);
     const inputref = useRef<HTMLInputElement>(null);
 
-    // Focus input when isFocused becomes true
     useEffect(() => {
         if (isFocused) {
-            // Small timeout to ensure render is complete
             const timer = setTimeout(() => {
                 inputref.current?.focus();
             }, 10);

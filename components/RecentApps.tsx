@@ -4,7 +4,7 @@ import React, { useState, useEffect, memo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { useWindows } from './WindowContext';
-import { apps } from './app';
+import { apps } from './data';
 
 
 const MemoizedDynamicComponent = memo(

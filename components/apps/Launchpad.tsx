@@ -1,7 +1,6 @@
 import Image from 'next/image';
 
-
-import { apps } from '../app';
+import { apps } from '../data';
 import { useWindows } from '../WindowContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import React, { useState } from 'react';
@@ -16,8 +15,6 @@ export default function Launchpad({ onclose }: { onclose: () => void }) {
 
     const handleappclick = (app: any) => {
         if (app.id === 'launchpad') return;
-
-
 
         setTimeout(() => {
             const appwins = windows.filter((win: any) => win.appname === app.appname);

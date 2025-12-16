@@ -15,7 +15,7 @@ const config: Config = {
       },
 
       fontFamily: {
-        sf: ['"SF Pro"', 'sans-serif'], // Define your custom font
+        sf: ['"SF Pro"', 'sans-serif'],
       },
       backdropBlur: {
         'none': 'none',
@@ -28,7 +28,7 @@ const config: Config = {
         '2xs': '540px',
       },
       fontSize: {
-        '2xs': ['0.625rem', { lineHeight: '0.75rem' }], // 10px
+        '2xs': ['0.625rem', { lineHeight: '0.75rem' }], 
         '3xs': ['0.5rem', { lineHeight: '0.65rem' }],
       },
     },

@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import Image from 'next/image';
-import { apps } from './app';
+import { apps } from './data';
 import { useWindows } from './WindowContext';
 
 import { IoSearch } from 'react-icons/io5';

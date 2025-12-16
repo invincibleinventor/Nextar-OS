@@ -6,58 +6,17 @@ import {
     IoSearch, IoGlobeOutline, IoInformationCircleOutline, IoChevronDown, IoChevronUp
 } from "react-icons/io5";
 import Image from 'next/image';
-import { FaApple, FaGithub, FaSafari, FaLinkedin } from "react-icons/fa";
-import { PiThreadsLogo } from "react-icons/pi";
 import { useWindows } from '../WindowContext';
-import { portfoliodata } from '../portfolioData';
-import { apps } from '../app';
+import { apps, filesystem, sidebaritems, filesystemitem } from '../data';
 import { useDevice } from '../DeviceContext';
 
-
-const getfileicon = (kind: string, name: string) => {
-    if (kind === 'Application') return null;
-    if (kind === 'Folder') return <Image src="/folder.png" alt="folder" width={64} height={64} className="w-full h-full object-contain drop-shadow-md" />;
-    if (name.endsWith('png') || name.endsWith('jpg')) return <Image src="/photos.png" alt="image" width={64} height={64} className="w-full h-full object-contain" />;
+const getfileicon = (mimetype: string, name: string, itemicon?: React.ReactNode) => {
+    if (itemicon) return itemicon;
+    if (mimetype === 'inode/directory') return <Image src="/folder.png" alt="folder" width={64} height={64} className="w-full h-full object-contain drop-shadow-md" />;
+    if (mimetype === 'application/x-executable') return null;
+    if (mimetype === 'image/png' || mimetype === 'image/jpeg') return <Image src="/photos.png" alt="image" width={64} height={64} className="w-full h-full object-contain" />;
     return <IoDocumentTextOutline className="w-full h-full text-gray-500" />;
 };
-
-const sidebaritems = [
-    {
-        title: 'Favorites',
-        items: [
-            { name: 'Projects', icon: IoFolderOutline },
-            { name: 'Applications', icon: IoAppsOutline },
-            { name: 'About Me', icon: IoDocumentTextOutline },
-        ]
-    },
-    {
-        title: 'iCloud',
-        items: [
-            { name: 'iCloud Drive', icon: IoFolderOutline },
-            { name: 'Documents', icon: IoDocumentTextOutline },
-            { name: 'Desktop', icon: IoAppsOutline },
-        ]
-    },
-    {
-        title: 'Locations',
-        items: [
-            { name: 'Macintosh HD', icon: IoAppsOutline },
-            { name: 'Network', icon: IoGlobeOutline },
-        ]
-    }
-];
-
-interface fileitem {
-    name: string;
-    date: string;
-    size: string;
-    kind: string;
-    icon?: React.ReactNode;
-    link?: string;
-    content?: string;
-    appname?: string;
-    description?: string;
-}
 
 export default function Finder({ initialpath }: { initialpath?: string[] }) {
     const [selected, setselected] = useState('Projects');
@@ -65,128 +24,68 @@ export default function Finder({ initialpath }: { initialpath?: string[] }) {
     const [showsidebar, setshowsidebar] = useState(true);
     const [showpreview, setshowpreview] = useState(true);
     const { addwindow, windows, updatewindow, setactivewindow } = useWindows();
-    const { ismobile, osstate } = useDevice();
+    const { ismobile } = useDevice();
 
     const [currentpath, setcurrentpath] = useState<string[]>(initialpath || ['Projects']);
     const [searchquery, setsearchquery] = useState("");
 
     const [isnarrow, setisnarrow] = useState(false);
-    const containerRef = useRef<HTMLDivElement>(null);
+    const containerref = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        if (!containerRef.current) return;
+        if (!containerref.current) return;
         const observer = new ResizeObserver((entries) => {
             for (const entry of entries) {
                 const width = entry.contentRect.width;
-                const isNowNarrow = width < 768;
-                setisnarrow(isNowNarrow);
-                if (isNowNarrow && !isnarrow) {
+                const isnownarrow = width < 768;
+                setisnarrow(isnownarrow);
+                if (isnownarrow && !isnarrow) {
                     setshowsidebar(false);
                 }
-                if (!isNowNarrow) {
+                if (!isnownarrow) {
                     setshowsidebar(true);
                 }
             }
         });
-        observer.observe(containerRef.current);
+        observer.observe(containerref.current);
         return () => observer.disconnect();
     }, [isnarrow]);
 
-    const handlesidebarclick = (itemname: string) => {
+    const handlesidebarclick = (itemname: string, path: string[]) => {
         setselected(itemname);
-        setcurrentpath([itemname]);
+        setcurrentpath(path);
         if (isnarrow) setshowsidebar(false);
         setselectedfile(null);
     };
 
-    const getfiles = (): fileitem[] => {
-        const currentfolder = currentpath[currentpath.length - 1];
+    const getcurrentfiles = (): filesystemitem[] => {
+        let currentparentid = 'root';
 
-        if (currentpath[0] === 'Projects') {
-            if (currentpath.length === 1) {
-                return portfoliodata.projects
-                    .filter(p => !searchquery || p.title.toLowerCase().includes(searchquery.toLowerCase()))
-                    .map(p => ({
-                        name: p.title,
-                        date: 'Today',
-                        size: '--',
-                        kind: 'Folder',
-                        icon: <Image src="/folder.png" alt="folder" width={64} height={64} className="w-full h-full object-contain drop-shadow-md" />,
-                        link: p.link,
-                        description: p.desc
-                    }));
-            } else {
-                const project = portfoliodata.projects.find(p => p.title === currentfolder);
-                if (project) {
-                    return [
-                        {
-                            name: 'Source Code',
-                            date: 'Today',
-                            size: '--',
-                            kind: 'Web Link',
-                            icon: (
-                                <div className="relative w-full h-full">
-                                    <Image src="/folder.png" alt="folder" width={64} height={64} className="w-full h-full object-contain drop-shadow-md" />
-                                    <div className="absolute -bottom-1 -right-1 bg-white dark:bg-[#1e1e1e] rounded-full p-1 shadow-sm">
-                                        <FaGithub className="text-black dark:text-white text-[12px]" />
-                                    </div>
-                                </div>
-                            ),
-                            link: project.github,
-                            description: `View source code for ${project.title} on GitHub.`
-                        },
-                        {
-                            name: 'Live Preview',
-                            date: 'Today',
-                            size: '--',
-                            kind: 'Web Link',
-                            icon: (
-                                <div className="relative w-full h-full">
-                                    <Image src="/folder.png" alt="folder" width={64} height={64} className="w-full h-full object-contain drop-shadow-md" />
-                                    <div className="absolute -bottom-1 -right-1 bg-white dark:bg-[#1e1e1e] rounded-full p-1 shadow-sm">
-                                        <FaSafari className="text-[#007AFF] text-[12px]" />
-                                    </div>
-                                </div>
-                            ),
-                            link: project.link,
-                            description: `Open live demo of ${project.title}.`
-                        }
-                    ];
-                }
+        for (const foldername of currentpath) {
+            const folder = filesystem.find(i => i.name === foldername && i.parent === currentparentid);
+            if (folder) {
+                currentparentid = folder.id;
             }
         }
-        if (selected === 'About Me') {
-            return [
-              { name: 'Github', date: 'Today', size: 'Web Link', kind: 'Web Link', link: portfoliodata.personal.socials.github, icon: <FaGithub className="w-10 h-10 text-gray-700 dark:text-gray-300" />, description: "My Github Profile" },
-                { name: 'LinkedIn', date: 'Today', size: 'Web Link', kind: 'Web Link', link: portfoliodata.personal.socials.linkedin, icon: <FaLinkedin className="w-10 h-10 text-[#0077b5]" />, description: "My LinkedIn Profile" },
-                { name: 'Threads', date: 'Today', size: 'Web Link', kind: 'Web Link', link: portfoliodata.personal.socials.threads, icon: <PiThreadsLogo className="w-10 h-10 text-black dark:text-white" />, description: "My Threads Profile" }
-            ].filter(i => !searchquery || i.name.toLowerCase().includes(searchquery.toLowerCase()));
+
+        let files = filesystem.filter(i => i.parent === currentparentid);
+
+        if (searchquery) {
+            files = files.filter(f => f.name.toLowerCase().includes(searchquery.toLowerCase()));
         }
-        if (selected === 'Applications') {
-            return apps.filter(a => a.id !== 'finder' && (!searchquery || a.appname.toLowerCase().includes(searchquery.toLowerCase())))
-                .map(a => ({
-                    appname: a.appname,
-                    name: a.appname,
-                    date: 'Today',
-                    size: 'App',
-                    kind: 'Application',
-                    icon: <Image src={a.icon} width={64} height={64} className="w-full h-full object-contain drop-shadow-md" alt={a.appname} />,
-                    link: '#',
-                    description: `Launch ${a.appname} application.`
-                }));
-        }
-        return [];
+
+        return files;
     };
 
-    const files = getfiles();
-    const activeFile = files.find(f => f.name === selectedfile);
+    const files = getcurrentfiles();
+    const activefile = files.find(f => f.name === selectedfile);
 
-    const handlefileopen = (file: any) => {
-        if (file.kind === 'Folder') {
+    const handlefileopen = (file: filesystemitem) => {
+        if (file.mimetype === 'inode/directory') {
             setcurrentpath([...currentpath, file.name]);
             setsearchquery("");
             setselectedfile(null);
-        } else if (file.kind === 'Application') {
+        } else if (file.mimetype === 'application/x-executable') {
             const app = apps.find(a => a.appname === file.appname);
             if (app) {
                 const existingwin = windows.find((w: any) => w.appname === app.appname);
@@ -202,37 +101,68 @@ export default function Finder({ initialpath }: { initialpath?: string[] }) {
                         component: app.componentname,
                         props: {},
                         isminimized: false,
-                        ismaximized: true,
-                        position: { top: 0, left: 0 },
-                        size: { width: window.innerWidth, height: window.innerHeight },
+                        ismaximized: false,
+                        position: { top: 100, left: 100 },
+                        size: { width: 1024, height: 500 },
                     });
                 }
             }
-        } else if (file.link) {
+        } else if (file.mimetype === 'text/markdown') {
+            const fileviewerapp = apps.find(a => a.id === 'fileviewer');
+            if (fileviewerapp) {
+                addwindow({
+                    id: `fileviewer-${Date.now()}`,
+                    appname: fileviewerapp.appname,
+                    title: file.name,
+                    component: fileviewerapp.componentname,
+                    icon: fileviewerapp.icon,
+                    isminimized: false,
+                    ismaximized: false,
+                    position: { top: 100, left: 100 },
+                    size: { width: 600, height: 400 },
+                    props: { content: file.content, title: file.name }
+                });
+            }
+        } else if (file.mimetype === 'image/png' || file.mimetype === 'image/jpeg') {
+            const photosapp = apps.find(a => a.id === 'photos');
+            if (photosapp) {
+                addwindow({
+                    id: `photos-${Date.now()}`,
+                    appname: photosapp.appname,
+                    title: photosapp.appname,
+                    component: photosapp.componentname,
+                    icon: photosapp.icon,
+                    isminimized: false,
+                    ismaximized: false,
+                    position: { top: 50, left: 50 },
+                    size: { width: 1024, height: 768 },
+                    props: { singleview: true, src: file.content, title: file.name }
+                });
+            }
+        } else if (file.mimetype === 'text/x-uri' && file.link) {
             const safariapp = apps.find(a => a.id === 'safari');
-            if (safariapp) {
-                if (file.name === 'Source Code' || ['Github', 'LinkedIn', 'Threads'].includes(file.name)) {
-                    window.open(file.link, '_blank');
-                } else {
-                    addwindow({
-                        id: `safari-${Date.now()}`,
-                        appname: safariapp.appname,
-                        title: safariapp.appname,
-                        component: safariapp.componentname,
-                        icon: safariapp.icon,
-                        isminimized: false,
-                        ismaximized: false,
-                        position: { top: 50, left: 50 },
-                        size: { width: 1024, height: 768 },
-                        props: { initialurl: file.link }
-                    });
-                }
+
+            if ((file.name === 'Source Code' || file.name === 'Github' || file.name === 'LinkedIn' || file.name === 'Threads') && file.link) {
+                window.open(file.link, '_blank');
+            } else if (safariapp) {
+                addwindow({
+                    id: `safari-${Date.now()}`,
+                    appname: safariapp.appname,
+                    title: safariapp.appname,
+                    component: safariapp.componentname,
+                    icon: safariapp.icon,
+                    isminimized: false,
+                    ismaximized: false,
+                    position: { top: 50, left: 50 },
+                    size: { width: 1024, height: 768 },
+                    props: { initialurl: file.link }
+                });
             }
         }
     };
 
     return (
-        <div ref={containerRef} className="flex h-full w-full bg-transparent text-black dark:text-white font-sf text-[13px] overflow-hidden rounded-b-xl relative select-none">
+        <div ref={containerref} className="flex h-full w-full bg-transparent text-black dark:text-white font-sf text-[13px] overflow-hidden rounded-b-xl relative select-none">
 
             <div className={`
                 ${showsidebar
@@ -243,7 +173,7 @@ export default function Finder({ initialpath }: { initialpath?: string[] }) {
                 transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] 
                 flex flex-col pt-4 h-full transform
             `}>
-                <div className={`flex-1 overflow-y-auto ${ismobile?'':'pt-[36px]'} px-2 ${showsidebar ? 'opacity-100' : 'opacity-0'} transition-opacity duration-200 delay-100`}>
+                <div className={`flex-1 overflow-y-auto ${ismobile ? '' : 'pt-[36px]'} px-2 ${showsidebar ? 'opacity-100' : 'opacity-0'} transition-opacity duration-200 delay-100`}>
                     {sidebaritems.map((group, idx) => (
                         <div key={idx} className="mb-4">
                             <div className="text-[11px] font-bold text-gray-500/80 dark:text-gray-400/80 uppercase tracking-wide mb-1 px-3">
@@ -253,7 +183,7 @@ export default function Finder({ initialpath }: { initialpath?: string[] }) {
                                 {group.items.map((item) => (
                                     <div
                                         key={item.name}
-                                        onClick={() => handlesidebarclick(item.name)}
+                                        onClick={() => handlesidebarclick(item.name, item.path)}
                                         className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg cursor-pointer transition-all duration-200
                                             ${selected === item.name
                                                 ? 'bg-black/10 dark:bg-white/10 text-black dark:text-white font-medium'
@@ -274,7 +204,7 @@ export default function Finder({ initialpath }: { initialpath?: string[] }) {
                 <div className="flex-1 flex flex-col min-w-0 min-h-0">
                     <div className="h-[50px] shrink-0 flex items-center justify-between px-4 border-b border-black/5 dark:border-white/5">
                         <div className="flex items-center gap-2 text-gray-500">
-                            <div className={(isnarrow && !ismobile) ?"flex items-center gap-1 ml-[64px]": "flex items-center gap-1"}>
+                            <div className={(isnarrow && !ismobile) ? "flex items-center gap-1 ml-[64px]" : "flex items-center gap-1"}>
                                 <IoChevronBack className={`text-xl ${currentpath.length > 1 ? 'text-black dark:text-white cursor-pointer rounded' : 'opacity-20'}`} onClick={() => currentpath.length > 1 && setcurrentpath(currentpath.slice(0, -1))} />
                                 <IoChevronForward className="text-xl opacity-20" />
                             </div>
@@ -315,7 +245,7 @@ export default function Finder({ initialpath }: { initialpath?: string[] }) {
                                             : 'hover:bg-black/5 dark:hover:bg-white/5'}`}
                                 >
                                     <div className="w-12 h-12 sm:w-16 sm:h-16 relative flex items-center justify-center">
-                                        {file.icon}
+                                        {getfileicon(file.mimetype, file.name, file.icon)}
                                     </div>
                                     <span className={`text-[12px] text-center leading-tight px-2 py-0.5 rounded break-words w-full line-clamp-2
                                         ${selectedfile === file.name ? 'bg-[#007AFF] text-white font-medium' : 'text-gray-700 dark:text-gray-300'}`}>
@@ -347,37 +277,37 @@ export default function Finder({ initialpath }: { initialpath?: string[] }) {
                         }
                         bg-white/50 dark:bg-[#2d2d2d]/50 backdrop-blur-md flex flex-col transition-all duration-300 overflow-y-auto shrink-0
                     `}>
-                        {activeFile ? (
+                        {activefile ? (
                             <div className="flex flex-col items-center p-6 text-center animate-in fade-in duration-300">
-                                <div className="w-24 h-24 mb-4 drop-shadow-xl relative">
-                                    {activeFile.icon}
+                                <div className="w-24 object-cover h-24 mb-4 drop-shadow-xl relative">
+                                    {getfileicon(activefile.mimetype, activefile.name, activefile.icon)}
                                 </div>
-                                <h3 className="text-lg font-semibold text-black dark:text-white mb-1 break-words w-full">{activeFile.name}</h3>
-                                <p className="text-[11px] text-gray-500 dark:text-gray-400 mb-4">{activeFile.kind}</p>
+                                <h3 className="text-lg font-semibold text-black dark:text-white mb-1 break-words w-full">{activefile.name}</h3>
+                                <p className="text-[11px] text-gray-500 dark:text-gray-400 mb-4">{activefile.mimetype}</p>
 
                                 <div className="w-full space-y-3 text-left">
                                     <div className="h-px w-full bg-black/5 dark:bg-white/5"></div>
 
                                     <div className="grid grid-cols-[80px_1fr] gap-2 text-[11px]">
                                         <span className="text-gray-500 text-right">Modified</span>
-                                        <span className="text-black dark:text-white">{activeFile.date}</span>
+                                        <span className="text-black dark:text-white">{activefile.date}</span>
 
                                         <span className="text-gray-500 text-right">Size</span>
-                                        <span className="text-black dark:text-white">{activeFile.size}</span>
+                                        <span className="text-black dark:text-white">{activefile.size}</span>
                                     </div>
 
-                                    {activeFile.description && (
+                                    {activefile.description && (
                                         <div className="pt-2">
                                             <div className="text-xs font-semibold text-gray-500 mb-1">Information</div>
                                             <p className="text-[12px] text-black/80 dark:text-white/80 leading-relaxed">
-                                                {activeFile.description}
+                                                {activefile.description}
                                             </p>
                                         </div>
                                     )}
 
                                     <div className="pt-4 flex justify-center">
                                         <button
-                                            onClick={() => handlefileopen(activeFile)}
+                                            onClick={() => handlefileopen(activefile)}
                                             className="bg-[#007AFF] hover:bg-[#007afe] text-white px-4 py-1.5 rounded-full text-xs font-medium shadow-sm active:scale-95 transition-all"
                                         >
                                             Open

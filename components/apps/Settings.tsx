@@ -10,7 +10,8 @@ import { useSettings } from '../SettingsContext';
 import { useTheme } from '../ThemeContext';
 import { useWindows } from '../WindowContext';
 import { useDevice } from '../DeviceContext';
-import { portfoliodata } from '../portfolioData';
+import { personal as portfoliodata } from '../data';
+
 const specs = [
     { label: "Processor", value: "Silicon yumm4 Pro" },
     { label: "Memory", value: "16 GB" },
@@ -65,10 +66,10 @@ export default function Settings() {
     const { ismobile } = useDevice();
     const [isnarrow, setisnarrow] = useState(false);
     const [showsidebar, setshowsidebar] = useState(true);
-    const containerRef = React.useRef<HTMLDivElement>(null);
+    const containerref = React.useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        if (!containerRef.current) return;
+        if (!containerref.current) return;
 
         const observer = new ResizeObserver((entries) => {
             for (const entry of entries) {
@@ -88,17 +89,9 @@ export default function Settings() {
             }
         });
 
-        observer.observe(containerRef.current);
+        observer.observe(containerref.current);
         return () => observer.disconnect();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    const handleitemclick = (id: string) => {
-        setactivetab(id);
-        if (isnarrow) {
-            setshowsidebar(false);
-        }
-    };
+    }, [isnarrow]);
 
     const filtereditems = sidebaritems.filter((item: any) => {
         if (item.type === 'spacer') return true;
@@ -141,7 +134,7 @@ export default function Settings() {
     );
 
     return (
-        <div ref={containerRef} className="flex h-full w-full  font-sf text-[13px] text-black dark:text-white overflow-hidden relative">
+        <div ref={containerref} className="flex h-full w-full  font-sf text-[13px] text-black dark:text-white overflow-hidden relative">
 
             <div className={`
                 ${isnarrow ? 'absolute inset-y-0 left-0 z-30 w-full transition-transform duration-300 dark:bg-neutral-900 bg-white' : 'relative w-[240px] shrink-0 bg-transparent'}

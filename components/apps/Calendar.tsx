@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { portfoliodata } from '../portfolioData';
+import { personal } from '../data';
 import { useWindows } from '../WindowContext';
 import { IoCalendarOutline, IoTimeOutline, IoGolfOutline, IoRocketOutline } from "react-icons/io5";
 import { useDevice } from '../DeviceContext';
@@ -14,17 +14,18 @@ export default function Calendar() {
     const { ismobile } = useDevice();
     const [view, setview] = useState<'timeline' | 'grid'>('timeline');
 
-    const events = portfoliodata.projects.map((proj, i) => ({
+    const events = personal.projects.map((proj, i) => ({
         id: i,
         year: proj.date,
         title: proj.title,
         desc: proj.desc,
         color: proj.type === 'Open Source' ? "#007AFF" : "#34C759",
         icon: proj.icon,
-        tech: proj.stack
+        tech: proj.stack,
+                defaultsize: { width: 1000, height: 600 }
+
     }));
 
-    //sort events by year
     events.sort((a, b) => b.year - a.year);
 
     return (
@@ -119,7 +120,7 @@ export default function Calendar() {
                                                                     isminimized: false,
                                                                     ismaximized: false,
                                                                     position: { top: 100, left: 100 },
-                                                                    size: { width: 900, height: 600 },
+                                                                    size: e.defaultsize || { width: 900, height: 600 },
                                                                     props: { initialpath: ['Projects', e.title] }
                                                                 });
                                                             }}

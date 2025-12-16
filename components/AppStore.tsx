@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { IoSearch, IoPersonCircleOutline, IoGameControllerOutline, IoRocketOutline, IoBrushOutline, IoConstructOutline, IoCodeSlashOutline } from "react-icons/io5";
 import Image from 'next/image';
 import { FaApple } from "react-icons/fa";
-import { apps } from './app';
+import { apps } from './data';
 import { useWindows } from './WindowContext';
 import { useDevice } from './DeviceContext';
 
@@ -21,7 +21,7 @@ export default function AppStore() {
 
     const featuredapps = apps.filter(a => ['finder', 'safari', 'photos', 'settings', 'messsages', 'mail'].includes(a.id));
 
-    const freeApps = apps.length > 5 ? apps.slice(3, 8) : apps.slice(0, 5);
+    const freeapps = apps.length > 5 ? apps.slice(3, 8) : apps.slice(0, 5);
 
     return (
         <div className="flex h-full w-full bg-[#f5f5f7] dark:bg-[#1e1e1e] font-sf text-black dark:text-white overflow-hidden relative">
@@ -82,14 +82,14 @@ export default function AppStore() {
 
                 <div className="h-px bg-black/5 dark:bg-white/5 mx-4 md:mx-8"></div>
 
-             
+
                 <div className="p-4 md:p-8 pt-0">
                     <div className="flex items-center justify-between mb-4 px-2">
                         <h3 className="text-lg md:text-xl font-bold">Top Free Apps</h3>
                         <button className="text-[#007AFF] text-sm font-medium">See All</button>
                     </div>
                     <div className="space-y-4">
-                        {freeApps.map((app, i) => (
+                        {freeapps.map((app, i) => (
                             <div key={app.id} className="flex items-center gap-4 px-2 py-2 border-b border-dashed border-gray-100 dark:border-white/5 last:border-0 hover:bg-black/5 dark:hover:bg-white/5 rounded-xl transition-colors">
                                 <span className="font-bold text-gray-400 w-6 text-center">{i + 1}</span>
                                 <Image src={app.icon} alt={app.appname} width={48} height={48} className="w-12 h-12 object-contain drop-shadow-sm rounded-[12px]" />

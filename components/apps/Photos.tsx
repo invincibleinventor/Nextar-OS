@@ -1,19 +1,29 @@
 'use client';
 import Image from 'next/image';
 import React, { useState, useEffect } from 'react';
-import { portfoliodata } from '../portfolioData';
+import { personal } from '../data';
 import { useWindows } from '../WindowContext';
-import { IoImagesOutline, IoHeartOutline, IoTimeOutline, IoAlbumsOutline, IoTrashOutline, IoMenu } from "react-icons/io5";
+import { IoImagesOutline, IoHeartOutline, IoTimeOutline, IoAlbumsOutline, IoTrashOutline, IoMenu, IoArrowBack } from "react-icons/io5";
 
-export default function Photos() {
+interface photosprops {
+    singleview?: boolean;
+    src?: string;
+    title?: string;
+}
+
+export default function Photos({ singleview, src, title }: photosprops) {
     const [selecteditem, setselecteditem] = useState("all");
     const [isnarrow, setisnarrow] = useState(false);
     const [showsidebar, setshowsidebar] = useState(true);
-    const containerRef = React.useRef<HTMLDivElement>(null);
-    const {ismobile} = useWindows();
+    const [viewingimage, setviewingimage] = useState<{ src: string, title?: string } | null>(
+        singleview && src ? { src, title } : null
+    );
+
+    const containerref = React.useRef<HTMLDivElement>(null);
+    const { ismobile } = useWindows();
 
     useEffect(() => {
-        if (!containerRef.current) return;
+        if (!containerref.current) return;
         const observer = new ResizeObserver((entries) => {
             for (const entry of entries) {
                 const width = entry.contentRect.width;
@@ -27,21 +37,20 @@ export default function Photos() {
                 }
             }
         });
-        observer.observe(containerRef.current);
+        observer.observe(containerref.current);
         return () => observer.disconnect();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [isnarrow]);
 
-    const allCategories = Array.from(new Set(portfoliodata.projects.map(p => p.stack[0] || 'Uncategorized')));
+    const allcategories = Array.from(new Set(personal.projects.map(p => p.stack[0] || 'Uncategorized')));
 
     const sidebaritems = [
         { id: 'all', label: 'Library', icon: IoImagesOutline },
         { id: 'fav', label: 'Favorites', icon: IoHeartOutline },
-        ...allCategories.map((cat, idx) => ({ id: cat.toLowerCase(), label: cat, icon: IoAlbumsOutline })),
+        ...allcategories.map((cat, idx) => ({ id: cat.toLowerCase(), label: cat, icon: IoAlbumsOutline })),
         { id: 'deleted', label: 'Recently Deleted', icon: IoTrashOutline },
     ];
 
-    const projectPhotos = portfoliodata.projects
+    const projectphotos = personal.projects
         .filter(proj => {
             if (selecteditem === 'all') return true;
             if (selecteditem === 'fav') return false;
@@ -52,20 +61,44 @@ export default function Photos() {
             id: i,
             src: `/appimages/${proj.title.toLowerCase()}.png`,
             title: proj.title,
-            desc: proj.desc
+            desc: proj.desc,
+            defaultsize: { width: 1000, height: 600 }
         }));
-
 
 
     const { addwindow } = useWindows();
 
+    if (viewingimage) {
+        return (
+            <div className="flex flex-col h-full w-full bg-black text-white relative items-center justify-center overflow-hidden animate-in fade-in duration-300">
+                <div className="absolute top-0 left-0 right-0 p-4 z-50 flex items-center justify-between bg-gradient-to-b from-black/50 to-transparent">
+                    <button
+                        onClick={() => setviewingimage(null)}
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md transition-all text-sm font-medium"
+                    >
+                        <IoArrowBack />
+                        Library
+                    </button>
+                    <span className="font-semibold text-sm shadow-black drop-shadow-md">{viewingimage.title}</span>
+                    <div className="w-[80px]"></div> 
+                </div>
+                <Image
+                    src={viewingimage.src}
+                    alt={viewingimage.title || 'Photo'}
+                    fill
+                    className="object-contain"
+                />
+            </div>
+        );
+    }
+
     return (
-        <div ref={containerRef} className="flex h-full w-full bg-white dark:bg-[#1e1e1e] font-sf text-black dark:text-white relative overflow-hidden">
+        <div ref={containerref} className="flex h-full w-full bg-white dark:bg-[#1e1e1e] font-sf text-black dark:text-white relative overflow-hidden">
             <div className={`
                 ${showsidebar
                     ? isnarrow ? 'absolute inset-y-0 left-0 z-30 w-[220px] shadow-2xl bg-white/95 dark:bg-[#1e1e1e]/95 backdrop-blur border-r border-black/5 dark:border-white/5'
                         : 'relative w-[200px] border-r border-black/5 dark:border-white/5 bg-transparent backdrop-blur-2xl'
-                    : 'w-0 border-none overflow-hidden' 
+                    : 'w-0 border-none overflow-hidden'
                 }
                 transition-all duration-300 flex flex-col pt-4 ${ismobile ? '' : 'pt-[50px]'}
             `}>
@@ -105,7 +138,7 @@ export default function Photos() {
                         )}
                         <div>
                             <h1 className="text-2xl font-bold leading-none">{sidebaritems.find(i => i.id === selecteditem)?.label}</h1>
-                            <span className="text-xs text-gray-500">{projectPhotos.length} Items</span>
+                            <span className="text-xs text-gray-500">{projectphotos.length} Items</span>
                         </div>
                     </div>
 
@@ -115,22 +148,11 @@ export default function Photos() {
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-20">
-                    {projectPhotos.map((photo, i) => (
+                    {projectphotos.map((photo, i) => (
                         <div
                             key={i}
                             onClick={() => {
-                                addwindow({
-                                    id: `finder-${photo.title}-${Date.now()}`,
-                                    appname: 'Finder',
-                                    title: `Project: ${photo.title}`,
-                                    component: 'apps/Finder',
-                                    icon: '/finder.png',
-                                    isminimized: false,
-                                    ismaximized: false,
-                                    position: { top: 100, left: 100 },
-                                    size: { width: 900, height: 600 },
-                                    props: { initialpath: ['Projects', photo.title] }
-                                });
+                                setviewingimage({ src: photo.src, title: photo.title });
                             }}
                             className="aspect-square bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden relative group cursor-pointer shadow-sm"
                         >

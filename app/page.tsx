@@ -3,8 +3,8 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useWindows } from '@/components/WindowContext';
 import Window from '@/components/Window';
-import { apps } from '@/components/app'
-import { useDevice } from '../components/DeviceContext';
+import { apps } from '@/components/data';
+import { useDevice } from '@/components/DeviceContext';
 import Panel from '@/components/panel';
 import Dock from '@/components/Dock';
 import BootScreen from '@/components/BootScreen';
@@ -29,7 +29,7 @@ const Page = () => {
   const [showrecentapps, setshowrecentapps] = useState(false);
   const [issystemgestureactive, setissystemgestureactive] = useState(false);
 
-  const openWelcome = () => {
+  const openwelcome = () => {
     const welcomeapp = apps.find((app) => app.id === 'welcome');
     if (!welcomeapp) return;
 
@@ -47,7 +47,7 @@ const Page = () => {
     });
   };
 
-  const openOldPortfolio = () => {
+  const openoldportfolio = () => {
     const safariapp = apps.find((app) => app.id === 'safari');
     if (!safariapp) return;
 
@@ -65,10 +65,10 @@ const Page = () => {
     });
   };
 
-  const hasLaunchedWelcome = React.useRef(false);
+  const haslaunchedwelcome = React.useRef(false);
 
   useEffect(() => {
-    if (osstate === 'unlocked' && !hasLaunchedWelcome.current) {
+    if (osstate === 'unlocked' && !haslaunchedwelcome.current) {
       const welcomeapp = apps.find(a => a.id === 'welcome');
       if (welcomeapp) {
         addwindow({
@@ -83,7 +83,7 @@ const Page = () => {
           size: { width: 900, height: 600 },
           props: {}
         });
-        hasLaunchedWelcome.current = true;
+        haslaunchedwelcome.current = true;
       }
     }
   }, [osstate, addwindow]);
@@ -143,11 +143,11 @@ const Page = () => {
               }}
             >
               <div className='p-4 py-10 space-y-4 flex flex-col items-center w-max ml-auto content-end '>
-                <button onClick={(e) => { e.stopPropagation(); openWelcome(); }} className="p-2 flex hover:bg-neutral-400/20 rounded-2xl hover:backdrop-blur-lg hover:filter px-4 flex-col items-center content-center text-white">
+                <button onClick={(e) => { e.stopPropagation(); openwelcome(); }} className="p-2 flex hover:bg-neutral-400/20 rounded-2xl hover:backdrop-blur-lg hover:filter px-4 flex-col items-center content-center text-white">
                   <Image className='w-16 h-16 shadow-sm drop-shadow-lg' src="/info.png" width={64} height={64} alt="Old Portfolio"></Image>
                   <span className='text-xs font-semibold text-white mt-1.5 drop-shadow-md'>Welcome App</span>
                 </button>
-                <button onClick={(e) => { e.stopPropagation(); openOldPortfolio(); }} className="p-2 flex hover:bg-neutral-400/20 rounded-2xl hover:backdrop-blur-lg hover:filter px-4 flex-col items-center content-center text-white">
+                <button onClick={(e) => { e.stopPropagation(); openoldportfolio(); }} className="p-2 flex hover:bg-neutral-400/20 rounded-2xl hover:backdrop-blur-lg hover:filter px-4 flex-col items-center content-center text-white">
                   <Image className='w-16 h-16 shadow-sm drop-shadow-lg' src="/code.png" width={64} height={64} alt="Old Portfolio"></Image>
                   <span className='text-xs font-semibold text-white mt-1.5 drop-shadow-md'>Old Portfolio</span>
                 </button>
@@ -203,7 +203,7 @@ const Page = () => {
 
             <div className={`absolute bottom-0 left-0 right-0 h-10 flex items-end justify-center z-[9999] ${(shownotificationcenter || showcontrolcenter) ? 'pointer-events-none' : 'pointer-events-auto'}`}>
               <motion.div
-                className="w-[140px] h-[21px] mb-0 cursor-pointer"
+                className="w-[140px] h-[21px] flex items-center content-center cursor-pointer"
                 whileTap={{ scale: 0.95 }}
                 drag="y"
                 dragConstraints={{ top: 0, bottom: 0 }}
@@ -250,7 +250,7 @@ const Page = () => {
                   }
                 }}
               >
-                <div className="w-full h-[5px] mb-[16px] bg-neutral-400/90 dark:bg-white/80 rounded-full mb-0 cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.3)] backdrop-blur-md"></div>
+                <div className="w-full h-[5px] mb-[12px] bg-neutral-400/90 dark:bg-white/80 rounded-full  cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.3)] backdrop-blur-md"></div>
               </motion.div>
             </div>
           </div>

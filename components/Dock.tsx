@@ -4,7 +4,7 @@ import Image from 'next/image';
 
 import { useWindows } from './WindowContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { apps } from './app';
+import { apps } from './data';
 import Launchpad from './apps/Launchpad';
 import { useState } from 'react';
 import { useDevice } from './DeviceContext';
@@ -95,7 +95,7 @@ const Dock = () => {
     index === self.findIndex((t) => t.appname === value.appname)
   );
 
-  const allDockItems = [
+  const alldockitems = [
     {
       id: 'launchpad-item',
       appname: 'LaunchPad',
@@ -108,7 +108,7 @@ const Dock = () => {
 
   const getprops = (i: number) => {
     if (hoverapp) {
-      const idx = allDockItems.findIndex((app) => app.appname === hoverapp);
+      const idx = alldockitems.findIndex((app) => app.appname === hoverapp);
       if (i === idx) {
         return { size: basesize * 1.6, y: -basesize * 0.45 };
       }
@@ -143,7 +143,7 @@ const Dock = () => {
         }}
       >
         <div className="flex items-center">
-          {allDockItems.map((app, i) => {
+          {alldockitems.map((app, i) => {
             const { size: iconsize, y: icony } = getprops(i);
             const ishover = hoverapp === app.appname;
             const haswin = windows.some((win: any) => win.appname === app.appname);

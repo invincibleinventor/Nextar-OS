@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef, memo } from 'react';
 import Image from 'next/image';
 import { useWindows } from './WindowContext';
-import { apps } from './app';
+import { apps } from './data';
 import { motion } from 'framer-motion';
 import { useDevice } from './DeviceContext';
 import { useSettings } from './SettingsContext';
@@ -21,6 +21,7 @@ const componentmap: { [key: string]: any } = {
   'apps/Terminal': dynamic(() => import('./apps/Terminal')),
   'apps/Launchpad': dynamic(() => import('./apps/Launchpad')),
   'apps/Python': dynamic(() => import('./apps/Python')),
+  'apps/FileViewer': dynamic(() => import('./apps/FileViewer')),
 
   'AppStore': dynamic(() => import('./AppStore')),
   'BalaDev': dynamic(() => import('./BalaDev')),
@@ -96,6 +97,16 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
   const [isdragging, setisdragging] = useState(false);
 
   const windowref = useRef(null);
+  const positionref = useRef(position);
+  const sizeref = useRef(size);
+
+  useEffect(() => {
+    positionref.current = position;
+  }, [position]);
+
+  useEffect(() => {
+    sizeref.current = size;
+  }, [size]);
 
   const myindex = windows ? windows.findIndex((w: any) => w.id === id) : 0;
   const zindex = activewindow === id ? 1000 : 100 + myindex;
@@ -113,12 +124,13 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
         const { innerWidth: screenwidth, innerHeight: screenheight } = window;
         if (!ismaximized) {
           setpreviousstate({
-            position, size
-          })
+            position: positionref.current,
+            size: sizeref.current
+          });
         }
         setposition({
           top: screenheight,
-          left: (screenwidth - size.width) / 2,
+          left: (screenwidth - sizeref.current.width) / 2,
         });
       }
     } else if (ismaximized) {
@@ -134,7 +146,7 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
       setposition(previousstate.position);
       setsize(previousstate.size);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [isminimized, ismaximized, ismobile]);
 
   const handlemaximize = () => {
@@ -152,12 +164,12 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
     if (e.detail === 2) return;
 
     const target = e.target as HTMLElement;
-    const isInteractive = target.closest('button, a, input, textarea, [role="button"], .interactive') !== null;
+    const isinteractive = target.closest('button, a, input, textarea, [role="button"], .interactive') !== null;
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-    const isTopArea = (clientY - rect.top) <= 50;
+    const clienty = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    const istoparea = (clienty - rect.top) <= 50;
 
-    if (!isTopArea || isInteractive) {
+    if (!istoparea || isinteractive) {
       return;
     }
 
@@ -171,7 +183,6 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
     let prevsize = size;
 
     const clientx = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const clienty = 'touches' in e ? e.touches[0].clientY : e.clientY;
 
     if (wasmaximized) {
       prevsize = previousstate.size;
@@ -187,7 +198,7 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
     }
 
     let lasttop = wasmaximized ? panelheight : position.top;
-    const maximizedondrag = false;
+
 
 
     const onmousemove = (moveevent: any) => {
@@ -223,8 +234,6 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
       if (!wasmaximized && newtop <= panelheight - 10) {
 
       }
-
-
 
       newleft = Math.max(-size.width / 2.0, Math.min(screenwidth - size.width / 2.0, newleft));
       newtop = Math.max(panelheight - 20, Math.min(screenheight - dockheight - size.height / 4.0, newtop));
@@ -328,7 +337,7 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: isminimized ? 0 : 1, y: isminimized ? 400 : 0, scale: isminimized ? 0.7 : 1 }}
       exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
-      
+
       transition={{
         type: "spring",
         stiffness: 300,

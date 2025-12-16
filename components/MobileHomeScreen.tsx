@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { apps } from './app';
+import { apps } from './data';
 import { useTheme } from './ThemeContext';
 import { useSettings } from './SettingsContext';
 import { motion } from 'framer-motion';
@@ -53,9 +53,9 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
 
     React.useEffect(() => {
         setwidth(window.innerWidth);
-        const handleResize = () => setwidth(window.innerWidth);
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
+        const handleresize = () => setwidth(window.innerWidth);
+        window.addEventListener('resize', handleresize);
+        return () => window.removeEventListener('resize', handleresize);
     }, []);
 
     return (
@@ -67,26 +67,26 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                 initial={{ x: 0 }}
                 transition={{
                     type: "spring",
-                    stiffness: 300,
-                    damping: 30,
-                    mass: 0.8,
+                    stiffness: 400,
+                    damping: 40,
+                    mass: 0.5,
                 }}
                 drag="x"
                 dragConstraints={{ left: -width, right: 0 }}
-                dragElastic={0.2}
+                dragElastic={0.05}
                 dragMomentum={false}
                 onDragEnd={(_, info) => {
-                    const swipeThreshold = 50;
-                    const velocityThreshold = 500;
+                    const swipethreshold = 30;  
+                    const velocitythreshold = 300; 
 
                     if (Math.abs(info.offset.y) > 40) return;
 
                     if (page === 0) {
-                        if (info.offset.x < -swipeThreshold || info.velocity.x < -velocityThreshold) {
+                        if (info.offset.x < -swipethreshold || info.velocity.x < -velocitythreshold) {
                             setpage(1);
                         }
                     } else if (page === 1) {
-                        if (info.offset.x > swipeThreshold || info.velocity.x > velocityThreshold) {
+                                 if (info.offset.x > swipethreshold || info.velocity.x > velocitythreshold) {
                             setpage(0);
                         }
                     }
