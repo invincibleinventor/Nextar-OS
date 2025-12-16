@@ -30,7 +30,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
             duration: reducemotion ? 0.2 : undefined
           }}
           className={`${ismobile
-            ? `fixed inset-0 w-full h-full rounded-none flex items-center justify-center pt-10 ${reducetransparency ? 'bg-neutral-900' : 'backdrop-blur-sm bg-white/40 dark:bg-black/40'}`
+            ? `fixed inset-0 w-full h-full rounded-none flex items-center justify-center pt-10 ${reducetransparency ? 'bg-white dark:bg-neutral-900' : 'backdrop-blur-sm bg-white/40 dark:bg-black/40'}`
             : `${reducetransparency ? 'bg-[#e5e5e5] dark:bg-[#1a1a1a] border-opacity-50' : 'backdrop-blur-2xl bg-white/10 dark:bg-black/10'} w-[320px] fixed top-14 right-4 rounded-2xl border border-white/20 block`} 
                  font-sans origin-top-right  shadow-2xl overflow-y-auto z-[9999]`}
           onClick={(e: React.MouseEvent) => e.stopPropagation()}

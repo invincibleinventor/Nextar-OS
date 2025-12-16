@@ -42,7 +42,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                             onclose();
                         }
                     }}
-                    className={`absolute inset-0 z-[60] flex flex-col h-full w-full pointer-events-auto ${reducetransparency ? 'bg-neutral-900' : 'backdrop-blur-md bg-white/40 dark:bg-black/40'
+                    className={`absolute inset-0 z-[60] flex flex-col h-full w-full pointer-events-auto ${reducetransparency ? 'bg-white dark:bg-neutral-900' : 'backdrop-blur-md bg-white/40 dark:bg-black/40'
                         }`}
                 >
                     <div className="flex flex-col items-center mt-16 mb-8 shrink-0">
