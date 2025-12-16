@@ -1,7 +1,7 @@
 {
-    "name": "Portfolio OS",
-    "short_name": "ProOS",
-    "description": "A web-based operating system portfolio.",
+    "name": "BalaTBR - MacOS-Next",
+    "short_name": "MacOS-Next",
+    "description": "A macos-based operating system portfolio.",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#000000",

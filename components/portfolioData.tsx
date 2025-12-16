@@ -26,7 +26,7 @@ export const portfoliodata = {
             icon: <SiNextdotjs className="text-black dark:text-white" />
         },
         {
-            title: "MacOS Next",
+            title: "MacOS-Next",
             date: 2023,
 
             desc: "A simulation of macOS Sonoma UI in the web. Features dock, window management, and animations.",

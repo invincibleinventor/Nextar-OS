@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useDevice } from '../DeviceContext';
 
 export default function Terminal() {
-    const [history, sethistory] = useState(['Welcome to PortfolioOS Terminal v1.0', 'Type "help" for available commands.', '']);
+    const [history, sethistory] = useState(['Welcome to MacOS-Next Terminal v1.0', 'Type "help" for available commands.', '']);
     const [currline, setcurrline] = useState('');
     const endref = useRef<HTMLDivElement>(null);
     const inputref = useRef<HTMLInputElement>(null);
@@ -30,7 +30,7 @@ export default function Terminal() {
                     response = 'Email: hello@portfolio.dev';
                     break;
                 case 'whoami':
-                    response = 'guest@portfolioos';
+                    response = 'guest@balatbr';
                     break;
                 case 'clear':
                     sethistory([]);
@@ -65,7 +65,7 @@ export default function Terminal() {
                             <span>
                                 <span className="text-[#50fa7b]">guest</span>
                                 <span className="text-white">@</span>
-                                <span className="text-[#8be9fd]">portfolioos</span>
+                                <span className="text-[#8be9fd]">balatbr</span>
                                 <span className="text-white"> ~ </span>
                                 <span className="text-white">{line}</span>
                             </span>
@@ -77,7 +77,7 @@ export default function Terminal() {
                 <div className="flex items-center">
                     <span className="text-[#50fa7b]">guest</span>
                     <span className="text-white">@</span>
-                    <span className="text-[#8be9fd]">portfolioos</span>
+                    <span className="text-[#8be9fd]">balatbr</span>
                     <span className="text-white"> ~ $ </span>
                     <input
                         ref={inputref}

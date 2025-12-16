@@ -57,7 +57,7 @@ export const menus = [
       ],
       Help: [
         { title: "macOS Help", disabled: false },
-        { title: "About Finder", disabled: false }
+        { title: "About BalaTBR", disabled: false }
       ]
     }
   }

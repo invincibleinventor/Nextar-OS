@@ -41,7 +41,7 @@ export const initialnotifications: Notification[] = [
         id: 'n4',
         appname: 'Settings',
         title: 'System Update',
-        description: 'macOS Sonoma is ready to install',
+        description: 'MacOS-Next is ready to install',
         time: '2h ago',
         icon: '/settings.png',
         appid: 'settings'

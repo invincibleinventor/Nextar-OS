@@ -13,7 +13,7 @@ export default function Welcome(props: any) {
 
     const steps = [
         {
-            title: "Welcome to macOS Next",
+            title: "Welcome to MacOS-Next",
             subtitle: "A fully interactive web OS simulation.",
             icon: IoLogoApple,
             content: (

@@ -11,11 +11,11 @@ import { useTheme } from '../ThemeContext';
 import { useWindows } from '../WindowContext';
 import { useDevice } from '../DeviceContext';
 const specs = [
-    { label: "Processor", value: "Neural Brain 2.0 (Creative Core)" },
-    { label: "Memory", value: "Unlimited Learning Capacity" },
-    { label: "Graphics", value: "Pixel Perfect Vision Pro" },
-    { label: "OS", value: "PortfolioOS 1.0" },
-    { label: "Serial", value: "PORTFOLIO-2024-PRO" },
+    { label: "Processor", value: "Silicon yumm4 Pro" },
+    { label: "Memory", value: "16 GB" },
+    { label: "Graphics", value: "1920px1080p@60HZ" },
+    { label: "OS", value: "MacOS-Next 1.0" },
+    { label: "Serial", value: "MacOS-2025-BALATBR" },
 ];
 
 const sidebaritems = [
@@ -245,13 +245,13 @@ export default function Settings() {
                             <>
                                 <div className="flex flex-col items-center mb-8 pt-4">
                                     <div className="w-20 h-20 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-full shadow-2xl mb-4" />
-                                    <h1 className="text-2xl font-bold">PortfolioOS Pro</h1>
+                                    <h1 className="text-2xl font-bold">MacOS-Next</h1>
                                     <p className="text-[13px] text-gray-500 dark:text-gray-400">Version 14.0 (Sonoma)</p>
                                 </div>
 
 
                                 <SettingsSection title="System">
-                                    <SettingsRow label="About" value="PortfolioOS 1.0" onclick={() => { }} />
+                                    <SettingsRow label="About" value="MacOS-Next 1.0" onclick={() => { }} />
                                     <SettingsRow label="Software Update" value="Up to date" onclick={() => { }} />
                                     <SettingsRow label="Storage" value="256 GB" onclick={() => { }} />
                                 </SettingsSection>

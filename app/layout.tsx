@@ -6,15 +6,83 @@ import { DeviceProvider } from '@/components/DeviceContext';
 import { SettingsProvider } from '@/components/SettingsContext';
 
 
+import { portfoliodata } from '@/components/portfolioData';
+
 export const metadata: Metadata = {
-  title: 'Portfolio OS',
-  description: 'A macOS-style portfolio',
+  title: {
+    default: portfoliodata.personal.name,
+    template: `%s | ${portfoliodata.personal.name}`,
+  },
+  description: portfoliodata.personal.bio,
+  applicationName: 'BalaTBR - MacOS-Next',
+  authors: [{ name: portfoliodata.personal.name, url: 'https://baladev.in' }],
+  generator: 'Next.js',
+  keywords: [...portfoliodata.skills, 'Next.js', 'React', 'TailwindCSS', 'Portfolio', 'macOS Web', 'System Simulator', 'WebOS'],
+  referrer: 'origin-when-cross-origin',
+  creator: portfoliodata.personal.name,
+  publisher: portfoliodata.personal.name,
+  metadataBase: new URL('https://baladev.in'),
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    title: portfoliodata.personal.name,
+    description: portfoliodata.personal.bio,
+    url: 'https://baladev.in',
+    siteName: 'BalaTBR - MacOS-Next',
+    locale: 'en_US',
+    type: 'website',
+    images: [
+      {
+        url: '/og-image.jpg', 
+        width: 1200,
+        height: 630,
+        alt: `${portfoliodata.personal.name} Portfolio`,
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: portfoliodata.personal.name,
+    description: portfoliodata.personal.role,
+    creator: '@invincibleinventor',
+    images: ['/og-image.jpg'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'Portfolio OS',
+    title: 'BalaTBR - MacOS-Next',
   },
+};
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: portfoliodata.personal.name,
+  url: 'https://baladev.in',
+  sameAs: [
+    portfoliodata.personal.socials.github,
+    portfoliodata.personal.socials.linkedin,
+    portfoliodata.personal.socials.threads,
+  ],
+  jobTitle: portfoliodata.personal.role,
+  worksFor: {
+    '@type': 'Organization',
+    name: 'Self-Employed',
+  },
+  description: portfoliodata.personal.bio,
 };
 
 export const viewport: Viewport = {
@@ -36,8 +104,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <body className="font-sf w-screen h-screen overflow-hidden bg-black antialiased">
           <WindowProvider>
             <div className="fixed inset-0 bg-black bg-cover bg-no-repeat bg-[url('/bg.jpg')] dark:bg-[url('/bg-dark.jpg')] h-[100dvh] w-screen overflow-hidden transition-colors duration-500">
-           
-              <SettingsProvider> 
+
+              <SettingsProvider>
                 <DeviceProvider>
                   <NotificationProvider>
                     {children}
@@ -45,6 +113,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 </DeviceProvider>
               </SettingsProvider>
             </div>
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
           </WindowProvider>
         </body>
       </html>
