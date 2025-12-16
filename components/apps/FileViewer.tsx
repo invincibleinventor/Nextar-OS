@@ -8,6 +8,7 @@ import Image from 'next/image';
 interface fileviewerprops {
     content?: string;
     title?: string;
+    type?: string;
 }
 
 const getfileicon = (mimetype: string, name: string, itemicon?: React.ReactNode) => {
@@ -15,12 +16,14 @@ const getfileicon = (mimetype: string, name: string, itemicon?: React.ReactNode)
     if (mimetype === 'inode/directory') return <Image src="/folder.png" alt="folder" width={64} height={64} className="w-full h-full object-contain drop-shadow-md" />;
     if (mimetype === 'application/x-executable') return null;
     if (mimetype === 'image/png' || mimetype === 'image/jpeg') return <Image src="/photos.png" alt="image" width={64} height={64} className="w-full h-full object-contain" />;
+    if (mimetype === 'application/pdf') return <Image src="/pdf.png" alt="pdf" width={64} height={64} className="w-full h-full object-contain" />;
     return <IoDocumentTextOutline className="w-full h-full text-gray-500" />;
 };
 
-export default function FileViewer({ content: initialContent = '', title: initialTitle = 'Untitled' }: fileviewerprops) {
+export default function FileViewer({ content: initialContent = '', title: initialTitle = 'Untitled', type: initialType = 'text/plain' }: fileviewerprops) {
     const [viewingContent, setViewingContent] = useState<string | null>(initialContent || null);
     const [viewingTitle, setViewingTitle] = useState<string>(initialTitle);
+    const [viewingType, setViewingType] = useState<string>(initialType);
     const [history, setHistory] = useState<string[]>(['root-projects']);
     const [historyIndex, setHistoryIndex] = useState(0);
     const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -76,6 +79,7 @@ export default function FileViewer({ content: initialContent = '', title: initia
         } else if (isFileSupported(item)) {
             setViewingContent(item.content || '');
             setViewingTitle(item.name);
+            setViewingType(item.mimetype);
         }
     };
 
@@ -99,10 +103,18 @@ export default function FileViewer({ content: initialContent = '', title: initia
                         Open...
                     </button>
                 </div>
-                <div className="flex-1 overflow-y-auto p-8">
-                    <div className="max-w-3xl mx-auto prose dark:prose-invert prose-sm">
-                        <ReactMarkdown>{viewingContent}</ReactMarkdown>
-                    </div>
+                <div className="flex-1 overflow-y-auto w-full h-full bg-[#525659]">
+                    {viewingType === 'application/pdf' ? (
+                        <iframe
+                            src={viewingContent}
+                            className="w-full h-full border-none block"
+                            title={viewingTitle}
+                        />
+                    ) : (
+                        <div className="max-w-3xl mx-auto prose dark:prose-invert prose-sm p-8 bg-white dark:bg-[#1e1e1e] min-h-full">
+                            <ReactMarkdown>{viewingContent}</ReactMarkdown>
+                        </div>
+                    )}
                 </div>
             </div>
         );
@@ -157,7 +169,7 @@ export default function FileViewer({ content: initialContent = '', title: initia
                     <div className="flex-1 font-semibold text-sm text-center">
                         {filesystem.find(i => i.id === currentFolderId)?.name || 'Unknown'}
                     </div>
-                    <div className="w-[60px]"></div> 
+                    <div className="w-[60px]"></div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-4" onClick={() => setSelectedId(null)}>

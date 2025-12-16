@@ -303,7 +303,7 @@ export const apps: appdata[] = [
         titlebarblurred: false,
         pinned: false,
         defaultsize: { width: 600, height: 400 },
-        acceptedMimeTypes: ['text/markdown', 'text/plain', 'text/x-uri']
+        acceptedMimeTypes: ['text/markdown', 'text/plain', 'text/x-uri', 'application/pdf']
     }
 ];
 
@@ -484,7 +484,7 @@ const generatefilesystem = (): filesystemitem[] => {
         fs.push({
             id: `${pid}-photo`,
             name: `${p.title}.png`,
-            parent: pid,
+            parent: 'root-icloud',
             mimetype: 'image/png',
             date: 'Today',
             icon: <Image className='w-full h-full p-[6px] sm:w-full sm:h-full' src={`/appimages/${p.title.toLowerCase()}.png`} alt={`${p.title} live demo`} width={64} height={64} />,
@@ -520,6 +520,43 @@ const generatefilesystem = (): filesystemitem[] => {
                 description: `Launch ${a.appname} application.`
             });
         }
+    });
+
+    fs.push({
+        id: 'about-resume',
+        name: 'BALASUBRAMANIAN.pdf',
+        parent: 'root-desktop',
+        mimetype: 'application/pdf',
+        date: 'Today',
+        icon: <Image className='w-full h-full p-[6px] sm:w-full sm:h-full' src='/pdf.png' alt="Welcome App" width={64} height={64} />,
+        size: 'PDF',
+        link: '/BALASUBRAMANIAN.pdf',
+        content: '/BALASUBRAMANIAN.pdf',
+        description: "My Resume"
+    });
+
+    fs.push({
+        id: 'desktop-welcome',
+        name: 'Welcome App',
+        parent: 'root-desktop',
+        mimetype: 'application/x-executable',
+        date: 'Today',
+        size: 'App',
+        icon: <Image className='w-full h-full p-[6px] sm:w-full sm:h-full' src='/info.png' alt="Welcome App" width={64} height={64} />,
+        appname: 'Welcome',
+        description: "Welcome to my portfolio."
+    });
+
+    fs.push({
+        id: 'desktop-oldportfolio',
+        name: 'Old Portfolio',
+        parent: 'root-desktop',
+        mimetype: 'text/x-uri',
+        date: 'Today',
+        size: 'Web Link',
+        link: 'https://baladev.vercel.app',
+        icon: <Image className='w-full h-full p-[6px] sm:w-full sm:h-full' src='/code.png' alt="Old Portfolio" width={64} height={64} />,
+        description: "My previous portfolio."
     });
 
     fs.push({

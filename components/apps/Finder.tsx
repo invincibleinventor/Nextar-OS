@@ -15,6 +15,7 @@ const getfileicon = (mimetype: string, name: string, itemicon?: React.ReactNode)
     if (mimetype === 'inode/directory') return <Image src="/folder.png" alt="folder" width={64} height={64} className="w-full h-full object-contain drop-shadow-md" />;
     if (mimetype === 'application/x-executable') return null;
     if (mimetype === 'image/png' || mimetype === 'image/jpeg') return <Image src="/photos.png" alt="image" width={64} height={64} className="w-full h-full object-contain" />;
+    if (mimetype === 'application/pdf') return <Image src="/pdf.png" alt="pdf" width={64} height={64} className="w-full h-full object-contain" />;
     return <IoDocumentTextOutline className="w-full h-full text-gray-500" />;
 };
 
@@ -137,6 +138,22 @@ export default function Finder({ initialpath }: { initialpath?: string[] }) {
                     position: { top: 50, left: 50 },
                     size: { width: 1024, height: 768 },
                     props: { singleview: true, src: file.content, title: file.name }
+                });
+            }
+        } else if (file.mimetype === 'application/pdf') {
+            const fileviewerapp = apps.find(a => a.id === 'fileviewer');
+            if (fileviewerapp) {
+                addwindow({
+                    id: `fileviewer-${Date.now()}`,
+                    appname: fileviewerapp.appname,
+                    title: file.name,
+                    component: fileviewerapp.componentname,
+                    icon: fileviewerapp.icon,
+                    isminimized: false,
+                    ismaximized: false,
+                    position: { top: 100, left: 100 },
+                    size: { width: 700, height: 800 },
+                    props: { content: file.content, title: file.name, type: 'application/pdf' }
                 });
             }
         } else if (file.mimetype === 'text/x-uri' && file.link) {
