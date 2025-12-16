@@ -3,14 +3,16 @@ import Image from 'next/image';
 import { portfoliodata } from './portfolioData';
 import { IoMailOutline, IoLogoGithub, IoLogoTwitter, IoLogoLinkedin, IoCallOutline, IoLocationOutline, IoPaperPlaneOutline, IoChevronBack } from "react-icons/io5";
 import { PiThreadsLogo } from 'react-icons/pi';
+import { useDevice } from './DeviceContext';
 
 export default function Mail() {
     const [showsidebar, setshowsidebar] = useState(true);
+    const ismobile  = useDevice()
 
     return (
         <div className="flex h-full w-full bg-white dark:bg-[#1e1e1e] font-sf text-black dark:text-white relative overflow-hidden">
             <div className={`
-                w-full md:w-[240px] border-r border-gray-200 dark:border-white/10 flex flex-col bg-[#f5f5f7] dark:bg-[#2d2d2d]/50 backdrop-blur-xl
+                w-full md:w-[240px] ${ismobile ? 'pt-[36px]': ''} border-r border-gray-200 dark:border-white/10 flex flex-col bg-[#f5f5f7] dark:bg-[#2d2d2d]/50 backdrop-blur-xl
                 absolute md:relative z-20 h-full transition-transform duration-300 ease-in-out
                 ${showsidebar ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
             `}>
@@ -24,7 +26,7 @@ export default function Mail() {
                             if (window.innerWidth < 768) setshowsidebar(false);
                         }}
                     >
-                        <span className="font-bold text-sm">{portfoliodata.personal.name}</span>
+                        <span className="font-bold text-sm">About {portfoliodata.personal.name}</span>
                     </div>
                 </div>
             </div>

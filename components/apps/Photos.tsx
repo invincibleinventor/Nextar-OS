@@ -10,6 +10,7 @@ export default function Photos() {
     const [isnarrow, setisnarrow] = useState(false);
     const [showsidebar, setshowsidebar] = useState(true);
     const containerRef = React.useRef<HTMLDivElement>(null);
+    const {ismobile} = useWindows();
 
     useEffect(() => {
         if (!containerRef.current) return;
@@ -64,9 +65,9 @@ export default function Photos() {
                 ${showsidebar
                     ? isnarrow ? 'absolute inset-y-0 left-0 z-30 w-[220px] shadow-2xl bg-white/95 dark:bg-[#1e1e1e]/95 backdrop-blur border-r border-black/5 dark:border-white/5'
                         : 'relative w-[200px] border-r border-black/5 dark:border-white/5 bg-transparent backdrop-blur-2xl'
-                    : 'w-0 border-none overflow-hidden'
+                    : 'w-0 border-none overflow-hidden' 
                 }
-                transition-all duration-300 flex flex-col pt-4
+                transition-all duration-300 flex flex-col pt-4 ${ismobile ? '' : 'pt-[36px]'}
             `}>
                 <div className="px-4 mb-4 flex justify-between items-center">
                     <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Photos</span>

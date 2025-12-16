@@ -12,24 +12,35 @@ export const WindowProvider = ({ children }: any) => {
   const addwindow = (newwindow: any) => {
     setactivewindow(newwindow.id);
     setwindows((prevwindows) => {
+      const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
       const filtered = prevwindows.filter(w => w.id !== newwindow.id);
-      if (typeof window !== 'undefined' && window.innerWidth < 768) {
+
+      if (isMobile) {
         const minimizedprev = filtered.map(w => ({ ...w, isminimized: true }));
         return [...minimizedprev, newwindow];
       }
       return [...filtered, newwindow];
     });
   };
+
   const removewindow = (id: string) => {
     setwindows((prevwindows) => {
       const idx = prevwindows.findIndex((w) => w.id === id);
       const updatedwindows = prevwindows.filter((window) => window.id !== id);
+
       if (updatedwindows.length === 0) {
         setactivewindow(null);
       } else {
         if (activewindow === id) {
+        
           const newidx = Math.max(0, idx - 1);
-          setactivewindow(updatedwindows[newidx].id);
+          if (updatedwindows[newidx]) {
+            setactivewindow(updatedwindows[newidx].id);
+        
+          } else {
+            setactivewindow(null);
+          }
         }
       }
       return updatedwindows;
@@ -38,8 +49,11 @@ export const WindowProvider = ({ children }: any) => {
 
   const focusortogglewindow = (appname: string) => {
     setwindows((prevwindows) => {
+      const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
       const appwindows = prevwindows.filter((win) => win.appname === appname);
+
       if (appwindows.length === 0) return prevwindows;
+
       const topmost = appwindows.find((win) => win.id === activewindow);
 
       if (topmost) {
@@ -50,18 +64,37 @@ export const WindowProvider = ({ children }: any) => {
         const lastWindow = appwindows[appwindows.length - 1];
         setactivewindow(lastWindow.id);
 
-        return prevwindows.map((win) =>
-          win.appname === appname ? { ...win, isminimized: false } : win
-        );
+        return prevwindows.map((win) => {
+          if (win.appname === appname) {
+            return { ...win, isminimized: false };
+          }
+          if (isMobile) {
+            return { ...win, isminimized: true };
+          }
+          return win;
+        });
       }
     });
   };
+
   const updatewindow = (id: string, updatedprops: any) => {
-    setwindows(
-      windows.map((window) =>
-        window.id === id ? { ...window, ...updatedprops } : window
-      )
-    );
+    setwindows((prevWindows) => {
+      const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
+      return prevWindows.map((window) => {
+        if (window.id === id) {
+          return { ...window, ...updatedprops };
+        }
+
+       
+        if (isMobile && updatedprops.isminimized === false) {
+          return { ...window, isminimized: true };
+        }
+
+        return window;
+      });
+    });
+
     if (updatedprops.isminimized === false) {
       setactivewindow(id);
     }

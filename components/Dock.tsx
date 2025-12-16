@@ -7,21 +7,33 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { apps } from './app';
 import Launchpad from './apps/Launchpad';
 import { useState } from 'react';
+import { useDevice } from './DeviceContext';
 
 const Dock = () => {
-  const { windows, addwindow, setactivewindow, focusortogglewindow } = useWindows();
+  const { windows, addwindow, setactivewindow, focusortogglewindow, updatewindow } = useWindows();
   const [launchpad, setlaunch] = useState(false);
   const [hoverapp, sethoverapp] = useState<string | null>(null);
+  const { ismobile } = useDevice();
+
   const onclick = (id: string, name: string, title?: string) => {
     const appwins = windows.filter((win: any) => win.appname === name);
-    const app = apps.find((a) => a.appname === name);
-    const startlarge = app && (app.additionaldata as any) && (app.additionaldata as any).startlarge;
+
     if (appwins.length > 0) {
-      focusortogglewindow(name);
+      if (ismobile) {
+        const lastWin = appwins[appwins.length - 1];
+        updatewindow(lastWin.id, { isminimized: false });
+        setactivewindow(lastWin.id);
+      } else {
+        focusortogglewindow(name);
+      }
     } else {
+      const app = apps.find((a) => a.appname === name);
+      const startlarge = app && (app.additionaldata as any) && (app.additionaldata as any).startlarge;
+
       let position = { top: 100, left: 100 };
       let size = (app as any)?.defaultsize || { width: 800, height: 600 };
       const ismaximized = false;
+
       if (startlarge && typeof window !== 'undefined') {
         const screenwidth = window.innerWidth;
         const screenheight = window.innerHeight;

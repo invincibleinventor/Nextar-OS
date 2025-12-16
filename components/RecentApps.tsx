@@ -56,18 +56,21 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
     const ignoreclickref = useRef(false);
 
     useEffect(() => {
-        if (isopen && containerref.current) {
+        if (isopen) {
+            if (document.activeElement instanceof HTMLElement) {
+                document.activeElement.blur();
+            }
 
-            setTimeout(() => {
-                if (containerref.current) {
-                    containerref.current.scrollLeft = 0;
-                }
-            }, 10);
+            if (containerref.current) {
+                setTimeout(() => {
+                    if (containerref.current) {
+                        containerref.current.scrollLeft = 0;
+                    }
+                }, 10);
+            }
         }
     }, [isopen]);
 
-
-    const springtransition = { type: "spring", stiffness: 350, damping: 30 };
 
     return (
         <AnimatePresence>
@@ -80,14 +83,12 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                     transition={{ duration: 0.2 }}
                 >
                     <motion.div
-                        className="absolute inset-0 bg-black/30 backdrop-blur-2xl"
+                        className="absolute backdrop-blur-sm inset-0 bg-[url('/bg.jpg')] dark:bg-[url('/bg-dark.jpg')] bg-cover bg-no-repeat"
                         onClick={onclose}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                     />
-
-                    <div className="absolute inset-0 bg-black/20 pointer-events-none" />
 
                     {windows.length === 0 && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
@@ -99,11 +100,12 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                         ref={containerref}
                         layoutScroll
                         className="relative w-full h-full flex items-center overflow-x-auto scrollbar-hide px-[10vw] py-8 z-[9991]"
-                        initial={{ scale: 1.1, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0.9, opacity: 0 }}
-                        transition={{ type: "spring", stiffness: 300, damping: 25, mass: 0.8 }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
                         onClick={(e) => { if (!ignoreclickref.current && e.target === e.currentTarget) onclose(); }}
+                        style={{ willChange: 'opacity' }}
                     >
                         <div className="flex flex-row gap-6 md:gap-10 h-[65vh] items-center">
                             <AnimatePresence mode='popLayout'>
@@ -123,7 +125,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                                                 removewindow(win.id);
                                             }}
                                             onopen={() => {
-                                                updatewindow(win.id, { isMinimized: false });
+                                                updatewindow(win.id, { isminimized: false });
                                                 setactivewindow(win.id);
                                                 onclose();
                                             }}
@@ -145,22 +147,15 @@ const AppCard = ({ win, icon, onkill, onopen }: any) => {
 
     return (
         <motion.div
-            layoutId={win.id}
-            layout
+            layout="position"
             className="relative flex-shrink-0 w-[75vw] md:w-[45vw] lg:w-[350px] h-full flex flex-col"
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, scale: 0.9, y: 50 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{
                 opacity: 0,
-                scale: 0.85,
+                scale: 0.9,
                 y: -50,
-                filter: "blur(10px)",
-                transition: {
-                    type: "spring",
-                    stiffness: 400,
-                    damping: 30,
-                    mass: 0.8
-                }
+                transition: { duration: 0.2 }
             }}
             drag="y"
             dragConstraints={{ top: 0, bottom: 0 }}
@@ -185,13 +180,10 @@ const AppCard = ({ win, icon, onkill, onopen }: any) => {
                 e.stopPropagation();
                 onopen();
             }}
-
-
-
-            style={{ touchAction: 'pan-x' }}
+            style={{ touchAction: 'pan-x', willChange: 'transform' }}
             transition={{
                 type: "spring",
-                stiffness: 350,
+                stiffness: 400,
                 damping: 30
             }}
         >

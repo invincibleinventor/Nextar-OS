@@ -15,14 +15,14 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
 
     const handleappclick = (app: any) => {
         windows.forEach((w: any) => {
-            if (!w.isMinimized) {
-                updatewindow(w.id, { isMinimized: true });
+            if (!w.isminimized) {
+                updatewindow(w.id, { isminimized: true });
             }
         });
 
         const existingwin = windows.find((win: any) => win.appname === app.appname);
         if (existingwin) {
-            updatewindow(existingwin.id, { isMinimized: false });
+            updatewindow(existingwin.id, { isminimized: false });
             setactivewindow(existingwin.id);
             return;
         }
@@ -34,8 +34,8 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
             title: app.appname,
             component: app.componentname,
             props: {},
-            isMinimized: false,
-            isMaximized: true,
+            isminimized: false,
+            ismaximized: true,
             position: { top: 0, left: 0 },
             size: { width: window.innerWidth, height: window.innerHeight },
         };

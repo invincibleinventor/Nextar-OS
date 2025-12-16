@@ -9,7 +9,7 @@ import {
 import { useSettings } from '../SettingsContext';
 import { useTheme } from '../ThemeContext';
 import { useWindows } from '../WindowContext';
-
+import { useDevice } from '../DeviceContext';
 const specs = [
     { label: "Processor", value: "Neural Brain 2.0 (Creative Core)" },
     { label: "Memory", value: "Unlimited Learning Capacity" },
@@ -61,7 +61,7 @@ export default function Settings() {
     const { reducemotion, setreducemotion, reducetransparency, setreducetransparency } = useSettings();
     const { theme, toggletheme } = useTheme();
     const { addwindow } = useWindows();
-
+    const { ismobile } = useDevice();
     const [isnarrow, setisnarrow] = useState(false);
     const [showsidebar, setshowsidebar] = useState(true);
     const containerRef = React.useRef<HTMLDivElement>(null);
@@ -72,6 +72,9 @@ export default function Settings() {
         const observer = new ResizeObserver((entries) => {
             for (const entry of entries) {
                 const width = entry.contentRect.width;
+
+                if (width === 0) return;
+
                 const isNowNarrow = width < 768;
                 setisnarrow(isNowNarrow);
 
@@ -87,7 +90,7 @@ export default function Settings() {
         observer.observe(containerRef.current);
         return () => observer.disconnect();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []); 
+    }, []);
 
     const handleitemclick = (id: string) => {
         setactivetab(id);
@@ -144,7 +147,7 @@ export default function Settings() {
                 ${isnarrow && !showsidebar ? '-translate-x-full pointer-events-none' : 'translate-x-0'}
                 border-r border-black/5 dark:border-white/5 flex flex-col
                 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-neutral-800 [&::-webkit-scrollbar-thumb]:rounded-full
-            `}>
+           ${ismobile ? '' : 'pt-[36px]'} `}>
                 <div className="px-3 mb-2 mt-4 shrink-0">
                     <div className="relative">
                         <IoSearch className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />

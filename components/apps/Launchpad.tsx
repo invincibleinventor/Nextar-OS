@@ -87,8 +87,8 @@ export default function Launchpad({ onclose }: { onclose: () => void }) {
                     <IoSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50 text-lg" />
                     <input
                         autoFocus
-                        placeholder="Search"
-                        className="w-full bg-white/10 border border-white/10 rounded-lg pl-10 pr-4 py-2 
+                        placeholder="Search Apps"
+                        className="w-full bg-white/10 border border-white/10 rounded-lg  pr-4 py-2 
                             text-white placeholder-white/50 text-[15px] text-center
                             outline-none focus:bg-white/15 focus:border-white/20 transition-all"
                         value={searchterm}

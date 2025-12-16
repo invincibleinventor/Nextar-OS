@@ -74,7 +74,10 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
         left: Math.round((screenwidth - width) / 2),
       };
     }
-    return { top: window.innerHeight / 8, left: window.innerWidth / 4 };
+    if (typeof window !== 'undefined') {
+      return { top: window.innerHeight / 8, left: window.innerWidth / 4 };
+    }
+    return { top: 100, left: 100 };
   });
   const [size, setsize] = useState(() => {
     if (initialsize) return initialsize;
@@ -99,29 +102,36 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
 
   useEffect(() => {
     if (ismobile) {
-      setposition({ top: 44, left: 0 });
-      setsize({ width: window.innerWidth, height: window.innerHeight - 44 });
+      if (typeof window !== 'undefined') {
+        setposition({ top: 44, left: 0 });
+        setsize({ width: window.innerWidth, height: window.innerHeight - 44 });
+      }
       return;
     }
     if (isminimized) {
-      const { innerWidth: screenwidth, innerHeight: screenheight } = window;
-      if (!ismaximized) {
-        setpreviousstate({
-          position, size
-        })
+      if (typeof window !== 'undefined') {
+        const { innerWidth: screenwidth, innerHeight: screenheight } = window;
+        if (!ismaximized) {
+          setpreviousstate({
+            position, size
+          })
+        }
+        setposition({
+          top: screenheight,
+          left: (screenwidth - size.width) / 2,
+        });
       }
-      setposition({
-        top: screenheight,
-        left: (screenwidth - size.width) / 2,
-      });
     } else if (ismaximized) {
-      const { innerWidth: screenwidth, innerHeight: screenheight } = window;
-      setposition({ top: panelheight, left: 0 });
-      setsize({
-        width: screenwidth,
-        height: screenheight - panelheight - dockheight,
-      });
+      if (typeof window !== 'undefined') {
+        const { innerWidth: screenwidth, innerHeight: screenheight } = window;
+        setposition({ top: panelheight + 5, left: 0 });
+        setsize({
+          width: screenwidth,
+          height: screenheight - panelheight - 5 - dockheight,
+        });
+      }
     } else {
+      setposition(previousstate.position);
       setsize(previousstate.size);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -140,6 +150,17 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
 
   const handledragstart = (e: any) => {
     if (e.detail === 2) return;
+
+    const target = e.target as HTMLElement;
+    const isInteractive = target.closest('button, a, input, textarea, [role="button"], .interactive') !== null;
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    const isTopArea = (clientY - rect.top) <= 50;
+
+    if (!isTopArea || isInteractive) {
+      return;
+    }
+
 
     let dragstarted = false;
     const wasmaximized = ismaximized;
@@ -304,115 +325,108 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
   return (
     <motion.div
       ref={windowref}
-      initial={{ opacity: 0, y: 0 }}
-      animate={{ opacity: isminimized ? 0 : 1, y: isminimized ? 400 : 0, scale: isminimized ? 0.5 : 1 }}
-      exit={{ opacity: 0, y: -10 }}
-      onAnimationComplete={(definition) => {
-        if (isminimized) {
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: isminimized ? 0 : 1, y: isminimized ? 400 : 0, scale: isminimized ? 0.7 : 1 }}
+      exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+      
+      transition={{
+        type: "spring",
+        stiffness: 300,
+        damping: 30,
+        mass: 0.8,
+      }}
+      className={`border dark:border-neutral-700 border-neutral-300 overflow-hidden flex flex-col ${app?.titlebarblurred
+        ? `dark:bg-opacity-80 absolute bg-opacity-80  dark:bg-neutral-900 bg-white ${shouldblur ? 'backdrop-blur-md' : ''}`
+        : `dark:bg-neutral-900 bg-white ${shouldblur ? 'backdrop-blur-sm' : ''}`}  absolute ${ismaximized || ismobile ? '' : 'rounded-2xl shadow-2xl'} ${isdragging ? 'cursor-grabbing' : 'cursor-default'} ${isminimized ? 'pointer-events-none' : 'pointer-events-auto'}`}
+      style={{
+        top: position?.top || 0,
+        left: ismaximized ? 0 : (position?.left || 0),
+        width: ismaximized ? '100vw' : (size?.width || 0),
+        height: size?.height || 0,
+        zIndex: isminimized ? -1 : zindex,
+        willChange: 'transform, opacity',
+      }}
+      onMouseDown={(e) => {
+        setactivewindow(id);
+        if (!ismobile) {
+          handledragstart(e)
         }
       }}
-      transition={{
-        type: reducemotion ? "tween" : "spring",
-        stiffness: reducemotion ? undefined : 350,
-        damping: reducemotion ? undefined : 30,
-        duration: reducemotion ? 0.2 : undefined
-      }}
-      className={`border dark:border-neutral-600 border-neutral-500 overflow-hidden flex flex-col ${app?.titlebarblurred
-        ? `dark:bg-opacity-80 absolute bg-opacity-80  dark:bg-neutral-900 bg-white ${shouldblur ? 'backdrop-blur-md' : ''}`
-        : `dark:bg-neutral-900 bg-white ${shouldblur ? 'backdrop-blur-sm' : ''}`}  absolute ${ismaximized || ismobile ? '' : 'rounded-3xl'} ${isdragging ? 'cursor-grabbing' : 'cursor-default'} ${isminimized ? 'pointer-events-none' : 'pointer-events-auto'}`}
-      style={{
-        top: position.top,
-        left: ismaximized ? 0 : position.left,
-        width: ismaximized ? '100vw' : size.width,
-        height: size.height,
-        zIndex: isminimized ? -1 : zindex,
-        willChange: 'transform',
-      }}
-      onMouseDown={() => setactivewindow(id)}
     >
       {!ismobile && (
-        <div
-          className={`cursor-grab  ${ismaximized ? '' : 'rounded-t-3xl'} ${app?.titlebarblurred
-            ? ' relative '
-            : 'dark:bg-neutral-800 bg-white relative backdrop-blur-sm'
-            } px-5 py-[16px] flex justify-between`}
-          onDoubleClick={handlemaximize}
-          onMouseDown={(e) => {
-            if (!(e.target as Element).closest('#buttons')) handledragstart(e);
-          }}
-          onTouchStart={(e) => {
-            if (!(e.target as Element).closest('#buttons')) handledragstart(e);
-          }}
-        >
-          <div id="buttons" className="flex flex-row items-center content-center space-x-[10px]">
-            <button
-              className={`w-[14px] h-[14px] rounded-full ${activewindow == id ? 'bg-red-600' : 'bg-neutral-400'} window-button`}
-              onClick={(e) => {
-                e.stopPropagation();
-                removewindow(id);
-              }}
-            ></button>
+        <div id="buttons" className="absolute top-[18px] left-4 z-50 flex flex-row items-center content-center space-x-[8px] group">
+          <button
+            className={`w-[12px] h-[12px] rounded-full ${activewindow == id ? 'bg-[#FF5F56] border-[#E0443E] border' : 'bg-neutral-400/50 border-neutral-500/50 border'} window-button flex items-center justify-center`}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              removewindow(id);
+            }}
+          >
+            <span className="opacity-0 group-hover:opacity-100 text-[8px] font-bold text-black/50">×</span>
+          </button>
 
-            <button
-              className={`${activewindow == id ? app?.titlebarblurred ? 'bg-yellow-500' : 'bg-yellow-400' : 'bg-neutral-400'} w-[14px] h-[14px] rounded-full  window-button`}
-              onClick={(e) => {
-                e.stopPropagation();
-                updatewindow(id, { isminimized: true });
-              }}
-            ></button>
-            <button
-              className={`w-[14px] h-[14px] rounded-full ${activewindow == id ? 'bg-green-600' : 'bg-neutral-400'} window-button`}
-              onClick={(e) => {
-                e.stopPropagation();
-                handlemaximize();
-              }}
-            ></button>
-          </div>
-          <div className="w-max max-w-72  absolute mx-auto dark:text-white right-0 left-0 bottom-[12px] font-sf font-semibold text-[15px] text-center">
-            {title}
-          </div>
+          <button
+            className={`w-[12px] h-[12px] rounded-full ${activewindow == id ? 'bg-[#FFBD2E] border-[#DEA123] border' : 'bg-neutral-400/50 border-neutral-500/50 border'} window-button flex items-center justify-center`}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              updatewindow(id, { isminimized: true });
+            }}
+          >
+            <span className="opacity-0 group-hover:opacity-100 text-[8px] font-bold text-black/50">−</span>
+          </button>
+          <button
+            className={`w-[12px] h-[12px] rounded-full ${activewindow == id ? 'bg-[#27C93F] border-[#1AAB29] border' : 'bg-neutral-400/50 border-neutral-500/50 border'} window-button flex items-center justify-center`}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handlemaximize();
+            }}
+          >
+            <span className="opacity-0 group-hover:opacity-100 text-[6px] font-bold text-black/50">↗</span>
+          </button>
         </div>
       )}
 
       <div
-        className={`w-full dark:border-neutral-600 border-neutral-500 overflow-hidden flex-1 h-full ${ismaximized || ismobile ? '' : 'rounded-b-3xl'} ${app?.titlebarblurred ? '' : 'bg-white  dark:bg-neutral-800'} ${(isminimized || issystemgestureactive) ? 'pointer-events-none' : 'pointer-events-auto'}`}
+        className={`w-full h-full flex-1 overflow-hidden ${ismaximized || ismobile ? '' : ''} ${app?.titlebarblurred ? '' : 'bg-white  dark:bg-neutral-900'} ${(isminimized || issystemgestureactive) ? 'pointer-events-none' : 'pointer-events-auto'}`}
       >
-
         <MemoizedDynamicComponent appname={app ? app.appname : ''} icon={app ? app.icon : ''} component={app?.componentname ? app.componentname : component} appprops={props} isFocused={activewindow === id} />
       </div>
 
       {!ismobile && (
         <>
           <div
-            className="absolute w-full h-3 -top-[3px] cursor-ns-resize"
+            className="absolute w-full h-3 -top-[3px] cursor-ns-resize z-50"
             onMouseDown={(e) => handleresizestart(e, 'top')}
           />
           <div
-            className="absolute w-full h-3 -bottom-[3px] cursor-ns-resize"
+            className="absolute w-full h-3 -bottom-[3px] cursor-ns-resize z-50"
             onMouseDown={(e) => handleresizestart(e, 'bottom')}
           />
           <div
-            className="absolute top-0 left-0 w-[2px] h-full cursor-ew-resize"
+            className="absolute top-0 left-0 w-[2px] h-full cursor-ew-resize z-50"
             onMouseDown={(e) => handleresizestart(e, 'left')}
           ></div>
           <div
-            className="absolute top-0 right-0 w-[2px] h-full cursor-ew-resize"
+            className="absolute top-0 right-0 w-[2px] h-full cursor-ew-resize z-50"
             onMouseDown={(e) => handleresizestart(e, 'right')}
           ></div>
           <div
-            className="absolute w-3 h-3 -left-[3px] -top-[3px] cursor-nwse-resize"
+            className="absolute w-3 h-3 -left-[3px] -top-[3px] cursor-nwse-resize z-50"
             onMouseDown={(e) => handleresizestart(e, 'top-left')}
           />
           <div
-            className="absolute w-3 h-3 -right-[3px] -top-[3px] cursor-nesw-resize"
+            className="absolute w-3 h-3 -right-[3px] -top-[3px] cursor-nesw-resize z-50"
             onMouseDown={(e) => handleresizestart(e, 'top-right')}
           />
           <div
-            className="absolute w-3 h-3 -left-[3px] -bottom-[3px] cursor-nesw-resize"
+            className="absolute w-3 h-3 -left-[3px] -bottom-[3px] cursor-nesw-resize z-50"
             onMouseDown={(e) => handleresizestart(e, 'bottom-left')}
           />
           <div
-            className="absolute w-3 h-3 -right-[3px] -bottom-[3px] cursor-nwse-resize"
+            className="absolute w-3 h-3 -right-[3px] -bottom-[3px] cursor-nwse-resize z-50"
             onMouseDown={(e) => handleresizestart(e, 'bottom-right')}
           />
         </>

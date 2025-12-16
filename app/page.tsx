@@ -29,6 +29,23 @@ const Page = () => {
   const [showrecentapps, setshowrecentapps] = useState(false);
   const [issystemgestureactive, setissystemgestureactive] = useState(false);
 
+  const openWelcome = () => {
+    const welcomeapp = apps.find((app) => app.id === 'welcome');
+    if (!welcomeapp) return;
+
+    addwindow({
+      id: `welcome-${Date.now()}`,
+      appname: 'Welcome',
+      title: 'Welcome',
+      component: welcomeapp.componentname,
+      icon: '/info.png',
+      isminimized: false,
+      ismaximized: false,
+      position: { top: 50, left: 50 },
+      size: { width: 1024, height: 768 },
+      props: {},
+    });
+  };
 
   const openOldPortfolio = () => {
     const safariapp = apps.find((app) => app.id === 'safari');
@@ -125,11 +142,16 @@ const Page = () => {
                 if (shownotificationcenter) setshownotificationcenter(false);
               }}
             >
-              <div className='p-4 py-10 flex flex-col items-end content-end '>
+              <div className='p-4 py-10 space-y-4 flex flex-col items-center w-max ml-auto content-end '>
+                <button onClick={(e) => { e.stopPropagation(); openWelcome(); }} className="p-2 flex hover:bg-neutral-400/20 rounded-2xl hover:backdrop-blur-lg hover:filter px-4 flex-col items-center content-center text-white">
+                  <Image className='w-16 h-16 shadow-sm drop-shadow-lg' src="/info.png" width={64} height={64} alt="Old Portfolio"></Image>
+                  <span className='text-xs font-semibold text-white mt-1.5 drop-shadow-md'>Welcome App</span>
+                </button>
                 <button onClick={(e) => { e.stopPropagation(); openOldPortfolio(); }} className="p-2 flex hover:bg-neutral-400/20 rounded-2xl hover:backdrop-blur-lg hover:filter px-4 flex-col items-center content-center text-white">
                   <Image className='w-16 h-16 shadow-sm drop-shadow-lg' src="/code.png" width={64} height={64} alt="Old Portfolio"></Image>
                   <span className='text-xs font-semibold text-white mt-1.5 drop-shadow-md'>Old Portfolio</span>
                 </button>
+
                 {windows.map((window: any) => (
                   <div key={window.id} onClick={(e) => e.stopPropagation()}>
                     <Window {...window} />
@@ -144,11 +166,11 @@ const Page = () => {
         {ismobile && (
           <div className="relative w-full h-full">
 
-            <div className={`absolute top-0 right-0 z-[60] ${showrecentapps ? 'invisible' : 'visible'}`}>
+            <div className={`absolute top-0 right-0 z-[10000] visible`}>
               <Control isopen={showcontrolcenter} onclose={() => setshowcontrolcenter(false)} ismobile={true} />
             </div>
 
-            <div className={`absolute top-0 left-0 z-[60] w-full h-full pointer-events-none ${showrecentapps ? 'invisible' : 'visible'}`}>
+            <div className={`absolute top-0 left-0 z-[10000] w-full h-full pointer-events-none visible`}>
               <NotificationCenter isopen={shownotificationcenter} onclose={() => setshownotificationcenter(false)} />
             </div>
 
@@ -181,7 +203,7 @@ const Page = () => {
 
             <div className={`absolute bottom-0 left-0 right-0 h-10 flex items-end justify-center z-[9999] ${(shownotificationcenter || showcontrolcenter) ? 'pointer-events-none' : 'pointer-events-auto'}`}>
               <motion.div
-                className="w-[140px] h-[5px] bg-white/80 rounded-full mb-[12px] cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.3)] backdrop-blur-md"
+                className="w-[140px] h-[5px] bg-neutral-400/90 dark:bg-white/80 rounded-full mb-[12px] cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.3)] backdrop-blur-md"
                 whileTap={{ scale: 0.95 }}
                 drag="y"
                 dragConstraints={{ top: 0, bottom: 0 }}

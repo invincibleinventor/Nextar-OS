@@ -4,9 +4,9 @@ import { SiNextdotjs, SiTailwindcss, SiTypescript, SiSupabase, SiFirebase, SiMon
 
 export const portfoliodata = {
     personal: {
-        name: "Bala.tbr",
-        role: "Frontend Developer & Student",
-        bio: "I'm a passionate geek from India that loves to tinker with frontend technologies. I'm an ardent lover of Linux and FOSS principles. Self-taught web developer, specializing in Next.js and TailwindCSS. I use Arch Linux btw.",
+        name: "Bala TBR",
+        role: "Second Year Comp Sci Student - Next.JS Full Stack Developer",
+        bio: "I'm a passionate geek from India studying second year computer science engineering that loves to tinker with frontend technologies. I'm an ardent lover of Linux and FOSS principles. Self-taught web developer, specializing in Next.js and TailwindCSS. I use Arch Linux btw.",
         location: "India",
         email: "invincibleinventor@gmail.com",
         socials: {
@@ -32,7 +32,7 @@ export const portfoliodata = {
             desc: "A simulation of macOS Sonoma UI in the web. Features dock, window management, and animations.",
             stack: ["Next.js", "TailwindCSS"],
             link: "https://baladev.in",
-            github: "https://github.com/invincibleinventor/macos-web",
+            github: "https://github.com/invincibleinventor/macos",
             icon: <FaReact className="text-blue-500" />
         },
         {

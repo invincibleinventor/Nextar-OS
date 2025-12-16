@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useWindows } from './WindowContext';
 import { portfoliodata } from './portfolioData';
 import { apps } from './app';
-import { IoArrowForward, IoCheckmarkCircle, IoLogoApple, IoConstructOutline, IoAppsOutline, IoRocketOutline } from "react-icons/io5";
+import { IoArrowForward, IoCheckmarkCircle, IoLogoApple, IoConstructOutline, IoAppsOutline, IoRocketOutline, IoLogoGithub } from "react-icons/io5";
 
 export default function Welcome(props: any) {
     const { removewindow, addwindow } = useWindows();
@@ -35,6 +35,15 @@ export default function Welcome(props: any) {
                             <span>App Rich</span>
                         </div>
                     </div>
+                    <a
+                        href="https://github.com/invincibleinventor/macos"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center justify-center gap-2 px-6 py-4 bg-blue-500/20 text-white rounded-xl text-sm font-medium  transition-colors mx-auto w-max shadow-lg"
+                    >
+                        <IoLogoGithub size={18} />
+                        <span>Check out GitHub Repo</span>
+                    </a>
                 </div>
             )
         },
@@ -159,7 +168,7 @@ export default function Welcome(props: any) {
 
     return (
         <div className="flex flex-col h-full w-full bg-[#fbfbfd] dark:bg-[#1e1e1e] font-sf text-black dark:text-white overflow-y-auto overflow-x-hidden relative selection:bg-blue-500/30">
-            <div className="h-10 w-full shrink-0" onMouseDown={(e) => e.stopPropagation()} />
+            <div className="h-10 w-full shrink-0" />
 
             <div className="flex-1 flex flex-col items-center justify-center p-8 relative z-10 w-full max-w-2xl mx-auto">
                 <AnimatePresence mode='wait'>
@@ -220,17 +229,17 @@ export default function Welcome(props: any) {
                         <>Continue</>
                     ) : (
                         <div onClick={() => {
-                            const finderapp = apps.find(a => a.id === 'finder');
+                            const mailapp = apps.find(a => a.id === 'mail');
                             addwindow({
-                                id: `finder-${Date.now()}`,
-                                appname: 'Finder',
+                                id: `mail-${Date.now()}`,
+                                appname: 'Mail',
                                 title: 'Finder',
-                                component: 'apps/Finder',
-                                icon: '/finder.png',
+                                component: 'apps/Mail',
+                                icon: '/mail.png',
                                 isMinimized: false,
                                 isMaximized: false,
                                 position: { top: 100, left: 100 },
-                                size: finderapp?.defaultsize || { width: 800, height: 600 },
+                                size: mailapp?.defaultsize || { width: 800, height: 600 },
                                 props: {}
                             });
                             removewindow('welcome');

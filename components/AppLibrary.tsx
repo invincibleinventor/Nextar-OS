@@ -9,10 +9,10 @@ import { IoSearch } from 'react-icons/io5';
 const AppLibrary = () => {
     const { addwindow, windows, setactivewindow, updatewindow } = useWindows();
     const categories: { [key: string]: string[] } = {
-        "Social & Communication": ["Mail"],
+        "Social": ["Mail"],
         "Productivity": ["Safari", "Calendar", "Notes", "Reminders"],
         "Utilities": ["Finder", "Settings", "Calculator", "Welcome"],
-        "Creativity & Dev": ["Python IDE", "Photos", "App Store"],
+        "Creativity": ["Python IDE", "Photos", "App Store"],
     };
 
     const getcategoryapps = (catapps: string[]) => {
@@ -22,7 +22,7 @@ const AppLibrary = () => {
     const openapp = (app: any) => {
         const existingwin = windows.find((win: any) => win.appname === app.appname);
         if (existingwin) {
-            updatewindow(existingwin.id, { isMinimized: false });
+            updatewindow(existingwin.id, { isminimized: false });
             setactivewindow(existingwin.id);
             return;
         }
@@ -34,8 +34,8 @@ const AppLibrary = () => {
             title: app.appname,
             component: app.componentname,
             props: {},
-            isMinimized: false,
-            isMaximized: true,
+            isminimized: false,
+            ismaximized: true,
             position: { top: 0, left: 0 },
             size: { width: window.innerWidth, height: window.innerHeight },
         };
@@ -96,7 +96,7 @@ const AppLibrary = () => {
                                 ))}
                             </div>
                         </div>
-                        <span className="text-center text-neutral-200 text-[13px] font-semibold leading-none px-1 truncate">
+                        <span className="text-center mt-1 text-neutral-200 text-[13px] font-semibold leading-none px-1 truncate">
                             {category}
                         </span>
                     </div>

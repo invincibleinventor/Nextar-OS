@@ -11,6 +11,8 @@ import { PiThreadsLogo } from "react-icons/pi";
 import { useWindows } from '../WindowContext';
 import { portfoliodata } from '../portfolioData';
 import { apps } from '../app';
+import { useDevice } from '../DeviceContext';
+
 
 const getfileicon = (kind: string, name: string) => {
     if (kind === 'Application') return null;
@@ -63,6 +65,7 @@ export default function Finder({ initialpath }: { initialpath?: string[] }) {
     const [showsidebar, setshowsidebar] = useState(true);
     const [showpreview, setshowpreview] = useState(true);
     const { addwindow, windows, updatewindow, setactivewindow } = useWindows();
+    const { ismobile, osstate } = useDevice();
 
     const [currentpath, setcurrentpath] = useState<string[]>(initialpath || ['Projects']);
     const [searchquery, setsearchquery] = useState("");
@@ -240,7 +243,7 @@ export default function Finder({ initialpath }: { initialpath?: string[] }) {
                 transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] 
                 flex flex-col pt-4 h-full transform
             `}>
-                <div className={`flex-1 overflow-y-auto px-2 ${showsidebar ? 'opacity-100' : 'opacity-0'} transition-opacity duration-200 delay-100`}>
+                <div className={`flex-1 overflow-y-auto ${ismobile?'':'pt-[36px]'} px-2 ${showsidebar ? 'opacity-100' : 'opacity-0'} transition-opacity duration-200 delay-100`}>
                     {sidebaritems.map((group, idx) => (
                         <div key={idx} className="mb-4">
                             <div className="text-[11px] font-bold text-gray-500/80 dark:text-gray-400/80 uppercase tracking-wide mb-1 px-3">
@@ -271,8 +274,8 @@ export default function Finder({ initialpath }: { initialpath?: string[] }) {
                 <div className="flex-1 flex flex-col min-w-0 min-h-0">
                     <div className="h-[50px] shrink-0 flex items-center justify-between px-4 border-b border-black/5 dark:border-white/5">
                         <div className="flex items-center gap-2 text-gray-500">
-                            <div className="flex items-center gap-1">
-                                <IoChevronBack className={`text-xl ${currentpath.length > 1 ? 'text-black dark:text-white cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 rounded' : 'opacity-20'}`} onClick={() => currentpath.length > 1 && setcurrentpath(currentpath.slice(0, -1))} />
+                            <div className={(isnarrow && !ismobile) ?"flex items-center gap-1 ml-[64px]": "flex items-center gap-1"}>
+                                <IoChevronBack className={`text-xl ${currentpath.length > 1 ? 'text-black dark:text-white cursor-pointer rounded' : 'opacity-20'}`} onClick={() => currentpath.length > 1 && setcurrentpath(currentpath.slice(0, -1))} />
                                 <IoChevronForward className="text-xl opacity-20" />
                             </div>
                             <span className="text-[14px] font-semibold text-black dark:text-white ml-2">

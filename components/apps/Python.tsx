@@ -1,12 +1,13 @@
 'use client';
 import React, { useState } from 'react';
 import { FaPlay, FaTrash, FaTerminal } from 'react-icons/fa';
+import { useDevice } from '../DeviceContext';
 
 export default function Python() {
-    const [code, setcode] = useState('print("Hello from macOS Web!")\n\n# Write your Python code here');
+    const [code, setcode] = useState('print("Made with love by BalaTBR!")\n\n# Write your Python code here');
     const [output, setoutput] = useState('');
     const [isrunning, setisrunning] = useState(false);
-
+const ismobile = useDevice()
     const runcode = async () => {
         setisrunning(true);
         setoutput('Running...');
@@ -36,7 +37,7 @@ export default function Python() {
     return (
         <div className="flex flex-col h-full w-full bg-[#1e1e1e] text-white font-mono">
 
-            <div className="h-10 bg-[#333333] flex items-center px-4 justify-between border-b border-black/20">
+            <div className={`${ismobile ? 'pl-[84px]': ''} h-12 bg-[#333333] flex items-center px-4 justify-between border-b border-black/20`}>
                 <div className="flex items-center gap-2 text-sm text-gray-300">
                     <FaTerminal className="text-green-500" />
                     <span>main.py</span>

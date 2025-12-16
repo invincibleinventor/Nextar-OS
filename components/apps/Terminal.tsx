@@ -1,5 +1,6 @@
 'use client';
 import React, { useState, useRef, useEffect } from 'react';
+import { useDevice } from '../DeviceContext';
 
 export default function Terminal() {
     const [history, sethistory] = useState(['Welcome to PortfolioOS Terminal v1.0', 'Type "help" for available commands.', '']);
@@ -50,10 +51,11 @@ export default function Terminal() {
     useEffect(() => {
         endref.current?.scrollIntoView({ behavior: 'smooth' });
     }, [history]);
+    const ismobile = useDevice()
 
     return (
         <div
-            className="h-full w-full bg-[#1e1e1e] text-[#cccccc] p-4 overflow-y-auto cursor-text"
+            className={`${ismobile?'pt-[50px]':''} h-full w-full bg-[#1e1e1e] text-[#cccccc] p-4 overflow-y-auto cursor-text'}`}
             onClick={() => inputref.current?.focus()}
         >
             <div className="font-mono text-[13px] leading-relaxed">

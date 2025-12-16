@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { FaArrowLeft, FaArrowRight, FaRedo, FaLock, FaBookOpen, FaShareSquare, FaPlus } from 'react-icons/fa';
+import { useDevice } from '../DeviceContext';
 
 interface safariprops {
     initialurl?: string;
@@ -19,12 +20,13 @@ export default function Safari({ initialurl = 'https://baladev.vercel.app' }: sa
         }
         seturl(target);
     };
+    const ismobile = useDevice()
 
     return (
         <div className="flex flex-col h-full w-full bg-[#f2f2f2] dark:bg-[#262626] text-black dark:text-white font-sf">
 
-            <div className="h-[52px] bg-[#f2f2f2] dark:bg-[#343434] flex items-center px-3 gap-4 border-b border-black/5 dark:border-white/5 pt-1">
-                <div className="flex gap-4 text-gray-500 dark:text-gray-400">
+            <div className={`h-[50px] bg-[#f2f2f2] dark:bg-[#343434] flex items-center ${!(ismobile) ? 'px-2' : 'pr-2 pl-24'} gap-4 border-b border-black/5 dark:border-white/5 `}>
+                <div className={`flex gap-4 text-gray-500 dark:text-gray-400`}>
                     <button className="hover:text-black dark:hover:text-white transition"><FaArrowLeft size={14} /></button>
                     <button className="hover:text-black dark:hover:text-white transition"><FaArrowRight size={14} /></button>
                     <button className="hover:text-black dark:hover:text-white transition hidden md:block"><FaBookOpen size={14} /></button>
