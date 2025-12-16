@@ -67,7 +67,7 @@ export default function Photos() {
                         : 'relative w-[200px] border-r border-black/5 dark:border-white/5 bg-transparent backdrop-blur-2xl'
                     : 'w-0 border-none overflow-hidden' 
                 }
-                transition-all duration-300 flex flex-col pt-4 ${ismobile ? '' : 'pt-[36px]'}
+                transition-all duration-300 flex flex-col pt-4 ${ismobile ? '' : 'pt-[50px]'}
             `}>
                 <div className="px-4 mb-4 flex justify-between items-center">
                     <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Photos</span>
@@ -128,7 +128,7 @@ export default function Photos() {
                                     isminimized: false,
                                     ismaximized: false,
                                     position: { top: 100, left: 100 },
-                                    size: { width: 800, height: 600 },
+                                    size: { width: 900, height: 600 },
                                     props: { initialpath: ['Projects', photo.title] }
                                 });
                             }}

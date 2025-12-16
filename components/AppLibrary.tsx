@@ -67,8 +67,8 @@ const AppLibrary = () => {
         >
             <div className="relative w-full text-center mb-6">
                 <div className="relative w-full mx-auto bg-neutral-200/50 dark:bg-neutral-800/50 backdrop-blur-xl rounded-2xl h-10 flex items-center px-3">
-                    <IoSearch className="text-neutral-500" size={20} />
-                    <span className="ml-2 text-neutral-500 text-lg">App Library</span>
+                    <IoSearch className="text-neutral-800 dark:text-neutral-500" size={20} />
+                    <span className="ml-2 text-neutral-800 dark:text-neutral-500 text-lg">App Library</span>
                 </div>
             </div>
 

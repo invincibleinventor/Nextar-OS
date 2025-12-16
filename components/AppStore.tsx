@@ -107,7 +107,7 @@ export default function AppStore() {
                                         isminimized: false,
                                         ismaximized: false,
                                         position: { top: 100, left: 100 },
-                                        size: app.defaultsize || { width: 800, height: 600 },
+                                        size: app.defaultsize || { width: 900, height: 600 },
                                         props: {}
                                     });
                                 }}

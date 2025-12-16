@@ -8,6 +8,7 @@ export const portfoliodata = {
         role: "Second Year Comp Sci Student - Next.JS Full Stack Developer",
         bio: "I'm a passionate geek from India studying second year computer science engineering that loves to tinker with frontend technologies. I'm an ardent lover of Linux and FOSS principles. Self-taught web developer, specializing in Next.js and TailwindCSS. I use Arch Linux btw.",
         location: "India",
+        username: "invincibleinventor",
         email: "invincibleinventor@gmail.com",
         socials: {
             github: "https://github.com/invincibleinventor",
@@ -18,6 +19,7 @@ export const portfoliodata = {
     projects: [
         {
             title: "Falar",
+            type: "Open Source",
             date: 2022,
             desc: "A content publishing platform for sharing written works publicly.",
             stack: ["Next.js", "Supabase", "TailwindCSS", "Amazon S3"],
@@ -28,7 +30,7 @@ export const portfoliodata = {
         {
             title: "MacOS-Next",
             date: 2023,
-
+            type: "Open Source",
             desc: "A simulation of macOS Sonoma UI in the web. Features dock, window management, and animations.",
             stack: ["Next.js", "TailwindCSS"],
             link: "https://baladev.in",
@@ -38,7 +40,7 @@ export const portfoliodata = {
         {
             title: "VSCode Portfolio",
             date: 2022,
-
+            type: "Open Source",
             desc: "A portfolio website themed like Visual Studio Code.",
             stack: ["Next.js", "TailwindCSS", "TypeScript"],
             link: "https://baladev.vercel.app",
@@ -48,7 +50,7 @@ export const portfoliodata = {
         {
             title: "W11Web",
             date: 2021,
-
+            type: "Open Source",
             desc: "Windows 11 desktop simulation using Vanilla CSS.",
             stack: ["TypeScript", "CSS", "Webpack"],
             link: "https://w11web.vercel.app",
@@ -58,7 +60,7 @@ export const portfoliodata = {
         {
             title: "Filmhood Journal",
             date: 2022,
-
+            type: "Closed Source",
             desc: "A wordpress blog for an aspiring filmmaker.",
             stack: ["Wordpress", "Analytics"],
             link: "https://filmhoodjournal.com",
@@ -68,7 +70,7 @@ export const portfoliodata = {
         {
             title: "Calistnx",
             date: 2023,
-
+            type: "Closed Source",
             desc: "E-commerce platform for fitness courses.",
             stack: ["Wordpress", "WooCommerce", "Stripe"],
             link: "https://calistnx.com",
@@ -78,7 +80,7 @@ export const portfoliodata = {
         {
             title: "TTS Internal Tools",
             date: 2022,
-
+            type: "Closed Source",
             desc: "Management system for Golden Jubilee fests.",
             stack: ["Qwik JS", "Supabase", "TailwindCSS"],
             link: "https://ttsgold.vercel.app",
@@ -88,7 +90,7 @@ export const portfoliodata = {
         {
             title: "SquadSearch",
             date: 2025,
-
+            type: "Open Source",
             desc: "A matchmaking platform for teams and TLs to find and assemble their perfect squad for hackathons or internal hirings.",
             stack: ["Next.js", "Supabase", "GSAP", "TailwindCSS", "LLMs", "FastAPI", "SMTP", "Python"],
             link: "https://squadsearch.vercel.app",
@@ -98,7 +100,7 @@ export const portfoliodata = {
         {
             title: "Sastracker",
             date: 2025,
-
+            type: "Open Source",
             desc: "A Modern PyQDB for SASTRA Students",
             stack: ["Next.JS", "Supabase", "LLMs", "TailwindCSS", "FastAPI"],
             link: "https://sastracker.vercel.app",
@@ -108,7 +110,7 @@ export const portfoliodata = {
         {
             title: "EzyPing",
             date: 2025,
-
+            type: "Open Source",
             desc: "A lightweight uptime monitor for tracking website status and to quicky notify subscribed users of website changes through SMTP.",
             stack: ["Next.js", "TypeScript", "Node.js", "CRON"],
             link: "https://ezyping.vercel.app",

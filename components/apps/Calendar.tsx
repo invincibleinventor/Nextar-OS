@@ -19,10 +19,13 @@ export default function Calendar() {
         year: proj.date,
         title: proj.title,
         desc: proj.desc,
-        color: i % 2 === 0 ? "#007AFF" : "#34C759",
+        color: proj.type === 'Open Source' ? "#007AFF" : "#34C759",
         icon: proj.icon,
         tech: proj.stack
     }));
+
+    //sort events by year
+    events.sort((a, b) => b.year - a.year);
 
     return (
         <div className="h-full w-full bg-white dark:bg-[#1e1e1e] flex font-sf text-black dark:text-white">
@@ -42,11 +45,11 @@ export default function Calendar() {
                             <span className="bg-black/10 dark:bg-white/10 px-1.5 rounded text-[11px] text-black/50 dark:text-white/50">{events.length}</span>
                         </div>
                         <div className="px-3 py-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg text-[13px] text-black/70 dark:text-white/70 flex justify-between items-center cursor-pointer transition-colors">
-                            <span>Web Apps</span>
+                            <span>Open Source</span>
                             <span className="w-2 h-2 rounded-full bg-blue-500"></span>
                         </div>
                         <div className="px-3 py-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg text-[13px] text-black/70 dark:text-white/70 flex justify-between items-center cursor-pointer transition-colors">
-                            <span>Tools</span>
+                            <span>Closed Source</span>
                             <span className="w-2 h-2 rounded-full bg-green-500"></span>
                         </div>
                     </div>
@@ -116,7 +119,7 @@ export default function Calendar() {
                                                                     isminimized: false,
                                                                     ismaximized: false,
                                                                     position: { top: 100, left: 100 },
-                                                                    size: { width: 800, height: 600 },
+                                                                    size: { width: 900, height: 600 },
                                                                     props: { initialpath: ['Projects', e.title] }
                                                                 });
                                                             }}
@@ -164,7 +167,7 @@ export default function Calendar() {
                                                         isminimized: false,
                                                         ismaximized: false,
                                                         position: { top: 100, left: 100 },
-                                                        size: { width: 800, height: 600 },
+                                                        size: { width: 900, height: 600 },
                                                         props: { initialpath: ['Projects', e.title] }
                                                     });
                                                 }}

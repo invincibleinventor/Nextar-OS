@@ -31,7 +31,7 @@ const Dock = () => {
       const startlarge = app && (app.additionaldata as any) && (app.additionaldata as any).startlarge;
 
       let position = { top: 100, left: 100 };
-      let size = (app as any)?.defaultsize || { width: 800, height: 600 };
+      let size = (app as any)?.defaultsize || { width: 900, height: 600 };
       const ismaximized = false;
 
       if (startlarge && typeof window !== 'undefined') {
@@ -75,7 +75,7 @@ const Dock = () => {
       props: {},
       isminimized: false,
       position: { top: 100, left: 100 },
-      size: (app as any).defaultsize || { width: 800, height: 600 },
+      size: (app as any).defaultsize || { width: 900, height: 600 },
       ismaximized: !!startmaximized,
     };
     addwindow(newwin);

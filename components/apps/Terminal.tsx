@@ -27,7 +27,7 @@ export default function Terminal() {
                     response = 'Visit the Finder app to browse my portfolio projects.';
                     break;
                 case 'contact':
-                    response = 'Email: hello@portfolio.dev';
+                    response = 'Email: invincibleinvnentor@gmail.com';
                     break;
                 case 'whoami':
                     response = 'guest@balatbr';

@@ -17,7 +17,7 @@ export default function Welcome(props: any) {
             subtitle: "A fully interactive web OS simulation.",
             icon: IoLogoApple,
             content: (
-                <div className="text-center space-y-8 max-w-md mx-auto h-full flex flex-col justify-center">
+                <div className="text-center space-y-8 max-w-md mx-auto h-auto flex flex-col justify-center">
                     <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
                         Experience my portfolio through a familiar desktop interface. This isn&apos;t just a simple macos themed portfolio site - you can call it a full fledged operating system simulation built with Next JS, Framer Motion and TailwindCSS.
                     </p>
@@ -35,15 +35,7 @@ export default function Welcome(props: any) {
                             <span>App Rich</span>
                         </div>
                     </div>
-                    <a
-                        href="https://github.com/invincibleinventor/macos"
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex items-center justify-center gap-2 px-6 py-4 bg-blue-400 dark:bg-blue-500/20 text-white rounded-xl text-sm font-medium  transition-colors mx-auto w-max shadow-lg"
-                    >
-                        <IoLogoGithub size={18} />
-                        <span>Check out GitHub Repo</span>
-                    </a>
+
                 </div>
             )
         },
@@ -104,7 +96,7 @@ export default function Welcome(props: any) {
                                     isMinimized: false,
                                     isMaximized: false,
                                     position: { top: 100, left: 100 },
-                                    size: app.defaultsize || { width: 800, height: 600 },
+                                    size: app.defaultsize || { width: 900, height: 600 },
                                     props: {}
                                 });
                             }}
@@ -146,7 +138,7 @@ export default function Welcome(props: any) {
                                 isMinimized: false,
                                 isMaximized: false,
                                 position: { top: 100, left: 100 },
-                                size: mailapp?.defaultsize || { width: 800, height: 600 },
+                                size: mailapp?.defaultsize || { width: 900, height: 600 },
                                 props: {}
                             });
                         }}
@@ -207,7 +199,16 @@ export default function Welcome(props: any) {
                 </AnimatePresence>
             </div>
 
-            <div className="h-24 shrink-0 flex items-center justify-between px-12 bg-[#fbfbfd] dark:bg-[#1e1e1e] z-20">
+            <div className="h-24 shrink-0 flex items-center justify-between w-full mx-auto px-12 bg-[#fbfbfd] dark:bg-[#1e1e1e] z-20">
+                <a
+                    href="https://github.com/invincibleinventor/macos"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center justify-center gap-2 px-6 py-4 bg-blue-400 dark:bg-blue-500/20 text-white rounded-xl text-sm font-medium  transition-colors w-max "
+                >
+                    <IoLogoGithub size={18} />
+                    <span>Check out GitHub Repo</span>
+                </a>
                 <div className="flex gap-2">
                 </div>
 
@@ -216,6 +217,20 @@ export default function Welcome(props: any) {
                         if (step < steps.length - 1) {
                             setstep(step + 1);
                         } else {
+                            const mailapp = apps.find(a => a.id === 'mail');
+                            addwindow({
+                                id: `mail-${Date.now()}`,
+                                appname: 'Mail',
+                                title: 'Mail',
+                                component: 'Mail',
+                                icon: '/mail.png',
+                                isminimized: false,
+                                ismaximized: false,
+                                position: { top: 100, left: 100 },
+                                size: mailapp?.defaultsize || { width: 900, height: 600 },
+                                props: {}
+                            });
+
                             if (props.id) {
                                 removewindow(props.id);
                             } else {
@@ -228,23 +243,7 @@ export default function Welcome(props: any) {
                     {step < steps.length - 1 ? (
                         <>Continue</>
                     ) : (
-                        <div onClick={() => {
-                            const mailapp = apps.find(a => a.id === 'mail');
-                            addwindow({
-                                id: `mail-${Date.now()}`,
-                                appname: 'Mail',
-                                title: 'Finder',
-                                component: 'apps/Mail',
-                                icon: '/mail.png',
-                                isMinimized: false,
-                                isMaximized: false,
-                                position: { top: 100, left: 100 },
-                                size: mailapp?.defaultsize || { width: 800, height: 600 },
-                                props: {}
-                            });
-                            removewindow('welcome');
-                            if (props.id) removewindow(props.id);
-                        }}>Get Started</div>
+                        <div>Get Started</div>
                     )}
                 </button>
             </div>

@@ -88,7 +88,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
                         isMinimized: false,
                         isMaximized: true,
                         position: { top: 0, left: 0 },
-                        size: { width: typeof window !== 'undefined' ? window.innerWidth : 800, height: typeof window !== 'undefined' ? window.innerHeight : 600 },
+                        size: { width: typeof window !== 'undefined' ? window.innerWidth : 900, height: typeof window !== 'undefined' ? window.innerHeight : 600 },
                     });
                 }
             });

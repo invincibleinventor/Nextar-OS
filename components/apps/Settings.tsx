@@ -10,6 +10,7 @@ import { useSettings } from '../SettingsContext';
 import { useTheme } from '../ThemeContext';
 import { useWindows } from '../WindowContext';
 import { useDevice } from '../DeviceContext';
+import { portfoliodata } from '../portfolioData';
 const specs = [
     { label: "Processor", value: "Silicon yumm4 Pro" },
     { label: "Memory", value: "16 GB" },
@@ -173,7 +174,7 @@ export default function Settings() {
                                 isminimized: false,
                                 ismaximized: false,
                                 position: { top: 100, left: 100 },
-                                size: { width: 800, height: 600 },
+                                size: { width: 900, height: 600 },
                                 props: {}
                             });
                         }}
@@ -182,8 +183,8 @@ export default function Settings() {
                             <Image src="/pfp.png" alt="Profile" width={40} height={40} className="w-full h-full object-cover" />
                         </div>
                         <div className="flex flex-col truncate">
-                            <span className="font-semibold text-[13px] leading-tight truncate">BalaTBR</span>
-                            <span className="text-[11px] text-gray-500 truncate">Apple Account</span>
+                            <span className="font-semibold text-[13px] leading-tight truncate">{portfoliodata.personal.name}</span>
+                            <span className="text-[11px] text-gray-500 truncate">{portfoliodata.personal.username}</span>
                         </div>
                     </div>
 
@@ -246,7 +247,7 @@ export default function Settings() {
                                 <div className="flex flex-col items-center mb-8 pt-4">
                                     <div className="w-20 h-20 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-full shadow-2xl mb-4" />
                                     <h1 className="text-2xl font-bold">MacOS-Next</h1>
-                                    <p className="text-[13px] text-gray-500 dark:text-gray-400">Version 14.0 (Sonoma)</p>
+                                    <p className="text-[13px] text-gray-500 dark:text-gray-400">Made By BalaTBR</p>
                                 </div>
 
 

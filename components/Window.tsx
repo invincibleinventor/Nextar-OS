@@ -90,7 +90,7 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
         height: Math.round((screenheight - panelheight - dockheight) * 0.85),
       };
     }
-    return { width: 800, height: 600 };
+    return { width: 900, height: 600 };
   });
   const [previousstate, setpreviousstate] = useState({ position, size });
   const [isdragging, setisdragging] = useState(false);

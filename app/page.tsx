@@ -42,7 +42,7 @@ const Page = () => {
       isminimized: false,
       ismaximized: false,
       position: { top: 50, left: 50 },
-      size: { width: 1024, height: 768 },
+      size: { width: 900, height: 600 },
       props: {},
     });
   };
@@ -80,7 +80,7 @@ const Page = () => {
           isminimized: false,
           ismaximized: false,
           position: { top: 100, left: 100 },
-          size: { width: 800, height: 600 },
+          size: { width: 900, height: 600 },
           props: {}
         });
         hasLaunchedWelcome.current = true;

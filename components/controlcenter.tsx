@@ -48,7 +48,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
               <div className="grid grid-cols-2 gap-3">
 
 
-                <div className="bg-neutral-800/80 backdrop-blur-xl rounded-[20px] p-3 grid grid-cols-2 grid-rows-2 gap-2 aspect-square shadow-lg">
+                <div className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-3xl p-3 grid grid-cols-2 grid-rows-2 gap-2 aspect-square border border-neutral-200 dark:border-neutral-800">
                   <div className="flex items-center justify-center bg-blue-500 rounded-full aspect-square">
                     <FaPlane className="text-white" size={18} />
                   </div>
@@ -64,14 +64,14 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
                 </div>
 
 
-                <div className="bg-neutral-800/80 backdrop-blur-xl rounded-[20px] p-3 flex flex-col justify-between aspect-square shadow-lg">
+                <div className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-3xl p-3 flex flex-col justify-between aspect-square border border-neutral-200 dark:border-neutral-800">
                   <div className='flex items-center justify-center flex-1'>
                     <div className='text-center'>
-                      <p className="text-white text-sm font-medium">Not Playing</p>
-                      <p className="text-neutral-400 text-[10px]">Music</p>
+                      <p className="text-neutral-800 dark:text-white text-sm font-medium">Not Playing</p>
+                      <p className="text-neutral-700 dark:text-neutral-400 text-[10px]">Music</p>
                     </div>
                   </div>
-                  <div className="flex justify-center items-center gap-6 text-white pb-1">
+                  <div className="flex justify-center items-center gap-6 text-neutral-800 dark:text-neutral-200 pb-1">
                     <IoPlay className="opacity-50" size={24} />
                   </div>
                 </div>
@@ -80,19 +80,19 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-neutral-800/80 backdrop-blur-xl rounded-[20px] aspect-square flex items-center justify-center shadow-lg">
+                  <div className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-3xl p-3 flex items-center justify-center border border-neutral-200 dark:border-neutral-800">
                     <div className="bg-neutral-700/50 p-3 rounded-full">
                       <BsFillGridFill className="text-white" size={18} />
                     </div>
                   </div>
-                  <div className="bg-neutral-800/80 backdrop-blur-xl rounded-[20px] aspect-square flex items-center justify-center shadow-lg">
+                  <div className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-3xl p-3 flex items-center justify-center border border-neutral-200 dark:border-neutral-800">
                     <div className="bg-neutral-700/50 p-3 rounded-full">
                       <FaMoon className="text-white" size={18} />
                     </div>
                   </div>
                 </div>
-                <div className="bg-neutral-800/80 backdrop-blur-xl rounded-[20px] h-full flex items-center justify-center shadow-lg">
-                  <div className='flex flex-col items-center gap-1 text-white'>
+                <div className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-3xl p-3 h-full flex items-center justify-center border border-neutral-200 dark:border-neutral-800">
+                  <div className='flex flex-col items-center gap-1 text-neutral-800 dark:text-white'>
                     <FiCast size={20} />
                     <span className='text-[10px]'>Screen Mirroring</span>
                   </div>
@@ -109,25 +109,25 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
 
 
                 <div className="grid grid-cols-2 grid-rows-2 gap-3 h-36">
-                  <div className="bg-neutral-800/80 backdrop-blur-xl rounded-[20px] flex items-center justify-center shadow-lg active:bg-white/20 transition-colors">
-                    <IoFlashlight className="text-white" size={24} />
+                  <div className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-3xl flex items-center justify-center border border-neutral-200 dark:border-neutral-800 active:bg-white/20 transition-colors">
+                    <IoFlashlight className="text-neutral-800 dark:text-white" size={24} />
                   </div>
-                  <div className="bg-neutral-800/80 backdrop-blur-xl rounded-[20px] flex items-center justify-center shadow-lg active:bg-white/20 transition-colors">
-                    <IoStopwatch className="text-white" size={24} />
+                  <div className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-[20px] flex items-center justify-center border border-neutral-200 dark:border-neutral-800 active:bg-white/20 transition-colors">
+                    <IoStopwatch className="text-neutral-800 dark:text-white" size={24} />
                   </div>
-                  <div className="bg-neutral-800/80 backdrop-blur-xl rounded-[20px] flex items-center justify-center shadow-lg active:bg-white/20 transition-colors">
-                    <IoCalculator className="text-white" size={24} />
+                  <div className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-[20px] flex items-center justify-center border border-neutral-200 dark:border-neutral-800 active:bg-white/20 transition-colors">
+                    <IoCalculator className="text-neutral-800 dark:text-white" size={24} />
                   </div>
-                  <div className="bg-neutral-800/80 backdrop-blur-xl rounded-[20px] flex items-center justify-center shadow-lg active:bg-white/20 transition-colors">
-                    <IoCamera className="text-white" size={24} />
+                  <div className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-[20px] flex items-center justify-center border border-neutral-200 dark:border-neutral-800 active:bg-white/20 transition-colors">
+                    <IoCamera className="text-neutral-800 dark:text-white" size={24} />
                   </div>
                 </div>
               </div>
 
 
-              <div onClick={toggletheme} className="bg-neutral-800/80 backdrop-blur-xl rounded-[24px] p-4 flex items-center justify-center shadow-lg active:bg-white/20 transition-colors gap-3 cursor-pointer">
-                {theme == 'light' ? <FaSun className='text-white' size={20} /> : <FaMoon className="text-white" size={20} />}
-                <span className="text-white font-medium">Switch Theme</span>
+              <div onClick={toggletheme} className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-xl rounded-[24px] p-4 flex items-center justify-center border border-neutral-200 dark:border-neutral-800 active:bg-white/20 transition-colors gap-3 cursor-pointer">
+                {theme == 'light' ? <FaSun className='text-neutral-800 dark:text-white' size={20} /> : <FaMoon className="text-white" size={20} />}
+                <span className="text-neutral-800 dark:text-white font-medium">Switch Theme</span>
               </div>
 
             </div>
@@ -304,7 +304,7 @@ const CCSlider = ({ value, onchange, icon: Icon }: any) => {
   return (
     <div
       ref={ref}
-      className={`relative w-full h-36 bg-neutral-800/80 backdrop-blur-xl rounded-[20px] overflow-hidden flex flex-col justify-end shadow-lg cursor-ns-resize touch-none ${isdragging ? 'scale-[0.98]' : ''} transition-transform`}
+      className={`relative w-full h-36 bg-neutral-800/80 backdrop-blur-xl rounded-[20px] overflow-hidden flex flex-col justify-end cursor-ns-resize touch-none ${isdragging ? 'scale-[0.98]' : ''} transition-transform`}
       onPointerDown={handlepointerdown}
       onPointerMove={handlepointermove}
       onPointerUp={handlepointerup}
