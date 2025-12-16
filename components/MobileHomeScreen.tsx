@@ -49,6 +49,15 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
         a.id === 'finder' || a.id === 'safari' || a.id === 'mail' || a.id === 'settings'
     ).slice(0, 4);
 
+    const [width, setwidth] = useState(0);
+
+    React.useEffect(() => {
+        setwidth(window.innerWidth);
+        const handleResize = () => setwidth(window.innerWidth);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     return (
         <div className="relative w-full h-full overflow-hidden bg-transparent">
             <motion.div
@@ -57,28 +66,29 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                 animate={{ x: `-${page * 100}vw` }}
                 initial={{ x: 0 }}
                 transition={{
-                    type: reducemotion ? "tween" : "spring",
-                    stiffness: reducemotion ? undefined : 350,
-                    damping: reducemotion ? undefined : 30,
-                    mass: 1,
-                    duration: reducemotion ? 0.2 : undefined
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 30,
+                    mass: 0.8,
                 }}
                 drag="x"
-                dragConstraints={{ left: -window.innerWidth, right: 0 }}
-                dragElastic={0.15}
-                dragMomentum={true}
-                dragDirectionLock={false}
+                dragConstraints={{ left: -width, right: 0 }}
+                dragElastic={0.2}
+                dragMomentum={false}
                 onDragEnd={(_, info) => {
+                    const swipeThreshold = 50;
+                    const velocityThreshold = 500;
 
                     if (Math.abs(info.offset.y) > 40) return;
 
-
-                    if ((info.offset.x < -30 || (info.offset.x < -10 && info.velocity.x < -50)) && page === 0) {
-                        setpage(1);
-                    }
-
-                    else if ((info.offset.x > 30 || (info.offset.x > 10 && info.velocity.x > 50)) && page === 1) {
-                        setpage(0);
+                    if (page === 0) {
+                        if (info.offset.x < -swipeThreshold || info.velocity.x < -velocityThreshold) {
+                            setpage(1);
+                        }
+                    } else if (page === 1) {
+                        if (info.offset.x > swipeThreshold || info.velocity.x > velocityThreshold) {
+                            setpage(0);
+                        }
                     }
                 }}
             >
@@ -110,7 +120,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                         </div>
                     </div>
 
-                    <div className={`mx-auto mb-7 p-3 rounded-[25px] w-max flex items-center justify-between gap-4 transition-all duration-300 ${isoverlayopen ? 'bg-transparent' : 'dark:bg-black/20 bg-white/20 backdrop-blur-md shadow-lg border border-white/10'}`}>
+                    <div className={`mx-auto mb-7 p-3 rounded-[25px] w-max flex items-center justify-between gap-4 transition-all duration-300 ${isoverlayopen ? 'bg-transparent' : 'dark:bg-black/10 bg-white/10 backdrop-blur-sm shadow-lg border border-white/10'}`}>
                         {dockapps.map(app => (
                             <motion.button
                                 key={app.id}

@@ -18,9 +18,9 @@ export const WindowProvider = ({ children }: any) => {
 
       if (isMobile) {
         const minimizedprev = filtered.map(w => ({ ...w, isminimized: true }));
-        return [...minimizedprev, newwindow];
+        return [...minimizedprev, { ...newwindow, lastInteraction: Date.now() }];
       }
-      return [...filtered, newwindow];
+      return [...filtered, { ...newwindow, lastInteraction: Date.now() }];
     });
   };
 
@@ -33,11 +33,11 @@ export const WindowProvider = ({ children }: any) => {
         setactivewindow(null);
       } else {
         if (activewindow === id) {
-        
+
           const newidx = Math.max(0, idx - 1);
           if (updatedwindows[newidx]) {
             setactivewindow(updatedwindows[newidx].id);
-        
+
           } else {
             setactivewindow(null);
           }
@@ -58,7 +58,7 @@ export const WindowProvider = ({ children }: any) => {
 
       if (topmost) {
         return prevwindows.map((win) =>
-          win.appname === appname ? { ...win, isminimized: !win.isminimized } : win
+          win.appname === appname ? { ...win, isminimized: !win.isminimized, lastInteraction: Date.now() } : win
         );
       } else {
         const lastWindow = appwindows[appwindows.length - 1];
@@ -66,7 +66,7 @@ export const WindowProvider = ({ children }: any) => {
 
         return prevwindows.map((win) => {
           if (win.appname === appname) {
-            return { ...win, isminimized: false };
+            return { ...win, isminimized: false, lastInteraction: Date.now() };
           }
           if (isMobile) {
             return { ...win, isminimized: true };
@@ -83,10 +83,10 @@ export const WindowProvider = ({ children }: any) => {
 
       return prevWindows.map((window) => {
         if (window.id === id) {
-          return { ...window, ...updatedprops };
+          return { ...window, ...updatedprops, lastInteraction: Date.now() };
         }
 
-       
+
         if (isMobile && updatedprops.isminimized === false) {
           return { ...window, isminimized: true };
         }

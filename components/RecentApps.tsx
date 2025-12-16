@@ -109,7 +109,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                     >
                         <div className="flex flex-row gap-6 md:gap-10 h-[65vh] items-center">
                             <AnimatePresence mode='popLayout'>
-                                {[...windows].reverse().map((win: any) => {
+                                {[...windows].sort((a, b) => (b.lastInteraction || 0) - (a.lastInteraction || 0)).map((win: any) => {
                                     const appdata = apps.find(a => a.appname === win.appname);
                                     const icon = appdata?.icon || '';
 

@@ -2,11 +2,22 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useDevice } from '../DeviceContext';
 
-export default function Terminal() {
+export default function Terminal({ isFocused = true }: { isFocused?: boolean }) {
     const [history, sethistory] = useState(['Welcome to MacOS-Next Terminal v1.0', 'Type "help" for available commands.', '']);
     const [currline, setcurrline] = useState('');
     const endref = useRef<HTMLDivElement>(null);
     const inputref = useRef<HTMLInputElement>(null);
+
+    // Focus input when isFocused becomes true
+    useEffect(() => {
+        if (isFocused) {
+            // Small timeout to ensure render is complete
+            const timer = setTimeout(() => {
+                inputref.current?.focus();
+            }, 10);
+            return () => clearTimeout(timer);
+        }
+    }, [isFocused]);
 
     const handlekey = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter') {
@@ -55,7 +66,7 @@ export default function Terminal() {
 
     return (
         <div
-            className={`${ismobile?'pt-[50px]':''} h-full w-full bg-[#1e1e1e] text-[#cccccc] p-4 overflow-y-auto cursor-text'}`}
+            className={`${ismobile ? 'pt-[50px]' : ''} h-full w-full bg-[#1e1e1e] text-[#cccccc] p-4 overflow-y-auto cursor-text`}
             onClick={() => inputref.current?.focus()}
         >
             <div className="font-mono text-[13px] leading-relaxed">
@@ -85,7 +96,6 @@ export default function Terminal() {
                         value={currline}
                         onChange={(e) => setcurrline(e.target.value)}
                         onKeyDown={handlekey}
-                        autoFocus
                         spellCheck={false}
                     />
                 </div>

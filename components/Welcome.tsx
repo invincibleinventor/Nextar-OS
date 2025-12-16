@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useWindows } from './WindowContext';
 import { portfoliodata } from './portfolioData';
 import { apps } from './app';
-import { IoArrowForward, IoCheckmarkCircle, IoLogoApple, IoConstructOutline, IoAppsOutline, IoRocketOutline, IoLogoGithub } from "react-icons/io5";
+import { IoArrowForward, IoCheckmarkCircle, IoLogoApple, IoConstructOutline, IoAppsOutline, IoRocketOutline, IoDesktopOutline, IoLaptopOutline, IoPhonePortraitOutline, IoLogoGithub } from "react-icons/io5";
 
 export default function Welcome(props: any) {
     const { removewindow, addwindow } = useWindows();
@@ -36,6 +36,55 @@ export default function Welcome(props: any) {
                         </div>
                     </div>
 
+                </div>
+            )
+        },
+        {
+            title: "Adaptive Interface",
+            subtitle: "macOS on Desktop. iOS on Mobile.",
+            icon: IoPhonePortraitOutline, // Changed icon to represent mobile end-state or keep desktop? Let's use Phone to show the 'convergence' destination or just generic.
+            content: (
+                <div className="flex flex-col items-center justify-center h-full gap-8">
+                    <div className="flex items-end justify-center gap-6 h-32 relative">
+                        {/* Desktop */}
+                        <motion.div
+                            initial={{ scale: 0, opacity: 0, x: -50 }}
+                            animate={{ scale: 1, opacity: 1, x: 0 }}
+                            transition={{ duration: 0.6, delay: 0.2 }}
+                            className="flex flex-col items-center gap-2"
+                        >
+                            <div className="bg-gray-200 dark:bg-gray-700 p-3 rounded-2xl shadow-xl">
+                                <IoDesktopOutline size={64} className="text-gray-600 dark:text-gray-300" />
+                            </div>
+                            <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">macOS</span>
+                        </motion.div>
+
+                        {/* Arrow */}
+                        <motion.div
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ duration: 0.4, delay: 0.5 }}
+                            className="mb-8 text-gray-300 dark:text-gray-600"
+                        >
+                            <IoArrowForward size={24} />
+                        </motion.div>
+
+                        {/* Mobile */}
+                        <motion.div
+                            initial={{ scale: 0, opacity: 0, x: 50 }}
+                            animate={{ scale: 1, opacity: 1, x: 0 }}
+                            transition={{ duration: 0.6, delay: 0.6 }}
+                            className="flex flex-col items-center gap-2"
+                        >
+                            <div className="bg-gray-200 dark:bg-gray-700 p-2 rounded-[14px] shadow-xl mb-1">
+                                <IoPhonePortraitOutline size={32} className="text-gray-800 dark:text-gray-100" />
+                            </div>
+                            <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">iPhone</span>
+                        </motion.div>
+                    </div>
+                    <p className="text-center text-sm text-gray-500 dark:text-gray-400 max-w-xs leading-relaxed">
+                        The interface transforms from a powerful <strong>macOS Desktop</strong> environment to a native-feeling <strong>iPhone UI</strong> on smaller screens.
+                    </p>
                 </div>
             )
         },
