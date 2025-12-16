@@ -484,6 +484,19 @@ const generatefilesystem = (): filesystemitem[] => {
         fs.push({
             id: `${pid}-photo`,
             name: `${p.title}.png`,
+            parent: pid,
+            mimetype: 'image/png',
+            date: 'Today',
+            icon: <Image className='w-full h-full p-[6px] sm:w-full sm:h-full' src={`/appimages/${p.title.toLowerCase()}.png`} alt={`${p.title} live demo`} width={64} height={64} />,
+            size: '2.5 MB',
+            description: `Screenshot of ${p.title}.`,
+            link: `/appimages/${p.title.toLowerCase()}.png`,
+            content: `/appimages/${p.title.toLowerCase()}.png`
+        });
+
+        fs.push({
+            id: `${pid}-photo-icloud`,
+            name: `${p.title}.png`,
             parent: 'root-icloud',
             mimetype: 'image/png',
             date: 'Today',
