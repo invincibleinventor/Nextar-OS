@@ -203,7 +203,7 @@ const Page = () => {
 
             <div className={`absolute bottom-0 left-0 right-0 h-10 flex items-end justify-center z-[9999] ${(shownotificationcenter || showcontrolcenter) ? 'pointer-events-none' : 'pointer-events-auto'}`}>
               <motion.div
-                className="w-[140px] h-[5px] bg-neutral-400/90 dark:bg-white/80 rounded-full mb-[16px] cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.3)] backdrop-blur-md"
+                className="w-[140px] h-[21px] mb-0 cursor-pointer"
                 whileTap={{ scale: 0.95 }}
                 drag="y"
                 dragConstraints={{ top: 0, bottom: 0 }}
@@ -249,7 +249,9 @@ const Page = () => {
                     setwindows(windows.map((w: any) => ({ ...w, isminimized: true })));
                   }
                 }}
-              />
+              >
+                <div className="w-full h-[5px] mb-[16px] bg-neutral-400/90 dark:bg-white/80 rounded-full mb-0 cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.3)] backdrop-blur-md"></div>
+              </motion.div>
             </div>
           </div>
         )}
