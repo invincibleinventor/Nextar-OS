@@ -17,7 +17,7 @@ export default function Welcome(props: any) {
             subtitle: "A fully interactive web OS simulation.",
             icon: IoLogoApple,
             content: (
-                <div className="text-center space-y-4 max-w-md mx-auto h-full flex flex-col justify-center">
+                <div className="text-center space-y-8 max-w-md mx-auto h-full flex flex-col justify-center">
                     <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
                         Experience my portfolio through a familiar desktop interface. This isn&apos;t just a simple macos themed portfolio site - you can call it a full fledged operating system simulation built with Next JS, Framer Motion and TailwindCSS.
                     </p>
@@ -39,7 +39,7 @@ export default function Welcome(props: any) {
                         href="https://github.com/invincibleinventor/macos"
                         target="_blank"
                         rel="noreferrer"
-                        className="flex items-center justify-center gap-2 px-6 py-4 bg-blue-500/20 text-white rounded-xl text-sm font-medium  transition-colors mx-auto w-max shadow-lg"
+                        className="flex items-center justify-center gap-2 px-6 py-4 bg-blue-400 dark:bg-blue-500/20 text-white rounded-xl text-sm font-medium  transition-colors mx-auto w-max shadow-lg"
                     >
                         <IoLogoGithub size={18} />
                         <span>Check out GitHub Repo</span>
