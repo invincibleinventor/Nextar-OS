@@ -5,7 +5,7 @@ import { VscDebugStart, VscDebugStop, VscFiles, VscSearch, VscSourceControl, Vsc
 import { IoIosArrowForward, IoIosArrowDown } from "react-icons/io";
 import { useDevice } from '../DeviceContext';
 
-export default function Python() {
+export default function Python({ isFocused = true }: { isFocused?: boolean }) {
     const [code, setcode] = useState('print("Made with love by BalaTBR!")\n\n# Keep Building!\n\nfor i in range(5):\n    print(f"Count: {i}")');
     const [output, setoutput] = useState('');
     const [isrunning, setisrunning] = useState(false);
@@ -40,7 +40,7 @@ export default function Python() {
 
     return (
         <div className="flex flex-col h-full w-full  text-[#d4d4d4] font-sf overflow-hidden">
-            <div className={`h-[50px] bg-[#2d2d2d] border-b border-black/50 flex items-center justify-between px-4 shrink-0 shadow-sm z-20 ps-24`}>
+            <div className={`h-[50px] bg-[#2d2d2d] border-b border-black/50 flex items-center justify-between px-4 shrink-0 shadow-sm z-20 ${ismobile ? 'ps-4' : 'ps-24'}`}>
                 <div className="flex items-center gap-4">
                     <div className="flex items-center bg-[#3a3a3a] rounded-[4px] p-0.5 border border-white/5">
                         <button

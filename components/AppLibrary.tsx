@@ -63,7 +63,7 @@ const AppLibrary = () => {
     return (
         <div
             className="w-full h-full overflow-y-auto overflow-x-hidden pt-14 px-5 pb-32 scrollbar-hide select-none [&::-webkit-scrollbar]:hidden"
-            style={{ overscrollBehavior: 'contain', touchAction: 'pan-y', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            style={{ touchAction: 'pan-x pan-y', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
             <div className="relative w-full text-center mb-6">
                 <div className="relative w-full mx-auto bg-neutral-200/50 dark:bg-neutral-800/50 backdrop-blur-xl rounded-2xl h-10 flex items-center px-3">

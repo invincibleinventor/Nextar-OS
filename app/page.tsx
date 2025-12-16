@@ -203,7 +203,7 @@ const Page = () => {
                     <div className="w-14 h-14 relative mb-1 drop-shadow-md">
                       {item.icon ? (
                         <div className="w-full h-full">{item.icon}</div>
-                      ) :  <div className="w-full h-full bg-gray-400 rounded"></div>
+                      ) : <div className="w-full h-full bg-gray-400 rounded"></div>
                       }
                     </div>
                     <span className='text-[11px] w-full font-semibold text-white drop-shadow-md text-center break-words leading-tight line-clamp-2 px-1 rounded-sm group-hover:text-white'>{item.name}</span>
@@ -224,7 +224,7 @@ const Page = () => {
         {ismobile && (
           <div className="relative w-full h-full">
 
-            <div className={`absolute top-0 right-0 z-[10000] visible`}>
+            <div className={`absolute top-0 right-0 z-[9990] visible`}>
               <Control isopen={showcontrolcenter} onclose={() => setshowcontrolcenter(false)} ismobile={true} />
             </div>
 
@@ -243,13 +243,14 @@ const Page = () => {
             </main>
 
             {windows.length > 0 && (
-              <div className="absolute inset-0 z-40 pointer-events-none">
-                <div className="w-full h-full pointer-events-none">
+              <div className={`absolute inset-0 pointer-events-none ${showrecentapps ? 'z-[9992]' : 'z-40'}`}>
+                <div id="mobile-desktop" className="w-full h-full pointer-events-none">
                   {windows.map((window: any) => (
                     <Window
                       key={window.id}
                       {...window}
-                      shouldblur={!showcontrolcenter && !showrecentapps}
+                      shouldblur={showcontrolcenter || showrecentapps || shownotificationcenter}
+                      isRecentAppView={showrecentapps}
                       issystemgestureactive={issystemgestureactive}
                     />
                   ))}

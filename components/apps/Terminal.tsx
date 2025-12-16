@@ -14,6 +14,8 @@ export default function Terminal({ isFocused = true }: { isFocused?: boolean }) 
                 inputref.current?.focus();
             }, 10);
             return () => clearTimeout(timer);
+        } else {
+            inputref.current?.blur();
         }
     }, [isFocused]);
 
@@ -58,8 +60,10 @@ export default function Terminal({ isFocused = true }: { isFocused?: boolean }) 
     };
 
     useEffect(() => {
-        endref.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [history]);
+        if (isFocused) {
+            endref.current?.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [history, isFocused]);
     const ismobile = useDevice()
 
     return (

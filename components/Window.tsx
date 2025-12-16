@@ -1,5 +1,6 @@
 'use client'
 import React, { useState, useEffect, useRef, memo } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { useWindows } from './WindowContext';
 import { apps } from './data';
@@ -53,14 +54,26 @@ const MemoizedDynamicComponent = memo(
 );
 MemoizedDynamicComponent.displayName = 'MemoizedDynamicComponent';
 
-
-
-const Window = ({ id, appname, title, component, props, isminimized, ismaximized, shouldblur = true, issystemgestureactive = false, size: initialsize, position: initialposition }: any) => {
+const Window = ({ id, appname, title, component, props, isminimized, ismaximized, shouldblur = true, isRecentAppView = false, issystemgestureactive = false, size: initialsize, position: initialposition }: any) => {
 
   const { removewindow, updatewindow, activewindow, setactivewindow, windows } = useWindows();
   const { ismobile } = useDevice();
   const { reducemotion, reducetransparency } = useSettings();
   const app = apps.find((app) => app.appname === appname);
+
+
+
+  const [mounted, setmounted] = useState(false);
+  useEffect(() => setmounted(true), []);
+
+  const [portaltarget, setportaltarget] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (ismobile && mounted) {
+      const desktop = document.getElementById('mobile-desktop');
+      if (desktop) setportaltarget(desktop);
+    }
+  }, [ismobile, mounted]);
 
   const [position, setposition] = useState(() => {
     if (initialposition) return initialposition;
@@ -80,9 +93,9 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
     }
     return { top: 100, left: 100 };
   });
+
   const [size, setsize] = useState(() => {
     if (initialsize) return initialsize;
-
     if (app && (app.additionaldata as any) && (app.additionaldata as any).startlarge && typeof window !== 'undefined') {
       const screenwidth = window.innerWidth;
       const screenheight = window.innerHeight;
@@ -93,7 +106,8 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
     }
     return { width: 900, height: 600 };
   });
-  const [previousstate, setpreviousstate] = useState({ position, size });
+
+  const previousStateRef = useRef({ position, size });
   const [isdragging, setisdragging] = useState(false);
 
   const windowref = useRef(null);
@@ -112,6 +126,7 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
   const zindex = activewindow === id ? 1000 : 100 + myindex;
 
   useEffect(() => {
+
     if (ismobile) {
       if (typeof window !== 'undefined') {
         setposition({ top: 44, left: 0 });
@@ -120,20 +135,21 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
       return;
     }
     if (isminimized) {
+
       if (typeof window !== 'undefined') {
         const { innerWidth: screenwidth, innerHeight: screenheight } = window;
         if (!ismaximized) {
-          setpreviousstate({
+          previousStateRef.current = {
             position: positionref.current,
             size: sizeref.current
-          });
+          };
         }
         setposition({
           top: screenheight,
           left: (screenwidth - sizeref.current.width) / 2,
         });
       }
-    } else if (ismaximized) {
+
       if (typeof window !== 'undefined') {
         const { innerWidth: screenwidth, innerHeight: screenheight } = window;
         setposition({ top: panelheight + 5, left: 0 });
@@ -143,24 +159,67 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
         });
       }
     } else {
-      setposition(previousstate.position);
-      setsize(previousstate.size);
+      setposition(previousStateRef.current.position);
+      setsize(previousStateRef.current.size);
+    }
+  }, [isminimized, ismaximized, ismobile]);
+
+  useEffect(() => {
+    if (!ismobile || !isRecentAppView) {
+      if (ismobile && windowref.current) {
+        const el = windowref.current as HTMLElement;
+        el.style.top = '44px';
+        el.style.left = '0px';
+        el.style.width = window.innerWidth + 'px';
+        el.style.height = (window.innerHeight - 44) + 'px';
+        el.style.borderRadius = '0px';
+        el.style.transform = 'none';
+      }
+      return;
     }
 
-  }, [isminimized, ismaximized, ismobile]);
+    let animationFrameId: number;
+
+    const trackLayout = () => {
+      const slotId = `recent-app-slot-${id}`;
+      const slotElement = document.getElementById(slotId);
+      const windowElement = windowref.current as HTMLElement | null;
+
+      if (slotElement && windowElement) {
+        const rect = slotElement.getBoundingClientRect();
+
+        windowElement.style.top = `${rect.top}px`;
+        windowElement.style.left = `${rect.left}px`;
+        windowElement.style.width = `${rect.width}px`;
+        windowElement.style.height = `${rect.height}px`;
+        windowElement.style.borderRadius = '24px'; 
+        windowElement.style.transform = 'none';
+        }
+
+      animationFrameId = requestAnimationFrame(trackLayout);
+    };
+
+    trackLayout();
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [ismobile, isRecentAppView, id]);
+
 
   const handlemaximize = () => {
     if (!ismaximized) {
-      setpreviousstate({ position, size });
+      previousStateRef.current = { position, size };
       updatewindow(id, { ismaximized: true });
     } else {
       updatewindow(id, { ismaximized: false });
-      setposition(previousstate.position);
-      setsize(previousstate.size);
+      setposition(previousStateRef.current.position);
+      setsize(previousStateRef.current.size);
     }
   };
 
   const handledragstart = (e: any) => {
+
     if (e.detail === 2) return;
 
     const target = e.target as HTMLElement;
@@ -185,7 +244,7 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
     const clientx = 'touches' in e ? e.touches[0].clientX : e.clientX;
 
     if (wasmaximized) {
-      prevsize = previousstate.size;
+      prevsize = previousStateRef.current.size;
       dragoffsetx = prevsize.width / 2;
       dragoffsety = 20;
       startx = clientx;
@@ -198,8 +257,6 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
     }
 
     let lasttop = wasmaximized ? panelheight : position.top;
-
-
 
     const onmousemove = (moveevent: any) => {
       const movex = 'touches' in moveevent ? moveevent.touches[0].clientX : moveevent.clientX;
@@ -252,9 +309,8 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
       document.removeEventListener('touchmove', onmousemove);
       document.removeEventListener('touchend', onmouseup);
 
-
       if (!wasmaximized && lasttop <= panelheight) {
-        setpreviousstate({ position, size });
+        previousStateRef.current = { position, size };
         updatewindow(id, { ismaximized: true });
       } else if (wasmaximized && dragstarted) {
 
@@ -268,6 +324,7 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
   };
 
   const handleresizestart = (e: any, direction: any) => {
+
     e.preventDefault();
     e.stopPropagation();
 
@@ -331,29 +388,35 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
     document.addEventListener('touchend', onmouseup);
   };
 
-  return (
+  const content = (
     <motion.div
       ref={windowref}
       initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: isminimized ? 0 : 1, y: isminimized ? 400 : 0, scale: isminimized ? 0.7 : 1 }}
+      animate={{
+        opacity: (ismobile && isRecentAppView) ? 1 : (isminimized ? 0 : 1),
+        y: (ismobile && isRecentAppView) ? 0 : (isminimized ? 400 : 0),
+        scale: (ismobile && isRecentAppView) ? 1 : (isminimized ? 0.7 : 1)
+      }}
       exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
-
       transition={{
         type: "spring",
-        stiffness: 300,
-        damping: 30,
+        stiffness: 200,
+        damping: 25,
         mass: 0.8,
       }}
       className={`border dark:border-neutral-700 border-neutral-300 overflow-hidden flex flex-col ${app?.titlebarblurred
-        ? `dark:bg-opacity-80 absolute bg-opacity-80  dark:bg-neutral-900 bg-white ${shouldblur ? 'backdrop-blur-md' : ''}`
-        : `dark:bg-neutral-900 bg-white ${shouldblur ? 'backdrop-blur-sm' : ''}`}  absolute ${ismaximized || ismobile ? '' : 'rounded-2xl shadow-2xl'} ${isdragging ? 'cursor-grabbing' : 'cursor-default'} ${isminimized ? 'pointer-events-none' : 'pointer-events-auto'}`}
+        ? `dark:bg-opacity-80 bg-opacity-80  dark:bg-neutral-900 bg-white ${shouldblur ? 'backdrop-blur-md' : ''}`
+        : `dark:bg-neutral-900 bg-white ${shouldblur ? 'backdrop-blur-sm' : ''}`} ${ismaximized || ismobile ? '' : 'rounded-2xl shadow-2xl'} ${isdragging ? 'cursor-grabbing' : 'cursor-default'} ${(isminimized || (ismobile && shouldblur)) ? 'pointer-events-none' : 'pointer-events-auto'}
+        ${(ismobile && isRecentAppView) ? 'absolute inset-0 w-full h-full rounded-[24px]' : 'absolute'}`
+
+      }
       style={{
-        top: position?.top || 0,
-        left: ismaximized ? 0 : (position?.left || 0),
-        width: ismaximized ? '100vw' : (size?.width || 0),
-        height: size?.height || 0,
+        top: (ismobile && isRecentAppView) ? 0 : (position?.top || 0),
+        left: (ismobile && isRecentAppView) ? 0 : (ismaximized ? 0 : (position?.left || 0)),
+        width: (ismobile && isRecentAppView) ? '100%' : (ismaximized ? '100vw' : (size?.width || 0)),
+        height: (ismobile && isRecentAppView) ? '100%' : (size?.height || 0),
         zIndex: isminimized ? -1 : zindex,
-        willChange: 'transform, opacity',
+        willChange: 'transform, opacity, top, left, width, height',
       }}
       onMouseDown={(e) => {
         setactivewindow(id);
@@ -362,6 +425,7 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
         }
       }}
     >
+
       {!ismobile && (
         <div id="buttons" className="absolute top-[18px] left-4 z-50 flex flex-row items-center content-center space-x-[8px] group">
           <button
@@ -399,10 +463,11 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
       )}
 
       <div
-        className={`w-full h-full flex-1 overflow-hidden ${ismaximized || ismobile ? '' : ''} ${app?.titlebarblurred ? '' : 'bg-white  dark:bg-neutral-900'} ${(isminimized || issystemgestureactive) ? 'pointer-events-none' : 'pointer-events-auto'}`}
+        className={`w-full h-full flex-1 overflow-hidden ${ismaximized || ismobile ? '' : ''} ${app?.titlebarblurred ? '' : 'bg-white  dark:bg-neutral-900'} ${(isminimized || issystemgestureactive || (ismobile && shouldblur)) ? 'pointer-events-none' : 'pointer-events-auto'}`}
       >
-        <MemoizedDynamicComponent appname={app ? app.appname : ''} icon={app ? app.icon : ''} component={app?.componentname ? app.componentname : component} appprops={props} isFocused={activewindow === id} />
+        <MemoizedDynamicComponent appname={app ? app.appname : ''} icon={app ? app.icon : ''} component={app?.componentname ? app.componentname : component} appprops={props} isFocused={activewindow === id && !shouldblur} />
       </div>
+
 
       {!ismobile && (
         <>
@@ -442,6 +507,12 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
       )}
     </motion.div >
   );
+
+  if (ismobile && mounted && portaltarget) {
+    return createPortal(content, portaltarget);
+  }
+
+  return content;
 };
 
 Window.displayName = 'Window';

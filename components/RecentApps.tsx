@@ -5,50 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { useWindows } from './WindowContext';
 import { apps } from './data';
+import { useDevice } from './DeviceContext';
 
 
-const MemoizedDynamicComponent = memo(
-    ({ icon, component, appprops }: { icon: string, component: string; appname?: string, appprops: any }) => {
-        const [dynamiccomponent, setdynamiccomponent] = useState<any>(null);
-
-        useEffect(() => {
-            const loadcomponent = async () => {
-                try {
-
-                    const importedmodule = await import(`./${component}`);
-                    setdynamiccomponent(() => importedmodule.default || null);
-                } catch {
-                    try {
-
-                        const importedmodule = await import(`../components/${component}`);
-                        setdynamiccomponent(() => importedmodule.default || null);
-                    } catch {
-                        setdynamiccomponent(null);
-                    }
-                }
-            };
-            loadcomponent();
-        }, [component]);
-
-        if (!dynamiccomponent) {
-            return (
-                <div className="w-full h-full flex items-center justify-center bg-white/50 dark:bg-neutral-800/50">
-                    {icon ? <Image src={icon} width={64} height={64} className="w-16 h-16 opacity-50 grayscale" alt="App Icon" /> : <div className="text-xs opacity-50">Loading...</div>}
-                </div>
-            );
-        }
-
-        const Component = dynamiccomponent;
-
-        return (
-            <div className="w-full h-full pointer-events-none select-none overflow-hidden relative">
-                <div className="absolute inset-0 z-10" />
-                <Component {...appprops} isFocused={false} />
-            </div>
-        );
-    }
-);
-MemoizedDynamicComponent.displayName = 'MemoizedDynamicComponent';
 
 const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: () => void }) => {
     const { windows, removewindow, setactivewindow, updatewindow } = useWindows();
@@ -57,9 +16,10 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
 
     useEffect(() => {
         if (isopen) {
-            if (document.activeElement instanceof HTMLElement) {
+            if (typeof document !== 'undefined' && document.activeElement instanceof HTMLElement) {
                 document.activeElement.blur();
             }
+            if (typeof window !== 'undefined') window.scrollTo(0, 0);
 
             if (containerref.current) {
                 setTimeout(() => {
@@ -147,14 +107,12 @@ const AppCard = ({ win, icon, onkill, onopen }: any) => {
 
     return (
         <motion.div
-            layout="position"
             className="relative flex-shrink-0 w-[75vw] md:w-[45vw] lg:w-[350px] h-full flex flex-col"
             initial={{ opacity: 0, scale: 0.9, y: 50 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{
                 opacity: 0,
-                scale: 0.9,
-                y: -50,
+                scale: 0.5,
                 transition: { duration: 0.2 }
             }}
             drag="y"
@@ -184,7 +142,7 @@ const AppCard = ({ win, icon, onkill, onopen }: any) => {
             transition={{
                 type: "spring",
                 stiffness: 400,
-                damping: 30
+                damping: 35
             }}
         >
             <div className="flex items-center gap-2 mb-3 px-1 pointer-events-none">
@@ -195,12 +153,7 @@ const AppCard = ({ win, icon, onkill, onopen }: any) => {
             <div className="flex-1 w-full bg-white dark:bg-[#1c1c1e] rounded-[24px] overflow-hidden shadow-2xl ring-1 ring-white/10 relative group">
                 <div className="absolute inset-0 pointer-events-none ring-1 ring-inset ring-black/10 rounded-[24px] z-20" />
 
-                <MemoizedDynamicComponent
-                    icon={icon}
-                    component={win.component}
-                    appname={win.appname}
-                    appprops={win.props}
-                />
+                <div id={`recent-app-slot-${win.id}`} className="w-full h-full" />
             </div>
         </motion.div>
     );

@@ -49,50 +49,22 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
         a.id === 'finder' || a.id === 'safari' || a.id === 'mail' || a.id === 'settings'
     ).slice(0, 4);
 
-    const [width, setwidth] = useState(0);
-
-    React.useEffect(() => {
-        setwidth(window.innerWidth);
-        const handleresize = () => setwidth(window.innerWidth);
-        window.addEventListener('resize', handleresize);
-        return () => window.removeEventListener('resize', handleresize);
-    }, []);
 
     return (
         <div className="relative w-full h-full overflow-hidden bg-transparent">
-            <motion.div
-                className="flex w-[200vw] h-full"
-                style={{ willChange: 'transform', touchAction: 'pan-y' }}
-                animate={{ x: `-${page * 100}vw` }}
-                initial={{ x: 0 }}
-                transition={{
-                    type: "spring",
-                    stiffness: 400,
-                    damping: 40,
-                    mass: 0.5,
-                }}
-                drag="x"
-                dragConstraints={{ left: -width, right: 0 }}
-                dragElastic={0.05}
-                dragMomentum={false}
-                onDragEnd={(_, info) => {
-                    const swipethreshold = 30;  
-                    const velocitythreshold = 300; 
-
-                    if (Math.abs(info.offset.y) > 40) return;
-
-                    if (page === 0) {
-                        if (info.offset.x < -swipethreshold || info.velocity.x < -velocitythreshold) {
-                            setpage(1);
-                        }
-                    } else if (page === 1) {
-                                 if (info.offset.x > swipethreshold || info.velocity.x > velocitythreshold) {
-                            setpage(0);
-                        }
+            <div
+                className="flex w-full h-full overflow-x-auto snap-x snap-mandatory scrollbar-hide [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                style={{ scrollBehavior: 'smooth' }}
+                onScroll={(e) => {
+                    const scrollLeft = e.currentTarget.scrollLeft;
+                    const width = e.currentTarget.offsetWidth;
+                    const newPage = Math.round(scrollLeft / width);
+                    if (newPage !== page) {
+                        setpage(newPage);
                     }
                 }}
             >
-                <div className="w-[100vw] h-full flex flex-col pt-14 relative">
+                <div className="w-[100vw] h-full flex flex-col pt-14 relative snap-center flex-shrink-0">
                     <div className="flex-1 px-4">
                         <div className="grid grid-cols-4 gap-x-2 gap-y-5">
                             {gridapps.map(app => (
@@ -141,10 +113,10 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                     </div>
                 </div>
 
-                <div className="w-[100vw] h-full pt-0">
+                <div className="w-[100vw] h-full pt-0 snap-center flex-shrink-0">
                     <AppLibrary />
                 </div>
-            </motion.div>
+            </div>
 
             <div className={`absolute bottom-[140px] left-0 right-0 flex justify-center gap-2 z-20 pointer-events-none transition-opacity duration-300 ${isoverlayopen ? 'opacity-0' : 'opacity-100'}`}>
                 <div className={`w-2 h-2 rounded-full transition-all duration-300 ${page === 0 ? 'bg-white' : 'bg-white/30'}`} />
