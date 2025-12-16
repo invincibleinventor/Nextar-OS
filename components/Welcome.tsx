@@ -204,10 +204,10 @@ export default function Welcome(props: any) {
                     href="https://github.com/invincibleinventor/macos"
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center justify-center gap-2 px-6 py-4 bg-blue-400 dark:bg-blue-500/20 text-white rounded-xl text-sm font-medium  transition-colors w-max "
+                    className="flex items-center justify-center gap-2 px-6 py-4 bg-blue-400 dark:bg-blue-500/20 text-white rounded-xl text-xs font-medium  transition-colors w-max "
                 >
-                    <IoLogoGithub size={18} />
-                    <span>Check out GitHub Repo</span>
+                    <IoLogoGithub size={16} />
+                    <span>GitHub</span>
                 </a>
                 <div className="flex gap-2">
                 </div>
