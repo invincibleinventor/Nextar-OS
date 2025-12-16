@@ -6,7 +6,7 @@ import { PiThreadsLogo } from 'react-icons/pi';
 import { useDevice } from './DeviceContext';
 
 export default function Mail() {
-    const [showsidebar, setshowsidebar] = useState(true);
+    const [showsidebar, setshowsidebar] = useState(false);
     const ismobile  = useDevice()
 
     return (
