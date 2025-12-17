@@ -137,27 +137,20 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
     if (isminimized) {
 
       if (typeof window !== 'undefined') {
-        const { innerWidth: screenwidth, innerHeight: screenheight } = window;
+        // const { innerWidth: screenwidth, innerHeight: screenheight } = window;
         if (!ismaximized) {
           previousStateRef.current = {
             position: positionref.current,
             size: sizeref.current
           };
         }
-        setposition({
+        /* setposition({
           top: screenheight,
           left: (screenwidth - sizeref.current.width) / 2,
-        });
+        }); */
       }
 
-      if (typeof window !== 'undefined') {
-        const { innerWidth: screenwidth, innerHeight: screenheight } = window;
-        setposition({ top: panelheight + 5, left: 0 });
-        setsize({
-          width: screenwidth,
-          height: screenheight - panelheight - 5 - dockheight,
-        });
-      }
+
     } else {
       setposition(previousStateRef.current.position);
       setsize(previousStateRef.current.size);

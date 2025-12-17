@@ -466,7 +466,7 @@ export const ALL_MAILS: MailItem[] = [
         folder: 'about',
         category: 'About',
         sender: 'Bala TBR',
-        senderEmail: 'me@balatbr.com',
+        senderEmail: 'me@baladev.in',
         subject: 'Welcome to my Portfolio OS!',
         date: 'Just Now',
         iconType: 'image' as const,
@@ -525,7 +525,7 @@ export const getMails = (openInFinder: (path: string) => void): MailItem[] => {
             folder: 'about',
             category: 'About',
             sender: 'Bala TBR',
-            senderEmail: 'me@balatbr.com',
+            senderEmail: 'me@baladev.in',
             subject: 'Welcome to my Portfolio OS!',
             date: 'Just Now',
             iconType: 'icon',
@@ -666,7 +666,7 @@ export const getMails = (openInFinder: (path: string) => void): MailItem[] => {
             folder: 'skills',
             category: 'Skills',
             sender: 'System',
-            senderEmail: 'skills@balatbr.com',
+            senderEmail: 'skills@baladev.in',
             subject: 'Technical Skills & Stack',
             date: 'Updated',
             iconType: 'icon',
@@ -690,7 +690,7 @@ export const getMails = (openInFinder: (path: string) => void): MailItem[] => {
             folder: 'contact',
             category: 'Contact',
             sender: 'Bala TBR',
-            senderEmail: 'me@balatbr.com',
+            senderEmail: 'me@baladev.in',
             subject: 'Contact Information & Resume',
             date: '2 days ago',
             iconType: 'icon',
@@ -1048,7 +1048,7 @@ const resolveTarget = (itemOrId: string | filesystemitem): { appId?: string; pro
         };
     }
 
-    
+
     if (mimetype.startsWith('text/')) {
         return { appId: 'fileviewer', props: { content: file.content, title: file.name, type: file.mimetype }, title: file.name };
     }
@@ -1071,10 +1071,10 @@ export const openSystemItem = (
     if (!app) return;
 
     const existingWins = windows.filter(w => w.appname === app.appname);
-    const shouldFocusExisting = (!props || Object.keys(props).length === 0) || !app.multiwindow;
+     const shouldFocusExisting = !app.multiwindow;
 
     if (shouldFocusExisting && existingWins.length > 0) {
-        const win = existingWins[existingWins.length - 1]; // Focus last opened
+        const win = existingWins[existingWins.length - 1];
         updatewindow(win.id, { isminimized: false });
         setactivewindow(win.id);
         return;
