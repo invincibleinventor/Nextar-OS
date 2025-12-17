@@ -42,8 +42,17 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                     exit={{ opacity: 0, pointerEvents: 'none' }}
                     transition={{ duration: 0.2 }}
                 >
+                    <style>{`
+                        .scrollbar-hide::-webkit-scrollbar {
+                            display: none;
+                        }
+                        .scrollbar-hide {
+                            -ms-overflow-style: none;
+                            scrollbar-width: none;
+                        }
+                    `}</style>
                     <motion.div
-                        className="absolute backdrop-blur-sm inset-0 bg-[url('/bg.jpg')] dark:bg-[url('/bg-dark.jpg')] bg-cover bg-no-repeat"
+                        className="absolute backdrop-blur-sm inset-0 bg-[url('/bg.jpg')] bg-center dark:bg-[url('/bg-dark.jpg')] bg-cover bg-no-repeat"
                         onClick={onclose}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -144,6 +153,7 @@ const AppCard = ({ win, icon, onkill, onopen }: any) => {
                 stiffness: 400,
                 damping: 35
             }}
+            layout
         >
             <div className="flex items-center gap-2 mb-3 px-1 pointer-events-none">
                 {icon && <Image src={icon} width={32} height={32} className="w-8 h-8 drop-shadow-md" alt={win.title} />}
@@ -152,6 +162,8 @@ const AppCard = ({ win, icon, onkill, onopen }: any) => {
 
             <div className="flex-1 w-full bg-white dark:bg-[#1c1c1e] rounded-[24px] overflow-hidden shadow-2xl ring-1 ring-white/10 relative group">
                 <div className="absolute inset-0 pointer-events-none ring-1 ring-inset ring-black/10 rounded-[24px] z-20" />
+
+                <div className="absolute inset-0 z-[99999] bg-transparent cursor-grab active:cursor-grabbing" />
 
                 <div id={`recent-app-slot-${win.id}`} className="w-full h-full" />
             </div>

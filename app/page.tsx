@@ -94,7 +94,7 @@ const Page = () => {
 
     return (
       <motion.div
-        className="absolute top-0 left-0 right-0 h-11 z-[9999] flex items-center justify-between px-6 cursor-pointer bg-transparent backdrop-blur-md"
+        className="absolute top-0 left-0 right-0 h-11 z-[10000] flex items-center justify-between px-6 cursor-pointer bg-transparent backdrop-blur-md"
         drag="y"
         dragConstraints={{ top: 0, bottom: 0 }}
         onDragEnd={(_, info) => {
@@ -128,15 +128,16 @@ const Page = () => {
       <LockScreen />
 
       <div
-        className={`relative w-full h-full transition-all duration-500 ease-out
+        className={`relative w-full h-full transition-all duration-500 ease-out bg-center bg-cover bg-no-repeat bg-[url('/bg.jpg')] dark:bg-[url('/bg-dark.jpg')]
                     ${osstate === 'unlocked'
             ? 'opacity-100 scale-100'
-            : 'opacity-0 scale-[0.98] pointer-events-none'}`}
+            : osstate === 'booting' ? 'opacity-0 scale-100' : 'opacity-0 scale-[0.98] pointer-events-none'}`}
       >
         {!ismobile && (
           <>
             <Panel ontogglenotifications={() => setshownotificationcenter(prev => !prev)} />
             <main
+              id="desktop-main"
               className="absolute inset-0 pt-6 pb-16"
               onClick={() => {
                 if (shownotificationcenter) setshownotificationcenter(false);
@@ -224,7 +225,7 @@ const Page = () => {
         {ismobile && (
           <div className="relative w-full h-full">
 
-            <div className={`absolute top-0 right-0 z-[9990] visible`}>
+            <div className={`absolute top-0 right-0 z-[10001] visible`}>
               <Control isopen={showcontrolcenter} onclose={() => setshowcontrolcenter(false)} ismobile={true} />
             </div>
 
@@ -244,7 +245,7 @@ const Page = () => {
 
             {windows.length > 0 && (
               <div className={`absolute inset-0 pointer-events-none ${showrecentapps ? 'z-[9992]' : 'z-40'}`}>
-                <div id="mobile-desktop" className="w-full h-full pointer-events-none">
+                <div id="mobile-desktop" className="w-full h-full pointer-events-none overflow-hidden">
                   {windows.map((window: any) => (
                     <Window
                       key={window.id}

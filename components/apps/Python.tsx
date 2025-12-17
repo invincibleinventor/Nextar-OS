@@ -10,7 +10,7 @@ export default function Python({ isFocused = true }: { isFocused?: boolean }) {
     const [output, setoutput] = useState('');
     const [isrunning, setisrunning] = useState(false);
     const { ismobile } = useDevice();
-    const [showsidebar, setshowsidebar] = useState(true);
+    const [showsidebar, setshowsidebar] = useState(false);
 
     const runcode = async () => {
         setisrunning(true);

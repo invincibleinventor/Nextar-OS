@@ -159,7 +159,7 @@ export default function Welcome(props: any) {
         },
         {
             title: "About Me",
-            subtitle: "Administrator",
+            subtitle: "Bala TBR",
             icon: IoLogoApple,
             content: (
                 <div className="text-center space-y-3 max-w-md mx-auto h-full flex flex-col items-center justify-center">
@@ -207,57 +207,51 @@ export default function Welcome(props: any) {
     ];
 
     return (
-        <div className="flex flex-col h-full w-full bg-[#fbfbfd] dark:bg-[#1e1e1e] font-sf text-black dark:text-white overflow-y-auto overflow-x-hidden relative selection:bg-blue-500/30">
+        <div className="flex flex-col h-full w-full bg-[#fbfbfd] dark:bg-[#1e1e1e] font-sf text-black dark:text-white overflow-hidden relative selection:bg-blue-500/30">
             <div className="h-10 w-full shrink-0" />
 
-            <div className="flex-1 flex flex-col items-center justify-center p-8 relative z-10 w-full max-w-2xl mx-auto">
+            <div className="flex-1 flex flex-col items-center justify-center px-8 relative z-10 w-full max-w-4xl mx-auto overflow-hidden">
                 <AnimatePresence mode='wait'>
                     <motion.div
                         key={step}
-                        initial={{ opacity: 0, scale: 0.98 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 1.02 }}
-                        transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
-                        className="flex flex-col items-center w-full h-full"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                        className="flex flex-col items-center justify-center w-full h-full"
                     >
-                        <motion.div
-                            initial={{ y: 20, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            transition={{ delay: 0.1, duration: 0.5 }}
-                            className="text-7xl text-blue-500 mb-8 drop-shadow-2xl"
-                        >
-                            {React.createElement(steps[step].icon)}
-                        </motion.div>
+                        <div className="mb-4 text-[#007AFF] drop-shadow-sm shrink-0">
+                            {React.createElement(steps[step].icon, { size: 56 })}
+                        </div>
 
-                        <div className="text-center space-y-3 mb-12 max-w-lg">
-                            <h1 className="text-4xl font-semibold tracking-tight text-black dark:text-white">
+                        <div className="text-center space-y-2 mb-6 shrink-0 z-20">
+                            <h1 className="text-2xl md:text-3xl font-light tracking-tight text-black dark:text-white">
                                 {steps[step].title}
                             </h1>
-                            <p className="text-lg text-gray-500 dark:text-gray-400 font-normal">
+                            <p className="text-sm md:text-[15px] text-gray-500 dark:text-gray-400 font-normal">
                                 {steps[step].subtitle}
                             </p>
                         </div>
 
-                        <div className="flex-1 w-full overflow-y-auto px-4 pb-4 min-h-0 scrollbar-hide">
-                            <div className="w-full max-w-lg mx-auto">
-                                {steps[step].content}
-                            </div>
+                        <div className="w-full flex-1 flex flex-col items-center justify-center min-h-0 overflow-hidden">
+                            {steps[step].content}
                         </div>
                     </motion.div>
                 </AnimatePresence>
             </div>
 
-            <div className="h-24 shrink-0 flex items-center justify-between w-full mx-auto px-12 bg-[#fbfbfd] dark:bg-[#1e1e1e] z-20">
-                <a
-                    href="https://github.com/invincibleinventor/macos"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center justify-center gap-2 px-6 py-4 bg-neutral-800 dark:bg-neutral-500/20 text-white rounded-xl text-xs font-medium  transition-colors w-max "
+            <div className="h-20 shrink-0 flex items-center justify-between w-full px-10 bg-[#fbfbfd] dark:bg-[#1e1e1e] border-t border-black/5 dark:border-white/5 z-20">
+                <button
+                    onClick={() => step > 0 && setstep(step - 1)}
+                    className={`text-[#007AFF] text-[13px] font-medium px-4 py-2 rounded hover:bg-black/5 dark:hover:bg-white/10 transition-colors ${step === 0 ? 'opacity-0 pointer-events-none' : ''}`}
                 >
-                    <IoLogoGithub size={16} />
-                    <span>GitHub</span>
-                </a>
-                <div className="flex gap-2">
+                    Go Back
+                </button>
+
+                <div className="flex gap-1.5">
+                    {steps.map((_, i) => (
+                        <div key={i} className={`w-2 h-2 rounded-full transition-colors ${i === step ? 'bg-[#007AFF]' : 'bg-gray-300 dark:bg-zinc-700'}`} />
+                    ))}
                 </div>
 
                 <button
@@ -286,13 +280,9 @@ export default function Welcome(props: any) {
                             }
                         }
                     }}
-                    className="flex items-center gap-2 bg-[#007AFF] hover:bg-[#0062cc] active:bg-[#0051a8] text-white px-8 py-3 rounded-xl text-[15px] font-semibold transition-all shadow-[0_2px_12px_rgba(0,122,255,0.25)] hover:shadow-[0_4px_16px_rgba(0,122,255,0.4)] active:scale-95 active:shadow-sm"
+                    className="flex items-center gap-2 bg-[#007AFF] hover:bg-[#0062cc] active:bg-[#0051a8] text-white px-6 py-1.5 rounded-full text-[13px] font-medium transition-all shadow-sm active:scale-95 active:shadow-none"
                 >
-                    {step < steps.length - 1 ? (
-                        <>Continue</>
-                    ) : (
-                        <div>Get Started</div>
-                    )}
+                    {step < steps.length - 1 ? 'Continue' : 'Get Started'}
                 </button>
             </div>
         </div>

@@ -28,6 +28,7 @@ export default function LockScreen() {
             setosstate('unlocked');
         } else {
             setshaking(true);
+            sethint(true);
             setTimeout(() => {
                 setshaking(false);
                 setpassword('');
@@ -55,7 +56,7 @@ export default function LockScreen() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0, y: -50, scale: 1.02, transition: { duration: 0.4 } }}
-                    className="fixed inset-0 bg-cover bg-no-repeat dark:bg-[url('/bg-dark.jpg')] bg-[url('/bg.jpg')] z-[9990] flex flex-col items-center text-white select-none"
+                    className="fixed inset-0 bg-cover bg-center bg-no-repeat dark:bg-[url('/bg-dark.jpg')] bg-[url('/bg.jpg')] z-[9990] flex flex-col items-center text-white select-none"
 
                 >
                     {!ismobile && <div className="absolute inset-0 bg-black/20 backdrop-blur-[80px]" />}
@@ -71,7 +72,7 @@ export default function LockScreen() {
                                 <div className="w-24 h-24 rounded-full mb-5 shadow-2xl relative group overflow-hidden border border-white/10">
                                     <Image src="/pfp.png" width={96} height={96} className="w-full h-full object-cover" alt="User Profile" />
                                 </div>
-                                <div className="text-xl text-white font-semibold mb-5 drop-shadow-md tracking-wide">Administrator</div>
+                                <div className="text-xl text-white font-semibold mb-5 drop-shadow-md tracking-wide">Bala TBR</div>
 
                                 <motion.form
                                     onSubmit={handlelogin}
@@ -89,13 +90,16 @@ export default function LockScreen() {
                                             autoFocus
                                             onBlur={(e) => e.target.focus()}
                                         />
-                                        <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 text-white/30 hover:text-white transition-opacity opacity-0 group-hover:opacity-100 focus:opacity-100">
+                                        <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-opacity">
                                             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                                         </button>
                                     </div>
                                 </motion.form>
                                 <div className="mt-8 text-white/50 text-[11px] font-medium cursor-pointer hover:text-white transition-colors flex flex-col items-center gap-2">
-                                    <span>Touch ID or Enter Password</span>
+                                    <span>Hit Enter - There's no password!</span>
+                                    {hint && (
+                                        <span className="text-white/80 font-semibold animate-pulse">Hint: user</span>
+                                    )}
                                 </div>
                             </div>
                         </div>

@@ -3,13 +3,17 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useDevice } from '../DeviceContext';
 
 export default function Terminal({ isFocused = true }: { isFocused?: boolean }) {
+    const { ismobile } = useDevice();
     const [history, sethistory] = useState(['Welcome to MacOS-Next Terminal v1.0', 'Type "help" for available commands.', '']);
     const [currline, setcurrline] = useState('');
+    const containerref = useRef<HTMLDivElement>(null);
     const endref = useRef<HTMLDivElement>(null);
     const inputref = useRef<HTMLInputElement>(null);
+    
+    const [canedit, setcanedit] = useState(!ismobile);
 
     useEffect(() => {
-        if (isFocused) {
+        if (isFocused && !ismobile) {
             const timer = setTimeout(() => {
                 inputref.current?.focus();
             }, 10);
@@ -17,7 +21,7 @@ export default function Terminal({ isFocused = true }: { isFocused?: boolean }) 
         } else {
             inputref.current?.blur();
         }
-    }, [isFocused]);
+    }, [isFocused, ismobile]);
 
     const handlekey = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter') {
@@ -60,16 +64,19 @@ export default function Terminal({ isFocused = true }: { isFocused?: boolean }) 
     };
 
     useEffect(() => {
-        if (isFocused) {
-            endref.current?.scrollIntoView({ behavior: 'smooth' });
+        if (isFocused && containerref.current) {
+            containerref.current.scrollTop = containerref.current.scrollHeight;
         }
     }, [history, isFocused]);
-    const ismobile = useDevice()
 
     return (
         <div
-            className={`${ismobile ? 'pt-[50px]' : ''} h-full w-full bg-[#1e1e1e] text-[#cccccc] p-4 overflow-y-auto cursor-text`}
-            onClick={() => inputref.current?.focus()}
+            ref={containerref}
+            className={`h-full ${ismobile?'':'pt-[50px]'} w-full bg-[#1e1e1e] text-[#cccccc] p-4 overflow-y-auto cursor-text`}
+            onClick={() => {
+                if (ismobile) setcanedit(true);
+                inputref.current?.focus();
+            }}
         >
             <div className="font-mono text-[13px] leading-relaxed">
                 {history.map((line, i) => (
@@ -99,6 +106,7 @@ export default function Terminal({ isFocused = true }: { isFocused?: boolean }) 
                         onChange={(e) => setcurrline(e.target.value)}
                         onKeyDown={handlekey}
                         spellCheck={false}
+                        readOnly={!canedit && ismobile}
                     />
                 </div>
                 <div ref={endref} />

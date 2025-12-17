@@ -54,7 +54,7 @@ const MemoizedDynamicComponent = memo(
 );
 MemoizedDynamicComponent.displayName = 'MemoizedDynamicComponent';
 
-const Window = ({ id, appname, title, component, props, isminimized, ismaximized, shouldblur = true, isRecentAppView = false, issystemgestureactive = false, size: initialsize, position: initialposition }: any) => {
+const Window = ({ id, appname, title, component, props, isminimized, ismaximized, shouldblur = false, isRecentAppView = false, issystemgestureactive = false, size: initialsize, position: initialposition }: any) => {
 
   const { removewindow, updatewindow, activewindow, setactivewindow, windows } = useWindows();
   const { ismobile } = useDevice();
@@ -192,9 +192,9 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
         windowElement.style.left = `${rect.left}px`;
         windowElement.style.width = `${rect.width}px`;
         windowElement.style.height = `${rect.height}px`;
-        windowElement.style.borderRadius = '24px'; 
+        windowElement.style.borderRadius = '24px';
         windowElement.style.transform = 'none';
-        }
+      }
 
       animationFrameId = requestAnimationFrame(trackLayout);
     };
@@ -400,28 +400,40 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
       exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
       transition={{
         type: "spring",
-        stiffness: 200,
-        damping: 25,
-        mass: 0.8,
+        stiffness: 300,
+        damping: 30,
+        mass: 1,
       }}
       className={`border dark:border-neutral-700 border-neutral-300 overflow-hidden flex flex-col ${app?.titlebarblurred
-        ? `dark:bg-opacity-80 bg-opacity-80  dark:bg-neutral-900 bg-white ${shouldblur ? 'backdrop-blur-md' : ''}`
-        : `dark:bg-neutral-900 bg-white ${shouldblur ? 'backdrop-blur-sm' : ''}`} ${ismaximized || ismobile ? '' : 'rounded-2xl shadow-2xl'} ${isdragging ? 'cursor-grabbing' : 'cursor-default'} ${(isminimized || (ismobile && shouldblur)) ? 'pointer-events-none' : 'pointer-events-auto'}
+        ? `dark:bg-opacity-80 bg-opacity-80 dark:bg-neutral-900 bg-white backdrop-blur-xl`
+        : `dark:bg-neutral-900 bg-white backdrop-blur-sm`
+        } ${ismaximized || ismobile ? '' : 'rounded-2xl shadow-2xl'} ${isdragging ? 'cursor-grabbing' : 'cursor-default'} ${(isminimized || shouldblur || isRecentAppView) ? 'pointer-events-none' : 'pointer-events-auto'}
         ${(ismobile && isRecentAppView) ? 'absolute inset-0 w-full h-full rounded-[24px]' : 'absolute'}`
 
       }
       style={{
-        top: (ismobile && isRecentAppView) ? 0 : (position?.top || 0),
-        left: (ismobile && isRecentAppView) ? 0 : (ismaximized ? 0 : (position?.left || 0)),
-        width: (ismobile && isRecentAppView) ? '100%' : (ismaximized ? '100vw' : (size?.width || 0)),
-        height: (ismobile && isRecentAppView) ? '100%' : (size?.height || 0),
+        top: (ismobile && isRecentAppView) ? 0 : (ismobile ? 44 : (ismaximized ? 35 : (position?.top || 0))),
+        left: (ismobile && isRecentAppView) ? 0 : (ismobile ? 0 : (ismaximized ? 0 : (position?.left || 0))),
+        width: (ismobile && isRecentAppView) ? '100%' : (ismobile ? '100vw' : (ismaximized ? '100vw' : (size?.width || 0))),
+        height: (ismobile && isRecentAppView) ? '100%' : (ismobile ? 'calc(100vh - 44px)' : (ismaximized ? 'calc(100vh - 105px)' : (size?.height || 0))),
         zIndex: isminimized ? -1 : zindex,
         willChange: 'transform, opacity, top, left, width, height',
+        pointerEvents: (shouldblur || isRecentAppView || isminimized || issystemgestureactive) ? 'none' : 'auto'
       }}
       onMouseDown={(e) => {
+        if (shouldblur || isRecentAppView || isminimized || issystemgestureactive) return;
         setactivewindow(id);
         if (!ismobile) {
           handledragstart(e)
+        }
+      }}
+      onDoubleClick={(e) => {
+        if (shouldblur || isRecentAppView || isminimized || issystemgestureactive) return;
+        if (!ismobile) {
+          const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+          if (e.clientY - rect.top <= 50) {
+            handlemaximize();
+          }
         }
       }}
     >
@@ -463,9 +475,13 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
       )}
 
       <div
-        className={`w-full h-full flex-1 overflow-hidden ${ismaximized || ismobile ? '' : ''} ${app?.titlebarblurred ? '' : 'bg-white  dark:bg-neutral-900'} ${(isminimized || issystemgestureactive || (ismobile && shouldblur)) ? 'pointer-events-none' : 'pointer-events-auto'}`}
+        className={`w-full h-full flex-1 overflow-hidden ${ismaximized || ismobile ? '' : ''} ${app?.titlebarblurred ? '' : 'bg-white  dark:bg-neutral-900'} ${(isminimized || issystemgestureactive || shouldblur || isRecentAppView) ? 'pointer-events-none' : 'pointer-events-auto'}`}
       >
         <MemoizedDynamicComponent appname={app ? app.appname : ''} icon={app ? app.icon : ''} component={app?.componentname ? app.componentname : component} appprops={props} isFocused={activewindow === id && !shouldblur} />
+
+        {((ismobile && shouldblur && !isRecentAppView) || issystemgestureactive) && (
+          <div className="absolute inset-0 z-[9999] bg-transparent w-full h-full pointer-events-auto" />
+        )}
       </div>
 
 
@@ -482,11 +498,11 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
           <div
             className="absolute top-0 left-0 w-[2px] h-full cursor-ew-resize z-50"
             onMouseDown={(e) => handleresizestart(e, 'left')}
-          ></div>
+          />
           <div
             className="absolute top-0 right-0 w-[2px] h-full cursor-ew-resize z-50"
             onMouseDown={(e) => handleresizestart(e, 'right')}
-          ></div>
+          />
           <div
             className="absolute w-3 h-3 -left-[3px] -top-[3px] cursor-nwse-resize z-50"
             onMouseDown={(e) => handleresizestart(e, 'top-left')}

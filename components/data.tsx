@@ -14,7 +14,7 @@ import {
     IoCloseOutline, IoFolderOutline, IoDocumentTextOutline, IoAppsOutline,
     IoGridOutline, IoListOutline, IoChevronBack, IoChevronForward,
     IoSearch, IoGlobeOutline, IoInformationCircleOutline,
-    IoCodeOutline
+    IoCodeOutline, IoMailOutline, IoPersonCircleOutline, IoFlagOutline, IoSchoolOutline, IoConstructOutline, IoFolderOpenOutline
 } from "react-icons/io5";
 
 export interface appdata {
@@ -49,7 +49,7 @@ export const personal = {
     personal: {
         name: "Bala TBR",
         role: "Second Year Comp Sci Student - Next.JS Full Stack Developer",
-        bio: "I'm a passionate geek from India studying second year computer science engineering that loves to tinker with frontend technologies. I'm an ardent lover of Linux and FOSS principles. Self-taught web developer, specializing in Next.js and TailwindCSS. I use Arch Linux btw.",
+        bio: "Second-year Computer Science undergraduate at SASTRA Deemed to be University with hands-on experience building and deploying full-stack web applications used by real users. Strong in Next.js, PostgreSQL, and document processing systems. Actively seeking software engineering internships.",
         location: "India",
         username: "invincibleinventor",
         email: "invincibleinventor@gmail.com",
@@ -59,12 +59,20 @@ export const personal = {
             linkedin: "https://www.linkedin.com/in/balasubramaniantbr/"
         }
     },
+    education: [
+        {
+            degree: "Bachelor Of Technology - Computer Science",
+            institution: "SASTRA Deemed To Be University",
+            year: "2024 - 2028",
+            grade: "CGPA: 7.64"
+        }
+    ],
     projects: [
         {
             title: "Falar",
             type: "Open Source",
             date: 2022,
-            desc: "A content publishing platform for sharing written works publicly.",
+            desc: "Built and deployed a full-stack social platform with authentication, content posting, and media uploads using Next.js and PostgreSQL. Integrated Google OAuth and Amazon S3. Designed relational schemas and end-to-end features.",
             stack: ["Next.js", "Supabase", "TailwindCSS", "Amazon S3"],
             link: "https://falarapp.vercel.app",
             github: "https://github.com/invincibleinventor/falar",
@@ -74,7 +82,7 @@ export const personal = {
             title: "MacOS-Next",
             date: 2023,
             type: "Open Source",
-            desc: "A simulation of macOS Sonoma UI in the web. Features dock, window management, and animations.",
+            desc: "Built a macOS-style interactive portfolio with window management on desktop and a responsive convergent iOS-style UI on mobile. Implemented custom animations and responsive transitions using Framer Motion and GSAP.",
             stack: ["Next.js", "TailwindCSS"],
             link: "https://baladev.in",
             github: "https://github.com/invincibleinventor/macos",
@@ -134,7 +142,7 @@ export const personal = {
             title: "SquadSearch",
             date: 2025,
             type: "Open Source",
-            desc: "A matchmaking platform for teams and TLs to find and assemble their perfect squad for hackathons or internal hirings.",
+            desc: "Developed an anonymous-first hiring platform generating candidate summaries using AI from resumes and GitHub data to reduce bias. Built swipe-based shortlisting and a secure invite-only contact reveal workflow.",
             stack: ["Next.js", "Supabase", "GSAP", "TailwindCSS", "LLMs", "FastAPI", "SMTP", "Python"],
             link: "https://squadsearch.vercel.app",
             github: "https://github.com/invincibleinventor/squadsearch",
@@ -144,8 +152,8 @@ export const personal = {
             title: "Sastracker",
             date: 2025,
             type: "Open Source",
-            desc: "A Modern PyQDB for SASTRA Students",
-            stack: ["Next.JS", "Supabase", "LLMs", "TailwindCSS", "FastAPI"],
+            desc: "Built a system used by 500+ students to convert question paper PDFs into a structured, searchable database, handling multi-page and inconsistent formats. Implemented LLM-assisted extraction with fallbacks, fast search, AI-assisted solving, and community-contributed answers.",
+            stack: ["Next.js", "Supabase", "LLMs", "TailwindCSS", "FastAPI"],
             link: "https://sastracker.vercel.app",
             github: "https://github.com/invincibleinventor/sastracker",
             icon: <FaReact className="text-blue-500" />
@@ -291,6 +299,7 @@ export const apps: appdata[] = [
         multiwindow: false,
         titlebarblurred: false,
         pinned: false,
+        defaultsize: { width: 850, height: 550 }
     },
     {
         id: 'fileviewer',
@@ -433,6 +442,230 @@ export const sidebaritems = [
     }
 ];
 
+// Mail Types and Data
+export interface MailItem {
+    id: string;
+    folder: string;
+    category: string;
+    sender: string;
+    senderEmail: string;
+    subject: string;
+    date: string;
+    iconType: 'image' | 'icon';
+    iconSrc?: string;
+    icon?: React.ElementType;
+    preview: string;
+    content: React.ReactNode;
+}
+
+export const ALL_MAILS: MailItem[] = [
+    {
+        id: 'about-welcome',
+        folder: 'about',
+        category: 'About',
+        sender: 'Bala TBR',
+        senderEmail: 'me@balatbr.com',
+        subject: 'Welcome to my Portfolio OS!',
+        date: 'Just Now',
+        iconType: 'icon',
+        icon: IoPersonCircleOutline,
+        preview: 'Thanks for stopping by. I am a Second-year Computer Science undergraduate...',
+        content: (
+            <div className="space-y-4 text-sm leading-relaxed text-black dark:text-white">
+                <p>Hi there,</p>
+                <p>Welcome to <strong>MacOS-Next</strong>! I built this "Portfolio OS" to demonstrate the power of modern web technologies.</p>
+                <p><strong>About Me:</strong></p>
+                <p>{personal.personal.bio}</p>
+                <p>Feel free to explore the apps, check out my projects in the "Projects" folder, or read my latest thoughts in "Blog".</p>
+                <p>Best,<br />Bala</p>
+            </div>
+        )
+    },
+    ...personal.projects.map(proj => ({
+        id: `proj-${proj.title}`,
+        folder: 'projects',
+        category: 'Projects',
+        sender: 'GitHub',
+        senderEmail: 'notifications@github.com',
+        subject: `Project Update: ${proj.title}`,
+        date: 'Yesterday',
+        iconType: 'image' as const,
+        iconSrc: `/appimages/${proj.title.toLowerCase()}.png`,
+        preview: `Repository update for ${proj.title}. ${proj.desc}`,
+        content: (
+            <div className="space-y-4 text-sm leading-relaxed text-black dark:text-white">
+                <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-black/5 dark:border-white/10">
+                    <div className="w-16 flex  shrink-0 h-16 bg-white dark:bg-black rounded-lg flex items-center justify-center overflow-hidden shadow-sm border border-black/5">
+                        <Image src={`/appimages/${proj.title.toLowerCase()}.png`} width={64} height={64} alt={proj.title} className="w-full flex shrink-0 h-full object-cover" />
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-lg">{proj.title}</h3>
+                        <p className="text-xs text-gray-500">{proj.stack.join(' • ')}</p>
+                    </div>
+                </div>
+                <p><strong>Description:</strong></p>
+                <p>{proj.desc}</p>
+                <p><strong>Tech Stack:</strong> {proj.stack.join(', ')}</p>
+                <div className="pt-4 flex gap-3">
+                    <a href={proj.link || '#'} target="_blank" rel="noreferrer" className="inline-block px-4 py-2 bg-[#007AFF] text-white rounded-md text-xs font-semibold hover:bg-[#0062cc] transition shadow-sm">
+                        View Project
+                    </a>
+                 
+                </div>
+            </div>
+        )
+    })),
+  ];
+
+export const getMails = (openInFinder: (path: string) => void): MailItem[] => {
+    return [
+        {
+            id: 'about-welcome',
+            folder: 'about',
+            category: 'About',
+            sender: 'Bala TBR',
+            senderEmail: 'me@balatbr.com',
+            subject: 'Welcome to my Portfolio OS!',
+            date: 'Just Now',
+            iconType: 'icon',
+            icon: IoPersonCircleOutline,
+            preview: 'Thanks for stopping by. I am a Second-year Computer Science undergraduate...',
+            content: (
+                <div className="space-y-4 text-sm leading-relaxed text-black dark:text-white">
+                    <p>Hi there,</p>
+                    <p>Welcome to <strong>MacOS-Next</strong>! I built this "Portfolio OS" to demonstrate the power of modern web technologies.</p>
+                    <p><strong>About Me:</strong></p>
+                    <p>{personal.personal.bio}</p>
+                    <p>Feel free to explore the apps, check out my projects in the "Projects" folder, or read my latest thoughts in "Blog".</p>
+                    <p>Best,<br />Bala</p>
+                </div>
+            )
+        },
+        ...personal.projects.map(proj => ({
+            id: `proj-${proj.title}`,
+            folder: 'projects',
+            category: 'Projects',
+            sender: 'GitHub',
+            senderEmail: 'notifications@github.com',
+            subject: `Project Update: ${proj.title}`,
+            date: 'Yesterday',
+            iconType: 'image' as const,
+            iconSrc: `/appimages/${proj.title.toLowerCase()}.png`,
+            preview: `Repository update for ${proj.title}. ${proj.desc}`,
+            content: (
+                <div className="space-y-4 text-sm leading-relaxed text-black dark:text-white">
+                    <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-black/5 dark:border-white/10">
+                        <div className="w-16 h-16 bg-white dark:bg-black rounded-lg flex items-center justify-center overflow-hidden shadow-sm border border-black/5">
+                            <Image src={`/appimages/${proj.title.toLowerCase()}.png`} width={64} height={64} alt={proj.title} className="w-full h-full object-cover" />
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-lg">{proj.title}</h3>
+                            <p className="text-xs text-gray-500">{proj.stack.join(' • ')}</p>
+                        </div>
+                    </div>
+                    <p><strong>Description:</strong></p>
+                    <p>{proj.desc}</p>
+                    <p><strong>Tech Stack:</strong> {proj.stack.join(', ')}</p>
+                    <div className="pt-4 flex gap-3">
+                        <a href={proj.link || '#'} target="_blank" rel="noreferrer" className="inline-block px-4 py-2 bg-[#007AFF] text-white rounded-md text-xs font-semibold hover:bg-[#0062cc] transition shadow-sm">
+                            View Project
+                        </a>
+                        <button
+                            onClick={() => openInFinder(proj.title)}
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-white/10 text-black dark:text-white rounded-md text-xs font-semibold hover:bg-gray-200 dark:hover:bg-white/20 transition"
+                        >
+                            <IoFolderOpenOutline size={14} />
+                            View in Finder
+                        </button>
+                    </div>
+                </div>
+            )
+        })),
+        {
+            id: 'education-info',
+            folder: 'education',
+            category: 'Education',
+            sender: 'University',
+            senderEmail: 'edu@university.edu',
+            subject: 'Education History',
+            date: 'See Details',
+            iconType: 'icon',
+            icon: IoSchoolOutline,
+            preview: 'Bachelor of Technology details...',
+            content: (
+                <div className="space-y-4 text-sm leading-relaxed text-black dark:text-white">
+                    <h3 className="font-bold text-lg border-b border-gray-200 dark:border-white/10 pb-2">Education</h3>
+                    <div className="space-y-4">
+                        {(personal.education || []).map((edu: any, idx: number) => (
+                            <div key={idx}>
+                                <div className="font-semibold text-base">{edu.degree}</div>
+                                <div className="text-gray-500">{edu.institution}</div>
+                                <div className="text-xs text-gray-400">{edu.year}</div>
+                                {edu.grade && <div className="text-xs text-gray-500 mt-1">{edu.grade}</div>}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )
+        },
+        {
+            id: 'skills-info',
+            folder: 'skills',
+            category: 'Skills',
+            sender: 'System',
+            senderEmail: 'skills@balatbr.com',
+            subject: 'Technical Skills & Stack',
+            date: 'Updated',
+            iconType: 'icon',
+            icon: IoConstructOutline,
+            preview: 'Overview of technical proficiencies...',
+            content: (
+                <div className="space-y-4 text-sm leading-relaxed text-black dark:text-white">
+                    <h3 className="font-bold text-lg border-b border-gray-200 dark:border-white/10 pb-2">Technical Skills</h3>
+                    <div className="flex flex-wrap gap-2">
+                        {personal.skills.map((skill: string, idx: number) => (
+                            <span key={idx} className="px-3 py-1 bg-gray-100 dark:bg-white/10 rounded-full text-xs font-medium border border-black/5 dark:border-white/5">
+                                {skill}
+                            </span>
+                        ))}
+                    </div>
+                </div>
+            )
+        },
+        {
+            id: 'contact-info',
+            folder: 'contact',
+            category: 'Contact',
+            sender: 'Bala TBR',
+            senderEmail: 'me@balatbr.com',
+            subject: 'Contact Information & Resume',
+            date: '2 days ago',
+            iconType: 'icon',
+            icon: IoPersonCircleOutline,
+            preview: 'Here is how you can reach me...',
+            content: (
+                <div className="space-y-6 text-sm leading-relaxed text-black dark:text-white">
+                    <p>Here are my official contact details:</p>
+                    <div className="grid grid-cols-[100px_1fr] gap-2 items-center">
+                        <span className="text-gray-500 text-right">Email:</span>
+                        <a href={`mailto:${personal.personal.email}`} className="text-[#007AFF]">{personal.personal.email}</a>
+
+                        <span className="text-gray-500 text-right">Location:</span>
+                        <span>{personal.personal.location}</span>
+
+                        <span className="text-gray-500 text-right">Socials:</span>
+                        <div className="flex gap-2">
+                            <a href={personal.personal.socials.github} className="text-[#007AFF]">GitHub</a>
+                            <a href={personal.personal.socials.linkedin} className="text-[#007AFF]">LinkedIn</a>
+                        </div>
+                    </div>
+                </div>
+            )
+        }
+    ];
+};
+
+
 const generatefilesystem = (): filesystemitem[] => {
     const fs: filesystemitem[] = [];
 
@@ -517,6 +750,20 @@ const generatefilesystem = (): filesystemitem[] => {
             description: `Read more about ${p.title}.`,
             content: `# ${p.title}\n\n**Type:** ${p.type}\n**Date:** ${p.date}\n**Stack:** ${p.stack.join(', ')}\n\n## Description\n${p.desc}\n\nCheck out the [Live Demo](${p.link}) or view the [Source Code](${p.github}).`
         });
+    });
+
+    fs.push({
+
+        id: 'root-resume',
+        name: 'BALASUBRAMANIAN.pdf',
+        parent: 'root-docs',
+        mimetype: 'application/pdf',
+        date: 'Today',
+        icon: <Image className='w-full h-full p-[6px] sm:w-full sm:h-full' src='/pdf.png' alt="Resume" width={64} height={64} />,
+        size: 'PDF',
+        link: '/BALASUBRAMANIAN.pdf',
+        content: '/BALASUBRAMANIAN.pdf',
+        description: "My Resume"
     });
 
     apps.forEach(a => {

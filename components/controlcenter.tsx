@@ -25,7 +25,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration:0.2 }}
-              className={`fixed inset-0 z-[9998] ${reducetransparency ? 'bg-neutral-100/80 dark:bg-neutral-900/80' : 'dark:bg-black/40 bg-white/40 backdrop-blur-sm'}`}
+              className={`fixed inset-0 z-[9999] ${reducetransparency ? 'bg-neutral-100/80 dark:bg-neutral-900/80' : 'dark:bg-black/40 bg-white/40 backdrop-blur-sm'}`}
               onClick={onclose}
               style={{ pointerEvents: isopen ? 'auto' : 'none' }}
             />
@@ -67,7 +67,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
                   <div className="grid grid-cols-2 gap-3">
 
 
-                    <div className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-3xl p-3 grid grid-cols-2 grid-rows-2 gap-2 aspect-square border border-neutral-200 dark:border-neutral-800">
+                    <div className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-3xl p-3 grid grid-cols-2 grid-rows-2 gap-2 aspect-square border border-neutral-300 dark:border-neutral-800">
                       <div className="flex items-center justify-center bg-blue-500 rounded-full aspect-square">
                         <FaPlane className="text-white" size={18} />
                       </div>
@@ -83,7 +83,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
                     </div>
 
 
-                    <div className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-3xl p-3 flex flex-col justify-between aspect-square border border-neutral-200 dark:border-neutral-800">
+                    <div className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-3xl p-3 flex flex-col justify-between aspect-square border border-neutral-300 dark:border-neutral-800">
                       <div className='flex items-center justify-center flex-1'>
                         <div className='text-center'>
                           <p className="text-neutral-800 dark:text-white text-sm font-medium">Not Playing</p>
@@ -99,18 +99,18 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-3xl p-3 flex items-center justify-center border border-neutral-200 dark:border-neutral-800">
+                      <div className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-3xl p-3 flex items-center justify-center border border-neutral-300 dark:border-neutral-800">
                         <div className="bg-neutral-700/50 p-3 rounded-full">
                           <BsFillGridFill className="text-white" size={18} />
                         </div>
                       </div>
-                      <div className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-3xl p-3 flex items-center justify-center border border-neutral-200 dark:border-neutral-800">
+                      <div className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-3xl p-3 flex items-center justify-center border border-neutral-300 dark:border-neutral-800">
                         <div className="bg-neutral-700/50 p-3 rounded-full">
                           <FaMoon className="text-white" size={18} />
                         </div>
                       </div>
                     </div>
-                    <div className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-3xl p-3 h-full flex items-center justify-center border border-neutral-200 dark:border-neutral-800">
+                    <div className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-3xl p-3 h-full flex items-center justify-center border border-neutral-300 dark:border-neutral-800">
                       <div className='flex flex-col items-center gap-1 text-neutral-800 dark:text-white'>
                         <FiCast size={20} />
                         <span className='text-[10px]'>Screen Mirroring</span>
@@ -128,23 +128,23 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
 
 
                     <div className="grid grid-cols-2 grid-rows-2 gap-3 h-36">
-                      <div className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-3xl flex items-center justify-center border border-neutral-200 dark:border-neutral-800 active:bg-white/20 transition-colors">
+                      <div className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-3xl flex items-center justify-center border border-neutral-300 dark:border-neutral-800 active:bg-white/20 transition-colors">
                         <IoFlashlight className="text-neutral-800 dark:text-white" size={24} />
                       </div>
-                      <div className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-[20px] flex items-center justify-center border border-neutral-200 dark:border-neutral-800 active:bg-white/20 transition-colors">
+                      <div className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-[20px] flex items-center justify-center border border-neutral-300 dark:border-neutral-800 active:bg-white/20 transition-colors">
                         <IoStopwatch className="text-neutral-800 dark:text-white" size={24} />
                       </div>
-                      <div className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-[20px] flex items-center justify-center border border-neutral-200 dark:border-neutral-800 active:bg-white/20 transition-colors">
+                      <div className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-[20px] flex items-center justify-center border border-neutral-300 dark:border-neutral-800 active:bg-white/20 transition-colors">
                         <IoCalculator className="text-neutral-800 dark:text-white" size={24} />
                       </div>
-                      <div className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-[20px] flex items-center justify-center border border-neutral-200 dark:border-neutral-800 active:bg-white/20 transition-colors">
+                      <div className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-[20px] flex items-center justify-center border border-neutral-300 dark:border-neutral-800 active:bg-white/20 transition-colors">
                         <IoCamera className="text-neutral-800 dark:text-white" size={24} />
                       </div>
                     </div>
                   </div>
 
 
-                  <div onClick={toggletheme} className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-xl rounded-[24px] p-4 flex items-center justify-center border border-neutral-200 dark:border-neutral-800 active:bg-white/20 transition-colors gap-3 cursor-pointer">
+                  <div onClick={toggletheme} className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-xl rounded-[24px] p-4 flex items-center justify-center border border-neutral-300 dark:border-neutral-800 active:bg-white/20 transition-colors gap-3 cursor-pointer">
                     {theme == 'light' ? <FaSun className='text-neutral-800 dark:text-white' size={20} /> : <FaMoon className="text-white" size={20} />}
                     <span className="text-neutral-800 dark:text-white font-medium">Switch Theme</span>
                   </div>

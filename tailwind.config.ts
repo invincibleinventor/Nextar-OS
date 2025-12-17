@@ -25,6 +25,8 @@ const config: Config = {
         'xl': '16px',
       },
       screens: {
+                '3xs': '440px',
+
         '2xs': '540px',
       },
       fontSize: {

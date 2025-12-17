@@ -85,10 +85,10 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
                         title: appdata.appname,
                         component: appdata.componentname,
                         props: {},
-                        isMinimized: false,
-                        isMaximized: true,
-                        position: { top: 0, left: 0 },
-                        size: { width: typeof window !== 'undefined' ? window.innerWidth : 900, height: typeof window !== 'undefined' ? window.innerHeight : 600 },
+                        isminimized: false,
+                        ismaximized: false,
+                        position: { top: 50, left: 50 },
+                        size: appdata.defaultsize ? appdata.defaultsize : { width: 900, height: 600 },
                     });
                 }
             });

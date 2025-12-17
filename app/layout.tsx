@@ -103,7 +103,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <html className='bg-black' lang="en">
         <body className="font-sf w-screen h-screen overflow-hidden bg-black antialiased">
           <WindowProvider>
-            <div className="fixed inset-0 bg-black bg-cover bg-no-repeat bg-[url('/bg.jpg')] dark:bg-[url('/bg-dark.jpg')] h-[100dvh] w-screen overflow-hidden transition-colors duration-500">
+            <div className="fixed inset-0 bg-black h-[100dvh] w-screen overflow-hidden transition-colors duration-500">
 
               <SettingsProvider>
                 <DeviceProvider>

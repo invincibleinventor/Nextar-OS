@@ -179,17 +179,25 @@ export default function Finder({ initialpath }: { initialpath?: string[] }) {
     };
 
     return (
-        <div ref={containerref} className="flex h-full w-full bg-transparent text-black dark:text-white font-sf text-[13px] overflow-hidden rounded-b-xl relative select-none">
+        <div
+            ref={containerref}
+            className="flex h-full w-full bg-transparent text-black dark:text-white font-sf text-[13px] overflow-hidden rounded-b-xl relative select-none"
+            onClick={() => {
+                if (isnarrow && showsidebar) setshowsidebar(false);
+            }}
+        >
 
             <div className={`
                 ${showsidebar
-                    ? isnarrow ? 'absolute inset-y-0 left-0 z-20 w-[200px] shadow-2xl bg-[#f5f5f7] dark:bg-[#1e1e1e] border-r border-gray-200 dark:border-white/10'
-                        : 'relative w-[200px] border-r bg-transparent dark:border-white/5'
+                    ? isnarrow ? 'absolute inset-y-0 left-0 z-30 w-[220px] shadow-2xl bg-white/95 dark:bg-[#1e1e1e]/95 backdrop-blur border-r border-black/5 dark:border-white/5'
+                        : 'relative w-[200px] border-r border-black/5 dark:border-white/5 bg-transparent backdrop-blur-xl'
                     : '-translate-x-full w-0 border-none'
                 } 
                 transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] 
                 flex flex-col pt-4 h-full transform
-            `}>
+            `}
+                onClick={(e) => e.stopPropagation()}
+            >
                 <div className={`flex-1 overflow-y-auto ${ismobile ? '' : 'pt-[36px]'} px-2 ${showsidebar ? 'opacity-100' : 'opacity-0'} transition-opacity duration-200 delay-100`}>
                     {sidebaritems.map((group, idx) => (
                         <div key={idx} className="mb-4">
@@ -221,7 +229,12 @@ export default function Finder({ initialpath }: { initialpath?: string[] }) {
                 <div className="flex-1 flex flex-col min-w-0 min-h-0">
                     <div className="h-[50px] shrink-0 flex items-center justify-between px-4 border-b border-black/5 dark:border-white/5">
                         <div className="flex items-center gap-2 text-gray-500">
-                            <div className={(isnarrow && !ismobile) ? "flex items-center gap-1 ml-[64px]" : "flex items-center gap-1"}>
+                            {isnarrow && (
+                                <button onClick={() => setshowsidebar(!showsidebar)} className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded-md transition-colors mr-2">
+                                    <IoListOutline className="text-xl text-black dark:text-white" />
+                                </button>
+                            )}
+                            <div className={(isnarrow && !ismobile) ? "flex items-center gap-1" : "flex items-center gap-1"}>
                                 <IoChevronBack className={`text-xl ${currentpath.length > 1 ? 'text-black dark:text-white cursor-pointer rounded' : 'opacity-20'}`} onClick={() => currentpath.length > 1 && setcurrentpath(currentpath.slice(0, -1))} />
                                 <IoChevronForward className="text-xl opacity-20" />
                             </div>
@@ -341,6 +354,6 @@ export default function Finder({ initialpath }: { initialpath?: string[] }) {
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 }

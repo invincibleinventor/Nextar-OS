@@ -72,7 +72,7 @@ const AppLibrary = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 2xs:grid-cols-4 sm:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-6 w-full mx-auto pb-10">
+            <div className="grid grid-cols-2 3xs:grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-6 w-full mx-auto pb-10">
                 {Object.keys(categories).map((category) => (
                     <div key={category} className="flex flex-col gap-2 relative">
                         <div className="bg-white/30 dark:bg-neutral-800/30 backdrop-blur-xl rounded-3xl p-4 w-auto aspect-square shrink-0 h-auto" style={{ aspectRatio: '1/1' }}>
