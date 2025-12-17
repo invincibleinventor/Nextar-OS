@@ -731,7 +731,7 @@ const generatefilesystem = (): filesystemitem[] => {
     fs.push({ id: 'root-network', name: 'Network', parent: 'root', mimetype: 'inode/directory', date: 'Today', size: '--' });
 
     personal.projects.forEach(p => {
-        const pid = `project - ${p.title} `;
+        const pid = `project-${p.title}`;
         fs.push({
             id: pid,
             name: p.title,
@@ -743,7 +743,7 @@ const generatefilesystem = (): filesystemitem[] => {
         });
 
         fs.push({
-            id: `${pid} -source`,
+            id: `${pid}-source`,
             name: 'Source Code',
             parent: pid,
             mimetype: 'text/x-uri',
@@ -755,7 +755,7 @@ const generatefilesystem = (): filesystemitem[] => {
         });
 
         fs.push({
-            id: `${pid} -demo`,
+            id: `${pid}-demo`,
             name: 'Live Preview',
             parent: pid,
             mimetype: 'text/x-uri',
@@ -767,7 +767,7 @@ const generatefilesystem = (): filesystemitem[] => {
         });
 
         fs.push({
-            id: `${pid} -photo`,
+            id: `${pid}-photo`,
             name: `${p.title}.png`,
             parent: pid,
             mimetype: 'image/png',
@@ -780,7 +780,7 @@ const generatefilesystem = (): filesystemitem[] => {
         });
 
         fs.push({
-            id: `${pid} -photo - icloud`,
+            id: `${pid}-photo-icloud`,
             name: `${p.title}.png`,
             parent: 'root-icloud',
             mimetype: 'image/png',
@@ -793,14 +793,14 @@ const generatefilesystem = (): filesystemitem[] => {
         });
 
         fs.push({
-            id: `${pid} -readme`,
+            id: `${pid}-readme`,
             name: 'README.md',
             parent: pid,
             mimetype: 'text/markdown',
             date: 'Today',
             size: '1 KB',
             description: `Read more about ${p.title}.`,
-            content: `# ${p.title} \n\n ** Type:** ${p.type} \n ** Date:** ${p.date} \n ** Stack:** ${p.stack.join(', ')} \n\n## Description\n${p.desc} \n\nCheck out the[Live Demo](${p.link}) or view the[Source Code](${p.github}).`
+            content: `# ${p.title}\n\n**Type:** ${p.type}\n\n**Date:** ${p.date}\n\n**Stack:** ${p.stack.join(', ')}\n\n## Description\n\n${p.desc}\n\nCheck out the [Live Demo](${p.link}) or view the [Source Code](${p.github}).`
         });
     });
 
@@ -834,29 +834,37 @@ const generatefilesystem = (): filesystemitem[] => {
         }
     });
 
+    // Unified Desktop Items
+
+    // 1. Add all apps to Desktop (for Mobile Home Screen & Desktop)
+    apps.forEach(a => {
+        if (a.id !== 'finder' && a.id !== 'launchpad') { // Exclude Finder/Launchpad from desktop icons if desired, or keep all. User said "same icons have to be pinned". usually mobile homescreens have all apps.
+            fs.push({
+                id: `desktop-app-${a.id}`,
+                name: a.appname,
+                parent: 'root-desktop',
+                mimetype: 'application/x-executable',
+                date: 'Today',
+                size: 'App',
+                icon: <Image className='w-full h-full p-[6px] sm:w-full sm:h-full' src={a.icon} alt={`${a.appname} application`} width={64} height={64} />,
+                appname: a.appname,
+                description: `Launch ${a.appname} application.`
+            });
+        }
+    });
+
+    // 2. Add specific files/links to Desktop
     fs.push({
-        id: 'about-resume',
+        id: 'desktop-resume',
         name: 'BALASUBRAMANIAN.pdf',
         parent: 'root-desktop',
         mimetype: 'application/pdf',
         date: 'Today',
-        icon: <Image className='w-full h-full p-[6px] sm:w-full sm:h-full' src='/pdf.png' alt="Welcome App" width={64} height={64} />,
+        icon: <Image className='w-full h-full p-[6px] sm:w-full sm:h-full' src='/pdf.png' alt="Resume" width={64} height={64} />,
         size: 'PDF',
         link: '/BALASUBRAMANIAN.pdf',
         content: '/BALASUBRAMANIAN.pdf',
         description: "My Resume"
-    });
-
-    fs.push({
-        id: 'desktop-welcome',
-        name: 'Welcome App',
-        parent: 'root-desktop',
-        mimetype: 'application/x-executable',
-        date: 'Today',
-        size: 'App',
-        icon: <Image className='w-full h-full p-[6px] sm:w-full sm:h-full' src='/info.png' alt="Welcome App" width={64} height={64} />,
-        appname: 'Welcome',
-        description: "Welcome to my portfolio."
     });
 
     fs.push({
@@ -871,17 +879,49 @@ const generatefilesystem = (): filesystemitem[] => {
         description: "My previous portfolio."
     });
 
-    fs.push({
-        id: 'desktop-github-source',
-        name: 'Project Source',
-        parent: 'root-desktop',
-        mimetype: 'text/x-uri',
-        date: 'Today',
-        size: 'Web Link',
-        link: 'https://github.com/invincibleinventor/macos',
-        icon: <Image className='w-full h-full p-[6px] sm:w-full sm:h-full' src='/github.png' alt="Project Source" width={64} height={64} />,
-        description: "View source code on GitHub."
-    });
+    // Replace Source Code with Project Folder Link
+    // We need to find the ID of the MacOS-Next project folder.
+    // Assuming the title is "MacOS-Next" based on the projects array.
+    const macosProject = personal.projects.find(p => p.title === "MacOS-Next");
+    if (macosProject) {
+        fs.push({
+            id: 'desktop-macos-project-link',
+            name: 'MacOS-Next',
+            parent: 'root-desktop',
+            mimetype: 'inode/directory', // Treat as a folder shortcut
+            date: 'Today',
+            size: 'Folder',
+            icon: <Image className='w-full h-full p-[6px] sm:w-full sm:h-full' src='/folder.png' alt="MacOS-Next Project" width={64} height={64} />,
+            description: "Open MacOS-Next Project Folder",
+            link: `project-${macosProject.title}` // Custom property to handle folder shortcut/alias if needed, or we just handle open logic.
+            // Actually, for "Link to folder", we might need special handling in double-click.
+            // Let's reuse the logic: if we click this, it should open the project folder.
+            // For now, let's just create a folder entry that points to the content of the project?
+            // Or simpler: Just replicate the folder entry? No, that duplicates data.
+            // Best approach: A custom mimetype or handling 'inode/directory' with a specific ID that redirects?
+            // "replace source code in desktop with project folder of macos next in finder in our new desktop folder"
+            // Let's make it a directory type but with a special handling or just alias it.
+            // If I just add it as a directory, it needs children.
+            // A better way for "Shortcut" behavior:
+            // Let's use mimetype 'application/x-folder-alias' or similar if we have it? No.
+            // Let's just make it valid to double click and open the specific path.
+        });
+    }
+
+    // Since we can't easily make a "Shortcut" without engine support,
+    // I will explicitly add the "MacOS-Next" project items (children) to a new folder on Desktop?
+    // No, user wants "project folder of macos next".
+    // I will implementation a "Folder Alias" logic.
+    // For now, I will add it as an item that looks like a folder but acts as a link.
+
+    // REVISING strategy for "MacOS-Next Folder" on Desktop:
+    // I will add an item with `mimetype: 'inode/directory-alias'` and `link: 'project-MacOS-Next'`.
+    // Then in the click handler (MobileHomeScreen and Desktop), I need to handle this.
+
+    // Wait, the user said "render them in both places thru it".
+    // "thru it" means through the 'root-desktop' folder.
+
+
 
     fs.push({
         id: 'about-github',

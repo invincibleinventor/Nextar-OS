@@ -4,6 +4,7 @@ import { IoDocumentTextOutline, IoFolderOutline, IoChevronBack, IoChevronForward
 import ReactMarkdown from 'react-markdown';
 import { filesystem, filesystemitem, apps } from '../data';
 import Image from 'next/image';
+import { useDevice } from '../DeviceContext';
 
 interface fileviewerprops {
     content?: string;
@@ -87,12 +88,13 @@ export default function FileViewer({ content: initialContent = '', title: initia
         setViewingContent(null);
         setViewingTitle('Open File');
     }
+    const {ismobile} = useDevice();
 
     if (viewingContent !== null) {
         return (
             <div className="flex flex-col h-full w-full bg-white dark:bg-[#1e1e1e] text-black dark:text-white font-sf">
                 <div className="h-[50px] border-b border-black/5 dark:border-white/5 flex items-center justify-between px-4 bg-gray-50/50 dark:bg-[#282828] draggable-region">
-                    <div className="flex items-center gap-2 ps-20">
+                    <div className={`${ismobile?'ps-0':'ps-20'} flex items-center gap-2 `}>
                         <IoDocumentTextOutline className="text-gray-500" />
                         <span className="text-sm font-semibold truncate">{viewingTitle}</span>
                     </div>

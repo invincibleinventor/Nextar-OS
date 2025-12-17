@@ -40,10 +40,7 @@ export default function Finder({ initialpath }: { initialpath?: string[] }) {
                 const width = entry.contentRect.width;
                 const isnownarrow = width < 768;
                 setisnarrow(isnownarrow);
-                // Removed the auto-close logic here so it stays open by default on mobile as requested
-                // if (isnownarrow && !isnarrow) {
-                //     setshowsidebar(false);
-                // }
+               
                 if (!isnownarrow) {
                     setshowsidebar(true);
                 }
@@ -64,7 +61,7 @@ export default function Finder({ initialpath }: { initialpath?: string[] }) {
         let currentparentid = 'root';
 
         for (const foldername of currentpath) {
-            const folder = filesystem.find(i => i.name === foldername && i.parent === currentparentid);
+            const folder = filesystem.find(i => i.name.trim() === foldername.trim() && i.parent === currentparentid);
             if (folder) {
                 currentparentid = folder.id;
             }
@@ -122,7 +119,7 @@ export default function Finder({ initialpath }: { initialpath?: string[] }) {
                     ismaximized: false,
                     position: { top: 100, left: 100 },
                     size: { width: 600, height: 400 },
-                    props: { content: file.content, title: file.name }
+                    props: { content: file.content, title: file.name, type: 'text/markdown' }
                 });
             }
         } else if (file.mimetype === 'image/png' || file.mimetype === 'image/jpeg') {
@@ -228,7 +225,7 @@ export default function Finder({ initialpath }: { initialpath?: string[] }) {
             <div className={`flex-1 flex ${isnarrow ? 'flex-col' : 'flex-row'} min-w-0 dark:bg-neutral-900 bg-white relative overflow-hidden`}>
 
                 <div className="flex-1 flex flex-col min-w-0 min-h-0">
-                    <div className="h-[50px] shrink-0 flex items-center justify-between px-4 border-b border-black/5 dark:border-white/5">
+                    <div className={`${!ismobile && !showsidebar?'ps-20':''} h-[50px] shrink-0 flex items-center justify-between px-4 border-b border-black/5 dark:border-white/5`}>
                         <div className="flex items-center gap-2 text-gray-500">
                             {isnarrow && (
                                 <button onClick={() => setshowsidebar(!showsidebar)} className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded-md transition-colors mr-2">

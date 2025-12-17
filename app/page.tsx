@@ -143,7 +143,7 @@ const Page = () => {
                 if (shownotificationcenter) setshownotificationcenter(false);
               }}
             >
-              <div className='p-4 pt-10 space-y-4 flex flex-col items-end w-max ml-auto content-end'>
+              <div className='p-4 pt-10 gap-4 grid grid-rows-6 grid-flow-col h-max w-max ml-auto' >
                 {filesystem.filter(item => item.parent === 'root-desktop').map((item) => (
                   <div
                     key={item.id}
@@ -179,6 +179,27 @@ const Page = () => {
                             position: { top: 50, left: 50 },
                             size: { width: 1024, height: 768 },
                             props: { initialurl: item.link }
+                          });
+                        }
+                      } else if (item.mimetype === 'inode/directory') {
+                        const finderapp = apps.find(a => a.id === 'finder');
+                        if (finderapp) {
+                          let targetPath = ['Projects'];
+                          if (item.link) {
+                            const targetFolder = filesystem.find(i => i.id === item.link);
+                            if (targetFolder) targetPath = ['Projects', targetFolder.name];
+                          }
+                          addwindow({
+                            id: `finder-${Date.now()}`,
+                            appname: 'Finder',
+                            title: 'Finder',
+                            component: finderapp.componentname,
+                            icon: finderapp.icon,
+                            isminimized: false,
+                            ismaximized: false,
+                            position: { top: 100, left: 100 },
+                            size: { width: 900, height: 600 },
+                            props: { initialpath: targetPath }
                           });
                         }
                       } else if (item.mimetype === 'application/pdf') {

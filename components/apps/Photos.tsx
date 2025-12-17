@@ -186,7 +186,7 @@ export default function Photos({ singleview, src, title }: photosprops) {
                                         <span>Location</span>
                                     </div>
                                     <button
-                                        onClick={() => viewingimage.title && openInFinder(viewingimage.title)}
+                                        onClick={() => viewingimage.title && openInFinder(viewingimage.title.trim())}
                                         className="text-xs bg-white/10 px-3 py-1 rounded-full hover:bg-white/20 transition-colors"
                                     >
                                         Finder
@@ -308,11 +308,11 @@ export default function Photos({ singleview, src, title }: photosprops) {
             <div className={`flex-1 overflow-y-auto p-4 z-10 w-full min-w-0 ${!ismobile ? 'pt-8' : ''}`}>
                 <div className="flex justify-between items-center mb-6 px-2 sticky top-0 bg-white/80 dark:bg-[#1e1e1e]/80 backdrop-blur-md z-10 py-2 border-b border-transparent">
                     <div className="flex items-center gap-3">
-                        
-                            <button onClick={() => setshowsidebar(true)} className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5" title="Show Sidebar">
-                                <IoMenu className="text-xl" />
-                            </button>
-                        
+
+                        <button onClick={() => setshowsidebar(true)} className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5" title="Show Sidebar">
+                            <IoMenu className="text-xl" />
+                        </button>
+
                         <div>
                             <h1 className="text-2xl font-bold leading-none">{sidebaritems.find(i => i.id === selecteditem)?.label}</h1>
                             <span className="text-xs text-gray-500">{projectphotos.length} Items</span>
