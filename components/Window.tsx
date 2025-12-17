@@ -414,8 +414,8 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
       style={{
         top: (ismobile && isRecentAppView) ? 0 : (ismobile ? 44 : (ismaximized ? 35 : (position?.top || 0))),
         left: (ismobile && isRecentAppView) ? 0 : (ismobile ? 0 : (ismaximized ? 0 : (position?.left || 0))),
-        width: (ismobile && isRecentAppView) ? '100%' : (ismobile ? '100vw' : (ismaximized ? '100vw' : (size?.width || 0))),
-        height: (ismobile && isRecentAppView) ? '100%' : (ismobile ? 'calc(100vh - 44px)' : (ismaximized ? 'calc(100vh - 105px)' : (size?.height || 0))),
+        width: (ismobile && isRecentAppView) ? '100%' : (ismobile ? '100%' : (ismaximized ? '100vw' : (size?.width || 0))),
+        height: (ismobile && isRecentAppView) ? '100%' : (ismobile ? 'calc(100% - 44px)' : (ismaximized ? 'calc(100vh - 105px)' : (size?.height || 0))),
         zIndex: isminimized ? -1 : zindex,
         willChange: 'transform, opacity, top, left, width, height',
         pointerEvents: (shouldblur || isRecentAppView || isminimized || issystemgestureactive) ? 'none' : 'auto'
