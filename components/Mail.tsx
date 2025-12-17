@@ -152,7 +152,7 @@ export default function Mail() {
             `}>
                 {activeMail ? (
                     <>
-                        <div className="h-12 border-b border-gray-200 dark:border-white/10 flex items-center px-4 justify-between shrink-0 bg-white/50 backdrop-blur">
+                        <div className="h-12 border-b border-gray-200 dark:border-white/10 flex items-center px-4 justify-between shrink-0 dark:bg-black/50 bg-white/50 backdrop-blur">
                             <div className="flex gap-4 items-center">
                                 {ismobile && (
                                     <button onClick={() => setSelectedMailId(null)} className="text-[#007AFF] flex items-center gap-1 text-[13px]">
