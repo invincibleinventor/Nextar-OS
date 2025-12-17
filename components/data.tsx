@@ -507,7 +507,7 @@ export const ALL_MAILS: MailItem[] = [
                 <p>{proj.desc}</p>
                 <p><strong>Tech Stack:</strong> {proj.stack.join(', ')}</p>
                 <div className="pt-4 flex gap-3">
-                    <a href={proj.link || '#'} target="_blank" rel="noreferrer" className="inline-block px-4 py-2 bg-[#007AFF] text-white rounded-md text-xs font-semibold hover:bg-[#0062cc] transition shadow-sm">
+                    <a href={proj.link || '#'} target="_blank" rel="noreferrer" className="inline-block px-4 py-2 bg-[#007AFF] text-center line-clamp-2 mx-auto text-white rounded-md text-xs font-semibold hover:bg-[#0062cc] transition shadow-sm">
                         View Project
                     </a>
                  

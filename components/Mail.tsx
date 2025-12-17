@@ -170,8 +170,8 @@ export default function Mail() {
                         <div className="flex-1 overflow-y-auto p-8 animate-in fade-in slide-in-from-right-4 duration-200">
                             <div className="flex items-center justify-between mb-6">
                                 <div>
-                                    <h1 className="text-xl font-bold text-black dark:text-white mb-1">{activeMail.subject}</h1>
-                                    <div className="flex items-center gap-2">
+                                    <h1 className="text-xl font-bold text-black dark:text-white mb-4">{activeMail.subject}</h1>
+                                    <div className="flex items-center  gap-2">
                                         <div className="w-8 h-8 shrink-0 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs font-bold text-gray-600 dark:text-gray-300">
                                             {activeMail.sender[0]}
                                         </div>
