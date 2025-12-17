@@ -7,17 +7,8 @@ import {
 } from "react-icons/io5";
 import Image from 'next/image';
 import { useWindows } from '../WindowContext';
-import { apps, filesystem, sidebaritems, filesystemitem } from '../data';
+import { apps, filesystem, sidebaritems, filesystemitem, openSystemItem, getFileIcon } from '../data';
 import { useDevice } from '../DeviceContext';
-
-const getfileicon = (mimetype: string, name: string, itemicon?: React.ReactNode) => {
-    if (itemicon) return itemicon;
-    if (mimetype === 'inode/directory') return <Image src="/folder.png" alt="folder" width={64} height={64} className="w-full h-full object-contain drop-shadow-md" />;
-    if (mimetype === 'application/x-executable') return null;
-    if (mimetype === 'image/png' || mimetype === 'image/jpeg') return <Image src="/photos.png" alt="image" width={64} height={64} className="w-full h-full object-contain" />;
-    if (mimetype === 'application/pdf') return <Image src="/pdf.png" alt="pdf" width={64} height={64} className="w-full h-full object-contain" />;
-    return <IoDocumentTextOutline className="w-full h-full text-gray-500" />;
-};
 
 export default function Finder({ initialpath }: { initialpath?: string[] }) {
     const [selected, setselected] = useState('Projects');
@@ -40,7 +31,7 @@ export default function Finder({ initialpath }: { initialpath?: string[] }) {
                 const width = entry.contentRect.width;
                 const isnownarrow = width < 768;
                 setisnarrow(isnownarrow);
-               
+
                 if (!isnownarrow) {
                     setshowsidebar(true);
                 }
@@ -84,95 +75,8 @@ export default function Finder({ initialpath }: { initialpath?: string[] }) {
             setcurrentpath([...currentpath, file.name]);
             setsearchquery("");
             setselectedfile(null);
-        } else if (file.mimetype === 'application/x-executable') {
-            const app = apps.find(a => a.appname === file.appname);
-            if (app) {
-                const existingwin = windows.find((w: any) => w.appname === app.appname);
-                if (existingwin) {
-                    updatewindow(existingwin.id, { isminimized: false });
-                    setactivewindow(existingwin.id);
-                } else {
-                    addwindow({
-                        id: `${app.appname}-${Date.now()}`,
-                        appname: app.appname,
-                        additionaldata: {},
-                        title: app.appname,
-                        component: app.componentname,
-                        props: {},
-                        isminimized: false,
-                        ismaximized: false,
-                        position: { top: 100, left: 100 },
-                        size: { width: 1024, height: 500 },
-                    });
-                }
-            }
-        } else if (file.mimetype === 'text/markdown') {
-            const fileviewerapp = apps.find(a => a.id === 'fileviewer');
-            if (fileviewerapp) {
-                addwindow({
-                    id: `fileviewer-${Date.now()}`,
-                    appname: fileviewerapp.appname,
-                    title: file.name,
-                    component: fileviewerapp.componentname,
-                    icon: fileviewerapp.icon,
-                    isminimized: false,
-                    ismaximized: false,
-                    position: { top: 100, left: 100 },
-                    size: { width: 600, height: 400 },
-                    props: { content: file.content, title: file.name, type: 'text/markdown' }
-                });
-            }
-        } else if (file.mimetype === 'image/png' || file.mimetype === 'image/jpeg') {
-            const photosapp = apps.find(a => a.id === 'photos');
-            if (photosapp) {
-                addwindow({
-                    id: `photos-${Date.now()}`,
-                    appname: photosapp.appname,
-                    title: photosapp.appname,
-                    component: photosapp.componentname,
-                    icon: photosapp.icon,
-                    isminimized: false,
-                    ismaximized: false,
-                    position: { top: 50, left: 50 },
-                    size: { width: 1024, height: 768 },
-                    props: { singleview: true, src: file.content, title: file.name }
-                });
-            }
-        } else if (file.mimetype === 'application/pdf') {
-            const fileviewerapp = apps.find(a => a.id === 'fileviewer');
-            if (fileviewerapp) {
-                addwindow({
-                    id: `fileviewer-${Date.now()}`,
-                    appname: fileviewerapp.appname,
-                    title: file.name,
-                    component: fileviewerapp.componentname,
-                    icon: fileviewerapp.icon,
-                    isminimized: false,
-                    ismaximized: false,
-                    position: { top: 100, left: 100 },
-                    size: { width: 700, height: 800 },
-                    props: { content: file.content, title: file.name, type: 'application/pdf' }
-                });
-            }
-        } else if (file.mimetype === 'text/x-uri' && file.link) {
-            const safariapp = apps.find(a => a.id === 'safari');
-
-            if ((file.name === 'Source Code' || file.name === 'Github' || file.name === 'LinkedIn' || file.name === 'Threads') && file.link) {
-                window.open(file.link, '_blank');
-            } else if (safariapp) {
-                addwindow({
-                    id: `safari-${Date.now()}`,
-                    appname: safariapp.appname,
-                    title: safariapp.appname,
-                    component: safariapp.componentname,
-                    icon: safariapp.icon,
-                    isminimized: false,
-                    ismaximized: false,
-                    position: { top: 50, left: 50 },
-                    size: { width: 1024, height: 768 },
-                    props: { initialurl: file.link }
-                });
-            }
+        } else {
+            openSystemItem(file, { addwindow, windows, updatewindow, setactivewindow, ismobile });
         }
     };
 
@@ -225,7 +129,7 @@ export default function Finder({ initialpath }: { initialpath?: string[] }) {
             <div className={`flex-1 flex ${isnarrow ? 'flex-col' : 'flex-row'} min-w-0 dark:bg-neutral-900 bg-white relative overflow-hidden`}>
 
                 <div className="flex-1 flex flex-col min-w-0 min-h-0">
-                    <div className={`${!ismobile && !showsidebar?'ps-20':''} h-[50px] shrink-0 flex items-center justify-between px-4 border-b border-black/5 dark:border-white/5`}>
+                    <div className={`${!ismobile && !showsidebar ? 'ps-20' : ''} h-[50px] shrink-0 flex items-center justify-between px-4 border-b border-black/5 dark:border-white/5`}>
                         <div className="flex items-center gap-2 text-gray-500">
                             {isnarrow && (
                                 <button onClick={() => setshowsidebar(!showsidebar)} className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded-md transition-colors mr-2">
@@ -273,7 +177,7 @@ export default function Finder({ initialpath }: { initialpath?: string[] }) {
                                             : 'hover:bg-black/5 dark:hover:bg-white/5'}`}
                                 >
                                     <div className="w-12 h-12 sm:w-16 sm:h-16 relative flex items-center justify-center">
-                                        {getfileicon(file.mimetype, file.name, file.icon)}
+                                        {getFileIcon(file.mimetype, file.name, file.icon)}
                                     </div>
                                     <span className={`text-[12px] text-center leading-tight px-2 py-0.5 rounded break-words w-full line-clamp-2
                                         ${selectedfile === file.name ? 'bg-[#007AFF] text-white font-medium' : 'text-gray-700 dark:text-gray-300'}`}>
@@ -308,7 +212,7 @@ export default function Finder({ initialpath }: { initialpath?: string[] }) {
                         {activefile ? (
                             <div className="flex flex-col items-center p-6 text-center animate-in fade-in duration-300">
                                 <div className="w-24 object-cover h-24 mb-4 drop-shadow-xl relative">
-                                    {getfileicon(activefile.mimetype, activefile.name, activefile.icon)}
+                                    {getFileIcon(activefile.mimetype, activefile.name, activefile.icon)}
                                 </div>
                                 <h3 className="text-lg font-semibold text-black dark:text-white mb-1 break-words w-full">{activefile.name}</h3>
                                 <p className="text-[11px] text-gray-500 dark:text-gray-400 mb-4">{activefile.mimetype}</p>

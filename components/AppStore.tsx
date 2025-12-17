@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { IoSearch, IoPersonCircleOutline, IoGameControllerOutline, IoRocketOutline, IoBrushOutline, IoConstructOutline, IoCodeSlashOutline } from "react-icons/io5";
 import Image from 'next/image';
 import { FaApple } from "react-icons/fa";
-import { apps } from './data';
+import { apps, openSystemItem } from './data';
 import { useWindows } from './WindowContext';
 import { useDevice } from './DeviceContext';
 
 export default function AppStore() {
     const [activetab, setactivetab] = useState('Discover');
-    const { addwindow } = useWindows();
+    const { addwindow, windows, updatewindow, setactivewindow } = useWindows();
     const { ismobile } = useDevice();
 
     const sidebaritems = [
@@ -98,18 +98,7 @@ export default function AppStore() {
                                     <p className="text-xs text-gray-500">Utilities</p>
                                 </div>
                                 <button onClick={() => {
-                                    addwindow({
-                                        id: `${app.id}-${Date.now()}`,
-                                        appname: app.appname,
-                                        title: app.appname,
-                                        component: app.componentname,
-                                        icon: app.icon,
-                                        isminimized: false,
-                                        ismaximized: false,
-                                        position: { top: 100, left: 100 },
-                                        size: app.defaultsize || { width: 900, height: 600 },
-                                        props: {}
-                                    });
+                                    openSystemItem(app.id, { addwindow, windows, updatewindow, setactivewindow, ismobile });
                                 }}
                                     className="p-2 bg-[#f0f0f0] dark:bg-[#3d3d3d] rounded-full text-[#007AFF] hover:bg-[#007AFF] hover:text-white transition-all">
                                     <IoRocketOutline className="text-lg" />

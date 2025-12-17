@@ -1,7 +1,8 @@
 import Image from 'next/image';
 
-import { apps } from '../data';
+import { apps, openSystemItem } from '../data';
 import { useWindows } from '../WindowContext';
+import { useDevice } from '../DeviceContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import React, { useState } from 'react';
 import { IoSearch } from 'react-icons/io5';
@@ -9,7 +10,8 @@ import { IoSearch } from 'react-icons/io5';
 const appsperpage = 35;
 
 export default function Launchpad({ onclose }: { onclose: () => void }) {
-    const { addwindow, removewindow, windows, setactivewindow } = useWindows();
+    const { addwindow, removewindow, windows, setactivewindow, updatewindow } = useWindows();
+    const { ismobile } = useDevice();
     const [searchterm, setsearchterm] = useState('');
     const [page, setpage] = useState(0);
 
@@ -17,31 +19,7 @@ export default function Launchpad({ onclose }: { onclose: () => void }) {
         if (app.id === 'launchpad') return;
 
         setTimeout(() => {
-            const appwins = windows.filter((win: any) => win.appname === app.appname);
-            if (appwins.length === 0 || app.multiwindow) {
-                const newwin: any = {
-                    id: `${app.appname}-${Date.now()}`,
-                    appname: app.appname,
-                    additionaldata: app.additionaldata || {},
-                    title: app.appname,
-                    component: app.componentname,
-                    props: {},
-                    isminimized: false,
-                    ismaximized: false,
-                    position: { top: 100, left: 150 },
-                };
-
-                if (app.defaultsize) {
-                    newwin.size = app.defaultsize;
-                } else if (app.additionaldata?.startlarge) {
-                    newwin.size = { width: 900, height: 600 };
-                }
-
-                addwindow(newwin);
-                setactivewindow(newwin.id);
-            } else {
-                setactivewindow(appwins[0].id);
-            }
+            openSystemItem(app.id, { addwindow, windows, updatewindow, setactivewindow, ismobile });
             onclose();
         }, 100);
     };

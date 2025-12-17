@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Image from 'next/image';
 import {
@@ -43,6 +42,8 @@ export interface filesystemitem {
     appname?: string;
     description?: string;
     id: string;
+    projectPath?: string;
+    projectLink?: string;
 }
 
 export const personal = {
@@ -266,6 +267,7 @@ export const apps: appdata[] = [
         multiwindow: true,
         titlebarblurred: true,
         pinned: true,
+        acceptedMimeTypes: ['text/x-uri']
     },
     {
         id: 'terminal',
@@ -288,6 +290,7 @@ export const apps: appdata[] = [
         multiwindow: true,
         titlebarblurred: true,
         pinned: true,
+        acceptedMimeTypes: ['image/png', 'image/jpeg', 'image/webp', 'image/gif']
     },
     {
         id: 'welcome',
@@ -442,7 +445,6 @@ export const sidebaritems = [
     }
 ];
 
-// Mail Types and Data
 export interface MailItem {
     id: string;
     folder: string;
@@ -510,7 +512,6 @@ export const ALL_MAILS: MailItem[] = [
                     <a href={proj.link || '#'} target="_blank" rel="noreferrer" className="inline-block px-4 py-2 bg-[#007AFF] text-center line-clamp-2 mx-auto text-white rounded-md text-xs font-semibold hover:bg-[#0062cc] transition shadow-sm">
                         View Project
                     </a>
-
                 </div>
             </div>
         )
@@ -721,17 +722,24 @@ export const getMails = (openInFinder: (path: string) => void): MailItem[] => {
 const generatefilesystem = (): filesystemitem[] => {
     const fs: filesystemitem[] = [];
 
-    fs.push({ id: 'root-projects', name: 'Projects', parent: 'root', mimetype: 'inode/directory', date: 'Today', size: '--' });
-    fs.push({ id: 'root-apps', name: 'Applications', parent: 'root', mimetype: 'inode/directory', date: 'Today', size: '--' });
-    fs.push({ id: 'root-about', name: 'About Me', parent: 'root', mimetype: 'inode/directory', date: 'Today', size: '--' });
-    fs.push({ id: 'root-icloud', name: 'iCloud Drive', parent: 'root', mimetype: 'inode/directory', date: 'Today', size: '--' });
-    fs.push({ id: 'root-docs', name: 'Documents', parent: 'root', mimetype: 'inode/directory', date: 'Today', size: '--' });
-    fs.push({ id: 'root-desktop', name: 'Desktop', parent: 'root', mimetype: 'inode/directory', date: 'Today', size: '--' });
-    fs.push({ id: 'root-hd', name: 'Macintosh HD', parent: 'root', mimetype: 'inode/directory', date: 'Today', size: '--' });
-    fs.push({ id: 'root-network', name: 'Network', parent: 'root', mimetype: 'inode/directory', date: 'Today', size: '--' });
+    const rootDirs = [
+        { id: 'root-projects', name: 'Projects' },
+        { id: 'root-apps', name: 'Applications' },
+        { id: 'root-about', name: 'About Me' },
+        { id: 'root-icloud', name: 'iCloud Drive' },
+        { id: 'root-docs', name: 'Documents' },
+        { id: 'root-desktop', name: 'Desktop' },
+        { id: 'root-hd', name: 'Macintosh HD' },
+        { id: 'root-network', name: 'Network' },
+    ];
+
+    rootDirs.forEach(d => {
+        fs.push({ ...d, parent: 'root', mimetype: 'inode/directory', date: 'Today', size: '--' } as filesystemitem);
+    });
 
     personal.projects.forEach(p => {
         const pid = `project-${p.title}`;
+
         fs.push({
             id: pid,
             name: p.title,
@@ -766,31 +774,21 @@ const generatefilesystem = (): filesystemitem[] => {
             description: `Open live demo of ${p.title}.`
         });
 
-        fs.push({
-            id: `${pid}-photo`,
+        const projectPhotoBase: Partial<filesystemitem> = {
             name: `${p.title}.png`,
-            parent: pid,
             mimetype: 'image/png',
             date: 'Today',
             icon: <Image className='w-full h-full p-[6px] sm:w-full sm:h-full' src={`/appimages/${p.title.toLowerCase()}.png`} alt={`${p.title} live demo`} width={64} height={64} />,
             size: '2.5 MB',
-            description: `Screenshot of ${p.title}.`,
+            description: p.desc,
             link: `/appimages/${p.title.toLowerCase()}.png`,
-            content: `/appimages/${p.title.toLowerCase()}.png`
-        });
+            content: `/appimages/${p.title.toLowerCase()}.png`,
+            projectPath: p.title,
+            projectLink: p.link
+        };
 
-        fs.push({
-            id: `${pid}-photo-icloud`,
-            name: `${p.title}.png`,
-            parent: 'root-icloud',
-            mimetype: 'image/png',
-            date: 'Today',
-            icon: <Image className='w-full h-full p-[6px] sm:w-full sm:h-full' src={`/appimages/${p.title.toLowerCase()}.png`} alt={`${p.title} live demo`} width={64} height={64} />,
-            size: '2.5 MB',
-            description: `Screenshot of ${p.title}.`,
-            link: `/appimages/${p.title.toLowerCase()}.png`,
-            content: `/appimages/${p.title.toLowerCase()}.png`
-        });
+        fs.push({ ...projectPhotoBase, id: `${pid}-photo`, parent: pid } as filesystemitem);
+        fs.push({ ...projectPhotoBase, id: `${pid}-photo-icloud`, parent: 'root-icloud' } as filesystemitem);
 
         fs.push({
             id: `${pid}-readme`,
@@ -804,160 +802,316 @@ const generatefilesystem = (): filesystemitem[] => {
         });
     });
 
-    fs.push({
-
-        id: 'root-resume',
-        name: 'BALASUBRAMANIAN.pdf',
-        parent: 'root-docs',
+    const resumeBase: Partial<filesystemitem> = {
+        name: 'RESUME.pdf',
         mimetype: 'application/pdf',
         date: 'Today',
         icon: <Image className='w-full h-full p-[6px] sm:w-full sm:h-full' src='/pdf.png' alt="Resume" width={64} height={64} />,
         size: 'PDF',
-        link: '/BALASUBRAMANIAN.pdf',
-        content: '/BALASUBRAMANIAN.pdf',
+        link: '/Balasubramanian TBR.pdf',
+        content: '/Balasubramanian TBR.pdf',
         description: "My Resume"
-    });
+    };
+
+    fs.push({ ...resumeBase, id: 'root-resume', parent: 'root-docs' } as filesystemitem);
+    fs.push({ ...resumeBase, id: 'desktop-resume', parent: 'root-desktop' } as filesystemitem);
 
     apps.forEach(a => {
+        const appBase: Partial<filesystemitem> = {
+            name: a.appname,
+            mimetype: 'application/x-executable',
+            date: 'Today',
+            size: 'App',
+            icon: <Image className='w-full h-full p-[6px] sm:w-full sm:h-full' src={a.icon} alt={`${a.appname} application`} width={64} height={64} />,
+            appname: a.appname,
+            description: `Launch ${a.appname} application.`
+        };
+
         if (a.id !== 'finder') {
-            fs.push({
-                id: `app - ${a.id} `,
-                name: a.appname,
-                parent: 'root-apps',
-                mimetype: 'application/x-executable',
-                date: 'Today',
-                size: 'App',
-                icon: <Image className='w-full h-full p-[6px] sm:w-full sm:h-full' src={a.icon} alt={`${a.appname} application`} width={64} height={64} />,
-                appname: a.appname,
-                description: `Launch ${a.appname} application.`
-            });
+            fs.push({ ...appBase, id: `app - ${a.id} `, parent: 'root-apps' } as filesystemitem);
+        }
+
+        if (a.id !== 'finder' && a.id !== 'launchpad') {
+            fs.push({ ...appBase, id: `desktop-app-${a.id}`, parent: 'root-desktop' } as filesystemitem);
         }
     });
 
-    // Unified Desktop Items
-
-    // 1. Add all apps to Desktop (for Mobile Home Screen & Desktop)
-    apps.forEach(a => {
-        if (a.id !== 'finder' && a.id !== 'launchpad') { // Exclude Finder/Launchpad from desktop icons if desired, or keep all. User said "same icons have to be pinned". usually mobile homescreens have all apps.
-            fs.push({
-                id: `desktop-app-${a.id}`,
-                name: a.appname,
-                parent: 'root-desktop',
-                mimetype: 'application/x-executable',
-                date: 'Today',
-                size: 'App',
-                icon: <Image className='w-full h-full p-[6px] sm:w-full sm:h-full' src={a.icon} alt={`${a.appname} application`} width={64} height={64} />,
-                appname: a.appname,
-                description: `Launch ${a.appname} application.`
-            });
-        }
-    });
-
-    // 2. Add specific files/links to Desktop
-    fs.push({
-        id: 'desktop-resume',
-        name: 'BALASUBRAMANIAN.pdf',
-        parent: 'root-desktop',
-        mimetype: 'application/pdf',
-        date: 'Today',
-        icon: <Image className='w-full h-full p-[6px] sm:w-full sm:h-full' src='/pdf.png' alt="Resume" width={64} height={64} />,
-        size: 'PDF',
-        link: '/BALASUBRAMANIAN.pdf',
-        content: '/BALASUBRAMANIAN.pdf',
-        description: "My Resume"
-    });
-
-    fs.push({
-        id: 'desktop-oldportfolio',
+    const oldPortfolioBase: Partial<filesystemitem> = {
         name: 'Old Portfolio',
-        parent: 'root-desktop',
         mimetype: 'text/x-uri',
         date: 'Today',
         size: 'Web Link',
         link: 'https://baladev.vercel.app',
         icon: <Image className='w-full h-full p-[6px] sm:w-full sm:h-full' src='/code.png' alt="Old Portfolio" width={64} height={64} />,
         description: "My previous portfolio."
-    });
+    };
+    fs.push({ ...oldPortfolioBase, id: 'desktop-oldportfolio', parent: 'root-desktop' } as filesystemitem);
 
-    // Replace Source Code with Project Folder Link
-    // We need to find the ID of the MacOS-Next project folder.
-    // Assuming the title is "MacOS-Next" based on the projects array.
     const macosProject = personal.projects.find(p => p.title === "MacOS-Next");
     if (macosProject) {
         fs.push({
             id: 'desktop-macos-project-link',
             name: 'MacOS-Next',
             parent: 'root-desktop',
-            mimetype: 'inode/directory', // Treat as a folder shortcut
+            mimetype: 'inode/directory',
             date: 'Today',
             size: 'Folder',
             icon: <Image className='w-full h-full p-[6px] sm:w-full sm:h-full' src='/folder.png' alt="MacOS-Next Project" width={64} height={64} />,
             description: "Open MacOS-Next Project Folder",
-            link: `project-${macosProject.title}` // Custom property to handle folder shortcut/alias if needed, or we just handle open logic.
-            // Actually, for "Link to folder", we might need special handling in double-click.
-            // Let's reuse the logic: if we click this, it should open the project folder.
-            // For now, let's just create a folder entry that points to the content of the project?
-            // Or simpler: Just replicate the folder entry? No, that duplicates data.
-            // Best approach: A custom mimetype or handling 'inode/directory' with a specific ID that redirects?
-            // "replace source code in desktop with project folder of macos next in finder in our new desktop folder"
-            // Let's make it a directory type but with a special handling or just alias it.
-            // If I just add it as a directory, it needs children.
-            // A better way for "Shortcut" behavior:
-            // Let's use mimetype 'application/x-folder-alias' or similar if we have it? No.
-            // Let's just make it valid to double click and open the specific path.
+            link: `project-${macosProject.title}`
         });
     }
 
-    // Since we can't easily make a "Shortcut" without engine support,
-    // I will explicitly add the "MacOS-Next" project items (children) to a new folder on Desktop?
-    // No, user wants "project folder of macos next".
-    // I will implementation a "Folder Alias" logic.
-    // For now, I will add it as an item that looks like a folder but acts as a link.
+    const socialLinks = [
+        { id: 'about-github', name: 'Github', link: personal.personal.socials.github, icon: <FaGithub className="w-full h-full text-gray-700 dark:text-gray-300" />, desc: "My Github Profile", color: 'text-gray-700 dark:text-gray-300' },
+        { id: 'about-linkedin', name: 'LinkedIn', link: personal.personal.socials.linkedin, icon: <FaLinkedin className="w-full h-full text-[#0077b5]" />, desc: "My LinkedIn Profile", color: 'text-[#0077b5]' },
+        { id: 'about-threads', name: 'Threads', link: personal.personal.socials.threads, icon: <PiThreadsLogo className="w-full h-full text-black dark:text-white" />, desc: "My Threads Profile", color: 'text-black dark:text-white' }
+    ];
 
-    // REVISING strategy for "MacOS-Next Folder" on Desktop:
-    // I will add an item with `mimetype: 'inode/directory-alias'` and `link: 'project-MacOS-Next'`.
-    // Then in the click handler (MobileHomeScreen and Desktop), I need to handle this.
-
-    // Wait, the user said "render them in both places thru it".
-    // "thru it" means through the 'root-desktop' folder.
-
-
-
-    fs.push({
-        id: 'about-github',
-        name: 'Github',
-        parent: 'root-about',
-        mimetype: 'text/x-uri',
-        date: 'Today',
-        size: 'Web Link',
-        link: personal.personal.socials.github,
-        icon: <FaGithub className="w-full h-full text-gray-700 dark:text-gray-300" />,
-        description: "My Github Profile"
-    });
-    fs.push({
-        id: 'about-linkedin',
-        name: 'LinkedIn',
-        parent: 'root-about',
-        mimetype: 'text/x-uri',
-        date: 'Today',
-        size: 'Web Link',
-        link: personal.personal.socials.linkedin,
-        icon: <FaLinkedin className="w-full h-full text-[#0077b5]" />,
-        description: "My LinkedIn Profile"
-    });
-    fs.push({
-        id: 'about-threads',
-        name: 'Threads',
-        parent: 'root-about',
-        mimetype: 'text/x-uri',
-        date: 'Today',
-        size: 'Web Link',
-        link: personal.personal.socials.threads,
-        icon: <PiThreadsLogo className="w-full h-full text-black dark:text-white" />,
-        description: "My Threads Profile"
+    socialLinks.forEach(s => {
+        fs.push({
+            id: s.id,
+            name: s.name,
+            parent: 'root-about',
+            mimetype: 'text/x-uri',
+            date: 'Today',
+            size: 'Web Link',
+            link: s.link,
+            icon: s.icon,
+            description: s.desc
+        });
     });
 
     return fs;
 };
 
 export const filesystem = generatefilesystem();
+
+interface SystemContext {
+    addwindow: (window: any) => void;
+    windows: any[];
+    updatewindow: (id: string, updates: any) => void;
+    setactivewindow: (id: string) => void;
+    ismobile: boolean;
+}
+
+const FileConfig: Record<string, {
+    appId: string;
+    icon: React.ReactNode;
+    getLaunchProps?: (file: filesystemitem) => any;
+}> = {
+    'inode/directory': {
+        appId: 'finder',
+        icon: <Image src="/folder.png" alt="folder" width={64} height={64} className="w-full h-full object-contain drop-shadow-md" />,
+    },
+    'application/x-executable': {
+        appId: 'app-launch',
+        icon: null
+    },
+    'image/png': {
+        appId: 'photos',
+        icon: <Image src="/photos.png" alt="image" width={64} height={64} className="w-full h-full object-contain" />,
+        getLaunchProps: (file) => ({
+            singleview: true,
+            src: file.content || file.link,
+            title: file.name,
+            desc: file.description,
+            link: file.projectLink,
+            projectPath: file.projectPath
+        })
+    },
+    'image/jpeg': {
+        appId: 'photos',
+        icon: <Image src="/photos.png" alt="image" width={64} height={64} className="w-full h-full object-contain" />,
+        getLaunchProps: (file) => ({
+            singleview: true,
+            src: file.content || file.link,
+            title: file.name,
+            desc: file.description,
+            link: file.projectLink,
+            projectPath: file.projectPath
+        })
+    },
+    'application/pdf': {
+        appId: 'fileviewer',
+        icon: <Image src="/pdf.png" alt="pdf" width={64} height={64} className="w-full h-full object-contain" />,
+        getLaunchProps: (file) => ({
+            content: file.content,
+            title: file.name,
+            type: file.mimetype
+        })
+    },
+    'text/x-uri': {
+        appId: 'safari',
+        icon: <IoGlobeOutline className="w-full h-full text-blue-500" />,
+        getLaunchProps: (file) => ({
+            initialurl: file.link || file.content
+        })
+    },
+    'text/markdown': {
+        appId: 'fileviewer',
+        icon: <IoDocumentTextOutline className="w-full h-full text-gray-500" />,
+        getLaunchProps: (file) => ({
+            content: file.content,
+            title: file.name,
+            type: file.mimetype
+        })
+    },
+    'text/plain': {
+        appId: 'fileviewer',
+        icon: <IoDocumentTextOutline className="w-full h-full text-gray-500" />,
+        getLaunchProps: (file) => ({
+            content: file.content,
+            title: file.name,
+            type: file.mimetype
+        })
+    }
+};
+
+export const getFileIcon = (mimetype: string, name: string, itemicon?: React.ReactNode) => {
+    if (itemicon) return itemicon;
+    const config = FileConfig[mimetype];
+    if (config && config.icon) return config.icon;
+    return <IoDocumentTextOutline className="w-full h-full text-gray-500" />;
+};
+
+const FolderPathMap: Record<string, string[]> = {
+    'root-projects': ['Projects'],
+    'root-apps': ['Applications'],
+    'root-icloud': ['iCloud Drive'],
+    'root-docs': ['Documents'],
+    'root-network': ['Network'],
+    'root-hd': ['Macintosh HD'],
+    'root-desktop': ['Desktop'],
+};
+
+const ParentFolderMap: Record<string, string> = {
+    'root-projects': 'Projects',
+    'root-icloud': 'iCloud Drive',
+    'root-apps': 'Applications',
+    'root-docs': 'Documents',
+    'root-desktop': 'Desktop'
+};
+
+const resolveFolderPath = (file: filesystemitem): string[] => {
+    if (FolderPathMap[file.id]) return FolderPathMap[file.id];
+
+    if (file.id === 'desktop-macos-project-link') return ['Projects', 'MacOS-Next'];
+
+    if (file.parent) {
+        if (file.parent === 'root-desktop' && file.mimetype.startsWith('inode/directory')) {
+            return [file.name];
+        }
+        if (ParentFolderMap[file.parent]) {
+            return [ParentFolderMap[file.parent], file.name];
+        }
+    }
+
+    return [file.name];
+};
+
+const resolveTarget = (itemOrId: string | filesystemitem): { appId?: string; props: any; title?: string } | null => {
+    if (typeof itemOrId === 'string') {
+        const app = apps.find(a => a.id === itemOrId || a.appname === itemOrId);
+        if (app) return { appId: app.id, props: {}, title: app.appname };
+
+        const file = filesystem.find(f => f.id === itemOrId);
+        if (file) return resolveTarget(file);
+
+        if (itemOrId.startsWith('project-')) {
+            const projectName = itemOrId.replace('project-', '');
+            return { appId: 'finder', props: { initialpath: ['Projects', projectName] }, title: 'Finder' };
+        }
+
+        console.warn(`System logic: Item '${itemOrId}' not found.`);
+        return null;
+    }
+
+    const file = itemOrId;
+    const { mimetype, id, name } = file;
+
+    if (mimetype === 'inode/directory' || mimetype === 'inode/directory-alias') {
+        return { appId: 'finder', props: { initialpath: resolveFolderPath(file) }, title: name };
+    }
+
+    if (mimetype === 'application/x-executable') {
+        const app = apps.find(a => a.appname === file.appname || a.id === file.appname?.toLowerCase());
+        if (app) return { appId: app.id, props: {}, title: app.appname };
+    }
+
+    const config = FileConfig[mimetype];
+    if (config) {
+        return {
+            appId: config.appId,
+            props: config.getLaunchProps ? config.getLaunchProps(file) : {},
+            title: name
+        };
+    }
+
+    
+    if (mimetype.startsWith('text/')) {
+        return { appId: 'fileviewer', props: { content: file.content, title: file.name, type: file.mimetype }, title: file.name };
+    }
+
+    return null;
+};
+
+export const openSystemItem = (
+    itemOrId: string | filesystemitem,
+    context: SystemContext
+) => {
+    const { addwindow, windows, updatewindow, setactivewindow, ismobile } = context;
+
+    const resolved = resolveTarget(itemOrId);
+    if (!resolved || !resolved.appId) return;
+
+    const { appId, props, title } = resolved;
+    const app = apps.find(a => a.id === appId);
+
+    if (!app) return;
+
+    const existingWins = windows.filter(w => w.appname === app.appname);
+    const shouldFocusExisting = (!props || Object.keys(props).length === 0) || !app.multiwindow;
+
+    if (shouldFocusExisting && existingWins.length > 0) {
+        const win = existingWins[existingWins.length - 1]; // Focus last opened
+        updatewindow(win.id, { isminimized: false });
+        setactivewindow(win.id);
+        return;
+    }
+
+    if (ismobile) {
+        windows.forEach((w: any) => {
+            if (!w.isminimized) updatewindow(w.id, { isminimized: true });
+        });
+    }
+
+    let position = { top: 100, left: 100 };
+    let size = app.defaultsize || { width: 900, height: 600 };
+    const ismaximized = ismobile ? true : false;
+
+    if (windows.length > 0 && !ismobile) {
+        const lastWin = windows[windows.length - 1];
+        if (lastWin.position) {
+            position = { top: lastWin.position.top + 20, left: lastWin.position.left + 20 };
+        }
+    }
+
+    if (ismobile && typeof window !== 'undefined') {
+        position = { top: 0, left: 0 };
+        size = { width: window.innerWidth, height: window.innerHeight };
+    }
+
+    addwindow({
+        id: `${app.appname}-${Date.now()}`,
+        appname: app.appname,
+        title: title || app.appname,
+        component: app.componentname,
+        icon: app.icon,
+        isminimized: false,
+        ismaximized: ismaximized,
+        position: position,
+        size: size,
+        props: props || {}
+    });
+};

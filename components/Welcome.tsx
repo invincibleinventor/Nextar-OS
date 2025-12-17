@@ -3,11 +3,13 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWindows } from './WindowContext';
-import { personal, apps } from './data';
+import { useDevice } from './DeviceContext';
+import { personal, apps, openSystemItem } from './data';
 import { IoArrowForward, IoCheckmarkCircle, IoLogoApple, IoConstructOutline, IoAppsOutline, IoRocketOutline, IoDesktopOutline, IoLaptopOutline, IoPhonePortraitOutline, IoLogoGithub } from "react-icons/io5";
 
 export default function Welcome(props: any) {
-    const { removewindow, addwindow } = useWindows();
+    const { removewindow, addwindow, windows, updatewindow, setactivewindow } = useWindows();
+    const { ismobile } = useDevice();
     const [step, setstep] = useState(0);
 
     const steps = [
@@ -148,18 +150,7 @@ export default function Welcome(props: any) {
                         <div
                             key={app.id}
                             onClick={() => {
-                                addwindow({
-                                    id: `${app.id}-${Date.now()}`,
-                                    appname: app.appname,
-                                    title: app.appname,
-                                    component: app.componentname,
-                                    icon: app.icon,
-                                    isminimized: false,
-                                    ismaximized: false,
-                                    position: { top: 100, left: 100 },
-                                    size: app.defaultsize || { width: 900, height: 600 },
-                                    props: {}
-                                });
+                                openSystemItem(app.id, { addwindow, windows, updatewindow, setactivewindow, ismobile });
                             }}
                             className="flex flex-col items-center gap-2 hover:scale-105 transition-transform group cursor-pointer"
                         >
@@ -189,19 +180,7 @@ export default function Welcome(props: any) {
 
                     <button
                         onClick={() => {
-                            const mailapp = apps.find(a => a.id === 'mail');
-                            addwindow({
-                                id: `mail-${Date.now()}`,
-                                appname: 'Mail',
-                                title: 'Mail',
-                                component: 'Mail',
-                                icon: '/mail.png',
-                                isminimized: false,
-                                ismaximized: false,
-                                position: { top: 100, left: 100 },
-                                size: mailapp?.defaultsize || { width: 900, height: 600 },
-                                props: {}
-                            });
+                            openSystemItem('mail', { addwindow, windows, updatewindow, setactivewindow, ismobile });
                         }}
                         className="mt-2 px-4 py-1.5 bg-gray-200 dark:bg-gray-700 text-black dark:text-white rounded-full text-xs font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition"
                     >
@@ -272,19 +251,7 @@ export default function Welcome(props: any) {
                         if (step < steps.length - 1) {
                             setstep(step + 1);
                         } else {
-                            const mailapp = apps.find(a => a.id === 'mail');
-                            addwindow({
-                                id: `mail-${Date.now()}`,
-                                appname: 'Mail',
-                                title: 'Mail',
-                                component: 'Mail',
-                                icon: '/mail.png',
-                                isminimized: false,
-                                ismaximized: false,
-                                position: { top: 100, left: 100 },
-                                size: mailapp?.defaultsize || { width: 900, height: 600 },
-                                props: {}
-                            });
+                            openSystemItem('mail', { addwindow, windows, updatewindow, setactivewindow, ismobile });
 
                             if (props.id) {
                                 removewindow(props.id);

@@ -4,7 +4,7 @@ import Image from 'next/image';
 
 import { useWindows } from './WindowContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { apps } from './data';
+import { apps, openSystemItem } from './data';
 import Launchpad from './apps/Launchpad';
 import { useState } from 'react';
 import { useDevice } from './DeviceContext';
@@ -27,60 +27,14 @@ const Dock = () => {
         focusortogglewindow(name);
       }
     } else {
-      const app = apps.find((a) => a.appname === name);
-      const startlarge = app && (app.additionaldata as any) && (app.additionaldata as any).startlarge;
-
-      let position = { top: 100, left: 100 };
-      let size = (app as any)?.defaultsize || { width: 900, height: 600 };
-      const ismaximized = false;
-
-      if (startlarge && typeof window !== 'undefined') {
-        const screenwidth = window.innerWidth;
-        const screenheight = window.innerHeight;
-        size = {
-          width: Math.round(screenwidth * 0.85),
-          height: Math.round((screenheight - 30 - 75) * 0.85),
-        };
-        position = {
-          top: 30 + Math.round(((screenheight - 30 - 75) - size.height) / 2),
-          left: Math.round((screenwidth - size.width) / 2),
-        };
-      }
-      const newwin = {
-        id: `${name}-${Date.now()}`,
-        appname: name,
-        additionaldata: app?.additionaldata || {},
-        title: title || app?.appname || name,
-        component: app?.componentname || name,
-        props: {},
-        isminimized: false,
-        position,
-        size,
-        ismaximized: ismaximized,
-      };
-      addwindow(newwin);
-      setactivewindow(newwin.id);
+      openSystemItem(id, {
+        addwindow,
+        windows,
+        updatewindow,
+        setactivewindow,
+        ismobile
+      });
     }
-  }
-
-
-  const opennewwin = (app: any) => {
-    const startmaximized = (app.additionaldata as any) && (app.additionaldata as any).startmaximized;
-    const newwin = {
-      id: `${app.appname}-${Date.now()}`,
-      appname: app.appname,
-      additionaldata: app.additionaldata || {},
-      title: app.title || app.appname,
-      component: app.componentname,
-      props: {},
-      isminimized: false,
-      position: { top: 100, left: 100 },
-      size: (app as any).defaultsize || { width: 900, height: 600 },
-      ismaximized: !!startmaximized,
-    };
-    addwindow(newwin);
-    setactivewindow(newwin.id);
-    setlaunch(!launchpad);
   }
 
   const basesize = 55;

@@ -1,13 +1,15 @@
 'use client';
 import React from 'react';
 import Image from 'next/image';
-import { apps } from './data';
+import { apps, openSystemItem } from './data';
 import { useWindows } from './WindowContext';
+import { useDevice } from './DeviceContext';
 
 import { IoSearch } from 'react-icons/io5';
 
 const AppLibrary = () => {
     const { addwindow, windows, setactivewindow, updatewindow } = useWindows();
+    const { ismobile } = useDevice();
     const categories: { [key: string]: string[] } = {
         "Social": ["Mail"],
         "Productivity": ["Safari", "Calendar", "Notes", "Reminders"],
@@ -20,27 +22,7 @@ const AppLibrary = () => {
     };
 
     const openapp = (app: any) => {
-        const existingwin = windows.find((win: any) => win.appname === app.appname);
-        if (existingwin) {
-            updatewindow(existingwin.id, { isminimized: false });
-            setactivewindow(existingwin.id);
-            return;
-        }
-
-        const newwin = {
-            id: `${app.appname}-${Date.now()}`,
-            appname: app.appname,
-            additionaldata: {},
-            title: app.appname,
-            component: app.componentname,
-            props: {},
-            isminimized: false,
-            ismaximized: true,
-            position: { top: 0, left: 0 },
-            size: { width: window.innerWidth, height: window.innerHeight },
-        };
-        addwindow(newwin);
-        setactivewindow(newwin.id);
+        openSystemItem(app.id, { addwindow, windows, setactivewindow, updatewindow, ismobile });
     };
 
     const startpos = React.useRef({ x: 0, y: 0 });

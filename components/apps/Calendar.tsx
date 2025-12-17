@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { personal } from '../data';
+import { personal, openSystemItem } from '../data';
 import { useWindows } from '../WindowContext';
 import { IoCalendarOutline, IoTimeOutline, IoGolfOutline, IoRocketOutline } from "react-icons/io5";
 import { useDevice } from '../DeviceContext';
@@ -10,7 +10,7 @@ const daynum = today.getDate();
 const weekday = today.toLocaleDateString('en-US', { weekday: 'short' });
 
 export default function Calendar() {
-    const { addwindow } = useWindows();
+    const { addwindow, windows, updatewindow, setactivewindow } = useWindows();
     const { ismobile } = useDevice();
     const [view, setview] = useState<'timeline' | 'grid'>('timeline');
 
@@ -22,7 +22,7 @@ export default function Calendar() {
         color: proj.type === 'Open Source' ? "#007AFF" : "#34C759",
         icon: proj.icon,
         tech: proj.stack,
-                defaultsize: { width: 1000, height: 600 }
+        defaultsize: { width: 1000, height: 600 }
 
     }));
 
@@ -111,18 +111,7 @@ export default function Calendar() {
                                                     <div className="flex gap-4 items-center">
                                                         <button
                                                             onClick={() => {
-                                                                addwindow({
-                                                                    id: `finder-${e.title}-${Date.now()}`,
-                                                                    appname: 'Finder',
-                                                                    title: `Project: ${e.title}`,
-                                                                    component: 'apps/Finder',
-                                                                    icon: '/finder.png',
-                                                                    isminimized: false,
-                                                                    ismaximized: false,
-                                                                    position: { top: 100, left: 100 },
-                                                                    size: e.defaultsize || { width: 900, height: 600 },
-                                                                    props: { initialpath: ['Projects', e.title] }
-                                                                });
+                                                                openSystemItem(`project-${e.title}`, { addwindow, windows, updatewindow, setactivewindow, ismobile });
                                                             }}
                                                             className="text-[11px] px-3 py-1.5 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 rounded-full text-black/70 dark:text-white/70 transition-colors flex items-center gap-1"
                                                         >
@@ -159,18 +148,7 @@ export default function Calendar() {
 
                                             <button
                                                 onClick={() => {
-                                                    addwindow({
-                                                        id: `finder-${e.title}-${Date.now()}`,
-                                                        appname: 'Finder',
-                                                        title: `Project: ${e.title}`,
-                                                        component: 'apps/Finder',
-                                                        icon: '/finder.png',
-                                                        isminimized: false,
-                                                        ismaximized: false,
-                                                        position: { top: 100, left: 100 },
-                                                        size: { width: 900, height: 600 },
-                                                        props: { initialpath: ['Projects', e.title] }
-                                                    });
+                                                    openSystemItem(`project-${e.title}`, { addwindow, windows, updatewindow, setactivewindow, ismobile });
                                                 }}
                                                 className="w-full mt-auto text-xs py-2 bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
                                             >

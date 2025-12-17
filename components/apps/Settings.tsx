@@ -10,7 +10,7 @@ import { useSettings } from '../SettingsContext';
 import { useTheme } from '../ThemeContext';
 import { useWindows } from '../WindowContext';
 import { useDevice } from '../DeviceContext';
-import { personal as portfoliodata } from '../data';
+import { personal as portfoliodata, openSystemItem } from '../data';
 
 const specs = [
     { label: "Processor", value: "Silicon yumm4 Pro" },
@@ -62,7 +62,7 @@ export default function Settings() {
     const [activetab, setactivetab] = useState("general");
     const { reducemotion, setreducemotion, reducetransparency, setreducetransparency } = useSettings();
     const { theme, toggletheme } = useTheme();
-    const { addwindow } = useWindows();
+    const { addwindow, windows, updatewindow, setactivewindow } = useWindows();
     const { ismobile } = useDevice();
     const [isnarrow, setisnarrow] = useState(false);
     const [showsidebar, setshowsidebar] = useState(true);
@@ -155,27 +155,16 @@ export default function Settings() {
                 </div>
 
                 <div className="flex-1 overflow-y-auto px-2 py-2">
-                   <div className="mx-2 my-4 lg:hidden block">
+                    <div className="mx-2 my-4 lg:hidden block">
                         <h1 className='text-2xl font-bold dark:text-white text-black'>Settings</h1>
                     </div>
                     <div
                         className="mx-1 mb-4 flex items-center gap-3 p-2 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-colors"
                         onClick={() => {
-                            addwindow({
-                                id: `mail-${Date.now()}`,
-                                appname: 'Mail',
-                                title: 'Mail',
-                                component: 'Mail',
-                                icon: '/mail.png',
-                                isminimized: false,
-                                ismaximized: false,
-                                position: { top: 100, left: 100 },
-                                size: { width: 900, height: 600 },
-                                props: {}
-                            });
+                            openSystemItem('mail', { addwindow, windows, updatewindow, setactivewindow, ismobile });
                         }}
                     >
-                    
+
                         <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 shrink-0">
                             <Image src="/pfp.png" alt="Profile" width={40} height={40} className="w-full h-full object-cover" />
                         </div>

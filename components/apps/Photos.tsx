@@ -1,7 +1,7 @@
 'use client';
 import Image from 'next/image';
 import React, { useState, useEffect } from 'react';
-import { personal, apps } from '../data';
+import { personal, apps, openSystemItem } from '../data';
 import { useWindows } from '../WindowContext';
 import { IoImagesOutline, IoHeartOutline, IoAlbumsOutline, IoTrashOutline, IoMenu, IoArrowBack, IoInformationCircleOutline, IoShareOutline, IoChevronBack, IoGlobeOutline, IoFolderOpenOutline } from "react-icons/io5";
 
@@ -9,18 +9,21 @@ interface photosprops {
     singleview?: boolean;
     src?: string;
     title?: string;
+    desc?: string;
+    link?: string;
+    projectPath?: string;
 }
 
-export default function Photos({ singleview, src, title }: photosprops) {
+export default function Photos({ singleview, src, title, desc, link, projectPath }: photosprops) {
     const [selecteditem, setselecteditem] = useState("all");
     const [isnarrow, setisnarrow] = useState(false);
     const [showsidebar, setshowsidebar] = useState(true);
-    const [viewingimage, setviewingimage] = useState<{ src: string, title?: string, desc?: string, link?: string } | null>(
-        singleview && src ? { src, title } : null
+    const [viewingimage, setviewingimage] = useState<{ src: string, title?: string, desc?: string, link?: string, projectPath?: string } | null>(
+        singleview && src ? { src, title, desc, link, projectPath } : null
     );
 
     const containerref = React.useRef<HTMLDivElement>(null);
-    const { ismobile, addwindow } = useWindows();
+    const { ismobile, addwindow, windows, updatewindow, setactivewindow } = useWindows();
 
     useEffect(() => {
         if (!containerref.current) return;
@@ -39,21 +42,7 @@ export default function Photos({ singleview, src, title }: photosprops) {
     }, [isnarrow]);
 
     const openInFinder = (path: string) => {
-        const finderapp = apps.find(a => a.id === 'finder');
-        if (finderapp) {
-            addwindow({
-                id: `finder-photo-${Date.now()}`,
-                appname: 'Finder',
-                title: 'Finder',
-                component: finderapp.componentname,
-                icon: finderapp.icon,
-                isminimized: false,
-                ismaximized: false,
-                position: { top: 150, left: 150 },
-                size: { width: 900, height: 600 },
-                props: { initialpath: ['Projects', path] }
-            });
-        }
+        openSystemItem(`project-${path}`, { addwindow, windows, updatewindow, setactivewindow, ismobile });
     };
 
     const allcategories = Array.from(new Set(personal.projects.map(p => p.stack[0].trim() || 'Uncategorized')));
@@ -186,7 +175,13 @@ export default function Photos({ singleview, src, title }: photosprops) {
                                         <span>Location</span>
                                     </div>
                                     <button
-                                        onClick={() => viewingimage.title && openInFinder(viewingimage.title.trim())}
+                                        onClick={() => {
+                                            if (viewingimage.projectPath) {
+                                                openInFinder(viewingimage.projectPath);
+                                            } else if (viewingimage.title) {
+                                                openInFinder(viewingimage.title.trim());
+                                            }
+                                        }}
                                         className="text-xs bg-white/10 px-3 py-1 rounded-full hover:bg-white/20 transition-colors"
                                     >
                                         Finder

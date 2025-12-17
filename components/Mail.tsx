@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import Image from 'next/image';
-import { getMails, MailItem, personal, apps } from './data';
+import { getMails, MailItem, personal, apps, openSystemItem } from './data';
 import { IoMailOutline, IoLogoGithub, IoPaperPlaneOutline, IoChevronBack, IoSearch, IoArchiveOutline, IoTrashOutline, IoPencilOutline, IoFlagOutline, IoSchoolOutline, IoPersonCircleOutline, IoConstructOutline, IoFolderOpenOutline } from "react-icons/io5";
 import { useDevice } from './DeviceContext';
 import { useWindows } from './WindowContext';
@@ -8,29 +8,15 @@ import { useWindows } from './WindowContext';
 const IoAccordionOutline = () => <IoPencilOutline />;
 
 export default function Mail() {
-    const { addwindow } = useWindows();
+    const { addwindow, windows, updatewindow, setactivewindow } = useWindows();
     const [selectedFolder, setSelectedFolder] = useState('inbox');
     const [selectedMailId, setSelectedMailId] = useState<string | null>(null);
     const { ismobile } = useDevice();
     const [sidebarOpen, setSidebarOpen] = useState(true);
 
     const openInFinder = React.useCallback((path: string) => {
-        const finderapp = apps.find(a => a.id === 'finder');
-        if (finderapp) {
-            addwindow({
-                id: `finder-project-${Date.now()}`,
-                appname: 'Finder',
-                title: 'Finder',
-                component: finderapp.componentname,
-                icon: finderapp.icon,
-                isminimized: false,
-                ismaximized: false,
-                position: { top: 150, left: 150 },
-                size: { width: 900, height: 600 },
-                props: { initialpath: ['Projects', path] }
-            });
-        }
-    }, [addwindow]);
+        openSystemItem(`project-${path}`, { addwindow, windows, updatewindow, setactivewindow, ismobile });
+    }, [addwindow, windows, updatewindow, setactivewindow, ismobile]);
 
     const ALL_MAILS: MailItem[] = useMemo(() => getMails(openInFinder), [openInFinder]);
 
@@ -43,7 +29,7 @@ export default function Mail() {
     const groupedMails = selectedFolder === 'inbox'
         ? filteredMails.reduce((acc, mail) => {
             const cat = mail.category || 'Other';
-            if (!acc[cat]) acc[acc[cat] ? 'cat' : cat] = []; // fallback? no wait
+            if (!acc[cat]) acc[acc[cat] ? 'cat' : cat] = []; 
             if (!acc[cat]) acc[cat] = [];
             acc[cat].push(mail);
             return acc;

@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { Notification, initialnotifications } from './notifications';
 import { useWindows } from './WindowContext';
 import { useDevice } from './DeviceContext';
+import { apps, openSystemItem } from './data';
 
 interface NotificationContextType {
     notifications: Notification[];
@@ -21,7 +22,7 @@ const NotificationContext = createContext<NotificationContextType | undefined>(u
 export function NotificationProvider({ children }: { children: ReactNode }) {
     const [notifications, setnotifications] = useState<Notification[]>([]);
     const { addwindow, setactivewindow, windows, updatewindow } = useWindows();
-    const { osstate } = useDevice();
+    const { osstate, ismobile } = useDevice();
     const [isloaded, setisloaded] = useState(false);
     const [hasshownwelcome, sethasshownwelcome] = useState(false);
 
@@ -66,33 +67,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     };
 
     const handlenotificationclick = (notif: Notification) => {
-        const existing = windows.find((w: any) =>
-            w.appname.toLowerCase() === notif.appname.toLowerCase() ||
-            w.id.startsWith(notif.appid)
-        );
-
-        if (existing) {
-            updatewindow(existing.id, { isMinimized: false });
-            setactivewindow(existing.id);
-        } else {
-            import('./data').then(({ apps }) => {
-                const appdata = apps.find(a => a.id === notif.appid || a.appname === notif.appname);
-                if (appdata) {
-                    addwindow({
-                        id: `${appdata.appname}-${Date.now()}`,
-                        appname: appdata.appname,
-                        additionaldata: {},
-                        title: appdata.appname,
-                        component: appdata.componentname,
-                        props: {},
-                        isminimized: false,
-                        ismaximized: false,
-                        position: { top: 50, left: 50 },
-                        size: appdata.defaultsize ? appdata.defaultsize : { width: 900, height: 600 },
-                    });
-                }
-            });
-        }
+        openSystemItem(notif.appid, { addwindow, windows, updatewindow, setactivewindow, ismobile });
     };
 
     const markasviewed = (id: string) => {

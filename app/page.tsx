@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useWindows } from '@/components/WindowContext';
 import Window from '@/components/Window';
-import { apps, filesystem } from '@/components/data';
+import { apps, filesystem, openSystemItem, getFileIcon } from '@/components/data';
 import { useDevice } from '@/components/DeviceContext';
 import Panel from '@/components/panel';
 import Dock from '@/components/Dock';
@@ -21,7 +21,7 @@ import { useNotifications } from '@/components/NotificationContext';
 import MacOSNotifications from '@/components/MacOSNotifications';
 
 const Page = () => {
-  const { windows, addwindow, setwindows } = useWindows();
+  const { windows, addwindow, setwindows, updatewindow, setactivewindow } = useWindows();
   const { osstate, ismobile } = useDevice();
   const { } = useNotifications();
   const [showcontrolcenter, setshowcontrolcenter] = useState(false);
@@ -29,63 +29,16 @@ const Page = () => {
   const [showrecentapps, setshowrecentapps] = useState(false);
   const [issystemgestureactive, setissystemgestureactive] = useState(false);
 
-  const openwelcome = () => {
-    const welcomeapp = apps.find((app) => app.id === 'welcome');
-    if (!welcomeapp) return;
-
-    addwindow({
-      id: `welcome-${Date.now()}`,
-      appname: 'Welcome',
-      title: 'Welcome',
-      component: welcomeapp.componentname,
-      icon: '/info.png',
-      isminimized: false,
-      ismaximized: false,
-      position: { top: 50, left: 50 },
-      size: { width: 900, height: 600 },
-      props: {},
-    });
-  };
-
-  const openoldportfolio = () => {
-    const safariapp = apps.find((app) => app.id === 'safari');
-    if (!safariapp) return;
-
-    addwindow({
-      id: `safari-oldportfolio-${Date.now()}`,
-      appname: 'Old Portfolio',
-      title: 'Old Portfolio',
-      component: safariapp.componentname,
-      icon: '/code.png',
-      isminimized: false,
-      ismaximized: false,
-      position: { top: 50, left: 50 },
-      size: { width: 1024, height: 768 },
-      props: { initialurl: 'https://baladev.vercel.app' }
-    });
-  };
-
   const haslaunchedwelcome = React.useRef(false);
+
+  const context = { addwindow, windows, updatewindow, setactivewindow, ismobile };
 
   useEffect(() => {
     if (osstate === 'unlocked' && !haslaunchedwelcome.current) {
-      const welcomeapp = apps.find(a => a.id === 'welcome');
-      if (welcomeapp) {
-        addwindow({
-          id: 'welcome',
-          appname: 'Welcome',
-          title: 'Welcome',
-          component: 'Welcome',
-          icon: '/info.png',
-          isminimized: false,
-          ismaximized: false,
-          position: { top: 100, left: 100 },
-          size: { width: 900, height: 600 },
-          props: {}
-        });
-        haslaunchedwelcome.current = true;
-      }
+      openSystemItem('welcome', context);
+      haslaunchedwelcome.current = true;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [osstate, addwindow]);
 
   const StatusBar = () => {
@@ -143,90 +96,20 @@ const Page = () => {
                 if (shownotificationcenter) setshownotificationcenter(false);
               }}
             >
-              <div className='p-4 pt-10 gap-4 grid grid-rows-6 grid-flow-col h-max w-max ml-auto' >
+              <div className='p-4 pt-10 gap-4 flex flex-col flex-wrap-reverse content-start h-full w-full' >
                 {filesystem.filter(item => item.parent === 'root-desktop').map((item) => (
                   <div
                     key={item.id}
                     onDoubleClick={(e) => {
                       e.stopPropagation();
-                      if (item.mimetype === 'application/x-executable') {
-                        const app = apps.find(a => a.appname === item.appname);
-                        if (app) {
-                          addwindow({
-                            id: `${app.appname}-${Date.now()}`,
-                            appname: app.appname,
-                            title: app.appname,
-                            component: app.componentname,
-                            icon: app.icon,
-                            isminimized: false,
-                            ismaximized: false,
-                            position: { top: 100, left: 100 },
-                            size: app.defaultsize || { width: 900, height: 600 },
-                            props: {},
-                          });
-                        }
-                      } else if (item.mimetype === 'text/x-uri' && item.link) {
-                        const safariapp = apps.find(a => a.id === 'safari');
-                        if (safariapp) {
-                          addwindow({
-                            id: `safari-${Date.now()}`,
-                            appname: safariapp.appname,
-                            title: safariapp.appname,
-                            component: safariapp.componentname,
-                            icon: safariapp.icon,
-                            isminimized: false,
-                            ismaximized: false,
-                            position: { top: 50, left: 50 },
-                            size: { width: 1024, height: 768 },
-                            props: { initialurl: item.link }
-                          });
-                        }
-                      } else if (item.mimetype === 'inode/directory') {
-                        const finderapp = apps.find(a => a.id === 'finder');
-                        if (finderapp) {
-                          let targetPath = ['Projects'];
-                          if (item.link) {
-                            const targetFolder = filesystem.find(i => i.id === item.link);
-                            if (targetFolder) targetPath = ['Projects', targetFolder.name];
-                          }
-                          addwindow({
-                            id: `finder-${Date.now()}`,
-                            appname: 'Finder',
-                            title: 'Finder',
-                            component: finderapp.componentname,
-                            icon: finderapp.icon,
-                            isminimized: false,
-                            ismaximized: false,
-                            position: { top: 100, left: 100 },
-                            size: { width: 900, height: 600 },
-                            props: { initialpath: targetPath }
-                          });
-                        }
-                      } else if (item.mimetype === 'application/pdf') {
-                        const fileviewerapp = apps.find(a => a.id === 'fileviewer');
-                        if (fileviewerapp) {
-                          addwindow({
-                            id: `fileviewer-${Date.now()}`,
-                            appname: fileviewerapp.appname,
-                            title: item.name,
-                            component: fileviewerapp.componentname,
-                            icon: fileviewerapp.icon,
-                            isminimized: false,
-                            ismaximized: false,
-                            position: { top: 100, left: 100 },
-                            size: { width: 700, height: 800 },
-                            props: { content: item.content, title: item.name, type: 'application/pdf' }
-                          });
-                        }
-                      }
+                      openSystemItem(item, context);
                     }}
                     className="p-2 flex hover:bg-neutral-400/20 rounded-md hover:backdrop-blur-lg hover:filter px-2 flex-col items-center content-center text-white cursor-default group border border-transparent hover:border-white/10 transition-all w-[90px]"
                   >
                     <div className="w-14 h-14 relative mb-1 drop-shadow-md">
-                      {item.icon ? (
-                        <div className="w-full h-full">{item.icon}</div>
-                      ) : <div className="w-full h-full bg-gray-400 rounded"></div>
-                      }
+                      <div className="w-full h-full">
+                        {getFileIcon(item.mimetype, item.name, item.icon)}
+                      </div>
                     </div>
                     <span className='text-[11px] w-full font-semibold text-white drop-shadow-md text-center break-words leading-tight line-clamp-2 px-1 rounded-sm group-hover:text-white'>{item.name}</span>
                   </div>
