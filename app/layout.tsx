@@ -4,7 +4,7 @@ import { WindowProvider } from '@/components/WindowContext';
 import { ThemeProvider } from '@/components/ThemeContext';
 import { DeviceProvider } from '@/components/DeviceContext';
 import { SettingsProvider } from '@/components/SettingsContext';
-
+import { Analytics } from "@vercel/analytics/next"
 
 import { personal as portfoliodata } from '@/components/data';
 
@@ -101,6 +101,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <ThemeProvider>
       <html className='bg-black' lang="en">
+        <Analytics />
         <body className="font-sf w-screen h-screen overflow-hidden bg-black antialiased">
           <WindowProvider>
             <div className="fixed inset-0 bg-black h-[100dvh] w-screen overflow-hidden transition-colors duration-500">
