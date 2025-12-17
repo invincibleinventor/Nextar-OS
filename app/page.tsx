@@ -107,11 +107,11 @@ const Page = () => {
                     className="p-2 flex hover:bg-neutral-400/20 rounded-md hover:backdrop-blur-lg hover:filter px-2 flex-col items-center content-center text-white cursor-default group border border-transparent hover:border-white/10 transition-all w-[90px]"
                   >
                     <div className="w-14 h-14 relative mb-1 drop-shadow-md">
-                      <div className="w-full h-full">
+                      <div className="w-full h-full aspect-square">
                         {getFileIcon(item.mimetype, item.name, item.icon)}
                       </div>
                     </div>
-                    <span className='text-[11px] w-full font-semibold text-white drop-shadow-md text-center break-words leading-tight line-clamp-2 px-1 rounded-sm group-hover:text-white'>{item.name}</span>
+                    <span className='text-[11px] w-full font-semibold text-white drop-shadow-md text-center break-words leading-tight line-clamp-2 px-1 rounded-sm group-hover:text-white'>{item.name+`\n`}</span>
                   </div>
                 ))}
 
@@ -214,7 +214,7 @@ const Page = () => {
                   }
                 }}
               >
-                <div className="w-full h-[5px] mb-[12px] bg-neutral-400/90 dark:bg-white/80 rounded-full  cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.3)] backdrop-blur-md"></div>
+                <div className="w-full h-[5px] mb-[12px] bg-neutral-300/90 dark:bg-white/80 rounded-full  cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.3)] backdrop-blur-md"></div>
               </motion.div>
             </div>
           </div>

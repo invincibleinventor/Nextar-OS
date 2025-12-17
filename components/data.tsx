@@ -814,7 +814,6 @@ const generatefilesystem = (): filesystemitem[] => {
     };
 
     fs.push({ ...resumeBase, id: 'root-resume', parent: 'root-docs' } as filesystemitem);
-    fs.push({ ...resumeBase, id: 'desktop-resume', parent: 'root-desktop' } as filesystemitem);
 
     apps.forEach(a => {
         const appBase: Partial<filesystemitem> = {
@@ -856,11 +855,12 @@ const generatefilesystem = (): filesystemitem[] => {
             mimetype: 'inode/directory',
             date: 'Today',
             size: 'Folder',
-            icon: <Image className='w-full h-full p-[6px] sm:w-full sm:h-full' src='/folder.png' alt="MacOS-Next Project" width={64} height={64} />,
+            icon: <Image className='w-max h-max  lg:my-0 my-auto' src='/folder.png' alt="MacOS-Next Project" width={64} height={64} />,
             description: "Open MacOS-Next Project Folder",
             link: `project-${macosProject.title}`
         });
     }
+    fs.push({ ...resumeBase, id: 'desktop-resume', parent: 'root-desktop' } as filesystemitem);
 
     const socialLinks = [
         { id: 'about-github', name: 'Github', link: personal.personal.socials.github, icon: <FaGithub className="w-full h-full text-gray-700 dark:text-gray-300" />, desc: "My Github Profile", color: 'text-gray-700 dark:text-gray-300' },

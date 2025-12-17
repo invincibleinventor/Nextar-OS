@@ -60,7 +60,7 @@ const dockAppIds = ['finder', 'safari', 'mail', 'settings'];
                                     whileTap={{ scale: 0.9 }}
                                 >
                                     <div className="w-[60px] h-[60px] rounded-[14px] overflow-hidden dark:bg-black/10 bg-white/10 shadow-sm ring-1 ring-white/5 relative">
-                                        <div className="w-full h-full">
+                                        <div className="w-full my-auto h-full flex flex-col">
                                             {getFileIcon(item.mimetype, item.name, item.icon)}
                                         </div>
                                     </div>
