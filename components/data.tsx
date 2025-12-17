@@ -473,10 +473,10 @@ export const ALL_MAILS: MailItem[] = [
         content: (
             <div className="space-y-4 text-sm leading-relaxed text-black dark:text-white">
                 <p>Hi there,</p>
-                <p>Welcome to <strong>MacOS-Next</strong>! I built this "Portfolio OS" to demonstrate the power of modern web technologies.</p>
+                <p>Welcome to <strong>MacOS-Next</strong>! I built this &quot;Portfolio OS&quot; to demonstrate the power of modern web technologies.</p>
                 <p><strong>About Me:</strong></p>
                 <p>{personal.personal.bio}</p>
-                <p>Feel free to explore the apps, check out my projects in the "Projects" folder, or read my latest thoughts in "Blog".</p>
+                <p>Feel free to explore the apps, check out my projects in the &quot;Projects&quot; folder, or read my latest thoughts in &quot;Blog&quot;.</p>
                 <p>Best,<br />Bala</p>
             </div>
         )
@@ -510,12 +510,12 @@ export const ALL_MAILS: MailItem[] = [
                     <a href={proj.link || '#'} target="_blank" rel="noreferrer" className="inline-block px-4 py-2 bg-[#007AFF] text-center line-clamp-2 mx-auto text-white rounded-md text-xs font-semibold hover:bg-[#0062cc] transition shadow-sm">
                         View Project
                     </a>
-                 
+
                 </div>
             </div>
         )
     })),
-  ];
+];
 
 export const getMails = (openInFinder: (path: string) => void): MailItem[] => {
     return [
@@ -533,10 +533,10 @@ export const getMails = (openInFinder: (path: string) => void): MailItem[] => {
             content: (
                 <div className="space-y-4 text-sm leading-relaxed text-black dark:text-white">
                     <p>Hi there,</p>
-                    <p>Welcome to <strong>MacOS-Next</strong>! I built this "Portfolio OS" to demonstrate the power of modern web technologies.</p>
+                    <p>Welcome to <strong>MacOS-Next</strong>! I built this &quot;Portfolio OS&quot; to demonstrate the power of modern web technologies.</p>
                     <p><strong>About Me:</strong></p>
                     <p>{personal.personal.bio}</p>
-                    <p>Feel free to explore the apps, check out my projects in the "Projects" folder, or read my latest thoughts in "Blog".</p>
+                    <p>Feel free to explore the apps, check out my projects in the &quot;Projects&quot; folder, or read my latest thoughts in &quot;Blog&quot;.</p>
                     <p>Best,<br />Bala</p>
                 </div>
             )

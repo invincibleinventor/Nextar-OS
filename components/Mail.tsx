@@ -14,7 +14,7 @@ export default function Mail() {
     const { ismobile } = useDevice();
     const [sidebarOpen, setSidebarOpen] = useState(true);
 
-    const openInFinder = (path: string) => {
+    const openInFinder = React.useCallback((path: string) => {
         const finderapp = apps.find(a => a.id === 'finder');
         if (finderapp) {
             addwindow({
@@ -30,9 +30,9 @@ export default function Mail() {
                 props: { initialpath: ['Projects', path] }
             });
         }
-    };
+    }, [addwindow]);
 
-    const ALL_MAILS: MailItem[] = useMemo(() => getMails(openInFinder), []);
+    const ALL_MAILS: MailItem[] = useMemo(() => getMails(openInFinder), [openInFinder]);
 
     const filteredMails = selectedFolder === 'inbox'
         ? ALL_MAILS
@@ -53,8 +53,8 @@ export default function Mail() {
     return (
         <div className="flex h-full w-full bg-white dark:bg-[#1e1e1e] font-sf text-black dark:text-white relative overflow-hidden">
             <div className={`flex h-full transition-all duration-300 ease-in-out ${ismobile
-                    ? (sidebarOpen && !selectedMailId ? 'w-full' : 'w-0 overflow-hidden')
-                    : (sidebarOpen ? 'w-full md:w-[300px] lg:w-[250px]' : 'w-0 overflow-hidden')
+                ? (sidebarOpen && !selectedMailId ? 'w-full' : 'w-0 overflow-hidden')
+                : (sidebarOpen ? 'w-full md:w-[300px] lg:w-[250px]' : 'w-0 overflow-hidden')
                 }`}>
 
                 <div className={`

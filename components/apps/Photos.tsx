@@ -72,7 +72,7 @@ export default function Photos({ singleview, src, title }: photosprops) {
                 setviewingimage(prev => ({ ...prev!, desc: project.desc, link: project.link }));
             }
         }
-    }, [viewingimage?.title]);
+    }, [viewingimage]);
 
     const [showInspector, setShowInspector] = useState(false);
 

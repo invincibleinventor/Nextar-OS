@@ -96,7 +96,7 @@ export default function LockScreen() {
                                     </div>
                                 </motion.form>
                                 <div className="mt-8 text-white/50 text-[11px] font-medium cursor-pointer hover:text-white transition-colors flex flex-col items-center gap-2">
-                                    <span>Hit Enter - There's no password!</span>
+                                    <span>Hit Enter - There&apos;s no password!</span>
                                     {hint && (
                                         <span className="text-white/80 font-semibold animate-pulse">Hint: user</span>
                                     )}
