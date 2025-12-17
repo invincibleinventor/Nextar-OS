@@ -155,6 +155,9 @@ export default function Settings() {
                 </div>
 
                 <div className="flex-1 overflow-y-auto px-2 py-2">
+                   <div className="mx-2 my-4 lg:hidden block">
+                        <h1 className='text-2xl font-bold dark:text-white text-black'>Settings</h1>
+                    </div>
                     <div
                         className="mx-1 mb-4 flex items-center gap-3 p-2 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 rounded-lg transition-colors"
                         onClick={() => {
@@ -172,6 +175,7 @@ export default function Settings() {
                             });
                         }}
                     >
+                    
                         <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 shrink-0">
                             <Image src="/pfp.png" alt="Profile" width={40} height={40} className="w-full h-full object-cover" />
                         </div>
@@ -194,7 +198,7 @@ export default function Settings() {
                                         setactivetab(item.id);
                                         if (isnarrow) setshowsidebar(false);
                                     }}
-                                    className={`flex items-center gap-3 px-3 py-1.5 mx-1 rounded-md cursor-pointer transition-colors
+                                    className={`flex items-center gap-3 px-3 lg:py-1.5 py-2 mx-1 rounded-md cursor-pointer transition-colors
                                                 ${activetab === item.id
                                             ? 'bg-[#007AFF] text-white'
                                             : 'hover:bg-black/5 dark:hover:bg-white/10 text-black dark:text-white'}`}
@@ -205,7 +209,7 @@ export default function Settings() {
                                     </div>
                                     <span className="text-[13px] font-medium leading-none">{item.label}</span>
                                     {activetab === item.id && !isnarrow && <IoChevronForward className="ml-auto text-white/50" />}
-                                    {isnarrow && <IoChevronForward className="ml-auto text-gray-400" />}
+                                    {isnarrow && <IoChevronForward className="ml-auto lg:block hidden text-gray-400" />}
                                 </div>
                             </div>
                         );

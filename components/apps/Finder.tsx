@@ -40,9 +40,10 @@ export default function Finder({ initialpath }: { initialpath?: string[] }) {
                 const width = entry.contentRect.width;
                 const isnownarrow = width < 768;
                 setisnarrow(isnownarrow);
-                if (isnownarrow && !isnarrow) {
-                    setshowsidebar(false);
-                }
+                // Removed the auto-close logic here so it stays open by default on mobile as requested
+                // if (isnownarrow && !isnarrow) {
+                //     setshowsidebar(false);
+                // }
                 if (!isnownarrow) {
                     setshowsidebar(true);
                 }

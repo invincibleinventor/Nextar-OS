@@ -23,9 +23,9 @@ export default function Safari({ initialurl = 'https://baladev.vercel.app' }: sa
     };
 
     return (
-        <div className="flex flex-col h-full w-full bg-[#f2f2f2] dark:bg-[#262626] text-black dark:text-white font-sf">
+        <div className="flex flex-col bg-transparent h-full w-full text-black dark:text-white font-sf">
 
-            <div className={`h-[50px] bg-[#f2f2f2] dark:bg-[#343434] flex items-center ${ismobile ? 'px-2' : 'pl-24 pr-4'} gap-4 border-b border-black/5 dark:border-white/5 `}>
+            <div className={`h-[50px] bg-white/40 dark:bg-[#343434]/40 backdrop-blur-lg flex items-center ${ismobile ? 'px-2' : 'pl-24 pr-4'} gap-4 border-b border-black/5 dark:border-white/5 `}>
                 <div className={`flex gap-4 text-gray-500 dark:text-gray-400`}>
                     <button className="hover:text-black dark:hover:text-white transition"><FaArrowLeft size={14} /></button>
                     <button className="hover:text-black dark:hover:text-white transition"><FaArrowRight size={14} /></button>

@@ -66,7 +66,7 @@ const AppLibrary = () => {
             style={{ touchAction: 'pan-x pan-y', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
             <div className="relative w-full text-center mb-6">
-                <div className="relative w-full mx-auto bg-neutral-200/50 dark:bg-neutral-800/50 backdrop-blur-xl rounded-2xl h-10 flex items-center px-3">
+                <div className="relative w-full mx-auto bg-neutral-200/30 dark:bg-neutral-800/30 backdrop-blur-xl rounded-xl h-10 flex items-center px-3">
                     <IoSearch className="text-neutral-800 dark:text-neutral-300" size={20} />
                     <span className="ml-2 text-neutral-800 dark:text-neutral-300 text-lg">App Library</span>
                 </div>

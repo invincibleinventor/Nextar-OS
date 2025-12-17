@@ -22,6 +22,22 @@ export default function Photos({ singleview, src, title }: photosprops) {
     const containerref = React.useRef<HTMLDivElement>(null);
     const { ismobile, addwindow } = useWindows();
 
+    useEffect(() => {
+        if (!containerref.current) return;
+        const observer = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                const width = entry.contentRect.width;
+                const isnownarrow = width < 768;
+                setisnarrow(isnownarrow);
+                if (!isnownarrow) {
+                    setshowsidebar(true);
+                }
+            }
+        });
+        observer.observe(containerref.current);
+        return () => observer.disconnect();
+    }, [isnarrow]);
+
     const openInFinder = (path: string) => {
         const finderapp = apps.find(a => a.id === 'finder');
         if (finderapp) {
@@ -92,7 +108,7 @@ export default function Photos({ singleview, src, title }: photosprops) {
                     />
                 </div>
 
-                <div className={`absolute top-0 left-0 right-0 h-12 md:h-14 bg-[#2d2d2d]/50 backdrop-blur-xl border-b border-white/10 z-50 flex items-center justify-between px-4 ${!ismobile ? 'pt-0' : ''}`}>
+                <div className={`absolute top-0 left-0 right-0 h-12 md:h-14 bg-neutral-900  border-b border-white/10 z-50 flex items-center justify-between px-4 ${!ismobile ? 'pt-0' : ''}`}>
                     <div className="flex items-center flex-1">
                         <button
                             onClick={() => setviewingimage(null)}
@@ -196,49 +212,107 @@ export default function Photos({ singleview, src, title }: photosprops) {
     }
 
     return (
-        <div ref={containerref} className="flex h-full w-full bg-white dark:bg-[#1e1e1e] font-sf text-black dark:text-white relative overflow-hidden">
-            <div className={`
+        <div
+            ref={containerref}
+            className="flex h-full w-full bg-white dark:bg-[#1e1e1e] font-sf text-black dark:text-white relative overflow-hidden"
+            onClick={() => {
+                if (isnarrow && showsidebar) setshowsidebar(false);
+            }}
+        >
+            <div
+                className={`
                 ${showsidebar
-                    ? isnarrow ? 'absolute inset-y-0 left-0 z-30 w-[220px] shadow-2xl bg-white/95 dark:bg-[#1e1e1e]/95 backdrop-blur border-r border-black/5 dark:border-white/5'
-                        : 'relative w-[200px] border-r border-black/5 dark:border-white/5 bg-transparent backdrop-blur-2xl'
-                    : '-translate-x-full w-0 border-none overflow-hidden absolute'
-                }
-                transition-all duration-300 flex flex-col pt-4 ${ismobile ? '' : 'pt-[50px]'} h-full bg-white/95 dark:bg-[#1e1e1e]/95
-            `}>
-                <div className="px-4 mb-4 flex justify-between items-center">
-                    <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Photos</span>
-                    {isnarrow && (
-                        <button onClick={() => setshowsidebar(false)} className="text-gray-500 hover:text-black dark:hover:text-white">
-                            <IoMenu />
-                        </button>
-                    )}
-                </div>
-                {sidebaritems.map((item, idx) => (
-                    <div
-                        key={`${item.id}-${idx}`}
-                        onClick={() => {
-                            setselecteditem(item.id);
-                            if (isnarrow) setshowsidebar(false);
-                        }}
-                        className={`flex items-center gap-3 px-4 py-1.5 mx-2 rounded-md cursor-pointer transition-colors
-                            ${selecteditem === item.id
-                                ? 'bg-black/10 dark:bg-white/10 text-black dark:text-white font-medium'
-                                : 'text-gray-600 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/5'}`}
-                    >
-                        <item.icon className="text-lg" />
-                        <span className="text-[13px] whitespace-nowrap">{item.label}</span>
+                        ? isnarrow ? 'absolute inset-y-0 left-0 z-30 w-[220px] shadow-2xl bg-white/95 dark:bg-[#1e1e1e]/95 backdrop-blur border-r border-black/5 dark:border-white/5'
+                            : 'relative w-[200px] border-r border-black/5 dark:border-white/5 bg-transparent backdrop-blur-xl'
+                        : '-translate-x-full w-0 border-none overflow-hidden absolute'
+                    }
+                transition-all duration-300 flex flex-col pt-4 ${ismobile ? '' : 'pt-[50px]'} h-full 
+            `}
+                onClick={(e) => e.stopPropagation()}
+            >
+                <div className="flex-1 overflow-y-auto px-2">
+                    <div className="mb-4">
+                        <div className="text-[11px] font-bold text-gray-500/80 dark:text-gray-400/80 uppercase tracking-wide mb-1 px-3">
+                            Library
+                        </div>
+                        <div className="space-y-[1px]">
+                            {sidebaritems.slice(0, 2).map((item, idx) => (
+                                <div
+                                    key={`${item.id}-${idx}`}
+                                    onClick={() => {
+                                        setselecteditem(item.id);
+                                        if (isnarrow) setshowsidebar(false);
+                                    }}
+                                    className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg cursor-pointer transition-all duration-200
+                                        ${selecteditem === item.id
+                                            ? 'bg-black/10 dark:bg-white/10 text-black dark:text-white font-medium'
+                                            : 'text-black/80 dark:text-white/80 hover:bg-black/5 dark:hover:bg-white/5'}`}
+                                >
+                                    <item.icon className={`text-[16px] ${selecteditem === item.id ? 'text-[#007AFF]' : 'text-[#007AFF]/80'}`} />
+                                    <span className="truncate leading-none pb-[2px] block text-[13px]">{item.label}</span>
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                ))}
+
+                    <div className="mb-4">
+                        <div className="text-[11px] font-bold text-gray-500/80 dark:text-gray-400/80 uppercase tracking-wide mb-1 px-3">
+                            Albums
+                        </div>
+                        <div className="space-y-[1px]">
+                            {sidebaritems.slice(2, -1).map((item, idx) => (
+                                <div
+                                    key={`${item.id}-${idx + 2}`}
+                                    onClick={() => {
+                                        setselecteditem(item.id);
+                                        if (isnarrow) setshowsidebar(false);
+                                    }}
+                                    className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg cursor-pointer transition-all duration-200
+                                        ${selecteditem === item.id
+                                            ? 'bg-black/10 dark:bg-white/10 text-black dark:text-white font-medium'
+                                            : 'text-black/80 dark:text-white/80 hover:bg-black/5 dark:hover:bg-white/5'}`}
+                                >
+                                    <item.icon className={`text-[16px] ${selecteditem === item.id ? 'text-[#007AFF]' : 'text-[#007AFF]/80'}`} />
+                                    <span className="truncate leading-none pb-[2px] block text-[13px]">{item.label}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="mb-4">
+                        <div className="text-[11px] font-bold text-gray-500/80 dark:text-gray-400/80 uppercase tracking-wide mb-1 px-3">
+                            Other
+                        </div>
+                        <div className="space-y-[1px]">
+                            {sidebaritems.slice(-1).map((item, idx) => (
+                                <div
+                                    key={`${item.id}-${idx + sidebaritems.length - 1}`}
+                                    onClick={() => {
+                                        setselecteditem(item.id);
+                                        if (isnarrow) setshowsidebar(false);
+                                    }}
+                                    className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg cursor-pointer transition-all duration-200
+                                        ${selecteditem === item.id
+                                            ? 'bg-black/10 dark:bg-white/10 text-black dark:text-white font-medium'
+                                            : 'text-black/80 dark:text-white/80 hover:bg-black/5 dark:hover:bg-white/5'}`}
+                                >
+                                    <item.icon className={`text-[16px] ${selecteditem === item.id ? 'text-[#007AFF]' : 'text-[#007AFF]/80'}`} />
+                                    <span className="truncate leading-none pb-[2px] block text-[13px]">{item.label}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div className={`flex-1 overflow-y-auto p-4 z-10 w-full min-w-0 ${!ismobile ? 'pt-8' : ''}`}>
                 <div className="flex justify-between items-center mb-6 px-2 sticky top-0 bg-white/80 dark:bg-[#1e1e1e]/80 backdrop-blur-md z-10 py-2 border-b border-transparent">
                     <div className="flex items-center gap-3">
-                        {!showsidebar && (
+                        
                             <button onClick={() => setshowsidebar(true)} className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5" title="Show Sidebar">
                                 <IoMenu className="text-xl" />
                             </button>
-                        )}
+                        
                         <div>
                             <h1 className="text-2xl font-bold leading-none">{sidebaritems.find(i => i.id === selecteditem)?.label}</h1>
                             <span className="text-xs text-gray-500">{projectphotos.length} Items</span>

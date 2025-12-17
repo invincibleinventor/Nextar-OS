@@ -400,7 +400,7 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
       exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
       transition={{
         type: "spring",
-        stiffness: 300,
+        stiffness: 350,
         damping: 30,
         mass: 1,
       }}

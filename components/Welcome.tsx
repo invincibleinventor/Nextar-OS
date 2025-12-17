@@ -16,26 +16,39 @@ export default function Welcome(props: any) {
             subtitle: "A fully interactive web OS simulation.",
             icon: IoLogoApple,
             content: (
-                <div className="text-center space-y-8 max-w-md mx-auto h-auto flex flex-col justify-center">
-                    <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
-                        Experience my portfolio through a familiar desktop interface. This isn&apos;t just a simple macos themed portfolio site - you can call it a full fledged operating system simulation built with Next JS, Framer Motion and TailwindCSS.
-                    </p>
-                    <div className="grid grid-cols-3 gap-2 mt-4 text-xs font-medium text-gray-500">
-                        <div className="flex flex-col items-center gap-1 p-2 bg-black/5 dark:bg-white/5 rounded-lg">
-                            <IoRocketOutline size={16} />
-                            <span>Fast</span>
+                <>
+                    <div className="text-center space-y-8 max-w-md mx-auto h-auto flex flex-col justify-center">
+                        <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                            Experience my portfolio through a familiar desktop interface. This isn&apos;t just a simple macos themed portfolio site - you can call it a full fledged operating system simulation built with Next JS, Framer Motion and TailwindCSS.
+                        </p>
+                        <div className="grid grid-cols-3 gap-2 mt-4 text-xs font-medium text-gray-500">
+                            <div className="flex flex-col items-center gap-1 p-2 bg-black/5 dark:bg-white/5 rounded-lg">
+                                <IoRocketOutline size={16} />
+                                <span>Fast</span>
+                            </div>
+                            <div className="flex flex-col items-center gap-1 p-2 bg-black/5 dark:bg-white/5 rounded-lg">
+                                <IoConstructOutline size={16} />
+                                <span>Interactive</span>
+                            </div>
+                            <div className="flex flex-col items-center gap-1 p-2 bg-black/5 dark:bg-white/5 rounded-lg">
+                                <IoAppsOutline size={16} />
+                                <span>App Rich</span>
+                            </div>
                         </div>
-                        <div className="flex flex-col items-center gap-1 p-2 bg-black/5 dark:bg-white/5 rounded-lg">
-                            <IoConstructOutline size={16} />
-                            <span>Interactive</span>
-                        </div>
-                        <div className="flex flex-col items-center gap-1 p-2 bg-black/5 dark:bg-white/5 rounded-lg">
-                            <IoAppsOutline size={16} />
-                            <span>App Rich</span>
-                        </div>
-                    </div>
 
-                </div>
+                    </div>
+                    <div className="flex justify-center mt-6">
+                        <a
+                            href="https://github.com/invincibleinventor/macos"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white dark:bg-white dark:text-black rounded-full text-xs font-semibold hover:opacity-80 transition-opacity shadow-sm"
+                        >
+                            <IoLogoGithub size={16} />
+                            <span>Star on GitHub</span>
+                        </a>
+                    </div>
+                </>
             )
         },
         {

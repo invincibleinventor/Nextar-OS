@@ -14,7 +14,7 @@ import {
     IoCloseOutline, IoFolderOutline, IoDocumentTextOutline, IoAppsOutline,
     IoGridOutline, IoListOutline, IoChevronBack, IoChevronForward,
     IoSearch, IoGlobeOutline, IoInformationCircleOutline,
-    IoCodeOutline, IoMailOutline, IoPersonCircleOutline, IoFlagOutline, IoSchoolOutline, IoConstructOutline, IoFolderOpenOutline
+    IoCodeOutline, IoMailOutline, IoPersonCircleOutline, IoFlagOutline, IoSchoolOutline, IoConstructOutline, IoFolderOpenOutline, IoLogoGithub, IoHeartOutline
 } from "react-icons/io5";
 
 export interface appdata {
@@ -467,8 +467,8 @@ export const ALL_MAILS: MailItem[] = [
         senderEmail: 'me@balatbr.com',
         subject: 'Welcome to my Portfolio OS!',
         date: 'Just Now',
-        iconType: 'icon',
-        icon: IoPersonCircleOutline,
+        iconType: 'image' as const,
+        iconSrc: `pfp.png`,
         preview: 'Thanks for stopping by. I am a Second-year Computer Science undergraduate...',
         content: (
             <div className="space-y-4 text-sm leading-relaxed text-black dark:text-white">
@@ -482,16 +482,16 @@ export const ALL_MAILS: MailItem[] = [
         )
     },
     ...personal.projects.map(proj => ({
-        id: `proj-${proj.title}`,
+        id: `proj - ${proj.title} `,
         folder: 'projects',
         category: 'Projects',
         sender: 'GitHub',
         senderEmail: 'notifications@github.com',
-        subject: `Project Update: ${proj.title}`,
+        subject: `Project Update: ${proj.title} `,
         date: 'Yesterday',
         iconType: 'image' as const,
         iconSrc: `/appimages/${proj.title.toLowerCase()}.png`,
-        preview: `Repository update for ${proj.title}. ${proj.desc}`,
+        preview: `Repository update for ${proj.title}.${proj.desc}`,
         content: (
             <div className="space-y-4 text-sm leading-relaxed text-black dark:text-white">
                 <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-black/5 dark:border-white/10">
@@ -531,27 +531,79 @@ export const getMails = (openInFinder: (path: string) => void): MailItem[] => {
             icon: IoPersonCircleOutline,
             preview: 'Thanks for stopping by. I am a Second-year Computer Science undergraduate...',
             content: (
-                <div className="space-y-4 text-sm leading-relaxed text-black dark:text-white">
-                    <p>Hi there,</p>
-                    <p>Welcome to <strong>MacOS-Next</strong>! I built this &quot;Portfolio OS&quot; to demonstrate the power of modern web technologies.</p>
-                    <p><strong>About Me:</strong></p>
-                    <p>{personal.personal.bio}</p>
-                    <p>Feel free to explore the apps, check out my projects in the &quot;Projects&quot; folder, or read my latest thoughts in &quot;Blog&quot;.</p>
-                    <p>Best,<br />Bala</p>
+                <div className="space-y-6 text-sm leading-relaxed text-black dark:text-white pb-8">
+                    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#007AFF] to-[#5856D6] p-8 text-white shadow-lg">
+                        <div className="relative z-10 flex flex-col md:flex-row items-center gap-6">
+                            <div className="w-24 h-24 rounded-full border-4 border-white/20 shadow-xl overflow-hidden shrink-0">
+                                <Image src="/pfp.png" width={96} height={96} priority className="w-full h-full object-cover" alt="Bala TBR" />
+                            </div>
+                            <div className="text-center md:text-left">
+                                <h1 className="text-3xl font-bold mb-2 tracking-tight">Bala TBR</h1>
+                                <p className="text-white/80 font-medium text-lg">Full Stack Developer & UI/UX Design Enthusiast</p>
+                                <div className="flex gap-3 justify-center md:justify-start mt-4">
+                                    <a href={personal.personal.socials.github} target="_blank" rel="noreferrer" className="bg-white/20 hover:bg-white/30 transition-colors p-2 rounded-full backdrop-blur-md">
+                                        <IoLogoGithub size={20} />
+                                    </a>
+                                    <a href={personal.personal.socials.linkedin} target="_blank" rel="noreferrer" className="bg-white/20 hover:bg-white/30 transition-colors p-2 rounded-full backdrop-blur-md">
+                                        <FaLinkedin size={20} />
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+                    </div>
+
+                    <div className="prose dark:prose-invert max-w-none px-2">
+                        <p className="text-lg font-medium leading-relaxed">
+                            Welcome to <strong>MacOS-Next</strong>!
+                        </p>
+                        <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                            I built this &quot;Portfolio OS&quot; to push the boundaries of what&apos;s possible on the web. It is a fully interactive, responsive desktop environment built with <strong>Next.js</strong>, <strong>TailwindCSS</strong>, and <strong>Framer Motion</strong>.
+                        </p>
+
+                        <h3 className="text-xl font-bold mt-8 mb-4 border-b border-gray-200 dark:border-white/10 pb-2">About Me</h3>
+                        <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                            {personal.personal.bio}
+                        </p>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                            <div className="bg-gray-50 dark:bg-white/5 p-4 rounded-xl border border-black/5 dark:border-white/5">
+                                <h4 className="font-semibold mb-2 flex items-center gap-2">
+                                    <IoConstructOutline className="text-[#007AFF]" /> Tech Stack
+                                </h4>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                    Next.js 14, TypeScript, TailwindCSS, Supabase, Framer Motion, GSAP
+                                </p>
+                            </div>
+                            <div className="bg-gray-50 dark:bg-white/5 p-4 rounded-xl border border-black/5 dark:border-white/5">
+                                <h4 className="font-semibold mb-2 flex items-center gap-2">
+                                    <IoHeartOutline className="text-red-500" /> Focus
+                                </h4>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                    Building beautiful, high-performance web applications with a focus on user experience.
+                                </p>
+                            </div>
+                        </div>
+
+                        <p className="mt-8 text-gray-400 text-xs text-center">
+                            Feel free to explore the apps, check out my projects in the &quot;Projects&quot; folder, or read my latest thoughts in &quot;Blog&quot;.
+                        </p>
+                        <p className="text-center font-medium mt-2">Best,<br />Bala</p>
+                    </div>
                 </div>
             )
         },
         ...personal.projects.map(proj => ({
-            id: `proj-${proj.title}`,
+            id: `proj - ${proj.title} `,
             folder: 'projects',
             category: 'Projects',
             sender: 'GitHub',
             senderEmail: 'notifications@github.com',
-            subject: `Project Update: ${proj.title}`,
+            subject: `Project Update: ${proj.title} `,
             date: 'Yesterday',
             iconType: 'image' as const,
             iconSrc: `/appimages/${proj.title.toLowerCase()}.png`,
-            preview: `Repository update for ${proj.title}. ${proj.desc}`,
+            preview: `Repository update for ${proj.title}.${proj.desc}`,
             content: (
                 <div className="space-y-4 text-sm leading-relaxed text-black dark:text-white">
                     <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-black/5 dark:border-white/10">
@@ -648,7 +700,7 @@ export const getMails = (openInFinder: (path: string) => void): MailItem[] => {
                     <p>Here are my official contact details:</p>
                     <div className="grid grid-cols-[100px_1fr] gap-2 items-center">
                         <span className="text-gray-500 text-right">Email:</span>
-                        <a href={`mailto:${personal.personal.email}`} className="text-[#007AFF]">{personal.personal.email}</a>
+                        <a href={`mailto:${personal.personal.email} `} className="text-[#007AFF]">{personal.personal.email}</a>
 
                         <span className="text-gray-500 text-right">Location:</span>
                         <span>{personal.personal.location}</span>
@@ -679,7 +731,7 @@ const generatefilesystem = (): filesystemitem[] => {
     fs.push({ id: 'root-network', name: 'Network', parent: 'root', mimetype: 'inode/directory', date: 'Today', size: '--' });
 
     personal.projects.forEach(p => {
-        const pid = `project-${p.title}`;
+        const pid = `project - ${p.title} `;
         fs.push({
             id: pid,
             name: p.title,
@@ -691,7 +743,7 @@ const generatefilesystem = (): filesystemitem[] => {
         });
 
         fs.push({
-            id: `${pid}-source`,
+            id: `${pid} -source`,
             name: 'Source Code',
             parent: pid,
             mimetype: 'text/x-uri',
@@ -703,7 +755,7 @@ const generatefilesystem = (): filesystemitem[] => {
         });
 
         fs.push({
-            id: `${pid}-demo`,
+            id: `${pid} -demo`,
             name: 'Live Preview',
             parent: pid,
             mimetype: 'text/x-uri',
@@ -715,7 +767,7 @@ const generatefilesystem = (): filesystemitem[] => {
         });
 
         fs.push({
-            id: `${pid}-photo`,
+            id: `${pid} -photo`,
             name: `${p.title}.png`,
             parent: pid,
             mimetype: 'image/png',
@@ -728,7 +780,7 @@ const generatefilesystem = (): filesystemitem[] => {
         });
 
         fs.push({
-            id: `${pid}-photo-icloud`,
+            id: `${pid} -photo - icloud`,
             name: `${p.title}.png`,
             parent: 'root-icloud',
             mimetype: 'image/png',
@@ -741,14 +793,14 @@ const generatefilesystem = (): filesystemitem[] => {
         });
 
         fs.push({
-            id: `${pid}-readme`,
+            id: `${pid} -readme`,
             name: 'README.md',
             parent: pid,
             mimetype: 'text/markdown',
             date: 'Today',
             size: '1 KB',
             description: `Read more about ${p.title}.`,
-            content: `# ${p.title}\n\n**Type:** ${p.type}\n**Date:** ${p.date}\n**Stack:** ${p.stack.join(', ')}\n\n## Description\n${p.desc}\n\nCheck out the [Live Demo](${p.link}) or view the [Source Code](${p.github}).`
+            content: `# ${p.title} \n\n ** Type:** ${p.type} \n ** Date:** ${p.date} \n ** Stack:** ${p.stack.join(', ')} \n\n## Description\n${p.desc} \n\nCheck out the[Live Demo](${p.link}) or view the[Source Code](${p.github}).`
         });
     });
 
@@ -769,7 +821,7 @@ const generatefilesystem = (): filesystemitem[] => {
     apps.forEach(a => {
         if (a.id !== 'finder') {
             fs.push({
-                id: `app-${a.id}`,
+                id: `app - ${a.id} `,
                 name: a.appname,
                 parent: 'root-apps',
                 mimetype: 'application/x-executable',
@@ -817,6 +869,18 @@ const generatefilesystem = (): filesystemitem[] => {
         link: 'https://baladev.vercel.app',
         icon: <Image className='w-full h-full p-[6px] sm:w-full sm:h-full' src='/code.png' alt="Old Portfolio" width={64} height={64} />,
         description: "My previous portfolio."
+    });
+
+    fs.push({
+        id: 'desktop-github-source',
+        name: 'Project Source',
+        parent: 'root-desktop',
+        mimetype: 'text/x-uri',
+        date: 'Today',
+        size: 'Web Link',
+        link: 'https://github.com/invincibleinventor/macos',
+        icon: <Image className='w-full h-full p-[6px] sm:w-full sm:h-full' src='/github.png' alt="Project Source" width={64} height={64} />,
+        description: "View source code on GitHub."
     });
 
     fs.push({
