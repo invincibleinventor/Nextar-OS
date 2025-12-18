@@ -1,7 +1,8 @@
 'use client';
 import React, { useState, useRef, useEffect } from 'react';
 import { useDevice } from '../DeviceContext';
-import { filesystem, filesystemitem } from '../data';
+import { filesystemitem } from '../data';
+import { useFileSystem } from '../FileSystemContext';
 
 interface CommandResult {
     output: string;
@@ -10,9 +11,10 @@ interface CommandResult {
 
 export default function Terminal({ isFocused = true }: { isFocused?: boolean }) {
     const { ismobile } = useDevice();
+    const { files } = useFileSystem();
     const [history, sethistory] = useState(['Welcome to MacOS-Next Terminal v1.0', 'Type "help" for available commands.', '']);
     const [currline, setcurrline] = useState('');
-    const [cwd, setcwd] = useState('root');
+    const [cwd, setcwd] = useState('user-bala');
 
     const containerref = useRef<HTMLDivElement>(null);
     const endref = useRef<HTMLDivElement>(null);
@@ -32,15 +34,15 @@ export default function Terminal({ isFocused = true }: { isFocused?: boolean }) 
     }, [isFocused, ismobile]);
 
     const getPathString = (id: string): string => {
-        if (id === 'root') return '~';
+        if (id === 'user-bala') return '~';
 
         let currentId = id;
         const path: string[] = [];
 
         let iterations = 0;
 
-        while (currentId !== 'root' && iterations < 20) {
-            const item = filesystem.find(i => i.id === currentId);
+        while (currentId !== 'root' && currentId !== 'user-bala' && iterations < 20) {
+            const item = files.find(i => i.id === currentId);
             if (!item) break;
 
             path.unshift(item.name);
@@ -49,24 +51,25 @@ export default function Terminal({ isFocused = true }: { isFocused?: boolean }) 
             iterations++;
         }
 
-        return '~/' + path.join('/');
+        if (currentId === 'user-bala') return '~/' + path.join('/');
+        return '/' + path.join('/'); 
     };
 
     const getDirectoryItems = (dirId: string) => {
-        return filesystem.filter(item => item.parent === dirId);
+        return files.filter(item => item.parent === dirId && !item.isTrash);
     };
 
     const resolvePath = (pathArg: string): string | null => {
         if (!pathArg || pathArg === '.') return cwd;
-        if (pathArg === '~') return 'root';
+        if (pathArg === '~') return 'user-bala';
 
         let startId = cwd;
         let parts = pathArg.split('/').filter(p => p.length > 0);
 
         if (pathArg.startsWith('/')) {
-            startId = 'root';  
-        } else if (pathArg.startsWith('~/')) {
             startId = 'root';
+        } else if (pathArg.startsWith('~/')) {
+            startId = 'user-bala';
             parts = pathArg.slice(2).split('/').filter(p => p.length > 0);
         }
 
@@ -74,16 +77,16 @@ export default function Terminal({ isFocused = true }: { isFocused?: boolean }) 
 
         for (const part of parts) {
             if (part === '..') {
-                const currentItem = filesystem.find(i => i.id === currentId);
+                const currentItem = files.find((i: filesystemitem) => i.id === currentId);
                 if (currentItem && currentItem.parent) {
                     currentId = currentItem.parent;
                 }
             } else if (part !== '.') {
-                const child = filesystem.find(i => i.parent === currentId && i.name === part);
+                const child = files.find((i: filesystemitem) => i.parent === currentId && i.name === part);
                 if (child && (child.mimetype === 'inode/directory' || child.mimetype === 'inode/directory-alias')) {
                     currentId = child.id;
                 } else {
-                    return null; 
+                    return null;
                 }
             }
         }
@@ -99,7 +102,7 @@ export default function Terminal({ isFocused = true }: { isFocused?: boolean }) 
 
         if (!dirId || !fileName) return null;
 
-        return filesystem.find(i => i.parent === dirId && i.name === fileName) || null;
+        return files.find((i: filesystemitem) => i.parent === dirId && i.name === fileName) || null;
     };
 
     const handlekey = (e: React.KeyboardEvent) => {
@@ -111,7 +114,7 @@ export default function Terminal({ isFocused = true }: { isFocused?: boolean }) 
             let match;
 
             while ((match = argsRegex.exec(cmd)) !== null) {
-                   args.push(match[1] || match[2] || match[0]);
+                args.push(match[1] || match[2] || match[0]);
             }
 
             const command = args[0] ? args[0].toLowerCase() : '';
@@ -145,7 +148,7 @@ export default function Terminal({ isFocused = true }: { isFocused?: boolean }) 
                     break;
                 case 'cd':
                     if (!args[1]) {
-                        setcwd('root');
+                        setcwd('user-bala');
                     } else {
                         const newId = resolvePath(arg1);
                         if (newId) {

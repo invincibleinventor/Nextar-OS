@@ -124,9 +124,43 @@ export default function Welcome(props: any) {
             )
         },
         {
+            title: "File System Power",
+            subtitle: "More than just a simulation.",
+            icon: IoConstructOutline,
+            content: (
+                <div className="text-center space-y-4 max-w-md mx-auto h-full flex flex-col justify-center">
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                        A persistent, full-featured file system lies at the core.
+                    </p>
+                    <ul className="text-left text-xs text-gray-500 space-y-2 bg-white/50 dark:bg-black/20 p-3 rounded-lg border border-black/5 dark:border-white/5">
+                        <li className="flex items-center gap-2">
+                            <IoCheckmarkCircle className="text-green-500 shrink-0" />
+                            <span><strong>TextEdit:</strong> Create & Edit Rich Text files (Bold, Italic) with auto-save.</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                            <IoCheckmarkCircle className="text-green-500 shrink-0" />
+                            <span><strong>Selection:</strong> Drag to select multiple items on Desktop.</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                            <IoCheckmarkCircle className="text-green-500 shrink-0" />
+                            <span><strong>Context Menus:</strong> Right-click anywhere for powerful actions.</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                            <IoCheckmarkCircle className="text-green-500 shrink-0" />
+                            <span><strong>Notifications:</strong> System-wide Toast notifications replacing alerts.</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                            <IoCheckmarkCircle className="text-green-500 shrink-0" />
+                            <span><strong>Persistence:</strong> Changes are saved to LocalStorage.</span>
+                        </li>
+                    </ul>
+                </div>
+            )
+        },
+        {
             title: "Key Features",
             subtitle: "Explore the ecosystem.",
-            icon: IoConstructOutline,
+            icon: IoDesktopOutline,
             content: (
                 <div className="text-center space-y-4 max-w-md mx-auto h-full flex flex-col justify-center">
                     <p className="text-sm text-gray-600 dark:text-gray-300">

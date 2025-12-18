@@ -128,11 +128,18 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
         }
     };
 
+    const handleMenuAction = (action: string) => {
+        const event = new CustomEvent('menu-action', { detail: { action } });
+        window.dispatchEvent(event);
+        setactivemenu(null);
+        sethoverenabled(false);
+    };
+
     return (
         <div>
             <div
-                style={{ zIndex: 9999 }}
-                className="relative h-full z-0 before:absolute before:inset-0 before:bg-transparent before:content-[''] before:backdrop-blur-[12px] before:webkit-backdrop-blur-[12px] before:z-[-1] top-0 w-screen py-[6px] flex px-4 justify-between items-center content-center bg-white bg-opacity-30 dark:bg-black dark:bg-opacity-10 transition-colors duration-500"
+                style={{ zIndex: 99999 }}
+                className="fixed h-[35px] z-[99999] before:absolute before:inset-0 before:bg-transparent before:content-[''] before:backdrop-blur-[12px] before:webkit-backdrop-blur-[12px] before:z-[-1] top-0 w-screen py-[6px] flex px-4 justify-between items-center content-center bg-white bg-opacity-30 dark:bg-black dark:bg-opacity-10 transition-colors duration-500"
             >
                 <div className="relative flex flex-row items-center content-center space-x-0">
                     <div className="flex items-center justify-center h-full mr-2">
@@ -170,6 +177,7 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
                                     visible={activemenu === menukey}
                                     ontoggle={handletogglemenu}
                                     onhover={handlehovermenu}
+                                    onaction={handleMenuAction}
                                 />
                             );
                         })}

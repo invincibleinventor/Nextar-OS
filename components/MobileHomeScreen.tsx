@@ -1,27 +1,29 @@
 'use client';
 import React, { useState } from 'react';
 import { useDevice } from './DeviceContext';
-import { apps, filesystem, filesystemitem, openSystemItem, getFileIcon } from './data';
+import { apps, filesystemitem, openSystemItem, getFileIcon } from './data';
 import { useTheme } from './ThemeContext';
 import { useSettings } from './SettingsContext';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import AppLibrary from './AppLibrary';
 import { useWindows } from './WindowContext';
+import { useFileSystem } from './FileSystemContext';
 
 export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayopen?: boolean }) {
     const { addwindow, windows, setactivewindow, updatewindow } = useWindows();
     const { reducemotion } = useSettings();
     const { ismobile } = useDevice();
+    const { files } = useFileSystem();
     const [page, setpage] = useState(0);
 
-    const desktopItems = filesystem.filter(item => item.parent === 'root-desktop');
+    const desktopItems = files.filter(item => item.parent === 'user-desktop' && !item.isTrash);
 
     const handleItemClick = (item: filesystemitem) => {
-        openSystemItem(item, { addwindow, windows, setactivewindow, updatewindow, ismobile });
+        openSystemItem(item, { addwindow, windows, setactivewindow, updatewindow, ismobile, files });
     };
-const dockAppIds = ['finder', 'safari', 'mail', 'settings'];
-   
+    const dockAppIds = ['finder', 'safari', 'mail', 'settings'];
+
     const isDockItem = (item: filesystemitem) => {
         if (item.mimetype !== 'application/x-executable') return false;
         const appId = item.id.replace('desktop-app-', '');

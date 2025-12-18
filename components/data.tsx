@@ -44,7 +44,16 @@ export interface filesystemitem {
     id: string;
     projectPath?: string;
     projectLink?: string;
+    isSystem?: boolean;
+    isTrash?: boolean;
+    originalParent?: string;
+    isReadOnly?: boolean;
+    linkPath?: string;
 }
+
+
+
+
 
 export const personal = {
     personal: {
@@ -235,6 +244,18 @@ export const apps: appdata[] = [
         pinned: true,
     },
     {
+        id: 'textedit',
+        appname: 'Text Edit',
+        componentname: 'apps/TextEdit',
+        icon: '/notes.png',
+        multiwindow: true,
+        acceptedMimeTypes: ['text/plain', 'text/markdown', 'text/x-uri', 'application/json'],
+        maximizeable: true,
+        titlebarblurred: true,
+        pinned: false,
+        additionaldata: { startlarge: false }
+    },
+    {
         id: 'calculator',
         appname: 'Calculator',
         icon: '/calculator.png',
@@ -307,7 +328,7 @@ export const apps: appdata[] = [
     {
         id: 'fileviewer',
         appname: 'File Viewer',
-        icon: '/textedit.png',
+        icon: '/preview.png',
         maximizeable: true,
         componentname: 'apps/FileViewer',
         additionaldata: {},
@@ -316,6 +337,18 @@ export const apps: appdata[] = [
         pinned: false,
         defaultsize: { width: 600, height: 400 },
         acceptedMimeTypes: ['text/markdown', 'text/plain', 'text/x-uri', 'application/pdf']
+    },
+    {
+        id: 'getinfo',
+        appname: 'Get Info',
+        icon: '/finder.png',
+        maximizeable: false,
+        componentname: 'apps/FileInfo',
+        additionaldata: {},
+        multiwindow: true,
+        titlebarblurred: false,
+        pinned: false,
+        defaultsize: { width: 300, height: 450 }
     }
 ];
 
@@ -423,17 +456,18 @@ export const sidebaritems = [
     {
         title: 'Favorites',
         items: [
-            { name: 'Projects', icon: IoFolderOutline, path: ['Projects'] },
-            { name: 'Applications', icon: IoAppsOutline, path: ['Applications'] },
-            { name: 'About Me', icon: IoDocumentTextOutline, path: ['About Me'] },
+            { name: 'Projects', icon: IoFolderOutline, path: ['Macintosh HD', 'Users', 'Bala', 'Projects'] },
+            { name: 'Applications', icon: IoAppsOutline, path: ['Macintosh HD', 'Applications'] },
+            { name: 'About Me', icon: IoDocumentTextOutline, path: ['Macintosh HD', 'Users', 'Bala', 'About Me'] },
+            { name: 'Desktop', icon: IoAppsOutline, path: ['Macintosh HD', 'Users', 'Bala', 'Desktop'] },
+            { name: 'Documents', icon: IoDocumentTextOutline, path: ['Macintosh HD', 'Users', 'Bala', 'Documents'] },
+            { name: 'Downloads', icon: IoAppsOutline, path: ['Macintosh HD', 'Users', 'Bala', 'Downloads'] },
         ]
     },
     {
         title: 'iCloud',
         items: [
             { name: 'iCloud Drive', icon: IoFolderOutline, path: ['iCloud Drive'] },
-            { name: 'Documents', icon: IoDocumentTextOutline, path: ['Documents'] },
-            { name: 'Desktop', icon: IoAppsOutline, path: ['Desktop'] },
         ]
     },
     {
@@ -719,23 +753,153 @@ export const getMails = (openInFinder: (path: string) => void): MailItem[] => {
 };
 
 
-const generatefilesystem = (): filesystemitem[] => {
+export const generatefilesystem = (): filesystemitem[] => {
     const fs: filesystemitem[] = [];
 
-    const rootDirs = [
-        { id: 'root-projects', name: 'Projects' },
-        { id: 'root-apps', name: 'Applications' },
-        { id: 'root-about', name: 'About Me' },
-        { id: 'root-icloud', name: 'iCloud Drive' },
-        { id: 'root-docs', name: 'Documents' },
-        { id: 'root-desktop', name: 'Desktop' },
-        { id: 'root-hd', name: 'Macintosh HD' },
-        { id: 'root-network', name: 'Network' },
-    ];
 
-    rootDirs.forEach(d => {
-        fs.push({ ...d, parent: 'root', mimetype: 'inode/directory', date: 'Today', size: '--' } as filesystemitem);
-    });
+
+    const hd: filesystemitem = {
+        id: 'root-hd',
+        name: 'Macintosh HD',
+        parent: 'root',
+        mimetype: 'inode/directory',
+        date: 'Today',
+        size: '--',
+        isSystem: true,
+        isReadOnly: true
+    };
+    fs.push(hd);
+
+    const applications: filesystemitem = {
+        id: 'root-apps',
+        name: 'Applications',
+        parent: 'root-hd',
+        mimetype: 'inode/directory',
+        date: 'Today',
+        size: '--',
+        isSystem: true,
+
+    };
+    fs.push(applications);
+
+    const users: filesystemitem = {
+        id: 'root-users',
+        name: 'Users',
+        parent: 'root-hd',
+        mimetype: 'inode/directory',
+        date: 'Today',
+        size: '--',
+        isSystem: true,
+        isReadOnly: true
+    };
+    fs.push(users);
+
+    const userHome: filesystemitem = {
+        id: 'user-bala',
+        name: 'Bala',
+        parent: 'root-users',
+        mimetype: 'inode/directory',
+        date: 'Today',
+        size: '--',
+        isSystem: true,
+
+    };
+    fs.push(userHome);
+
+    const desktop: filesystemitem = {
+        id: 'user-desktop',
+        name: 'Desktop',
+        parent: 'user-bala',
+        mimetype: 'inode/directory',
+        date: 'Today',
+        size: '--',
+        isSystem: true
+    };
+    fs.push(desktop);
+
+    const documents: filesystemitem = {
+        id: 'user-docs',
+        name: 'Documents',
+        parent: 'user-bala',
+        mimetype: 'inode/directory',
+        date: 'Today',
+        size: '--',
+        isSystem: true
+    };
+    fs.push(documents);
+
+    const downloads: filesystemitem = {
+        id: 'user-downloads',
+        name: 'Downloads',
+        parent: 'user-bala',
+        mimetype: 'inode/directory',
+        date: 'Today',
+        size: '--',
+        isSystem: true
+    };
+    fs.push(downloads);
+
+    const projects: filesystemitem = {
+        id: 'user-projects',
+        name: 'Projects',
+        parent: 'user-bala',
+        mimetype: 'inode/directory',
+        date: 'Today',
+        size: '--',
+        isSystem: true,
+        isReadOnly: true
+    };
+    fs.push(projects);
+
+    const about: filesystemitem = {
+        id: 'user-about',
+        name: 'About Me',
+        parent: 'user-bala',
+        mimetype: 'inode/directory',
+        date: 'Today',
+        size: '--',
+        isSystem: true,
+        isReadOnly: true
+    };
+    fs.push(about);
+
+
+    const icloud: filesystemitem = {
+        id: 'root-icloud',
+        name: 'iCloud Drive',
+        parent: 'root',
+        mimetype: 'inode/directory',
+        date: 'Today',
+        size: '--',
+        isSystem: true,
+        isReadOnly: true
+    };
+    fs.push(icloud);
+
+    const network: filesystemitem = {
+        id: 'root-network',
+        name: 'Network',
+        parent: 'root',
+        mimetype: 'inode/directory',
+        date: 'Today',
+        size: '--',
+        isSystem: true
+    };
+    fs.push(network);
+
+    const trash: filesystemitem = {
+        id: 'root-trash',
+        name: 'Trash',
+        parent: 'root',
+        mimetype: 'inode/directory',
+        date: 'Today',
+        size: '--',
+        isSystem: true,
+        isTrash: true,
+        isReadOnly: true
+    };
+    fs.push(trash);
+
 
     personal.projects.forEach(p => {
         const pid = `project-${p.title}`;
@@ -743,11 +907,15 @@ const generatefilesystem = (): filesystemitem[] => {
         fs.push({
             id: pid,
             name: p.title,
-            parent: 'root-projects',
+            parent: 'user-projects',
             mimetype: 'inode/directory',
             date: 'Today',
             size: '--',
-            description: p.desc
+            description: p.desc,
+            isSystem: true,
+            isReadOnly: true,
+            projectPath: p.title,
+            projectLink: p.link
         });
 
         fs.push({
@@ -813,7 +981,7 @@ const generatefilesystem = (): filesystemitem[] => {
         description: "My Resume"
     };
 
-    fs.push({ ...resumeBase, id: 'root-resume', parent: 'root-docs' } as filesystemitem);
+    fs.push({ ...resumeBase, id: 'root-resume', parent: 'user-docs' } as filesystemitem);
 
     apps.forEach(a => {
         const appBase: Partial<filesystemitem> = {
@@ -823,7 +991,8 @@ const generatefilesystem = (): filesystemitem[] => {
             size: 'App',
             icon: <Image className='w-full h-full p-[6px] sm:w-full sm:h-full' src={a.icon} alt={`${a.appname} application`} width={64} height={64} />,
             appname: a.appname,
-            description: `Launch ${a.appname} application.`
+            description: `Launch ${a.appname} application.`,
+            isSystem: true
         };
 
         if (a.id !== 'finder') {
@@ -831,7 +1000,8 @@ const generatefilesystem = (): filesystemitem[] => {
         }
 
         if (a.id !== 'finder' && a.id !== 'launchpad') {
-            fs.push({ ...appBase, id: `desktop-app-${a.id}`, parent: 'root-desktop' } as filesystemitem);
+
+            fs.push({ ...appBase, id: `desktop-app-${a.id}`, parent: 'user-desktop' } as filesystemitem);
         }
     });
 
@@ -844,23 +1014,10 @@ const generatefilesystem = (): filesystemitem[] => {
         icon: <Image className='w-full h-full p-[6px] sm:w-full sm:h-full' src='/code.png' alt="Old Portfolio" width={64} height={64} />,
         description: "My previous portfolio."
     };
-    fs.push({ ...oldPortfolioBase, id: 'desktop-oldportfolio', parent: 'root-desktop' } as filesystemitem);
+    fs.push({ ...oldPortfolioBase, id: 'desktop-oldportfolio', parent: 'user-desktop' } as filesystemitem);
 
-    const macosProject = personal.projects.find(p => p.title === "MacOS-Next");
-    if (macosProject) {
-        fs.push({
-            id: 'desktop-macos-project-link',
-            name: 'MacOS-Next',
-            parent: 'root-desktop',
-            mimetype: 'inode/directory',
-            date: 'Today',
-            size: 'Folder',
-            icon: <Image className='w-max h-max  lg:my-0 my-auto' src='/folder.png' alt="MacOS-Next Project" width={64} height={64} />,
-            description: "Open MacOS-Next Project Folder",
-            link: `project-${macosProject.title}`
-        });
-    }
-    fs.push({ ...resumeBase, id: 'desktop-resume', parent: 'root-desktop' } as filesystemitem);
+
+    fs.push({ ...resumeBase, id: 'desktop-resume', parent: 'user-desktop' } as filesystemitem);
 
     const socialLinks = [
         { id: 'about-github', name: 'Github', link: personal.personal.socials.github, icon: <FaGithub className="w-full h-full text-gray-700 dark:text-gray-300" />, desc: "My Github Profile", color: 'text-gray-700 dark:text-gray-300' },
@@ -872,7 +1029,7 @@ const generatefilesystem = (): filesystemitem[] => {
         fs.push({
             id: s.id,
             name: s.name,
-            parent: 'root-about',
+            parent: 'user-about',
             mimetype: 'text/x-uri',
             date: 'Today',
             size: 'Web Link',
@@ -881,6 +1038,21 @@ const generatefilesystem = (): filesystemitem[] => {
             description: s.desc
         });
     });
+
+
+    const shortcuts: filesystemitem[] = [
+        {
+            id: 'shortcut-macos-next',
+            name: 'MacOS-Next',
+            parent: 'user-desktop',
+            mimetype: 'inode/shortcut',
+            date: 'Today',
+            size: '4 KB',
+            linkPath: 'project-MacOS-Next',
+            isSystem: false
+        }
+    ];
+    fs.push(...shortcuts);
 
     return fs;
 };
@@ -893,6 +1065,7 @@ interface SystemContext {
     updatewindow: (id: string, updates: any) => void;
     setactivewindow: (id: string) => void;
     ismobile: boolean;
+    files?: filesystemitem[];
 }
 
 const FileConfig: Record<string, {
@@ -903,6 +1076,10 @@ const FileConfig: Record<string, {
     'inode/directory': {
         appId: 'finder',
         icon: <Image src="/folder.png" alt="folder" width={64} height={64} className="w-full h-full object-contain drop-shadow-md" />,
+    },
+    'inode/shortcut': {
+        appId: 'finder',
+        icon: <Image src="/folder.png" alt="shortcut" width={64} height={64} className="w-full h-full object-contain drop-shadow-md" />,
     },
     'application/x-executable': {
         appId: 'app-launch',
@@ -949,18 +1126,20 @@ const FileConfig: Record<string, {
         })
     },
     'text/markdown': {
-        appId: 'fileviewer',
+        appId: 'textedit',
         icon: <IoDocumentTextOutline className="w-full h-full text-gray-500" />,
         getLaunchProps: (file) => ({
+            id: file.id,
             content: file.content,
             title: file.name,
             type: file.mimetype
         })
     },
     'text/plain': {
-        appId: 'fileviewer',
+        appId: 'textedit',
         icon: <IoDocumentTextOutline className="w-full h-full text-gray-500" />,
         getLaunchProps: (file) => ({
+            id: file.id,
             content: file.content,
             title: file.name,
             type: file.mimetype
@@ -976,51 +1155,72 @@ export const getFileIcon = (mimetype: string, name: string, itemicon?: React.Rea
 };
 
 const FolderPathMap: Record<string, string[]> = {
-    'root-projects': ['Projects'],
-    'root-apps': ['Applications'],
+    'user-projects': ['Macintosh HD', 'Users', 'Bala', 'Projects'],
+    'root-apps': ['Macintosh HD', 'Applications'],
     'root-icloud': ['iCloud Drive'],
-    'root-docs': ['Documents'],
+    'user-docs': ['Macintosh HD', 'Users', 'Bala', 'Documents'],
+    'user-downloads': ['Macintosh HD', 'Users', 'Bala', 'Downloads'],
     'root-network': ['Network'],
     'root-hd': ['Macintosh HD'],
-    'root-desktop': ['Desktop'],
+    'user-desktop': ['Macintosh HD', 'Users', 'Bala', 'Desktop'],
+    'user-about': ['Macintosh HD', 'Users', 'Bala', 'About Me'],
 };
 
 const ParentFolderMap: Record<string, string> = {
-    'root-projects': 'Projects',
+    'user-projects': 'Projects',
     'root-icloud': 'iCloud Drive',
     'root-apps': 'Applications',
-    'root-docs': 'Documents',
-    'root-desktop': 'Desktop'
+    'user-docs': 'Documents',
+    'user-downloads': 'Downloads',
+    'user-desktop': 'Desktop',
+    'user-about': 'About Me'
 };
+
+
+
+
 
 const resolveFolderPath = (file: filesystemitem): string[] => {
     if (FolderPathMap[file.id]) return FolderPathMap[file.id];
 
-    if (file.id === 'desktop-macos-project-link') return ['Projects', 'MacOS-Next'];
-
     if (file.parent) {
-        if (file.parent === 'root-desktop' && file.mimetype.startsWith('inode/directory')) {
-            return [file.name];
+        if (file.parent === 'user-desktop' && (file.mimetype === 'inode/directory' || file.mimetype === 'inode/shortcut')) {
+            return ['Macintosh HD', 'Users', 'Bala', 'Desktop', file.name];
         }
         if (ParentFolderMap[file.parent]) {
-            return [ParentFolderMap[file.parent], file.name];
+            if (file.parent === 'user-projects') {
+                return ['Macintosh HD', 'Users', 'Bala', 'Projects', file.name];
+            }
+            return ['Macintosh HD', 'Users', 'Bala', ParentFolderMap[file.parent], file.name];
+        }
+        if (file.parent.startsWith('project-')) {
+            const projectName = file.parent.replace('project-', '');
+            return ['Macintosh HD', 'Users', 'Bala', 'Projects', projectName, file.name];
         }
     }
 
     return [file.name];
 };
 
-const resolveTarget = (itemOrId: string | filesystemitem): { appId?: string; props: any; title?: string } | null => {
+const resolveTarget = (itemOrId: string | filesystemitem, currentFiles?: filesystemitem[], depth = 0): { appId?: string; props: any; title?: string } | null => {
+    if (depth > 5) {
+        console.warn("Shortcut recursion depth exceeded.");
+        return null;
+    }
+
     if (typeof itemOrId === 'string') {
         const app = apps.find(a => a.id === itemOrId || a.appname === itemOrId);
         if (app) return { appId: app.id, props: {}, title: app.appname };
+        let file = filesystem.find(f => f.id === itemOrId);
+        if (!file && currentFiles) {
+            file = currentFiles.find(f => f.id === itemOrId);
+        }
 
-        const file = filesystem.find(f => f.id === itemOrId);
-        if (file) return resolveTarget(file);
+        if (file) return resolveTarget(file, currentFiles, depth + 1);
 
         if (itemOrId.startsWith('project-')) {
             const projectName = itemOrId.replace('project-', '');
-            return { appId: 'finder', props: { initialpath: ['Projects', projectName] }, title: 'Finder' };
+            return { appId: 'finder', props: { initialpath: ['Macintosh HD', 'Users', 'Bala', 'Projects', projectName] }, title: projectName };
         }
 
         console.warn(`System logic: Item '${itemOrId}' not found.`);
@@ -1028,7 +1228,10 @@ const resolveTarget = (itemOrId: string | filesystemitem): { appId?: string; pro
     }
 
     const file = itemOrId;
-    const { mimetype, id, name } = file;
+    const { mimetype, id, name, linkPath } = file;
+    if (mimetype === 'inode/shortcut' && linkPath) {
+        return resolveTarget(linkPath, currentFiles, depth + 1);
+    }
 
     if (mimetype === 'inode/directory' || mimetype === 'inode/directory-alias') {
         return { appId: 'finder', props: { initialpath: resolveFolderPath(file) }, title: name };
@@ -1050,7 +1253,11 @@ const resolveTarget = (itemOrId: string | filesystemitem): { appId?: string; pro
 
 
     if (mimetype.startsWith('text/')) {
-        return { appId: 'fileviewer', props: { content: file.content, title: file.name, type: file.mimetype }, title: file.name };
+        return {
+            appId: 'textedit',
+            props: { id: file.id, content: file.content, title: file.name, type: file.mimetype },
+            title: file.name
+        };
     }
 
     return null;
@@ -1058,26 +1265,66 @@ const resolveTarget = (itemOrId: string | filesystemitem): { appId?: string; pro
 
 export const openSystemItem = (
     itemOrId: string | filesystemitem,
-    context: SystemContext
+    context: SystemContext,
+    forceAppId?: string
 ) => {
-    const { addwindow, windows, updatewindow, setactivewindow, ismobile } = context;
+    const { addwindow, windows, updatewindow, setactivewindow, ismobile, files } = context;
 
-    const resolved = resolveTarget(itemOrId);
-    if (!resolved || !resolved.appId) return;
+    const resolved = resolveTarget(itemOrId, files);
+    // eslint-disable-next-line
+    let { appId, props, title } = resolved || {};
 
-    const { appId, props, title } = resolved;
+    if (forceAppId) {
+        appId = forceAppId;
+    if (!resolved && typeof itemOrId !== 'string') {
+            if (itemOrId.mimetype.startsWith('text/') || itemOrId.mimetype === 'application/pdf') {
+                props = { content: itemOrId.content, title: itemOrId.name, type: itemOrId.mimetype };
+            }
+        }
+    }
+
+    if (!appId) return;
     const app = apps.find(a => a.id === appId);
 
     if (!app) return;
 
-    const existingWins = windows.filter(w => w.appname === app.appname);
-     const shouldFocusExisting = !app.multiwindow;
-
-    if (shouldFocusExisting && existingWins.length > 0) {
-        const win = existingWins[existingWins.length - 1];
-        updatewindow(win.id, { isminimized: false });
-        setactivewindow(win.id);
+    if (appId === 'getinfo' && typeof itemOrId !== 'string') {
+        addwindow({
+            id: `getinfo-${itemOrId.id}`,
+            appname: 'Get Info',
+            title: `${itemOrId.name} Info`,
+            component: 'apps/FileInfo',
+            icon: itemOrId.icon || '/finder.png', 
+            isminimized: false,
+            ismaximized: false,
+            position: { top: 100, left: 100 }, 
+            size: { width: 300, height: 450 },
+            props: { item: itemOrId }
+        });
         return;
+    }
+
+    const existingWins = windows.filter((w: any) => w.appname === app.appname);
+
+
+    const reuseApps = ['Text Edit', 'File Viewer', 'Photos', 'Safari']; 
+    if (reuseApps.includes(app.appname)) {
+        const existingInstance = existingWins.find(w => w.props && w.props.id === (props?.id));
+
+        if (existingInstance) {
+            updatewindow(existingInstance.id, {
+                isminimized: false,
+            });
+            setactivewindow(existingInstance.id);
+            return;
+        }
+    } else {
+         if (!app.multiwindow && existingWins.length > 0) {
+            const win = existingWins[existingWins.length - 1];
+            updatewindow(win.id, { isminimized: false });
+            setactivewindow(win.id);
+            return;
+        }
     }
 
     if (ismobile) {
@@ -1114,4 +1361,35 @@ export const openSystemItem = (
         size: size,
         props: props || {}
     });
+};
+
+export const mimeTypeMap: { [key: string]: string } = {
+    'md': 'text/markdown',
+    'txt': 'text/plain',
+    'png': 'image/png',
+    'jpg': 'image/jpeg',
+    'jpeg': 'image/jpeg',
+    'pdf': 'application/pdf',
+    'html': 'text/html',
+    'css': 'text/css',
+    'js': 'text/javascript',
+    'json': 'application/json'
+};
+
+export const getMimeTypeFromExtension = (name: string): string => {
+    const ext = name.split('.').pop()?.toLowerCase() || '';
+    return mimeTypeMap[ext] || 'text/plain';
+};
+
+export const humanizeMime = (mime: string): string => {
+    const map: { [key: string]: string } = {
+        'inode/directory': 'Folder',
+        'application/x-executable': 'Application',
+        'application/pdf': 'PDF Document',
+        'text/plain': 'Plain Text'
+    };
+
+    if (map[mime]) return map[mime];
+    if (mime.startsWith('image/')) return 'Image ' + mime.split('/')[1].toUpperCase();
+    return mime;
 };

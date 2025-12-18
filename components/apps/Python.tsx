@@ -7,6 +7,7 @@ import { useDevice } from '../DeviceContext';
 
 export default function Python({ isFocused = true }: { isFocused?: boolean }) {
     const [code, setcode] = useState('print("Made with love by BalaTBR!")\n\n# Keep Building!\n\nfor i in range(5):\n    print(f"Count: {i}")');
+    const [currentPath, setCurrentPath] = useState<string[]>(['Macintosh HD', 'Users', 'Bala', 'Projects']);
     const [output, setoutput] = useState('');
     const [isrunning, setisrunning] = useState(false);
     const { ismobile } = useDevice();

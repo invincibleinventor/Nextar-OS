@@ -15,6 +15,8 @@ import dynamic from 'next/dynamic';
 
 const componentmap: { [key: string]: any } = {
   'apps/Finder': dynamic(() => import('./apps/Finder')),
+  'apps/FileInfo': dynamic(() => import('./apps/FileInfo')),
+  'apps/TextEdit': dynamic(() => import('./apps/TextEdit')),
   'apps/Settings': dynamic(() => import('./apps/Settings')),
   'apps/Calendar': dynamic(() => import('./apps/Calendar')),
   'apps/Safari': dynamic(() => import('./apps/Safari')),
@@ -137,17 +139,12 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
     if (isminimized) {
 
       if (typeof window !== 'undefined') {
-        // const { innerWidth: screenwidth, innerHeight: screenheight } = window;
         if (!ismaximized) {
           previousStateRef.current = {
             position: positionref.current,
             size: sizeref.current
           };
         }
-        /* setposition({
-          top: screenheight,
-          left: (screenwidth - sizeref.current.width) / 2,
-        }); */
       }
 
 

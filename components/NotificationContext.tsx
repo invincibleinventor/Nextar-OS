@@ -15,6 +15,7 @@ interface NotificationContextType {
     addnotification: (n: Notification) => void;
     hidetoast: () => void;
     markasviewed: (id: string) => void;
+    addToast: (message: string, type?: 'info' | 'success' | 'error' | 'warning') => void;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -42,7 +43,20 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     const addnotification = (n: Notification) => {
         setnotifications(prev => [n, ...prev]);
         settoast(n);
-        setTimeout(() => settoast(null), 5000);
+        setTimeout(() => settoast(null), 3000);
+    };
+
+    const addToast = (message: string, type: 'info' | 'success' | 'error' | 'warning' = 'info') => {
+        addnotification({
+            id: Math.random().toString(36).substr(2, 9),
+            title: type === 'error' ? 'Error' : type === 'success' ? 'Success' : 'Notification',
+            description: message,
+            time: 'Now',
+            type: 'system',
+            appname: 'System',
+            icon: '/icons/system.png',
+            appid: 'system'
+        });
     };
 
     const hidetoast = () => settoast(null);
@@ -86,7 +100,8 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
             handlenotificationclick,
             addnotification,
             hidetoast,
-            markasviewed
+            markasviewed,
+            addToast
         }}>
             {children}
         </NotificationContext.Provider>

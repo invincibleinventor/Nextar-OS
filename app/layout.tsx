@@ -4,6 +4,7 @@ import { WindowProvider } from '@/components/WindowContext';
 import { ThemeProvider } from '@/components/ThemeContext';
 import { DeviceProvider } from '@/components/DeviceContext';
 import { SettingsProvider } from '@/components/SettingsContext';
+import { FileSystemProvider } from '@/components/FileSystemContext';
 import { Analytics } from "@vercel/analytics/next"
 
 import { personal as portfoliodata } from '@/components/data';
@@ -100,7 +101,7 @@ import { NotificationProvider } from '@/components/NotificationContext';
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider>
-      <html className='bg-black' lang="en">
+      <html className='bg-black' lang="en" suppressHydrationWarning>
         <Analytics />
         <body className="font-sf w-screen h-screen overflow-hidden bg-black antialiased">
           <WindowProvider>
@@ -109,7 +110,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <SettingsProvider>
                 <DeviceProvider>
                   <NotificationProvider>
-                    {children}
+                    <FileSystemProvider>
+                      {children}
+                    </FileSystemProvider>
                   </NotificationProvider>
                 </DeviceProvider>
               </SettingsProvider>

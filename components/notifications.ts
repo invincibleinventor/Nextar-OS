@@ -7,6 +7,7 @@ export interface Notification {
     icon: string;
     appid: string;
     viewed?: boolean;
+    type?: string;
 }
 
 export const initialnotifications: Notification[] = [

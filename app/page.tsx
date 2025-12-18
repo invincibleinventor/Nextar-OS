@@ -1,9 +1,9 @@
 'use client'
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useWindows } from '@/components/WindowContext';
 import Window from '@/components/Window';
-import { apps, filesystem, openSystemItem, getFileIcon } from '@/components/data';
+import { apps, openSystemItem, getFileIcon } from '@/components/data';
 import { useDevice } from '@/components/DeviceContext';
 import Panel from '@/components/panel';
 import Dock from '@/components/Dock';
@@ -17,13 +17,15 @@ import { motion } from 'framer-motion';
 import { BiSignal5 } from "react-icons/bi";
 
 import NotificationCenter from '@/components/NotificationCenter';
-import { useNotifications } from '@/components/NotificationContext';
 import MacOSNotifications from '@/components/MacOSNotifications';
+import ContextMenu from '@/components/ui/ContextMenu';
+import { SelectionArea } from '@/components/ui/SelectionArea';
+import FileModal from '@/components/ui/FileModal';
+import { useFileSystem } from '@/components/FileSystemContext';
 
 const Page = () => {
-  const { windows, addwindow, setwindows, updatewindow, setactivewindow } = useWindows();
+  const { windows, addwindow, setwindows, updatewindow, setactivewindow, activewindow } = useWindows();
   const { osstate, ismobile } = useDevice();
-  const { } = useNotifications();
   const [showcontrolcenter, setshowcontrolcenter] = useState(false);
   const [shownotificationcenter, setshownotificationcenter] = useState(false);
   const [showrecentapps, setshowrecentapps] = useState(false);
@@ -31,7 +33,125 @@ const Page = () => {
 
   const haslaunchedwelcome = React.useRef(false);
 
-  const context = { addwindow, windows, updatewindow, setactivewindow, ismobile };
+  const { createFolder, createFile, files, emptyTrash, moveItem, refreshFileSystem, copyItem, cutItem, pasteItem, clipboard, moveToTrash, renameItem } = useFileSystem();
+
+  const context = { addwindow, windows, updatewindow, setactivewindow, ismobile, activewindow, files };
+  const containerRef = useRef<HTMLDivElement>(null);
+
+
+  const [fileModal, setFileModal] = useState<{ isOpen: boolean, type: 'create-folder' | 'create-file' | 'rename', initialValue?: string }>({ isOpen: false, type: 'create-folder' });
+  const [contextMenu, setContextMenu] = useState<{ x: number, y: number, fileId?: string } | null>(null);
+  const [selectedFileIds, setSelectedFileIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    const handleGlobalMenu = (e: CustomEvent) => {
+      if (activewindow) return;
+
+      const action = e.detail.action;
+
+      if (action === 'New Folder') {
+        setFileModal({ isOpen: true, type: 'create-folder', initialValue: '' });
+      } else if (action === 'New File') {
+        setFileModal({ isOpen: true, type: 'create-file', initialValue: '' });
+      }
+    };
+
+    window.addEventListener('menu-action' as any, handleGlobalMenu);
+    return () => window.removeEventListener('menu-action' as any, handleGlobalMenu);
+  }, [windows, activewindow]);
+
+  const handleContextMenu = (e: React.MouseEvent, fileId?: string) => {
+    if (ismobile) return;
+    e.preventDefault();
+    e.stopPropagation();
+    setContextMenu({ x: e.clientX, y: e.clientY, fileId });
+  };
+
+
+
+  const handleModalConfirm = (inputValue: string) => {
+    if (fileModal.type === 'create-folder') {
+      createFolder(inputValue, 'user-desktop');
+    } else if (fileModal.type === 'create-file') {
+      createFile(inputValue, 'user-desktop');
+    } else if (fileModal.type === 'rename' && contextMenu?.fileId) {
+      renameItem(contextMenu.fileId, inputValue);
+    }
+    setFileModal({ ...fileModal, isOpen: false });
+  };
+
+  const getContextMenuItems = () => {
+    if (contextMenu?.fileId) {
+      const activeFileItem = files.find(f => f.id === contextMenu.fileId);
+      if (!activeFileItem) return [];
+
+      const targets = (selectedFileIds.includes(activeFileItem.id)) ? selectedFileIds : [activeFileItem.id];
+      const hasReadOnly = targets.some(id => files.find(f => f.id === id)?.isReadOnly || files.find(f => f.id === id)?.isSystem);
+      const isMulti = targets.length > 1;
+
+      const baseItems: any[] = [
+        {
+          label: 'Open',
+          action: () => targets.forEach(id => {
+            const f = files.find(x => x.id === id);
+            if (f) openSystemItem(f, context);
+          })
+        }
+      ];
+
+      if (!isMulti) {
+        baseItems.push({ label: 'Get Info', action: () => openSystemItem(activeFileItem, context, 'getinfo') });
+        baseItems.push({ separator: true, label: '' });
+        baseItems.push({
+          label: 'Rename',
+          action: () => setFileModal({ isOpen: true, type: 'rename', initialValue: activeFileItem.name }),
+          disabled: activeFileItem.isReadOnly
+        });
+      }
+
+      baseItems.push({ separator: true, label: '' });
+      baseItems.push({ label: isMulti ? `Copy ${targets.length} Items` : 'Copy', action: () => copyItem(targets) });
+      baseItems.push({ label: isMulti ? `Cut ${targets.length} Items` : 'Cut', action: () => cutItem(targets), disabled: hasReadOnly });
+      baseItems.push({ separator: true, label: '' });
+      baseItems.push({ label: isMulti ? `Move ${targets.length} Items to Trash` : 'Move to Trash', action: () => targets.forEach(id => moveToTrash(id)), danger: true, disabled: hasReadOnly });
+
+      return baseItems;
+    } else {
+      return [
+        { label: 'New Folder', action: () => setFileModal({ isOpen: true, type: 'create-folder', initialValue: '' }) },
+        { label: 'New File', action: () => setFileModal({ isOpen: true, type: 'create-file', initialValue: '' }) },
+        { separator: true, label: '' },
+        { label: 'Paste', action: () => pasteItem('user-desktop'), disabled: !clipboard },
+        { separator: true, label: '' },
+        { label: 'Get Info', action: () => { }, disabled: true },
+        { label: 'Change Wallpaper', action: () => openSystemItem('settings', context) },
+        { separator: true, label: '' },
+        { label: 'Refresh', action: refreshFileSystem },
+        { separator: true, label: '' },
+        { label: 'Empty Trash', action: emptyTrash, disabled: files.filter(f => f.isTrash).length === 0 }
+      ];
+    }
+  };
+
+  const handleDragStart = (e: React.DragEvent, fileId: string) => {
+    e.dataTransfer.setData('sourceId', fileId);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e: React.DragEvent, targetParentId: string) => {
+    e.preventDefault();
+    const sourceId = e.dataTransfer.getData('sourceId');
+    if (!sourceId) return;
+
+    if (sourceId === targetParentId) return;
+
+    moveItem(sourceId, targetParentId);
+  };
 
   useEffect(() => {
     if (osstate === 'unlocked' && !haslaunchedwelcome.current) {
@@ -88,40 +208,130 @@ const Page = () => {
       >
         {!ismobile && (
           <>
-            <Panel ontogglenotifications={() => setshownotificationcenter(prev => !prev)} />
+            <FileModal
+              isOpen={fileModal.isOpen}
+              type={fileModal.type}
+              initialValue={fileModal.initialValue}
+              onConfirm={handleModalConfirm}
+              onCancel={() => setFileModal({ ...fileModal, isOpen: false })}
+            />
+            {contextMenu && (
+              <ContextMenu
+                x={contextMenu.x}
+                y={contextMenu.y}
+                items={getContextMenuItems()}
+                onClose={() => setContextMenu(null)}
+              />
+            )}
+
             <main
               id="desktop-main"
               className="absolute inset-0 pt-6 pb-16"
+              onContextMenu={handleContextMenu}
               onClick={() => {
                 if (shownotificationcenter) setshownotificationcenter(false);
+                setContextMenu(null);
+                setactivewindow(null);
               }}
+              onDragOver={handleDragOver}
+              onDrop={(e) => handleDrop(e, 'root-desktop')}
             >
-              <div className='p-4 pt-10 gap-4 flex flex-col flex-wrap-reverse content-start h-full w-full' >
-                {filesystem.filter(item => item.parent === 'root-desktop').map((item) => (
-                  <div
-                    key={item.id}
-                    onDoubleClick={(e) => {
-                      e.stopPropagation();
-                      openSystemItem(item, context);
-                    }}
-                    className="p-2 flex hover:bg-neutral-400/20 rounded-md hover:backdrop-blur-lg hover:filter px-2 flex-col items-center content-center text-white cursor-default group border border-transparent hover:border-white/10 transition-all w-[90px]"
-                  >
-                    <div className="w-14 h-14 relative mb-1 drop-shadow-md">
-                      <div className="w-full h-full aspect-square">
-                        {getFileIcon(item.mimetype, item.name, item.icon)}
+              <div className='p-4 pt-10 gap-4 flex flex-col flex-wrap-reverse content-start h-full w-full' ref={containerRef}>
+                <SelectionArea
+                  containerRef={containerRef as React.RefObject<HTMLElement>}
+                  onSelectionChange={(rect) => {
+                    if (rect) {
+                      const newSelectedIds: string[] = [];
+                      const items = containerRef.current?.querySelectorAll('.desktop-item');
+                      items?.forEach((el) => {
+                        const itemRect = el.getBoundingClientRect();
+                        if (
+                          rect.x < itemRect.x + itemRect.width &&
+                          rect.x + rect.width > itemRect.x &&
+                          rect.y < itemRect.y + itemRect.height &&
+                          rect.y + rect.height > itemRect.y
+                        ) {
+                          const id = el.getAttribute('data-id');
+                          if (id) newSelectedIds.push(id);
+                        }
+                      });
+                      setSelectedFileIds(newSelectedIds);
+                    }
+                  }}
+                  onSelectionEnd={(rect) => {
+                    if (!rect || (rect.width < 5 && rect.height < 5)) {
+                      setSelectedFileIds([]);
+                    }
+                  }}
+                />
+
+                {files.filter(file => file.parent === 'user-desktop' && !file.isTrash).map((item) => {
+                  const isSelected = selectedFileIds.includes(item.id);
+                  return (
+                    <div
+                      key={item.id}
+                      data-id={item.id}
+                      onDoubleClick={(e) => {
+                        e.stopPropagation();
+                        openSystemItem(item, context);
+                      }}
+                      onContextMenu={(e) => {
+                        handleContextMenu(e, item.id);
+                        if (!isSelected) setSelectedFileIds([item.id]);
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (e.shiftKey) {
+                          if (selectedFileIds.includes(item.id)) {
+                            setSelectedFileIds(prev => prev.filter(id => id !== item.id));
+                          } else {
+                            setSelectedFileIds(prev => [...prev, item.id]);
+                          }
+                        } else {
+                          setSelectedFileIds([item.id]);
+                        }
+                      }}
+                      className={`desktop-item p-2 flex rounded-md flex-col items-center content-center text-white cursor-default group border transition-all w-[90px]
+                        ${isSelected
+                          ? 'bg-black/20 dark:bg-white/20 border-white/20 backdrop-blur-md'
+                          : 'hover:bg-neutral-400/20 border-transparent hover:border-white/10 hover:backdrop-blur-lg'
+                        }`}
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, item.id)}
+                      onDragOver={(e) => {
+                        if (item.mimetype === 'inode/directory') {
+                          e.preventDefault();
+                          e.stopPropagation();
+                        }
+                      }}
+                      onDrop={(e) => {
+                        if (item.mimetype === 'inode/directory') {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleDrop(e, item.id);
+                        }
+                      }}
+                    >
+                      <div className="w-14 h-14 relative mb-1 drop-shadow-md">
+                        <div className="w-full h-full aspect-square">
+                          {getFileIcon(item.mimetype, item.name, item.icon)}
+                        </div>
                       </div>
+                      <span className={`text-[11px] w-full font-semibold text-white drop-shadow-md text-center break-words leading-tight line-clamp-2 px-1 rounded-sm ${isSelected ? 'bg-blue-600' : ''} group-hover:text-white`}>{item.name}</span>
                     </div>
-                    <span className='text-[11px] w-full font-semibold text-white drop-shadow-md text-center break-words leading-tight line-clamp-2 px-1 rounded-sm group-hover:text-white'>{item.name+`\n`}</span>
-                  </div>
-                ))}
+                  )
+                })}
 
                 {windows.map((window: any) => (
-                  <div key={window.id} onClick={(e) => e.stopPropagation()}>
+                  <div key={window.id} onClick={(e) => e.stopPropagation()} onContextMenu={(e) => e.stopPropagation()}>
                     <Window {...window} />
                   </div>
                 ))}
               </div>
             </main>
+
+            <Panel ontogglenotifications={() => setshownotificationcenter(prev => !prev)} />
+
             <Dock />
           </>
         )}

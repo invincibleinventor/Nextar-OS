@@ -52,8 +52,9 @@ export default function Mail() {
                     <div className="px-2 space-y-0.5">
                         {[
                             { id: 'inbox', label: 'Inbox', icon: IoMailOutline, count: ALL_MAILS.length },
+                            { id: 'about', label: 'About Bala', icon: IoSearch, count: 1 },
                             { id: 'projects', label: 'Projects', icon: IoFlagOutline, count: personal.projects.length },
-                            { id: 'about', label: 'About', icon: IoSearch, count: 1 },
+
                             { id: 'education', label: 'Education', icon: IoSchoolOutline, count: 1 },
                             { id: 'skills', label: 'Skills', icon: IoConstructOutline, count: 1 },
                             { id: 'contact', label: 'Contact', icon: IoPersonCircleOutline, count: 1 },
@@ -65,13 +66,13 @@ export default function Mail() {
                                     setSelectedMailId(null);
                                     if (ismobile) setSidebarOpen(false);
                                 }}
-                                className={`flex items-center justify-between px-3 py-1.5 rounded-lg cursor-pointer text-[13px] ${selectedFolder === item.id ? 'bg-[#007AFF] text-white' : 'hover:bg-black/5 dark:hover:bg-white/5 text-black dark:text-white'}`}
+                                className={`flex items-center justify-between px-3 py-2 lg:py-1.5 rounded-lg cursor-pointer text-[13px] ${selectedFolder === item.id ? 'bg-[#007AFF] text-white' : 'hover:bg-black/5 dark:hover:bg-white/5 text-black dark:text-white'}`}
                             >
                                 <div className="flex items-center gap-2">
                                     <item.icon size={16} />
                                     <span>{item.label}</span>
                                 </div>
-                                <span className={`text-xs ${selectedFolder === item.id ? 'text-white/80' : 'text-gray-500'}`}>{item.count}</span>
+                                <span className={`text-sm lg:text-xs ${selectedFolder === item.id ? 'text-white/80' : 'text-gray-500'}`}>{item.count}</span>
                             </div>
                         ))}
                     </div>
