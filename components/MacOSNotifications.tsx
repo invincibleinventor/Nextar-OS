@@ -22,7 +22,7 @@ export default function MacOSNotifications({ isopen, onclose }: { isopen: boolea
                             animate={{ opacity: 1, x: 0, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
                             transition={{ type: "spring", stiffness: 400, damping: 30, delay: index * 0.1 }}
-                            className="group relative w-[340px] bg-white/30 dark:bg-neutral-800/10 backdrop-blur-2xl border border-white/20 shadow-2xl rounded-2xl p-3.5 cursor-pointer select-none pointer-events-auto hover:bg-white/40 dark:hover:bg-neutral-800/40 transition-colors"
+                            className="group relative w-[340px] bg-white/10 dark:bg-neutral-800/10 backdrop-blur-2xl border border-white/20 shadow-2xl rounded-2xl p-3.5 cursor-pointer select-none pointer-events-auto hover:bg-white/40 dark:hover:bg-neutral-800/40 transition-colors"
                             onClick={() => { handlenotificationclick(n); markasviewed(n.id); }}
                             drag="x"
                             dragConstraints={{ left: 0, right: 0 }}
@@ -41,7 +41,7 @@ export default function MacOSNotifications({ isopen, onclose }: { isopen: boolea
                                 <div className="flex-1 min-w-0 text-left">
                                     <div className="flex justify-between items-baseline mb-0.5">
                                         <h4 className="font-bold text-[13px] text-black dark:text-white leading-tight">{n.appname}</h4>
-                                        <span className="text-[10px] text-neutral-500">{n.time}</span>
+                                        <span className="text-[10px] text-neutral-800 dark:text-neutral-300">{n.time}</span>
                                     </div>
                                     <h4 className="font-semibold text-[13px] text-black dark:text-white leading-tight">{n.title}</h4>
                                     <p className="text-[12px] text-neutral-800 dark:text-neutral-300 leading-snug mt-0.5 line-clamp-2">{n.description}</p>
