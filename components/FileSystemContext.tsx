@@ -74,10 +74,16 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
 
 
-    const isLocked = useCallback((id: string): boolean => {
+    const isLocked = useCallback((id: string, visited: Set<string> = new Set()): boolean => {
+        if (visited.has(id)) return false;
+        visited.add(id);
+
         const item = files.find(f => f.id === id);
         if (!item) return false;
         if (item.isReadOnly) return true;
+        if (item.parent) {
+            return isLocked(item.parent, visited);
+        }
         return false;
     }, [files]);
 

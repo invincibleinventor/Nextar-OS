@@ -234,7 +234,7 @@ const Page = () => {
                 setactivewindow(null);
               }}
               onDragOver={handleDragOver}
-              onDrop={(e) => handleDrop(e, 'root-desktop')}
+              onDrop={(e) => handleDrop(e, 'user-desktop')}
             >
               <div className='p-4 pt-10 gap-4 flex flex-col flex-wrap-reverse content-start h-full w-full' ref={containerRef}>
                 <SelectionArea
