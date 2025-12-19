@@ -18,12 +18,12 @@ export default function Menu(props: any) {
         };
 
         const timer = setTimeout(() => {
-            document.addEventListener('click', handleclick);
+            document.addEventListener('mousedown', handleclick);
         }, 10);
 
         return () => {
             clearTimeout(timer);
-            document.removeEventListener('click', handleclick);
+            document.removeEventListener('mousedown', handleclick);
         };
     }, [visible, ontoggle]);
 
@@ -50,7 +50,7 @@ export default function Menu(props: any) {
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ duration: 0.1 }}
                     style={{ zIndex: 99999 }}
-                    className="absolute left-0 mt-1 min-w-[220px] bg-white/70 dark:bg-[#1e1e1e]/70 backdrop-blur-xl border border-black/5 dark:border-white/10 rounded-[10px] shadow-[0_10px_40px_rgba(0,0,0,0.2)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.6)] p-[5px] flex flex-col font-sf"
+                    className="absolute left-0 mt-3 min-w-[220px] bg-white/40 dark:bg-[#1e1e1e]/40 backdrop-blur-xl border border-black/5 dark:border-white/10 rounded-[10px] shadow-[0_10px_40px_rgba(0,0,0,0.2)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.6)] p-[5px] flex flex-col font-sf"
                 >
                     {props.data.map((item: any, idx: number) =>
                         item.separator ? (

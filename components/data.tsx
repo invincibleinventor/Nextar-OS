@@ -1026,8 +1026,7 @@ export const generatefilesystem = (): filesystemitem[] => {
         mimetype: 'inode/directory',
         date: 'Today',
         size: '--',
-        isSystem: true,
-        isReadOnly: true
+        isSystem: true
     };
     fs.push(about);
 
@@ -1063,8 +1062,7 @@ export const generatefilesystem = (): filesystemitem[] => {
         date: 'Today',
         size: '--',
         isSystem: true,
-        isTrash: true,
-        isReadOnly: true
+        isTrash: true
     };
     fs.push(trash);
 
@@ -1095,7 +1093,8 @@ export const generatefilesystem = (): filesystemitem[] => {
             size: '--',
             icon: <Image className='w-full h-full p-[6px] sm:w-full sm:h-full' src='/github.png' alt={`${p.title} source code`} width={64} height={64} />,
             link: p.github,
-            description: `View source code for ${p.title} on GitHub.`
+            description: `View source code for ${p.title} on GitHub.`,
+            isReadOnly: true
         });
 
         fs.push({
@@ -1107,7 +1106,8 @@ export const generatefilesystem = (): filesystemitem[] => {
             icon: <Image className='w-full p-[6px] h-full sm:w-full sm:h-full' src='/live.png' alt={`${p.title} live demo`} width={64} height={64} />,
             size: '--',
             link: p.link,
-            description: `Open live demo of ${p.title}.`
+            description: `Open live demo of ${p.title}.`,
+            isReadOnly: true
         });
 
         const projectPhotoBase: Partial<filesystemitem> = {
@@ -1120,7 +1120,8 @@ export const generatefilesystem = (): filesystemitem[] => {
             link: `/appimages/${p.title.toLowerCase()}.png`,
             content: `/appimages/${p.title.toLowerCase()}.png`,
             projectPath: p.title,
-            projectLink: p.link
+            projectLink: p.link,
+            isReadOnly: true
         };
 
         fs.push({ ...projectPhotoBase, id: `${pid}-photo`, parent: pid } as filesystemitem);
@@ -1134,7 +1135,8 @@ export const generatefilesystem = (): filesystemitem[] => {
             date: 'Today',
             size: '1 KB',
             description: `Read more about ${p.title}.`,
-            content: `# ${p.title}\n\n**Type:** ${p.type}\n\n**Date:** ${p.date}\n\n**Stack:** ${p.stack.join(', ')}\n\n## Description\n\n${p.desc}\n\nCheck out the [Live Demo](${p.link}) or view the [Source Code](${p.github}).`
+            content: `# ${p.title}\n\n**Type:** ${p.type}\n\n**Date:** ${p.date}\n\n**Stack:** ${p.stack.join(', ')}\n\n## Description\n\n${p.desc}\n\nCheck out the [Live Demo](${p.link}) or view the [Source Code](${p.github}).`,
+            isReadOnly: true
         });
     });
 
