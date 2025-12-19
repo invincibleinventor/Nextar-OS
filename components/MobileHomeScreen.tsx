@@ -1,27 +1,35 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { useDevice } from './DeviceContext';
 import { apps, filesystemitem, openSystemItem, getFileIcon } from './data';
-import { useTheme } from './ThemeContext';
 import { useSettings } from './SettingsContext';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import AppLibrary from './AppLibrary';
 import { useWindows } from './WindowContext';
 import { useFileSystem } from './FileSystemContext';
+import ContextMenu from './ui/ContextMenu';
 
 export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayopen?: boolean }) {
     const { addwindow, windows, setactivewindow, updatewindow } = useWindows();
     const { reducemotion } = useSettings();
     const { ismobile } = useDevice();
-    const { files } = useFileSystem();
+    const { files, moveToTrash, createFolder, createFile } = useFileSystem();
     const [page, setpage] = useState(0);
+    const [editmode, seteditmode] = useState(false);
+    const [contextmenu, setcontextmenu] = useState<{ x: number; y: number; item?: filesystemitem } | null>(null);
+    const longpresstimer = useRef<NodeJS.Timeout | null>(null);
+    const [iconorder, seticonorder] = useState<string[]>([]);
 
     const desktopItems = files.filter(item => item.parent === 'user-desktop' && !item.isTrash);
 
-    const handleItemClick = (item: filesystemitem) => {
-        openSystemItem(item, { addwindow, windows, setactivewindow, updatewindow, ismobile, files });
-    };
+    React.useEffect(() => {
+        const savedorder = localStorage.getItem('mobile-icon-order');
+        if (savedorder) {
+            seticonorder(JSON.parse(savedorder));
+        }
+    }, []);
+
     const dockAppIds = ['finder', 'safari', 'mail', 'settings'];
 
     const isDockItem = (item: filesystemitem) => {
@@ -30,15 +38,165 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
         return dockAppIds.includes(appId);
     };
 
-    const gridItems = desktopItems.filter(item => !isDockItem(item));
+    const getorderedgriditems = useCallback(() => {
+        const griditems = desktopItems.filter(item => !isDockItem(item));
+
+        if (iconorder.length === 0) return griditems;
+
+        const orderedItems: filesystemitem[] = [];
+        const remainingItems = [...griditems];
+
+        iconorder.forEach(id => {
+            const index = remainingItems.findIndex(item => item.id === id);
+            if (index !== -1) {
+                orderedItems.push(remainingItems[index]);
+                remainingItems.splice(index, 1);
+            }
+        });
+
+        return [...orderedItems, ...remainingItems];
+    }, [desktopItems, iconorder]);
+
+    const griditems = getorderedgriditems();
+
+    const handleItemClick = (item: filesystemitem) => {
+        if (editmode) {
+            seteditmode(false);
+            return;
+        }
+        openSystemItem(item, { addwindow, windows, setactivewindow, updatewindow, ismobile, files });
+    };
 
     const dockapps = apps.filter(a =>
         a.id === 'finder' || a.id === 'safari' || a.id === 'mail' || a.id === 'settings'
     ).slice(0, 4);
 
+    const handlelongpressstart = (item: filesystemitem | null, e: React.TouchEvent | React.MouseEvent) => {
+        longpresstimer.current = setTimeout(() => {
+            if ('vibrate' in navigator) {
+                navigator.vibrate(10);
+            }
+            const touch = 'touches' in e ? e.touches[0] : e;
+            setcontextmenu({ x: touch.clientX, y: touch.clientY, item: item || undefined });
+        }, 500);
+    };
+
+    const handlelongpressend = () => {
+        if (longpresstimer.current) {
+            clearTimeout(longpresstimer.current);
+            longpresstimer.current = null;
+        }
+    };
+
+    const handlereorder = (draggedId: string, targetIndex: number) => {
+        const currentItems = getorderedgriditems();
+        const currentIndex = currentItems.findIndex(item => item.id === draggedId);
+        if (currentIndex === -1 || currentIndex === targetIndex) return;
+
+        const newItems = [...currentItems];
+        const [removed] = newItems.splice(currentIndex, 1);
+        newItems.splice(targetIndex, 0, removed);
+
+        const neworderids = newItems.map(item => item.id);
+        seticonorder(neworderids);
+        localStorage.setItem('mobile-icon-order', JSON.stringify(neworderids));
+    };
+
+    const getcontextmenuitems = () => {
+        if (!contextmenu) return [];
+
+        if (contextmenu.item) {
+            const item = contextmenu.item;
+            const items: any[] = [
+                {
+                    label: 'Open',
+                    action: () => {
+                        openSystemItem(item, { addwindow, windows, setactivewindow, updatewindow, ismobile, files });
+                    }
+                }
+            ];
+
+            if (item.mimetype === 'application/x-executable') {
+                const appid = item.id.replace('desktop-app-', '');
+                const app = apps.find(a => a.id === appid);
+                if (app?.multiwindow) {
+                    items.push({
+                        label: 'Open New Window',
+                        action: () => {
+                            openSystemItem(item, { addwindow, windows, setactivewindow, updatewindow, ismobile, files });
+                        }
+                    });
+                }
+            }
+
+            items.push({ separator: true, label: '' });
+
+            items.push({
+                label: 'Edit Home Screen',
+                action: () => seteditmode(true)
+            });
+
+            items.push({
+                label: 'Show in Finder',
+                action: () => openSystemItem('finder', { addwindow, windows, setactivewindow, updatewindow, ismobile, files }, undefined, { openPath: item.parent || 'user-desktop', selectItem: item.id })
+            });
+
+            if (!item.isReadOnly && !item.isSystem) {
+                items.push({ separator: true, label: '' });
+                items.push({
+                    label: 'Remove from Home Screen',
+                    action: () => moveToTrash(item.id),
+                    danger: true
+                });
+            }
+
+            return items;
+        } else {
+            return [
+                {
+                    label: 'New Folder',
+                    action: () => createFolder('New Folder', 'user-desktop')
+                },
+                {
+                    label: 'New File',
+                    action: () => createFile('Untitled.txt', 'user-desktop')
+                },
+                { separator: true, label: '' },
+                {
+                    label: 'Edit Home Screen',
+                    action: () => seteditmode(true)
+                }
+            ];
+        }
+    };
+
+    const [draggeditem, setdraggeditem] = useState<string | null>(null);
 
     return (
-        <div className="relative w-full h-full overflow-hidden bg-transparent">
+        <div
+            className="relative w-full h-full overflow-hidden bg-transparent"
+            onClick={() => editmode && seteditmode(false)}
+            onTouchStart={(e) => {
+                if ((e.target as HTMLElement).closest('.app-icon')) return;
+                handlelongpressstart(null, e);
+            }}
+            onTouchEnd={handlelongpressend}
+            onTouchCancel={handlelongpressend}
+            onContextMenu={(e) => {
+                e.preventDefault();
+                if ((e.target as HTMLElement).closest('.app-icon')) return;
+                setcontextmenu({ x: e.clientX, y: e.clientY });
+            }}
+        >
+            {contextmenu && (
+                <ContextMenu
+                    x={contextmenu.x}
+                    y={contextmenu.y}
+                    items={getcontextmenuitems()}
+                    onClose={() => setcontextmenu(null)}
+                />
+            )}
+
             <div
                 className="flex w-full h-full overflow-x-auto snap-x snap-mandatory scrollbar-hide [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
                 style={{ scrollBehavior: 'smooth' }}
@@ -54,25 +212,86 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                 <div className="w-[100vw] h-full flex flex-col pt-14 relative snap-center flex-shrink-0">
                     <div className="flex-1 px-4">
                         <div className="grid grid-cols-4 gap-x-2 gap-y-5">
-                            {gridItems.map(item => (
-                                <motion.button
+                            {griditems.map((item, index) => (
+                                <motion.div
                                     key={item.id}
-                                    className="flex flex-col items-center gap-1"
-                                    onClick={() => handleItemClick(item)}
-                                    whileTap={{ scale: 0.9 }}
+                                    layout
+                                    layoutId={item.id}
+                                    className="app-icon flex flex-col items-center gap-1 touch-none"
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={editmode ? { opacity: 1, scale: 1, rotate: [0, -2, 2, -2, 0] } : { opacity: 1, scale: 1, rotate: 0 }}
+                                    exit={{ opacity: 0, scale: 0.8 }}
+                                    transition={{ type: 'spring', damping: 25, stiffness: 300, repeat: editmode ? Infinity : 0, duration: editmode ? 0.3 : undefined }}
+                                    draggable={editmode}
+                                    onDragStart={() => setdraggeditem(item.id)}
+                                    onDragEnd={() => setdraggeditem(null)}
+                                    onDragOver={(e) => {
+                                        e.preventDefault();
+                                        if (draggeditem && draggeditem !== item.id) {
+                                            handlereorder(draggeditem, index);
+                                        }
+                                    }}
+                                    onClick={() => !editmode && handleItemClick(item)}
+                                    onTouchStart={(e) => {
+                                        e.stopPropagation();
+                                        if (!editmode) handlelongpressstart(item, e);
+                                    }}
+                                    onTouchEnd={(e) => {
+                                        e.stopPropagation();
+                                        handlelongpressend();
+                                    }}
+                                    onTouchCancel={(e) => {
+                                        e.stopPropagation();
+                                        handlelongpressend();
+                                    }}
+                                    onContextMenu={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        setcontextmenu({ x: e.clientX, y: e.clientY, item });
+                                    }}
+                                    whileTap={editmode ? {} : { scale: 0.9 }}
                                 >
-                                    <div className="w-[60px] h-[60px] rounded-[14px] overflow-hidden dark:bg-black/10 bg-white/10 shadow-sm ring-1 ring-white/5 relative">
-                                        <div className="w-full my-auto h-full flex flex-col">
-                                            {getFileIcon(item.mimetype, item.name, item.icon)}
+                                    <div className="relative">
+                                        {editmode && (
+                                            <button
+                                                className="absolute -top-1 -left-1 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center z-10"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    moveToTrash(item.id);
+                                                }}
+                                            >
+                                                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </button>
+                                        )}
+                                        <div className="w-[60px] h-[60px] rounded-[14px] overflow-hidden dark:bg-black/10 bg-white/10 shadow-sm ring-1 ring-white/5 relative">
+                                            <div className="w-full my-auto h-full flex flex-col">
+                                                {getFileIcon(item.mimetype, item.name, item.icon)}
+                                            </div>
                                         </div>
                                     </div>
                                     <span className="text-[11px] font-medium text-white/90 text-center leading-tight drop-shadow-md truncate w-full tracking-tight">
                                         {item.name}
                                     </span>
-                                </motion.button>
+                                </motion.div>
                             ))}
                         </div>
                     </div>
+
+                    {editmode && (
+                        <motion.button
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="absolute bottom-[165px] left-0 right-0 mx-auto w-max z-30 px-6 py-2 bg-white/20 backdrop-blur-md rounded-full text-white font-medium text-sm"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                seteditmode(false);
+                            }}
+                        >
+                            Done
+                        </motion.button>
+                    )}
 
                     <div className={`mx-auto mb-7 p-3 rounded-[25px] w-max flex items-center justify-between gap-4 transition-all duration-300 ${isoverlayopen ? 'bg-transparent' : 'dark:bg-black/10 bg-white/10 backdrop-blur-sm shadow-lg border border-white/10'}`}>
                         {dockapps.map(app => (

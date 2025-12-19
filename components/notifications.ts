@@ -11,40 +11,14 @@ export interface Notification {
 }
 
 export const initialnotifications: Notification[] = [
-    {
-        id: 'n1',
-        appname: 'Mail',
-        title: 'New Project Proposal',
-        description: 'Hey, check out the new design requirements...',
-        time: '2m ago',
-        icon: '/mail.png',
-        appid: 'mail'
-    },
-    {
-        id: 'n2',
-        appname: 'Calendar',
-        title: 'Team Meeting',
-        description: 'Daily standup in 10 minutes',
-        time: '12m ago',
-        icon: '/calendar.png',
-        appid: 'calendar'
-    },
-    {
-        id: 'n3',
-        appname: 'Messages',
-        title: 'Sarah',
-        description: 'Please push the repository by 1 am night today',
-        time: '1h ago',
-        icon: '/messages.png',
-        appid: 'messages'
-    },
+    
     {
         id: 'n4',
-        appname: 'Settings',
-        title: 'System Update',
-        description: 'MacOS-Next is ready to install',
+        appname: 'Welcome',
+        title: 'Welcome to My Portfolio!',
+        description: 'Hi! This is Bala! Welcome to my convergent MacOS themed portfolio! Please feel free to explore it!',
         time: '2h ago',
-        icon: '/settings.png',
-        appid: 'settings'
+        icon: '/welcome.png',
+        appid: 'welcome'
     }
 ];

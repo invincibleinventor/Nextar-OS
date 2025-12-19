@@ -1,7 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import { useMenuAction } from './hooks/useMenuAction';
 
-export default function Calculator() {
+export default function Calculator({ appId = 'calculator', id }: { appId?: string, id?: string }) {
     const [display, setdisplay] = useState('0');
+
+    const menuActions = useMemo(() => ({
+        'view-basic': () => { },
+        'view-scientific': () => { },
+        'view-programmer': () => { }, 
+    }), []);
+
+    useMenuAction(appId, menuActions, id);
     const [prevvalue, setprevvalue] = useState<string | null>(null);
     const [operation, setoperation] = useState<string | null>(null);
     const [waitingfornewvalue, setwaitingfornewvalue] = useState(false);

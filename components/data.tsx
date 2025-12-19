@@ -28,6 +28,9 @@ export interface appdata {
     pinned: boolean;
     defaultsize?: { width: number; height: number };
     acceptedMimeTypes?: string[];
+    category?: string;
+    titlemenu?: { title: string; disabled: boolean; separator?: boolean; actionId?: string }[];
+    menus?: Record<string, { title?: string; disabled?: boolean; separator?: boolean; actionId?: string }[]>;
 }
 
 export interface filesystemitem {
@@ -36,7 +39,7 @@ export interface filesystemitem {
     mimetype: string;
     date: string;
     size: string;
-    icon?: React.ReactNode;
+    icon?: React.ReactNode | string;
     link?: string;
     content?: string;
     appname?: string;
@@ -197,7 +200,53 @@ export const apps: appdata[] = [
         multiwindow: true,
         titlebarblurred: true,
         pinned: true,
-        defaultsize: { width: 1000, height: 600 }
+        defaultsize: { width: 1000, height: 600 },
+        category: 'Utilities',
+        titlemenu: [
+            { title: "About Finder", disabled: false },
+            { title: "Quit Finder", disabled: false },
+        ],
+        menus: {
+            File: [
+                { title: "New Finder Window", actionId: "new-window", disabled: false },
+                { title: "New Folder", actionId: "new-folder", disabled: false },
+                { title: "New Tab", actionId: "new-tab", disabled: false },
+                { separator: true },
+                { title: "Open", actionId: "open", disabled: false },
+                { title: "Close Window", actionId: "close-window", disabled: false },
+                { separator: true },
+                { title: "Move to Trash", actionId: "move-to-trash", disabled: false },
+                { separator: true },
+                { title: "Get Info", actionId: "get-info", disabled: false },
+                { title: "Rename", actionId: "rename", disabled: false },
+            ],
+            Edit: [
+                { title: "Undo", actionId: "undo", disabled: true },
+                { title: "Redo", actionId: "redo", disabled: true },
+                { separator: true },
+                { title: "Cut", actionId: "cut", disabled: false },
+                { title: "Copy", actionId: "copy", disabled: false },
+                { title: "Paste", actionId: "paste", disabled: false },
+                { title: "Select All", actionId: "select-all", disabled: false }
+            ],
+            View: [
+                { title: "As Icons", actionId: "view-icons", disabled: false },
+                { title: "As List", actionId: "view-list", disabled: false },
+                { separator: true },
+                { title: "Toggle Sidebar", actionId: "toggle-sidebar", disabled: false },
+                { title: "Toggle Preview", actionId: "toggle-preview", disabled: false }
+            ],
+            Go: [
+                { title: "Back", actionId: "go-back", disabled: false },
+                { title: "Forward", actionId: "go-forward", disabled: false },
+                { title: "Enclosing Folder", actionId: "go-up", disabled: false },
+                { separator: true },
+                { title: "Desktop", actionId: "go-desktop", disabled: false },
+                { title: "Documents", actionId: "go-documents", disabled: false },
+                { title: "Downloads", actionId: "go-downloads", disabled: false }
+            ],
+
+        }
     },
     {
         id: 'settings',
@@ -209,6 +258,7 @@ export const apps: appdata[] = [
         multiwindow: true,
         titlebarblurred: true,
         pinned: true,
+        category: 'Utilities'
     },
     {
         id: 'python',
@@ -220,6 +270,7 @@ export const apps: appdata[] = [
         multiwindow: true,
         titlebarblurred: false,
         pinned: true,
+        category: 'Creativity'
     },
     {
         id: 'mail',
@@ -231,6 +282,7 @@ export const apps: appdata[] = [
         multiwindow: true,
         titlebarblurred: false,
         pinned: true,
+        category: 'Social'
     },
     {
         id: 'calendar',
@@ -242,6 +294,7 @@ export const apps: appdata[] = [
         multiwindow: true,
         titlebarblurred: false,
         pinned: true,
+        category: 'Productivity'
     },
     {
         id: 'textedit',
@@ -253,7 +306,51 @@ export const apps: appdata[] = [
         maximizeable: true,
         titlebarblurred: true,
         pinned: false,
-        additionaldata: { startlarge: false }
+        additionaldata: { startlarge: false },
+        category: 'Productivity',
+        menus: {
+            File: [
+                { title: "New", actionId: "new-file", disabled: false },
+                { title: "Open...", actionId: "open", disabled: false },
+                { separator: true },
+                { title: "Save", actionId: "save", disabled: false },
+                { title: "Rename...", actionId: "rename", disabled: true },
+                { separator: true },
+                { title: "Print...", actionId: "print", disabled: true },
+                { title: "Close Window", actionId: "close-window", disabled: false }
+            ],
+            Edit: [
+                { title: "Undo", actionId: "undo", disabled: false },
+                { title: "Redo", actionId: "redo", disabled: false },
+                { separator: true },
+                { title: "Cut", actionId: "cut", disabled: false },
+                { title: "Copy", actionId: "copy", disabled: false },
+                { title: "Paste", actionId: "paste", disabled: false },
+                { title: "Delete", actionId: "delete", disabled: false },
+                { separator: true },
+                { title: "Select All", actionId: "select-all", disabled: false },
+                { separator: true },
+                { title: "Find", actionId: "find", disabled: false }
+            ],
+            Format: [
+                { title: "Font", disabled: false, actionId: "font-menu" },  
+                { title: "Bold", actionId: "format-bold", disabled: false },
+                { title: "Italic", actionId: "format-italic", disabled: false },
+                { title: "Underline", actionId: "format-underline", disabled: false },
+                { separator: true },
+                { title: "Align Left", actionId: "align-left", disabled: false },
+                { title: "Center", actionId: "align-center", disabled: false },
+                { title: "Align Right", actionId: "align-right", disabled: false }
+            ],
+            View: [
+                { title: "Zoom In", actionId: "zoom-in", disabled: true },
+                { title: "Zoom Out", actionId: "zoom-out", disabled: true }
+            ],
+            Window: [
+                { title: "Minimize", actionId: "minimize", disabled: false },
+                { title: "Zoom", actionId: "zoom", disabled: false }
+            ]
+        }
     },
     {
         id: 'calculator',
@@ -265,7 +362,18 @@ export const apps: appdata[] = [
         multiwindow: false,
         titlebarblurred: false,
         pinned: true,
-        defaultsize: { width: 300, height: 500 }
+        defaultsize: { width: 300, height: 500 },
+        category: 'Utilities',
+        menus: {
+            View: [
+                { title: "Basic", actionId: "view-basic", disabled: false },
+                { title: "Scientific", actionId: "view-scientific", disabled: true },
+                { title: "Programmer", actionId: "view-programmer", disabled: true }
+            ],
+            Window: [
+                { title: "Minimize", actionId: "minimize", disabled: false }
+            ]
+        }
     },
     {
         id: 'appstore',
@@ -277,6 +385,14 @@ export const apps: appdata[] = [
         multiwindow: false,
         titlebarblurred: false,
         pinned: true,
+        category: 'Creativity',
+        menus: {
+            Store: [
+                { title: "Reload", actionId: "reload", disabled: false },
+                { separator: true },
+                { title: "Search", actionId: "search", disabled: false }
+            ]
+        }
     },
     {
         id: 'safari',
@@ -288,7 +404,41 @@ export const apps: appdata[] = [
         multiwindow: true,
         titlebarblurred: true,
         pinned: true,
-        acceptedMimeTypes: ['text/x-uri']
+        acceptedMimeTypes: ['text/x-uri'],
+        category: 'Productivity',
+        menus: {
+            File: [
+                { title: "New Window", actionId: "new-window", disabled: false },
+                { title: "New Tab", actionId: "new-tab", disabled: false },
+                { title: "Open Location...", actionId: "open-location", disabled: false },
+                { separator: true },
+                { title: "Close Tab", actionId: "close-tab", disabled: false },
+                { title: "Close Window", actionId: "close-window", disabled: false }
+            ],
+            Edit: [
+                { title: "Undo", actionId: "undo", disabled: true },
+                { title: "Redo", actionId: "redo", disabled: true },
+                { separator: true },
+                { title: "Cut", actionId: "cut", disabled: false },
+                { title: "Copy", actionId: "copy", disabled: false },
+                { title: "Paste", actionId: "paste", disabled: false },
+                { title: "Select All", actionId: "select-all", disabled: false }
+            ],
+            View: [
+                { title: "Reload Page", actionId: "reload", disabled: false },
+                { separator: true },
+                { title: "Zoom In", actionId: "zoom-in", disabled: false },
+                { title: "Zoom Out", actionId: "zoom-out", disabled: false }
+            ],
+            History: [
+                { title: "Back", actionId: "go-back", disabled: false },
+                { title: "Forward", actionId: "go-forward", disabled: false }
+            ],
+            Window: [
+                { title: "Minimize", actionId: "minimize", disabled: false },
+                { title: "Zoom", actionId: "zoom", disabled: false }
+            ]
+        }
     },
     {
         id: 'terminal',
@@ -300,6 +450,30 @@ export const apps: appdata[] = [
         multiwindow: true,
         titlebarblurred: true,
         pinned: true,
+        category: 'Utilities',
+        menus: {
+            Shell: [
+                { title: "New Window", actionId: "new-window", disabled: false },
+                { title: "New Tab", actionId: "new-tab", disabled: false },
+                { separator: true },
+                { title: "Close Window", actionId: "close-window", disabled: false }
+            ],
+            Edit: [
+                { title: "Copy", actionId: "copy", disabled: false },
+                { title: "Paste", actionId: "paste", disabled: false },
+                { title: "Select All", actionId: "select-all", disabled: false },
+                { separator: true },
+                { title: "Clear Screen", actionId: "clear", disabled: false }
+            ],
+            View: [
+                { title: "Zoom In", actionId: "zoom-in", disabled: false },
+                { title: "Zoom Out", actionId: "zoom-out", disabled: false }
+            ],
+            Window: [
+                { title: "Minimize", actionId: "minimize", disabled: false },
+                { title: "Zoom", actionId: "zoom", disabled: false }
+            ]
+        }
     },
     {
         id: 'photos',
@@ -311,7 +485,8 @@ export const apps: appdata[] = [
         multiwindow: true,
         titlebarblurred: true,
         pinned: true,
-        acceptedMimeTypes: ['image/png', 'image/jpeg', 'image/webp', 'image/gif']
+        acceptedMimeTypes: ['image/png', 'image/jpeg', 'image/webp', 'image/gif'],
+        category: 'Creativity'
     },
     {
         id: 'welcome',
@@ -323,7 +498,8 @@ export const apps: appdata[] = [
         multiwindow: false,
         titlebarblurred: false,
         pinned: false,
-        defaultsize: { width: 850, height: 550 }
+        defaultsize: { width: 850, height: 550 },
+        category: 'Utilities'
     },
     {
         id: 'fileviewer',
@@ -357,30 +533,30 @@ export const menus = [
         appname: "Finder",
         menus: {
             File: [
-                { title: "New Finder Window", disabled: false },
-                { title: "New Folder", disabled: false },
-                { title: "New Folder with Selection", disabled: true },
-                { title: "New Smart Folder", disabled: false },
-                { title: "New Tab", disabled: false },
+                { title: "New Finder Window", actionId: "new-window", disabled: false },
+                { title: "New Folder", actionId: "new-folder", disabled: false },
+                { title: "New Folder with Selection", actionId: "new-folder-selection", disabled: true },
+                { title: "New Smart Folder", actionId: "new-smart-folder", disabled: false },
+                { title: "New Tab", actionId: "new-tab", disabled: false },
                 { separator: true },
-                { title: "Open", disabled: false },
-                { title: "Open With", disabled: false },
-                { title: "Close Window", disabled: false },
+                { title: "Open", actionId: "open", disabled: false },
+                { title: "Open With", actionId: "open-with", disabled: false },
+                { title: "Close Window", actionId: "close-window", disabled: false },
                 { separator: true },
-                { title: "Move to Trash", disabled: false },
+                { title: "Move to Trash", actionId: "move-to-trash", disabled: false },
                 { separator: true },
-                { title: "Get Info", disabled: false },
-                { title: "Rename", disabled: false },
-                { title: "Duplicate", disabled: true }
+                { title: "Get Info", actionId: "get-info", disabled: false },
+                { title: "Rename", actionId: "rename", disabled: false },
+                { title: "Duplicate", actionId: "duplicate", disabled: true }
             ],
             Edit: [
-                { title: "Undo", disabled: true },
-                { title: "Redo", disabled: true },
+                { title: "Undo", actionId: "undo", disabled: true },
+                { title: "Redo", actionId: "redo", disabled: true },
                 { separator: true },
-                { title: "Cut", disabled: true },
-                { title: "Copy", disabled: false },
-                { title: "Paste", disabled: true },
-                { title: "Select All", disabled: false }
+                { title: "Cut", actionId: "cut", disabled: true },
+                { title: "Copy", actionId: "copy", disabled: false },
+                { title: "Paste", actionId: "paste", disabled: true },
+                { title: "Select All", actionId: "select-all", disabled: false }
             ],
             View: [
                 { title: "As Icons", disabled: false },
@@ -403,16 +579,7 @@ export const menus = [
                 { title: "Documents", disabled: false },
                 { title: "Downloads", disabled: false }
             ],
-            Window: [
-                { title: "Minimize", disabled: false },
-                { title: "Zoom", disabled: true },
-                { separator: true },
-                { title: "Bring All to Front", disabled: true }
-            ],
-            Help: [
-                { title: "macOS Help", disabled: false },
-                { title: "About BalaTBR", disabled: false }
-            ]
+
         }
     }
 ];
@@ -989,7 +1156,7 @@ export const generatefilesystem = (): filesystemitem[] => {
             mimetype: 'application/x-executable',
             date: 'Today',
             size: 'App',
-            icon: <Image className='w-full h-full p-[6px] sm:w-full sm:h-full' src={a.icon} alt={`${a.appname} application`} width={64} height={64} />,
+            icon: a.icon, 
             appname: a.appname,
             description: `Launch ${a.appname} application.`,
             isSystem: true
@@ -1070,7 +1237,7 @@ interface SystemContext {
 
 const FileConfig: Record<string, {
     appId: string;
-    icon: React.ReactNode;
+    icon: React.ReactNode | string | undefined;
     getLaunchProps?: (file: filesystemitem) => any;
 }> = {
     'inode/directory': {
@@ -1083,7 +1250,7 @@ const FileConfig: Record<string, {
     },
     'application/x-executable': {
         appId: 'app-launch',
-        icon: null
+        icon: <Image src="/app-store.png" alt="app" width={64} height={64} className="w-full h-full object-contain drop-shadow-md" />,
     },
     'image/png': {
         appId: 'photos',
@@ -1126,7 +1293,7 @@ const FileConfig: Record<string, {
         })
     },
     'text/markdown': {
-        appId: 'textedit',
+        appId: 'fileviewer',
         icon: <IoDocumentTextOutline className="w-full h-full text-gray-500" />,
         getLaunchProps: (file) => ({
             id: file.id,
@@ -1147,8 +1314,15 @@ const FileConfig: Record<string, {
     }
 };
 
-export const getFileIcon = (mimetype: string, name: string, itemicon?: React.ReactNode) => {
-    if (itemicon) return itemicon;
+export const getFileIcon = (mimetype: string, name: string, itemicon?: React.ReactNode | string) => {
+    if (itemicon) {
+        if (typeof itemicon === 'string') {
+            if (itemicon.startsWith('/')) {
+                return <Image className='w-full h-full p-[6px] sm:w-full sm:h-full object-contain' src={itemicon} alt={name} width={64} height={64} />;
+            }
+        }
+        return itemicon;
+    }
     const config = FileConfig[mimetype];
     if (config && config.icon) return config.icon;
     return <IoDocumentTextOutline className="w-full h-full text-gray-500" />;
@@ -1254,7 +1428,7 @@ const resolveTarget = (itemOrId: string | filesystemitem, currentFiles?: filesys
 
     if (mimetype.startsWith('text/')) {
         return {
-            appId: 'textedit',
+            appId: 'fileviewer',
             props: { id: file.id, content: file.content, title: file.name, type: file.mimetype },
             title: file.name
         };
@@ -1266,21 +1440,26 @@ const resolveTarget = (itemOrId: string | filesystemitem, currentFiles?: filesys
 export const openSystemItem = (
     itemOrId: string | filesystemitem,
     context: SystemContext,
-    forceAppId?: string
+    forceAppId?: string,
+    additionalProps?: Record<string, unknown>
 ) => {
+    console.log('[Debug] openSystemItem called for:', itemOrId);
     const { addwindow, windows, updatewindow, setactivewindow, ismobile, files } = context;
 
     const resolved = resolveTarget(itemOrId, files);
-    // eslint-disable-next-line
     let { appId, props, title } = resolved || {};
 
     if (forceAppId) {
         appId = forceAppId;
-    if (!resolved && typeof itemOrId !== 'string') {
+        if (!resolved && typeof itemOrId !== 'string') {
             if (itemOrId.mimetype.startsWith('text/') || itemOrId.mimetype === 'application/pdf') {
                 props = { content: itemOrId.content, title: itemOrId.name, type: itemOrId.mimetype };
             }
         }
+    }
+
+    if (additionalProps) {
+        props = { ...props, ...additionalProps };
     }
 
     if (!appId) return;
@@ -1294,10 +1473,10 @@ export const openSystemItem = (
             appname: 'Get Info',
             title: `${itemOrId.name} Info`,
             component: 'apps/FileInfo',
-            icon: itemOrId.icon || '/finder.png', 
+            icon: itemOrId.icon || '/finder.png',
             isminimized: false,
             ismaximized: false,
-            position: { top: 100, left: 100 }, 
+            position: { top: 100, left: 100 },
             size: { width: 300, height: 450 },
             props: { item: itemOrId }
         });
@@ -1307,7 +1486,7 @@ export const openSystemItem = (
     const existingWins = windows.filter((w: any) => w.appname === app.appname);
 
 
-    const reuseApps = ['Text Edit', 'File Viewer', 'Photos', 'Safari']; 
+    const reuseApps = ['Text Edit', 'File Viewer', 'Photos', 'Safari'];
     if (reuseApps.includes(app.appname)) {
         const existingInstance = existingWins.find(w => w.props && w.props.id === (props?.id));
 
@@ -1319,7 +1498,7 @@ export const openSystemItem = (
             return;
         }
     } else {
-         if (!app.multiwindow && existingWins.length > 0) {
+        if (!app.multiwindow && existingWins.length > 0) {
             const win = existingWins[existingWins.length - 1];
             updatewindow(win.id, { isminimized: false });
             setactivewindow(win.id);

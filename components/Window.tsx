@@ -394,13 +394,11 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
         damping: 30,
         mass: 1,
       }}
-      className={`border dark:border-neutral-700 border-neutral-300 overflow-hidden flex flex-col ${app?.titlebarblurred
-        ? `dark:bg-opacity-80 bg-opacity-80 dark:bg-neutral-900 bg-white backdrop-blur-xl`
-        : `dark:bg-neutral-900 bg-white backdrop-blur-sm`
-        } ${ismaximized || ismobile ? '' : 'rounded-2xl shadow-2xl'} ${isdragging ? 'cursor-grabbing' : 'cursor-default'} ${(isminimized || shouldblur || isRecentAppView) ? 'pointer-events-none' : 'pointer-events-auto'}
-        ${(ismobile && isRecentAppView) ? 'absolute inset-0 w-full h-full rounded-[24px]' : 'absolute'}`
-
-      }
+      className={`window border dark:border-neutral-700/50 border-neutral-300/50 overflow-hidden flex flex-col 
+      ${app?.titlebarblurred ? 'backdrop-blur-xl' : 'backdrop-blur-sm'} 
+      ${ismaximized || ismobile ? '' : 'rounded-2xl shadow-2xl'} ${isdragging ? 'cursor-grabbing' : 'cursor-default'} ${(isminimized || shouldblur || isRecentAppView) ? 'pointer-events-none' : 'pointer-events-auto'}
+        ${(ismobile && isRecentAppView) ? 'absolute inset-0 w-full h-full rounded-[24px]' : 'absolute'}`}
+      data-window-id={id}
       style={{
         top: (ismobile && isRecentAppView) ? 0 : (ismobile ? 44 : (ismaximized ? 35 : (position?.top || 0))),
         left: (ismobile && isRecentAppView) ? 0 : (ismobile ? 0 : (ismaximized ? 0 : (position?.left || 0))),
@@ -465,9 +463,9 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
       )}
 
       <div
-        className={`w-full h-full flex-1 overflow-hidden ${ismaximized || ismobile ? '' : ''} ${app?.titlebarblurred ? '' : 'bg-white  dark:bg-neutral-900'} ${(isminimized || issystemgestureactive || shouldblur || isRecentAppView) ? 'pointer-events-none' : 'pointer-events-auto'}`}
+        className={`w-full h-full flex-1 overflow-hidden ${ismaximized || ismobile ? '' : ''} ${(isminimized || issystemgestureactive || shouldblur || isRecentAppView) ? 'pointer-events-none' : 'pointer-events-auto'}`}
       >
-        <MemoizedDynamicComponent appname={app ? app.appname : ''} icon={app ? app.icon : ''} component={app?.componentname ? app.componentname : component} appprops={props} isFocused={activewindow === id && !shouldblur} />
+        <MemoizedDynamicComponent appname={app ? app.appname : ''} icon={app ? app.icon : ''} component={app?.componentname ? app.componentname : component} appprops={{ ...props, windowId: id }} isFocused={activewindow === id && !shouldblur} />
 
         {((ismobile && shouldblur && !isRecentAppView) || issystemgestureactive) && (
           <div className="absolute inset-0 z-[9999] bg-transparent w-full h-full pointer-events-auto" />

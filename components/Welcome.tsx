@@ -1,231 +1,155 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWindows } from './WindowContext';
 import { useDevice } from './DeviceContext';
 import { personal, apps, openSystemItem } from './data';
-import { IoArrowForward, IoCheckmarkCircle, IoLogoApple, IoConstructOutline, IoAppsOutline, IoRocketOutline, IoDesktopOutline, IoLaptopOutline, IoPhonePortraitOutline, IoLogoGithub } from "react-icons/io5";
+import { IoArrowForward, IoCheckmarkCircle, IoLogoApple, IoAppsOutline, IoDesktopOutline, IoPhonePortraitOutline, IoLogoGithub, IoFolderOpenOutline, IoTerminalOutline, IoDocumentTextOutline, IoLogoLinkedin } from "react-icons/io5";
 
 export default function Welcome(props: any) {
     const { removewindow, addwindow, windows, updatewindow, setactivewindow } = useWindows();
     const { ismobile } = useDevice();
     const [step, setstep] = useState(0);
+    const [isnarrow, setisnarrow] = useState(false);
+    const containerref = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!containerref.current) return;
+        const observer = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                setisnarrow(entry.contentRect.width < 500);
+            }
+        });
+        observer.observe(containerref.current);
+        return () => observer.disconnect();
+    }, []);
+
+    const context = { addwindow, windows, updatewindow, setactivewindow, ismobile };
 
     const steps = [
         {
-            title: "Welcome to MacOS-Next",
-            subtitle: "A fully interactive web OS simulation.",
-            icon: IoLogoApple,
+            title: "Welcome",
             content: (
-                <>
-                    <div className="text-center space-y-8 max-w-md mx-auto h-auto flex flex-col justify-center">
-                        <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
-                            Experience my portfolio through a familiar desktop interface. This isn&apos;t just a simple macos themed portfolio site - you can call it a full fledged operating system simulation built with Next JS, Framer Motion and TailwindCSS.
+                <div className="text-center space-y-6">
+                    <div className="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
+                        <IoLogoApple size={40} className="text-white" />
+                    </div>
+                    <div>
+                        <h2 className="text-2xl font-semibold mb-2">MacOS-Next</h2>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
+                            A web-based operating system interface built with Next.js, featuring window management, file operations, and native-like interactions.
                         </p>
-                        <div className="grid grid-cols-3 gap-2 mt-4 text-xs font-medium text-gray-500">
-                            <div className="flex flex-col items-center gap-1 p-2 bg-black/5 dark:bg-white/5 rounded-lg">
-                                <IoRocketOutline size={16} />
-                                <span>Fast</span>
-                            </div>
-                            <div className="flex flex-col items-center gap-1 p-2 bg-black/5 dark:bg-white/5 rounded-lg">
-                                <IoConstructOutline size={16} />
-                                <span>Interactive</span>
-                            </div>
-                            <div className="flex flex-col items-center gap-1 p-2 bg-black/5 dark:bg-white/5 rounded-lg">
-                                <IoAppsOutline size={16} />
-                                <span>App Rich</span>
-                            </div>
-                        </div>
-
                     </div>
-                    <div className="flex justify-center mt-6">
-                        <a
-                            href="https://github.com/invincibleinventor/macos"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white dark:bg-white dark:text-black rounded-full text-xs font-semibold hover:opacity-80 transition-opacity shadow-sm"
-                        >
-                            <IoLogoGithub size={16} />
-                            <span>Star on GitHub</span>
+                    <a href="https://github.com/invincibleinventor/macos" target="_blank" rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-white/10 rounded-lg text-sm font-medium hover:bg-gray-200 dark:hover:bg-white/20 transition-colors">
+                        <IoLogoGithub size={18} />
+                        View Source
+                    </a>
+                </div>
+            )
+        },
+        {
+            title: "About",
+            content: (
+                <div className="text-center space-y-5">
+                    <div className="w-20 h-20 mx-auto rounded-full overflow-hidden shadow-lg border-2 border-white/20">
+                        <Image src="/pfp.png" alt="Profile" width={80} height={80} className="w-full h-full object-cover" />
+                    </div>
+                    <div>
+                        <h3 className="text-xl font-semibold">{personal.personal.name}</h3>
+                        <p className="text-sm text-blue-500">@{personal.personal.username}</p>
+                    </div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto leading-relaxed">
+                        {personal.personal.role}
+                    </p>
+                    <div className="flex justify-center gap-3">
+                        <a href={personal.personal.socials.github} target="_blank" rel="noopener noreferrer"
+                            className="p-2.5 bg-gray-100 dark:bg-white/10 rounded-lg hover:bg-gray-200 dark:hover:bg-white/20 transition-colors">
+                            <IoLogoGithub size={20} />
                         </a>
+                        <a href={personal.personal.socials.linkedin} target="_blank" rel="noopener noreferrer"
+                            className="p-2.5 bg-gray-100 dark:bg-white/10 rounded-lg hover:bg-gray-200 dark:hover:bg-white/20 transition-colors">
+                            <IoLogoLinkedin size={20} className="text-[#0077B5]" />
+                        </a>
+                        <button onClick={() => openSystemItem('mail', context, undefined, { initialFolder: 'contact', initialMailId: 'contact-card' })}
+                            className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors">
+                            Contact
+                        </button>
                     </div>
-                </>
+                </div>
             )
         },
         {
-            title: "Adaptive Interface",
-            subtitle: "macOS on Desktop. iOS on Mobile.",
-            icon: IoPhonePortraitOutline,
+            title: "Interface",
             content: (
-                <div className="flex flex-col items-center justify-center h-full gap-8">
-                    <div className="flex items-end justify-center gap-6 h-32 relative">
-
-                        <motion.div
-                            initial={{ scale: 0, opacity: 0, x: -50 }}
-                            animate={{ scale: 1, opacity: 1, x: 0 }}
-                            transition={{ duration: 0.6, delay: 0.2 }}
-                            className="flex flex-col items-center gap-2"
-                        >
-                            <div className="bg-gray-200 dark:bg-gray-700 p-3 rounded-2xl shadow-xl">
-                                <IoDesktopOutline size={64} className="text-gray-600 dark:text-gray-300" />
+                <div className="space-y-6">
+                    <div className={`flex ${isnarrow ? 'flex-col gap-4' : 'gap-8'} items-center justify-center`}>
+                        <div className="flex flex-col items-center gap-2">
+                            <div className="p-4 bg-gray-100 dark:bg-white/10 rounded-2xl">
+                                <IoDesktopOutline size={isnarrow ? 40 : 56} className="text-gray-600 dark:text-gray-300" />
                             </div>
-                            <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">macOS</span>
-                        </motion.div>
-
-
-                        <motion.div
-                            initial={{ scale: 0, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            transition={{ duration: 0.4, delay: 0.5 }}
-                            className="mb-8 text-gray-300 dark:text-gray-600"
-                        >
-                            <IoArrowForward size={24} />
-                        </motion.div>
-
-
-                        <motion.div
-                            initial={{ scale: 0, opacity: 0, x: 50 }}
-                            animate={{ scale: 1, opacity: 1, x: 0 }}
-                            transition={{ duration: 0.6, delay: 0.6 }}
-                            className="flex flex-col items-center gap-2"
-                        >
-                            <div className="bg-gray-200 dark:bg-gray-700 p-2 rounded-[14px] shadow-xl mb-1">
-                                <IoPhonePortraitOutline size={32} className="text-gray-800 dark:text-gray-100" />
+                            <span className="text-xs font-medium text-gray-500">Desktop</span>
+                        </div>
+                        {!isnarrow && <IoArrowForward size={24} className="text-gray-300" />}
+                        <div className="flex flex-col items-center gap-2">
+                            <div className="p-3 bg-gray-100 dark:bg-white/10 rounded-xl">
+                                <IoPhonePortraitOutline size={isnarrow ? 28 : 36} className="text-gray-600 dark:text-gray-300" />
                             </div>
-                            <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">iPhone</span>
-                        </motion.div>
+                            <span className="text-xs font-medium text-gray-500">Mobile</span>
+                        </div>
                     </div>
-                    <p className="text-center text-sm text-gray-500 dark:text-gray-400 max-w-xs leading-relaxed">
-                        The interface transforms from a powerful <strong>macOS Desktop</strong> environment to a native-feeling <strong>iPhone UI</strong> on smaller screens.
+                    <p className="text-center text-sm text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
+                        The interface adapts between a desktop environment and a mobile-optimized layout.
                     </p>
                 </div>
             )
         },
         {
-            title: "App Ecosystem",
-            subtitle: "Discover what each app can do.",
-            icon: IoAppsOutline,
+            title: "Features",
             content: (
-                <div className="text-left space-y-4 max-w-md mx-auto h-full overflow-y-auto pr-2 scrollbar-thin">
-                    <div className="flex items-center gap-4 p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                        <Image src="/finder.png" alt="Finder" width={40} height={40} className="w-10 h-10 object-contain drop-shadow-md" />
-                        <div><h4 className="text-sm font-semibold">Finder</h4><p className="text-xs text-gray-500">File management and project browsing.</p></div>
-                    </div>
-                    <div className="flex items-center gap-4 p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                        <Image src="/photos.webp" alt="Photos" width={40} height={40} className="w-10 h-10 object-contain drop-shadow-md" />
-                        <div><h4 className="text-sm font-semibold">Photos</h4><p className="text-xs text-gray-500">Visual portfolio gallery.</p></div>
-                    </div>
-                    <div className="flex items-center gap-4 p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                        <Image src="/calendar.png" alt="Calendar" width={40} height={40} className="w-10 h-10 object-contain drop-shadow-md" />
-                        <div><h4 className="text-sm font-semibold">Calendar</h4><p className="text-xs text-gray-500">Schedule and timeline visualization.</p></div>
-                    </div>
-                </div>
-            )
-        },
-        {
-            title: "File System Power",
-            subtitle: "More than just a simulation.",
-            icon: IoConstructOutline,
-            content: (
-                <div className="text-center space-y-4 max-w-md mx-auto h-full flex flex-col justify-center">
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
-                        A persistent, full-featured file system lies at the core.
-                    </p>
-                    <ul className="text-left text-xs text-gray-500 space-y-2 bg-white/50 dark:bg-black/20 p-3 rounded-lg border border-black/5 dark:border-white/5">
-                        <li className="flex items-center gap-2">
-                            <IoCheckmarkCircle className="text-green-500 shrink-0" />
-                            <span><strong>TextEdit:</strong> Create & Edit Rich Text files (Bold, Italic) with auto-save.</span>
-                        </li>
-                        <li className="flex items-center gap-2">
-                            <IoCheckmarkCircle className="text-green-500 shrink-0" />
-                            <span><strong>Selection:</strong> Drag to select multiple items on Desktop.</span>
-                        </li>
-                        <li className="flex items-center gap-2">
-                            <IoCheckmarkCircle className="text-green-500 shrink-0" />
-                            <span><strong>Context Menus:</strong> Right-click anywhere for powerful actions.</span>
-                        </li>
-                        <li className="flex items-center gap-2">
-                            <IoCheckmarkCircle className="text-green-500 shrink-0" />
-                            <span><strong>Notifications:</strong> System-wide Toast notifications replacing alerts.</span>
-                        </li>
-                        <li className="flex items-center gap-2">
-                            <IoCheckmarkCircle className="text-green-500 shrink-0" />
-                            <span><strong>Persistence:</strong> Changes are saved to LocalStorage.</span>
-                        </li>
-                    </ul>
-                </div>
-            )
-        },
-        {
-            title: "Key Features",
-            subtitle: "Explore the ecosystem.",
-            icon: IoDesktopOutline,
-            content: (
-                <div className="text-center space-y-4 max-w-md mx-auto h-full flex flex-col justify-center">
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
-                        From a fully functional <strong>Dock</strong> to window management and <strong>Finder</strong> integration, every detail is crafted to mimic the macOS experience.
-                    </p>
-                    <ul className="text-left text-xs text-gray-500 space-y-2 bg-white/50 dark:bg-black/20 p-3 rounded-lg border border-black/5 dark:border-white/5">
-                        <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-green-500"></div> Launch apps from the Dock or Launchpad.</li>
-                        <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-yellow-500"></div> Drag, resize, and minimize windows.</li>
-                        <li className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-red-500"></div> Deep link navigation (Calendar ➜ Finder).</li>
-                    </ul>
-                </div>
-            )
-        },
-        {
-            title: "App Showcase",
-            subtitle: "Click an icon to launch.",
-            icon: IoAppsOutline,
-            content: (
-                <div className="grid grid-cols-4 gap-4 p-2 h-full content-center">
-                    {apps.filter(a => ['finder', 'calendar', 'photos', 'terminal', 'mail', 'calculator'].includes(a.id)).map(app => (
-                        <div
-                            key={app.id}
-                            onClick={() => {
-                                openSystemItem(app.id, { addwindow, windows, updatewindow, setactivewindow, ismobile });
-                            }}
-                            className="flex flex-col items-center gap-2 hover:scale-105 transition-transform group cursor-pointer"
-                        >
-                            <Image src={app.icon} width={40} height={40} className="w-10 h-10 shadow-sm rounded-[10px]" alt={app.appname} />
-                            <span className="text-[10px] whitespace-nowrap group-hover:text-blue-500 transition-colors">{app.appname}</span>
+                <div className={`grid ${isnarrow ? 'grid-cols-1 gap-3' : 'grid-cols-2 gap-4'} max-w-md mx-auto`}>
+                    {[
+                        { icon: IoFolderOpenOutline, label: "File System", desc: "Persistent storage" },
+                        { icon: IoAppsOutline, label: "Applications", desc: "Functional apps" },
+                        { icon: IoTerminalOutline, label: "Terminal", desc: "Command line" },
+                        { icon: IoDocumentTextOutline, label: "Text Editor", desc: "Rich text support" },
+                    ].map((item, i) => (
+                        <div key={i} className="flex items-center gap-3 p-3 bg-gray-100 dark:bg-white/5 rounded-xl">
+                            <item.icon size={24} className="text-blue-500 shrink-0" />
+                            <div className="min-w-0">
+                                <div className="text-sm font-medium truncate">{item.label}</div>
+                                <div className="text-xs text-gray-500 truncate">{item.desc}</div>
+                            </div>
                         </div>
                     ))}
                 </div>
             )
         },
         {
-            title: "About Me",
-            subtitle: "Bala TBR",
-            icon: IoLogoApple,
+            title: "Get Started",
             content: (
-                <div className="text-center space-y-3 max-w-md mx-auto h-full flex flex-col items-center justify-center">
-                    <div className="flex flex-col items-center mb-2">
-                        <div className="w-16 h-16 rounded-full overflow-hidden shadow-lg border-2 border-white/20 mb-2">
-                            <Image src="/pfp.png" alt="Profile" width={64} height={64} className="w-full h-full object-cover" />
-                        </div>
-                        <h3 className="font-bold text-lg">Bala TBR</h3>
-                        <p className="text-xs text-blue-500 font-medium">@invincibleinventor</p>
+                <div className="text-center space-y-6">
+                    <div className="w-16 h-16 mx-auto rounded-full bg-green-500 flex items-center justify-center">
+                        <IoCheckmarkCircle size={36} className="text-white" />
                     </div>
-                    <p className="text-xs text-gray-600 dark:text-gray-300 italic line-clamp-2">
-                        &quot;{personal.personal.bio}&quot;
-                    </p>
-
-                    <button
-                        onClick={() => {
-                            openSystemItem('mail', { addwindow, windows, updatewindow, setactivewindow, ismobile });
-                        }}
-                        className="mt-2 px-4 py-1.5 bg-gray-200 dark:bg-gray-700 text-black dark:text-white rounded-full text-xs font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition"
-                    >
-                        Contact Me
-                    </button>
-                    <div className="flex flex-wrap justify-center gap-2 mt-2">
-                        {personal.skills.slice(1, 4).map((skill, i) => (
-                            <span key={i} className="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-300 rounded-full text-[9px] border border-blue-100 dark:border-blue-800/30">
-                                {skill.split('(')[0]}
-                            </span>
-                        ))}
+                    <div>
+                        <h3 className="text-xl font-semibold mb-2">Ready to explore</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs mx-auto">
+                            Click Get Started to begin using the desktop.
+                        </p>
+                    </div>
+                    <div className={`flex ${isnarrow ? 'flex-col' : 'flex-row'} justify-center gap-2`}>
+                        <button onClick={() => openSystemItem('finder', context)}
+                            className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 dark:bg-white/10 rounded-lg text-sm font-medium hover:bg-gray-200 dark:hover:bg-white/20 transition-colors">
+                            <Image src="/finder.png" alt="" width={20} height={20} className="w-5 h-5" />
+                            Finder
+                        </button>
+                        <button onClick={() => openSystemItem('appstore', context)}
+                            className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 dark:bg-white/10 rounded-lg text-sm font-medium hover:bg-gray-200 dark:hover:bg-white/20 transition-colors">
+                            <Image src="/appstore.webp" alt="" width={20} height={20} className="w-5 h-5" />
+                            Projects
+                        </button>
                     </div>
                 </div>
             )
@@ -233,50 +157,36 @@ export default function Welcome(props: any) {
     ];
 
     return (
-        <div className="flex flex-col h-full w-full bg-[#fbfbfd] dark:bg-[#1e1e1e] font-sf text-black dark:text-white overflow-hidden relative selection:bg-blue-500/30">
-            <div className="h-10 w-full shrink-0" />
+        <div ref={containerref} className="flex flex-col h-full w-full bg-white dark:bg-[#1e1e1e] font-sf text-black dark:text-white overflow-hidden">
+            <div className="h-10 shrink-0" />
 
-            <div className="flex-1 flex flex-col items-center justify-center px-8 relative z-10 w-full max-w-4xl mx-auto overflow-hidden">
+            <div className="flex-1 flex flex-col items-center justify-center px-6 overflow-hidden">
                 <AnimatePresence mode='wait'>
                     <motion.div
                         key={step}
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -20 }}
-                        transition={{ duration: 0.3, ease: "easeInOut" }}
-                        className="flex flex-col items-center justify-center w-full h-full"
+                        transition={{ duration: 0.2 }}
+                        className="w-full max-w-lg"
                     >
-                        <div className="mb-4 text-[#007AFF] drop-shadow-sm shrink-0">
-                            {React.createElement(steps[step].icon, { size: 56 })}
-                        </div>
-
-                        <div className="text-center space-y-2 mb-6 shrink-0 z-20">
-                            <h1 className="text-2xl md:text-3xl font-light tracking-tight text-black dark:text-white">
-                                {steps[step].title}
-                            </h1>
-                            <p className="text-sm md:text-[15px] text-gray-500 dark:text-gray-400 font-normal">
-                                {steps[step].subtitle}
-                            </p>
-                        </div>
-
-                        <div className="w-full flex-1 flex flex-col items-center justify-center min-h-0 overflow-hidden">
-                            {steps[step].content}
-                        </div>
+                        {steps[step].content}
                     </motion.div>
                 </AnimatePresence>
             </div>
 
-            <div className="h-20 shrink-0 flex items-center justify-between w-full px-10 bg-[#fbfbfd] dark:bg-[#1e1e1e] border-t border-black/5 dark:border-white/5 z-20">
+            <div className="h-16 shrink-0 flex items-center justify-between px-6 border-t border-black/5 dark:border-white/5">
                 <button
                     onClick={() => step > 0 && setstep(step - 1)}
-                    className={`text-[#007AFF] text-[13px] font-medium px-4 py-2 rounded hover:bg-black/5 dark:hover:bg-white/10 transition-colors ${step === 0 ? 'opacity-0 pointer-events-none' : ''}`}
+                    className={`text-blue-500 text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors ${step === 0 ? 'opacity-0 pointer-events-none' : ''}`}
                 >
-                    Go Back
+                    Back
                 </button>
 
                 <div className="flex gap-1.5">
                     {steps.map((_, i) => (
-                        <div key={i} className={`w-2 h-2 rounded-full transition-colors ${i === step ? 'bg-[#007AFF]' : 'bg-gray-300 dark:bg-zinc-700'}`} />
+                        <button key={i} onClick={() => setstep(i)}
+                            className={`w-2 h-2 rounded-full transition-colors ${i === step ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'}`} />
                     ))}
                 </div>
 
@@ -285,16 +195,10 @@ export default function Welcome(props: any) {
                         if (step < steps.length - 1) {
                             setstep(step + 1);
                         } else {
-                            openSystemItem('mail', { addwindow, windows, updatewindow, setactivewindow, ismobile });
-
-                            if (props.id) {
-                                removewindow(props.id);
-                            } else {
-                                removewindow('welcome');
-                            }
+                            removewindow(props.id || 'welcome');
                         }
                     }}
-                    className="flex items-center gap-2 bg-[#007AFF] hover:bg-[#0062cc] active:bg-[#0051a8] text-white px-6 py-1.5 rounded-full text-[13px] font-medium transition-all shadow-sm active:scale-95 active:shadow-none"
+                    className="flex items-center gap-1.5 bg-blue-500 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors"
                 >
                     {step < steps.length - 1 ? 'Continue' : 'Get Started'}
                 </button>

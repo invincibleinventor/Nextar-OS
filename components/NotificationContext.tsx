@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useRef, useCallback } from 'react';
 import { Notification, initialnotifications } from './notifications';
 import { useWindows } from './WindowContext';
 import { useDevice } from './DeviceContext';
@@ -16,6 +16,7 @@ interface NotificationContextType {
     hidetoast: () => void;
     markasviewed: (id: string) => void;
     addToast: (message: string, type?: 'info' | 'success' | 'error' | 'warning') => void;
+    version: number;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -26,6 +27,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     const { osstate, ismobile } = useDevice();
     const [isloaded, setisloaded] = useState(false);
     const [hasshownwelcome, sethasshownwelcome] = useState(false);
+    const [version, setversion] = useState(0);
 
     const [toast, settoast] = useState<Notification | null>(null);
 
@@ -35,6 +37,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
         const active = initialnotifications.filter((n: any) => !clearedids.includes(n.id));
         setnotifications(active);
+        setversion(v => v + 1);
         setisloaded(true);
     }, []);
 
@@ -42,6 +45,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
     const addnotification = (n: Notification) => {
         setnotifications(prev => [n, ...prev]);
+        setversion(v => v + 1);
         settoast(n);
         setTimeout(() => settoast(null), 3000);
     };
@@ -86,10 +90,9 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
     const markasviewed = (id: string) => {
         setnotifications(prev => prev.map(n => n.id === id ? { ...n, viewed: true } : n));
+        setversion(v => v + 1);
         if (toast?.id === id) settoast(null);
     };
-
-    if (!isloaded) return null;
 
     return (
         <NotificationContext.Provider value={{
@@ -101,7 +104,8 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
             addnotification,
             hidetoast,
             markasviewed,
-            addToast
+            addToast,
+            version
         }}>
             {children}
         </NotificationContext.Provider>

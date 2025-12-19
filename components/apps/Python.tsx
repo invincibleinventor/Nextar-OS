@@ -2,10 +2,13 @@
 import React, { useState } from 'react';
 import { FaPlay, FaStop, FaTerminal, FaFolder, FaPython } from 'react-icons/fa';
 import { VscDebugStart, VscDebugStop, VscFiles, VscSearch, VscSourceControl, VscWarning } from "react-icons/vsc";
-import { IoIosArrowForward, IoIosArrowDown } from "react-icons/io";
-import { useDevice } from '../DeviceContext';
+import { IoIosArrowForward, IoIosArrowDown, IoLogoPython as IoPython } from "react-icons/io";
 
-export default function Python({ isFocused = true }: { isFocused?: boolean }) {
+import { useDevice } from '../DeviceContext';
+import { useMenuAction } from '../hooks/useMenuAction';
+import { useMemo } from 'react';
+
+export default function Python({ isFocused = true, appId = 'python', id }: { isFocused?: boolean, appId?: string, id?: string }) {
     const [code, setcode] = useState('print("Made with love by BalaTBR!")\n\n# Keep Building!\n\nfor i in range(5):\n    print(f"Count: {i}")');
     const [currentPath, setCurrentPath] = useState<string[]>(['Macintosh HD', 'Users', 'Bala', 'Projects']);
     const [output, setoutput] = useState('');
@@ -39,55 +42,69 @@ export default function Python({ isFocused = true }: { isFocused?: boolean }) {
         }
     };
 
+    const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+
+    const execCmd = (command: string, value: string | undefined = undefined) => {
+        document.execCommand(command, false, value);
+        if (textareaRef.current) textareaRef.current.focus();
+    };
+
+    const menuActions = useMemo(() => ({
+        'new-file': () => setcode(''),
+        'open': () => { },
+        'save': () => { },
+        'undo': () => execCmd('undo'),
+        'redo': () => execCmd('redo'),
+        'copy': () => execCmd('copy'),
+        'paste': () => {
+            navigator.clipboard.readText().then(text => {
+                const el = textareaRef.current;
+                if (el) {
+                    const start = el.selectionStart;
+                    const end = el.selectionEnd;
+                    const newCode = code.substring(0, start) + text + code.substring(end);
+                    setcode(newCode);
+                    setTimeout(() => {
+                        el.selectionStart = el.selectionEnd = start + text.length;
+                    }, 0);
+                }
+            });
+        },
+        'cut': () => execCmd('cut'),
+        'select-all': () => textareaRef.current?.select(),
+        'run-code': () => runcode(),
+    }), [code, runcode]);
+
+    useMenuAction(appId, menuActions, id);
+
     return (
-        <div className="flex flex-col h-full w-full  text-[#d4d4d4] font-sf overflow-hidden">
-            <div className={`h-[50px] bg-[#2d2d2d] border-b border-black/50 flex items-center justify-between px-4 shrink-0 shadow-sm z-20 ${ismobile ? 'ps-4' : 'ps-24'}`}>
-                <div className="flex items-center gap-4">
-                    <div className="flex items-center bg-[#3a3a3a] rounded-[4px] p-0.5 border border-white/5">
-                        <button
-                            onClick={runcode}
-                            disabled={isrunning}
-                            className={`p-1 px-3 hover:bg-white/10 rounded-[3px] transition active:bg-black/20 ${isrunning ? 'opacity-50' : 'text-gray-300'}`}
-                        >
-                            <FaPlay size={10} className="" />
-                        </button>
-                        <div className="w-px h-3 bg-white/10" />
-                        <button
-                            onClick={() => setisrunning(false)}
-                            className="p-1 px-3 hover:bg-white/10 rounded-[3px] transition active:bg-black/20 text-gray-400"
-                        >
-                            <FaStop size={10} />
-                        </button>
-                    </div>
+        <div className="flex flex-col h-full w-full bg-[#1e1e1e]/90 backdrop-blur-xl text-white font-mono text-sm">
+            <div className="h-10 bg-[#252526]/80 flex items-center px-4 border-b border-[#333] shrink-0 justify-between select-none backdrop-blur-md">
+                <div className="flex items-center gap-2">
+                    <IoPython size={18} className="text-[#3776AB]" />
+                    <span className="text-xs text-gray-400">main.py - Python IDE</span>
                 </div>
-
-                <div className="flex-1 flex justify-center mx-4">
-                    <div className="flex items-center gap-2 bg-[#1e1e1e] px-8 py-1 rounded-[4px] border border-white/5 min-w-[200px] justify-center shadow-inner">
-                        {isrunning ? (
-                            <>
-                                <div className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" />
-                                <span className="text-xs text-gray-300 font-medium">Running main.py</span>
-                            </>
-                        ) : (
-                            <>
-                                <div className="w-2 h-2 rounded-full bg-gray-600" />
-                                <span className="text-xs text-gray-500 font-medium tracking-wide">Ready</span>
-                            </>
-                        )}
-                    </div>
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={runcode}
+                        className={`flex items-center gap-1.5 px-3 py-1 rounded hover:bg-white/10 transition-colors ${isrunning ? 'text-gray-500 cursor-not-allowed' : 'text-[#4CAF50]'}`}
+                        disabled={isrunning}
+                    >
+                        <FaPlay size={12} />
+                        Run
+                    </button>
+                    <button
+                        onClick={() => setshowsidebar(!showsidebar)}
+                        className={`p-1.5 rounded hover:bg-white/10 ${showsidebar ? 'bg-blue-600/20 text-blue-400' : 'text-gray-400'}`}
+                    >
+                        <VscFiles size={16} />
+                    </button>
                 </div>
-
-                <button
-                    onClick={() => setshowsidebar(!showsidebar)}
-                    className={`p-1.5 rounded hover:bg-white/10 ${showsidebar ? 'bg-blue-600/20 text-blue-400' : 'text-gray-400'}`}
-                >
-                    <VscFiles size={16} />
-                </button>
             </div>
 
             <div className="flex-1 flex overflow-hidden">
                 {showsidebar && (
-                    <div className={`${ismobile ? 'absolute inset-y-0 left-0 z-10 w-[200px] shadow-2xl' : 'relative w-[220px]'} bg-[#252526] border-r border-black/20 flex flex-col shrink-0`}>
+                    <div className={`${ismobile ? 'absolute inset-y-0 left-0 z-10 w-[200px] shadow-2xl' : 'relative w-[220px]'} bg-[#252526]/90 backdrop-blur-md border-r border-black/20 flex flex-col shrink-0`}>
                         <div className="p-2 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Project Navigation</div>
                         <div className="flex items-center gap-1 px-2 py-1 bg-[#37373d] text-gray-200 text-xs">
                             <IoIosArrowDown size={12} />
@@ -95,7 +112,7 @@ export default function Python({ isFocused = true }: { isFocused?: boolean }) {
                             <span className="font-semibold">MyPythonProject</span>
                         </div>
                         <div className="pl-6 py-1 flex items-center gap-2 bg-[#094771] text-white text-xs cursor-pointer">
-                            <FaPython size={12} className="text-yellow-400" />
+                            <IoPython size={12} className="text-yellow-400" />
                             <span>main.py</span>
                         </div>
                         <div className="pl-6 py-1 flex items-center gap-2 text-gray-400 hover:bg-[#2a2d2e] text-xs cursor-pointer">
@@ -105,18 +122,19 @@ export default function Python({ isFocused = true }: { isFocused?: boolean }) {
                     </div>
                 )}
 
-                <div className="flex-1 flex flex-col min-w-0 bg-[#1e1e1e]">
+                <div className="flex-1 flex flex-col min-w-0 bg-[#1e1e1e]/50">
                     <div className="flex-1 relative">
                         <textarea
+                            ref={textareaRef}
                             value={code}
                             onChange={(e) => setcode(e.target.value)}
-                            className="w-full h-full bg-[#1e1e1e] text-[#d4d4d4] p-6 resize-none focus:outline-none font-mono text-[13px] leading-6 tab-4"
+                            className="w-full h-full bg-transparent text-[#d4d4d4] p-6 resize-none focus:outline-none font-mono text-[13px] leading-6 tab-4"
                             spellCheck={false}
                         />
                     </div>
 
-                    <div className="h-1/3 border-t border-black/30 bg-[#1e1e1e] flex flex-col">
-                        <div className="flex items-center justify-between px-4 py-1 bg-[#252526] border-b border-black/30">
+                    <div className="h-1/3 border-t border-black/30 bg-[#1e1e1e]/80 backdrop-blur flex flex-col">
+                        <div className="flex items-center justify-between px-4 py-1 bg-[#252526]/50 border-b border-black/30">
                             <div className="flex items-center gap-4">
                                 <button className="text-[11px] text-gray-300 font-medium border-b-2 border-blue-500 pb-1">Output</button>
                                 <button className="text-[11px] text-gray-500 font-medium hover:text-gray-300 pb-1">Problems</button>

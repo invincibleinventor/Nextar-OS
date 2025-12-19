@@ -1,27 +1,100 @@
 'use client';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
+import { createPortal } from 'react-dom';
 import { useNotifications } from './NotificationContext';
 import { useDevice } from './DeviceContext';
+import { useEffect, useState, useCallback } from 'react';
 
 export default function MacOSNotifications({ isopen, onclose }: { isopen: boolean; onclose: () => void }) {
-    const { handlenotificationclick, notifications, clearnotification, markasviewed } = useNotifications();
+    const { handlenotificationclick, notifications, clearnotification, markasviewed, version } = useNotifications();
     const { ismobile, osstate } = useDevice();
+    const [mounted, setmounted] = useState(false);
 
-    if (ismobile || osstate !== 'unlocked') return null;
+    const [tick, setTick] = useState(0);
 
-    return (
-        <>
-            <div className="fixed top-12 right-4 z-[99999] flex flex-col items-end space-y-2 pointer-events-none">
+    useEffect(() => {
+        setmounted(true);
+        const timer = setTimeout(() => setTick(t => t + 1), 500); 
+        return () => { setmounted(false); clearTimeout(timer); }
+    }, []);
+
+    useEffect(() => {
+        if (!notifications) return;
+        console.log('[MacOSNotifications] Version/Notifs updated:', version);
+        setTick(v => v + 1);
+    }, [version, notifications]);
+
+    const unviewednotifications = notifications.filter(n => !n.viewed);
+
+    useEffect(() => {
+        if (osstate !== 'unlocked' || unviewednotifications.length === 0) return;
+
+        const timers = unviewednotifications.map(n => {
+            return setTimeout(() => {
+                markasviewed(n.id);
+            }, 5000);
+        });
+
+        return () => {
+            timers.forEach(timer => clearTimeout(timer));
+        };
+    }, [osstate, unviewednotifications, markasviewed]);
+
+    if (!mounted) return null;
+
+
+    if (osstate !== 'unlocked') return null;
+
+    if (ismobile) {
+        return createPortal(
+            <div style={{ zIndex: 2147483647 }} className="fixed top-12 left-2 right-2 flex flex-col items-center space-y-2 pointer-events-none">
                 <AnimatePresence>
-                    {notifications.filter(n => !n.viewed).slice(0, 4).map((n, index) => (
+                    {unviewednotifications.slice(0, 3).map((n, index) => (
+                        <motion.div
+                            key={n.id}
+                            layout
+                            initial={{ opacity: 0, y: -50, scale: 0.9 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: -20, scale: 0.9, transition: { duration: 0.2 } }}
+                            transition={{ type: "tween", ease: "easeOut", duration: 0.2 }}
+                            className="w-full max-w-[400px] bg-white/80 dark:bg-neutral-800/80 backdrop-blur-2xl border border-white/30 dark:border-white/10 shadow-2xl rounded-2xl p-3 cursor-pointer select-none pointer-events-auto"
+                            onClick={() => { handlenotificationclick(n); markasviewed(n.id); }}
+                            drag="x"
+                            dragConstraints={{ left: 0, right: 0 }}
+                            onDragEnd={(_, info) => { if (Math.abs(info.offset.x) > 50) markasviewed(n.id); }}
+                        >
+                            <div className="flex items-start gap-3">
+                                <Image src={n.icon} width={36} height={36} className="w-9 h-9 rounded-xl object-cover" alt={n.appname} />
+                                <div className="flex-1 min-w-0 text-left">
+                                    <div className="flex justify-between items-baseline mb-0.5">
+                                        <h4 className="font-bold text-[13px] text-black dark:text-white leading-tight">{n.appname}</h4>
+                                        <span className="text-[10px] text-neutral-500 dark:text-neutral-400">{n.time}</span>
+                                    </div>
+                                    <h4 className="font-semibold text-[13px] text-black dark:text-white leading-tight">{n.title}</h4>
+                                    <p className="text-[12px] text-neutral-600 dark:text-neutral-300 leading-snug mt-0.5 line-clamp-2">{n.description}</p>
+                                </div>
+                            </div>
+                        </motion.div>
+                    ))}
+                </AnimatePresence>
+            </div>,
+            document.body
+        );
+    }
+
+    return createPortal(
+        <>
+            <div style={{ zIndex: 2147483647 }} className="fixed top-12 right-4 flex flex-col items-end space-y-2 pointer-events-none">
+                <AnimatePresence>
+                    {unviewednotifications.slice(0, 4).map((n, index) => (
                         <motion.div
                             key={n.id}
                             layout
                             initial={{ opacity: 0, x: 100, scale: 0.9 }}
                             animate={{ opacity: 1, x: 0, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-                            transition={{ type: "spring", stiffness: 400, damping: 30, delay: index * 0.1 }}
+                            transition={{ type: "tween", ease: "easeOut", duration: 0.25 }}
                             className="group relative w-[340px] bg-white/10 dark:bg-neutral-800/10 backdrop-blur-2xl border border-white/20 shadow-2xl rounded-2xl p-3.5 cursor-pointer select-none pointer-events-auto hover:bg-white/40 dark:hover:bg-neutral-800/40 transition-colors"
                             onClick={() => { handlenotificationclick(n); markasviewed(n.id); }}
                             drag="x"
@@ -60,7 +133,7 @@ export default function MacOSNotifications({ isopen, onclose }: { isopen: boolea
                             initial={{ x: '100%' }}
                             animate={{ x: 0 }}
                             exit={{ x: '100%' }}
-                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                            transition={{ type: "tween", ease: "easeOut", duration: 0.25 }}
                             className="fixed top-0 right-0 bottom-0 z-[999999] w-[360px] h-full bg-white/10 dark:bg-black/10 backdrop-blur-2xl border-l border-white/10 shadow-2xl p-4 pt-12 overflow-y-auto scrollbar-hide"
                         >
                             <div className="flex flex-col gap-3">
@@ -98,6 +171,7 @@ export default function MacOSNotifications({ isopen, onclose }: { isopen: boolea
                     </>
                 )}
             </AnimatePresence>
-        </>
+        </>,
+        document.body
     );
 }

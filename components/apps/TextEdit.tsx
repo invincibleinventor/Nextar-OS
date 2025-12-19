@@ -1,20 +1,23 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useFileSystem } from '../FileSystemContext';
 import { IoSaveOutline, IoText, IoSearchOutline, IoClose, IoFolderOpenOutline } from 'react-icons/io5';
 import ContextMenu from '../ui/ContextMenu';
 import FilePicker from '../ui/FilePicker';
 import { filesystemitem } from '../data';
+import { useMenuAction } from '../hooks/useMenuAction';
+
 
 interface TextEditProps {
     id?: string;
     content?: string;
     title?: string;
     isFocused: boolean;
+    appId?: string;
 }
 
-export default function TextEdit({ id, content: initialContent, title, isFocused }: TextEditProps) {
-    const { updateFileContent, files } = useFileSystem();
+export default function TextEdit({ id, content: initialContent, title, isFocused, appId = 'textedit' }: TextEditProps) {
+    const { updateFileContent, files, createFile } = useFileSystem();
     const [content, setContent] = useState(initialContent || '');
     const [isSaved, setIsSaved] = useState(true);
     const contentRef = useRef<HTMLDivElement>(null);
@@ -25,22 +28,56 @@ export default function TextEdit({ id, content: initialContent, title, isFocused
     const [replaceText, setReplaceText] = useState('');
 
     const [currentFileId, setCurrentFileId] = useState<string | undefined>(id);
-    const { createFile } = useFileSystem();
 
     const [showPicker, setShowPicker] = useState<boolean>(false);
     const [pickerMode, setPickerMode] = useState<'open' | 'save'>('open');
     const [currentPath, setCurrentPath] = useState<string[]>(['Macintosh HD', 'Users', 'Bala', 'Projects']);
+
+    const menuActions = useMemo(() => ({
+        'new-file': () => {
+            setContent('');
+            setCurrentFileId(undefined);
+            setIsSaved(true);
+            if (contentRef.current) contentRef.current.innerHTML = '';
+        },
+        'open': () => {
+            setPickerMode('open');
+            setShowPicker(true);
+        },
+        'save': () => handleSave(),
+        'undo': () => execCmd('undo'),
+        'redo': () => execCmd('redo'),
+        'cut': () => execCmd('cut'),
+        'copy': () => execCmd('copy'),
+        'paste': () => {
+            navigator.clipboard.readText().then(text => execCmd('insertText', text));
+        },
+        'delete': () => execCmd('delete'),
+        'select-all': () => execCmd('selectAll'),
+        'find': () => setShowFindReplace(true),
+        'format-bold': () => execCmd('bold'),
+        'format-italic': () => execCmd('italic'),
+        'format-underline': () => execCmd('underline'),
+        'align-left': () => execCmd('justifyLeft'),
+        'align-center': () => execCmd('justifyCenter'),
+        'align-right': () => execCmd('justifyRight'),
+    }), [currentFileId]);
+
+    useMenuAction(appId, menuActions, id);
+
+
 
     useEffect(() => {
         if (!id) {
             setPickerMode('open');
             setShowPicker(true);
         }
-    }, []);
+    }, [id]);
 
     useEffect(() => {
-        if (contentRef.current && contentRef.current.innerHTML !== initialContent) {
-            contentRef.current.innerHTML = initialContent || '';
+        if (contentRef.current && contentRef.current.innerHTML !== initialContent && initialContent !== undefined) {
+            if (initialContent === '') contentRef.current.innerHTML = '';
+            else if (contentRef.current.innerHTML === '') contentRef.current.innerHTML = initialContent;
         }
     }, [initialContent]);
 
@@ -118,8 +155,8 @@ export default function TextEdit({ id, content: initialContent, title, isFocused
     };
 
     return (
-        <div className="flex flex-col w-full h-full bg-white dark:bg-[#1e1e1e] text-black dark:text-white font-sans text-sm relative" onContextMenu={handleContextMenu}>
-            <div className="h-[50px] flex items-center px-4 pl-[80px] bg-[#f5f5f5] dark:bg-[#2d2d2d] border-b border-gray-200 dark:border-white/10 select-none gap-2 draggable-area">
+        <div className="flex flex-col w-full h-full bg-white/90 dark:bg-[#1e1e1e]/90 backdrop-blur-xl text-black dark:text-white font-sans text-sm relative" onContextMenu={handleContextMenu}>
+            <div className="h-[50px] flex items-center px-4 pl-[80px] bg-[#f5f5f5]/50 dark:bg-[#2d2d2d]/50 border-b border-gray-200 dark:border-white/10 select-none gap-2 draggable-area backdrop-blur-md">
                 <button onClick={handleOpen} className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded" title="Open">
                     <IoFolderOpenOutline />
                 </button>
@@ -166,7 +203,7 @@ export default function TextEdit({ id, content: initialContent, title, isFocused
 
             <div
                 ref={contentRef}
-                className="flex-1 w-full h-full p-6 outline-none overflow-y-auto rich-text-editor"
+                className="flex-1 w-full h-full p-6 outline-none overflow-y-auto rich-text-editor bg-transparent"
                 contentEditable={!files.find(f => f.id === currentFileId)?.isReadOnly}
                 onInput={handleInput}
                 onKeyDown={handleKeyDown}

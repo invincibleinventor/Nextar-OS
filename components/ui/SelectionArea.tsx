@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 interface SelectionAreaProps {
     onSelectionChange?: (rect: DOMRect | null) => void;
@@ -11,77 +10,91 @@ interface SelectionAreaProps {
 export const SelectionArea: React.FC<SelectionAreaProps> = ({ onSelectionChange, onSelectionEnd, containerRef, enabled = true }) => {
     const [startPoint, setStartPoint] = useState<{ x: number, y: number } | null>(null);
     const [currentPoint, setCurrentPoint] = useState<{ x: number, y: number } | null>(null);
-    const [isSelecting, setIsSelecting] = useState(false);
+    const isSelectingRef = useRef(false);
+    const startPointRef = useRef<{ x: number, y: number } | null>(null);
 
-    useEffect(() => {
+    const handleMouseDown = useCallback((e: MouseEvent) => {
         if (!enabled || !containerRef.current) return;
 
+        const target = e.target as HTMLElement;
+        if (
+            target.closest('button') ||
+            target.closest('.clickable-item') ||
+            target.closest('.finder-item') ||
+            target.closest('.desktop-item') ||
+            target.closest('[data-no-selection]') ||
+            target.closest('.toolbar') ||
+            target.closest('.sidebar') ||
+            target.closest('.window') ||
+            target.closest('.draggable-area') ||
+            target.closest('[data-window-id]')
+        ) return;
+
         const container = containerRef.current;
+        if (!container.contains(target)) return;
 
-        const handleMouseDown = (e: MouseEvent) => {
-            if (e.target !== container) return;
-            if (
-                (e.target as HTMLElement).closest('button') ||
-                (e.target as HTMLElement).closest('.clickable-item') ||
-                (e.target as HTMLElement).closest('.finder-item') ||
-                (e.target as HTMLElement).closest('.desktop-item')
-            ) return;
+        const containerRect = container.getBoundingClientRect();
+        const relX = e.clientX - containerRect.left + container.scrollLeft;
+        const relY = e.clientY - containerRect.top + container.scrollTop;
 
-            const containerRect = container.getBoundingClientRect();
-            const relX = e.clientX - containerRect.left + container.scrollLeft;
-            const relY = e.clientY - containerRect.top + container.scrollTop;
+        startPointRef.current = { x: relX, y: relY };
+        setStartPoint({ x: relX, y: relY });
+        setCurrentPoint({ x: relX, y: relY });
+        isSelectingRef.current = true;
+    }, [enabled, containerRef]);
 
-            setStartPoint({ x: relX, y: relY });
-            setCurrentPoint({ x: relX, y: relY });
-            setIsSelecting(true);
-        };
+    const handleMouseMove = useCallback((e: MouseEvent) => {
+        if (!isSelectingRef.current || !containerRef.current || !startPointRef.current) return;
 
-        const handleMouseMove = (e: MouseEvent) => {
-            if (!isSelecting) return;
+        const container = containerRef.current;
+        const containerRect = container.getBoundingClientRect();
+        const relX = e.clientX - containerRect.left + container.scrollLeft;
+        const relY = e.clientY - containerRect.top + container.scrollTop;
 
-            const containerRect = container.getBoundingClientRect();
-            const relX = e.clientX - containerRect.left + container.scrollLeft;
-            const relY = e.clientY - containerRect.top + container.scrollTop;
+        setCurrentPoint({ x: relX, y: relY });
 
-            setCurrentPoint({ x: relX, y: relY });
+        const rect = calculateRect(startPointRef.current, { x: relX, y: relY });
+        onSelectionChange?.(rect);
+    }, [containerRef, onSelectionChange]);
 
-            if (startPoint) {
-                const rect = calculateRect(startPoint, { x: relX, y: relY });
-                onSelectionChange?.(rect);
-            }
-        };
+    const handleMouseUp = useCallback((e: MouseEvent) => {
+        if (!isSelectingRef.current || !containerRef.current || !startPointRef.current) return;
 
-        const handleMouseUp = (e: MouseEvent) => {
-            if (!isSelecting) return;
-            setIsSelecting(false);
+        isSelectingRef.current = false;
 
-            const containerRect = container.getBoundingClientRect();
-            const relX = e.clientX - containerRect.left + container.scrollLeft;
-            const relY = e.clientY - containerRect.top + container.scrollTop;
+        const container = containerRef.current;
+        const containerRect = container.getBoundingClientRect();
+        const relX = e.clientX - containerRect.left + container.scrollLeft;
+        const relY = e.clientY - containerRect.top + container.scrollTop;
 
-            if (startPoint) {
-                const rect = calculateRect(startPoint, { x: relX, y: relY });
-                onSelectionEnd?.(rect);
-            }
-            setStartPoint(null);
-            setCurrentPoint(null);
-            onSelectionChange?.(null);
-        };
+        const rect = calculateRect(startPointRef.current, { x: relX, y: relY });
+        onSelectionEnd?.(rect);
 
-        container.addEventListener('mousedown', handleMouseDown);
-        window.addEventListener('mousemove', handleMouseMove);
-        window.addEventListener('mouseup', handleMouseUp);
+        startPointRef.current = null;
+        setStartPoint(null);
+        setCurrentPoint(null);
+        onSelectionChange?.(null);
+    }, [containerRef, onSelectionChange, onSelectionEnd]);
+
+    useEffect(() => {
+        if (!enabled) return;
+
+        document.addEventListener('mousedown', handleMouseDown, true);
+        document.addEventListener('mousemove', handleMouseMove, true);
+        document.addEventListener('mouseup', handleMouseUp, true);
 
         return () => {
-            container.removeEventListener('mousedown', handleMouseDown);
-            window.removeEventListener('mousemove', handleMouseMove);
-            window.removeEventListener('mouseup', handleMouseUp);
+            document.removeEventListener('mousedown', handleMouseDown, true);
+            document.removeEventListener('mousemove', handleMouseMove, true);
+            document.removeEventListener('mouseup', handleMouseUp, true);
         };
-    }, [enabled, isSelecting, startPoint, containerRef, onSelectionChange, onSelectionEnd]);
+    }, [enabled, handleMouseDown, handleMouseMove, handleMouseUp]);
 
-    if (!isSelecting || !startPoint || !currentPoint) return null;
+    if (!startPoint || !currentPoint) return null;
 
     const rect = calculateRect(startPoint, currentPoint);
+
+    if (rect.width < 5 && rect.height < 5) return null;
 
     return (
         <div

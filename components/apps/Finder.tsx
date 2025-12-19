@@ -12,26 +12,45 @@ import { useDevice } from '../DeviceContext';
 
 import { IoTrashOutline, IoAddCircleOutline } from "react-icons/io5";
 import { useFileSystem } from '../FileSystemContext';
+import { useMenuAction } from '../hooks/useMenuAction';
 import ContextMenu from '../ui/ContextMenu';
 import FileModal from '../ui/FileModal';
 import { SelectionArea } from '../ui/SelectionArea';
+import { motion, AnimatePresence } from 'framer-motion';
 
-export default function Finder({ initialpath, istrash }: { initialpath?: string[], istrash?: boolean }) {
+export default function Finder({ windowId, initialpath, istrash, openPath, selectItem }: { windowId?: string, initialpath?: string[], istrash?: boolean, openPath?: string, selectItem?: string }) {
     const [selected, setselected] = useState(istrash ? 'Trash' : 'Projects');
-    const [selectedFileIds, setSelectedFileIds] = useState<string[]>([]);
+    const [selectedFileIds, setSelectedFileIds] = useState<string[]>(selectItem ? [selectItem] : []);
     const [showsidebar, setshowsidebar] = useState(true);
     const [showpreview, setshowpreview] = useState(true);
     const { addwindow, windows, updatewindow, setactivewindow, activewindow } = useWindows();
     const { ismobile } = useDevice();
     const { files, deleteItem, createFolder, createFile, moveToTrash, emptyTrash, restoreFromTrash, moveItem, copyItem, cutItem, pasteItem, clipboard, renameItem } = useFileSystem();
 
-    const [currentpath, setcurrentpath] = useState<string[]>(initialpath || ['Macintosh HD', 'Users', 'Bala', 'Projects']);
+    const getPathFromId = (folderId: string): string[] => {
+        const pathsegments: string[] = [];
+        let currentId: string | null = folderId;
+        while (currentId) {
+            const item = files.find(f => f.id === currentId);
+            if (!item) break;
+            pathsegments.unshift(item.name);
+            currentId = item.parent;
+        }
+        return ['Macintosh HD', 'Users', 'Bala', ...pathsegments];
+    };
+
+    const initialPathFromOpen = openPath ? getPathFromId(openPath) : null;
+    const [currentpath, setcurrentpath] = useState<string[]>(initialPathFromOpen || initialpath || ['Macintosh HD', 'Users', 'Bala', 'Projects']);
     const [searchquery, setsearchquery] = useState("");
 
     const [isnarrow, setisnarrow] = useState(false);
     const containerref = useRef<HTMLDivElement>(null);
     const fileViewRef = useRef<HTMLDivElement>(null);
     const [isTrashView, setIsTrashView] = useState(istrash || false);
+
+    const [mobileview, setmobileview] = useState<'sidebar' | 'files' | 'preview'>('files');
+
+    const longpresstimer = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
         if (!containerref.current) return;
@@ -53,7 +72,8 @@ export default function Finder({ initialpath, istrash }: { initialpath?: string[
     const handlesidebarclick = (itemname: string, path: string[]) => {
         setselected(itemname);
         setcurrentpath(path);
-        if (isnarrow) setshowsidebar(false);
+        if (ismobile) setmobileview('files');
+        else if (isnarrow) setshowsidebar(false);
         setSelectedFileIds([]);
         setIsTrashView(itemname === 'Trash');
     };
@@ -103,33 +123,87 @@ export default function Finder({ initialpath, istrash }: { initialpath?: string[
 
     const [fileModal, setFileModal] = useState<{ isOpen: boolean, type: 'create-folder' | 'create-file' | 'rename', initialValue?: string }>({ isOpen: false, type: 'create-folder' });
 
-    useEffect(() => {
-        const handleGlobalMenu = (e: CustomEvent) => {
-            if (!activewindow) return;
-
-            const activeApp = windows.find((w: any) => w.id === activewindow)?.appname;
-            if (activeApp !== 'Finder') return;
-
-            const action = e.detail.action;
-            switch (action) {
-                case 'New Folder':
-                    setFileModal({ isOpen: true, type: 'create-folder' });
-                    break;
-                case 'New File':
-                    setFileModal({ isOpen: true, type: 'create-file' });
-                    break;
+    const menuActions = React.useMemo(() => ({
+        'new-folder': () => setFileModal({ isOpen: true, type: 'create-folder' }),
+        'new-file': () => setFileModal({ isOpen: true, type: 'create-file' }),
+        'select-all': () => {
+            const items = fileViewRef.current?.querySelectorAll('.finder-item');
+            const allIds: string[] = [];
+            items?.forEach((el) => {
+                const id = el.getAttribute('data-id');
+                if (id) allIds.push(id);
+            });
+            setSelectedFileIds(allIds);
+        },
+        'toggle-sidebar': () => setshowsidebar(prev => !prev),
+        'toggle-preview': () => setshowpreview(prev => !prev),
+        'view-icons': () => { },
+        'view-list': () => { },
+        'go-back': () => currentpath.length > 1 && setcurrentpath(currentpath.slice(0, -1)),
+        'go-up': () => currentpath.length > 1 && setcurrentpath(currentpath.slice(0, -1)),
+        'go-desktop': () => setcurrentpath(['Macintosh HD', 'Users', 'Bala', 'Desktop']),
+        'go-documents': () => setcurrentpath(['Macintosh HD', 'Users', 'Bala', 'Documents']),
+        'go-downloads': () => setcurrentpath(['Macintosh HD', 'Users', 'Bala', 'Downloads']),
+        'cut': () => {
+            if (selectedFileIds.length > 0) cutItem(selectedFileIds);
+        },
+        'copy': () => {
+            if (selectedFileIds.length > 0) copyItem(selectedFileIds);
+        },
+        'paste': () => {
+            let currentParentId = 'root';
+            files.forEach(f => {
+                if (f.name === currentpath[currentpath.length - 1] && !f.isTrash) currentParentId = f.id;
+            });
+            for (const foldername of currentpath) {
+                const folder = files.find(i => i.name.trim() === foldername.trim() && i.parent === currentParentId && !i.isTrash);
+                if (folder) currentParentId = folder.id;
             }
-        };
+            if (clipboard) pasteItem(currentParentId);
+        },
+        'move-to-trash': () => {
+            selectedFileIds.forEach(id => moveToTrash(id));
+            setSelectedFileIds([]);
+        },
+        'get-info': () => {
+            if (selectedFileIds.length > 0) {
+                const f = files.find(file => file.id === selectedFileIds[0]);
+                if (f) openSystemItem(f, { addwindow, windows, updatewindow, setactivewindow, ismobile }, 'getinfo');
+            }
+        },
+        'rename': () => {
+            if (selectedFileIds.length === 1) {
+                const f = files.find(file => file.id === selectedFileIds[0]);
+                if (f) setFileModal({ isOpen: true, type: 'rename', initialValue: f.name });
+                setContextMenu({ x: 0, y: 0, fileId: selectedFileIds[0] });
+            }
+        }
+    }), [currentpath, selectedFileIds, clipboard, files, windowId]);
 
-        window.addEventListener('menu-action' as any, handleGlobalMenu);
-        return () => window.removeEventListener('menu-action' as any, handleGlobalMenu);
-    }, [activewindow, windows]);
+    useMenuAction('finder', menuActions, windowId);
 
     const [contextMenu, setContextMenu] = useState<{ x: number, y: number, fileId?: string } | null>(null);
 
     const handleContextMenu = (e: React.MouseEvent, fileId?: string) => {
         e.preventDefault();
         setContextMenu({ x: e.clientX, y: e.clientY, fileId });
+    };
+
+    const handlelongpress = (fileId: string, e: React.TouchEvent) => {
+        longpresstimer.current = setTimeout(() => {
+            if ('vibrate' in navigator) {
+                navigator.vibrate(10);
+            }
+            const touch = e.touches[0];
+            setContextMenu({ x: touch.clientX, y: touch.clientY, fileId });
+        }, 500);
+    };
+
+    const cancellongpress = () => {
+        if (longpresstimer.current) {
+            clearTimeout(longpresstimer.current);
+            longpresstimer.current = null;
+        }
     };
 
     const handleModalConfirm = (inputValue: string) => {
@@ -279,6 +353,222 @@ export default function Finder({ initialpath, istrash }: { initialpath?: string[
         moveItem(sourceId, destinationId);
     };
 
+    if (ismobile) {
+        return (
+            <div
+                ref={containerref}
+                className="flex flex-col h-full w-full bg-white dark:bg-[#1e1e1e] text-black dark:text-white font-sf text-[15px] overflow-hidden relative select-none"
+            >
+                <FileModal
+                    isOpen={fileModal.isOpen}
+                    type={fileModal.type}
+                    initialValue={fileModal.initialValue}
+                    onConfirm={handleModalConfirm}
+                    onCancel={() => setFileModal({ ...fileModal, isOpen: false })}
+                />
+
+                {contextMenu && (
+                    <ContextMenu
+                        x={contextMenu.x}
+                        y={contextMenu.y}
+                        items={getContextMenuItems()}
+                        onClose={() => setContextMenu(null)}
+                    />
+                )}
+
+                <AnimatePresence mode="wait">
+                    {mobileview === 'sidebar' && (
+                        <motion.div
+                            key="sidebar"
+                            initial={{ x: '-105%' }}
+                            animate={{ x: 0 }}
+                            exit={{ x: '-105%' }}
+                            transition={{ type: 'tween', ease: 'easeOut', duration: 0.25 }}
+                            className="absolute inset-0 z-20 bg-[#f5f5f7] dark:bg-[#1c1c1e] pt-2"
+                        >
+                            <div className="h-12 flex items-center justify-between px-4 border-b border-black/5 dark:border-white/10">
+                                <span className="font-semibold text-lg">Browse</span>
+                                <button
+                                    onClick={() => setmobileview('files')}
+                                    className="text-[#007AFF] font-medium"
+                                >
+                                    Done
+                                </button>
+                            </div>
+                            <div className="overflow-y-auto h-full pb-20 pt-2 px-2">
+                                {sidebaritems.map((group, idx) => (
+                                    <div key={idx} className="mb-6">
+                                        <div className="text-[13px] font-bold text-gray-500/80 dark:text-gray-400/80 uppercase tracking-wide mb-2 px-3">
+                                            {group.title}
+                                        </div>
+                                        <div className="space-y-1">
+                                            {group.items.map((item) => (
+                                                <div
+                                                    key={item.name}
+                                                    onClick={() => handlesidebarclick(item.name, item.path)}
+                                                    className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200
+                                                        ${selected === item.name
+                                                            ? 'bg-[#007AFF] text-white'
+                                                            : 'text-black dark:text-white active:bg-black/5 dark:active:bg-white/10'}`}
+                                                >
+                                                    <item.icon className={`text-xl ${selected === item.name ? 'text-white' : 'text-[#007AFF]'}`} />
+                                                    <span className="font-medium">{item.name}</span>
+                                                </div>
+                                            ))}
+                                            {idx === sidebaritems.length - 1 && (
+                                                <div
+                                                    key="Trash"
+                                                    onClick={() => handlesidebarclick('Trash', [])}
+                                                    className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200 mt-4
+                                                        ${selected === 'Trash'
+                                                            ? 'bg-[#007AFF] text-white'
+                                                            : 'text-black dark:text-white active:bg-black/5 dark:active:bg-white/10'}`}
+                                                >
+                                                    <IoTrashOutline className={`text-xl ${selected === 'Trash' ? 'text-white' : 'text-red-500'}`} />
+                                                    <span className="font-medium">Trash</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {mobileview === 'files' && (
+                        <motion.div
+                            key="files"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="flex-1 flex flex-col h-full"
+                        >
+                            <div className="h-14 shrink-0 flex items-center justify-between px-4 border-b border-black/5 dark:border-white/10 bg-white/80 dark:bg-[#1e1e1e]/80 backdrop-blur-xl">
+                                <div className="flex items-center gap-3">
+                                    {currentpath.length > 1 ? (
+                                        <button
+                                            onClick={() => setcurrentpath(currentpath.slice(0, -1))}
+                                            className="text-[#007AFF] flex items-center gap-0.5"
+                                        >
+                                            <IoChevronBack className="text-xl" />
+                                            <span className="text-[15px]">Back</span>
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={() => setmobileview('sidebar')}
+                                            className="text-[#007AFF] flex items-center gap-0.5"
+                                        >
+                                            <IoListOutline className="text-xl" />
+                                            <span className="text-[15px]">Browse</span>
+                                        </button>
+                                    )}
+                                </div>
+                                <span className="font-semibold text-[17px] absolute left-1/2 -translate-x-1/2">
+                                    {isTrashView ? 'Trash' : currentpath[currentpath.length - 1]}
+                                </span>
+                                <div className="flex items-center gap-1">
+                                    {!isTrashView && (
+                                        <>
+                                            <button
+                                                onClick={() => setFileModal({ isOpen: true, type: 'create-file' })}
+                                                className="text-[#007AFF] p-2"
+                                            >
+                                                <IoDocumentTextOutline className="text-xl" />
+                                            </button>
+                                            <button
+                                                onClick={() => setFileModal({ isOpen: true, type: 'create-folder' })}
+                                                className="text-[#007AFF] p-2"
+                                            >
+                                                <IoFolderOpenOutline className="text-xl" />
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="px-4 py-2 border-b border-black/5 dark:border-white/10">
+                                <div className="relative">
+                                    <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                    <input
+                                        className="w-full bg-black/5 dark:bg-white/10 rounded-xl pl-10 pr-4 py-2.5 text-[15px] outline-none placeholder-gray-500 text-black dark:text-white"
+                                        placeholder="Search"
+                                        value={searchquery}
+                                        onChange={(e) => setsearchquery(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+
+                            <div
+                                className="flex-1 overflow-y-auto"
+                                onContextMenu={(e) => handleContextMenu(e)}
+                            >
+                                {filesList.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                                        <span className="text-4xl mb-2 opacity-50">¯\_(ツ)_/¯</span>
+                                        <span className="text-sm">No items found</span>
+                                    </div>
+                                ) : (
+                                    <div className="divide-y divide-black/5 dark:divide-white/5">
+                                        {filesList.map((file) => (
+                                            <div
+                                                key={file.id}
+                                                className="flex items-center gap-4 px-4 py-3 active:bg-black/5 dark:active:bg-white/10"
+                                                onClick={() => handlefileopen(file)}
+                                                onTouchStart={(e) => handlelongpress(file.id, e)}
+                                                onTouchEnd={cancellongpress}
+                                                onTouchCancel={cancellongpress}
+                                                onContextMenu={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    handleContextMenu(e, file.id);
+                                                }}
+                                            >
+                                                <div className="w-12 h-12 relative flex-shrink-0">
+                                                    {getFileIcon(file.mimetype, file.name, file.icon)}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="font-medium text-[17px] truncate">{file.name}</div>
+                                                    <div className="text-[13px] text-gray-500 dark:text-gray-400">
+                                                        {file.mimetype === 'inode/directory' ? 'Folder' : file.size || '--'}
+                                                    </div>
+                                                </div>
+                                                {file.isReadOnly && (
+                                                    <IoLockClosed className="text-gray-400 text-sm" />
+                                                )}
+                                                {file.mimetype === 'inode/directory' && (
+                                                    <IoChevronForward className="text-gray-400" />
+                                                )}
+                                            </div>
+                                        ))}
+                                        <div
+                                            className="h-32 w-full"
+                                            onContextMenu={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                handleContextMenu(e);
+                                            }}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+
+                            {isTrashView && (
+                                <div className="p-4 border-t border-black/5 dark:border-white/10 bg-white dark:bg-[#1e1e1e]">
+                                    <button
+                                        onClick={emptyTrash}
+                                        className="w-full py-3 rounded-xl bg-red-500/10 text-red-500 font-medium text-[15px]"
+                                    >
+                                        Empty Trash
+                                    </button>
+                                </div>
+                            )}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+        );
+    }
+
     return (
         <div
             ref={containerref}
@@ -311,7 +601,7 @@ export default function Finder({ initialpath, istrash }: { initialpath?: string[
             <div className={`
                 ${showsidebar
                     ? isnarrow ? 'absolute inset-y-0 left-0 z-30 w-[220px] shadow-2xl bg-white/95 dark:bg-[#1e1e1e]/95 backdrop-blur border-r border-black/5 dark:border-white/5'
-                        : 'relative w-[200px] border-r border-black/5 dark:border-white/5 bg-transparent backdrop-blur-xl'
+                        : 'relative w-[200px] border-r border-black/5 dark:border-white/5 bg-[#f5f5f7]/80 dark:bg-[#1e1e1e]/80 backdrop-blur-xl'
                     : '-translate-x-full w-0 border-none'
                 } 
                 transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] 
@@ -378,7 +668,7 @@ export default function Finder({ initialpath, istrash }: { initialpath?: string[
                         </div>
                         <div className="flex items-center gap-2">
                             {!isTrashView && (
-                                <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5 border border-black/5 dark:border-white/5">
+                                <div className="flex items-center bg-neutral-100 dark:bg-neutral-800 rounded-lg p-0.5 border border-black/5 dark:border-white/5">
                                     <button
                                         onClick={() => setFileModal({ isOpen: true, type: 'create-folder' })}
                                         className="p-1 hover:bg-white dark:hover:bg-gray-700 rounded-md transition-colors text-gray-600 dark:text-gray-300"
@@ -386,7 +676,7 @@ export default function Finder({ initialpath, istrash }: { initialpath?: string[
                                     >
                                         <IoFolderOpenOutline className="text-lg" />
                                     </button>
-                                    <div className="w-[1px] h-4 bg-gray-300 dark:bg-gray-600 mx-1"></div>
+                                    <div className="w-[1px] h-4 bg-neutral-300 dark:bg-neutral-600 mx-2"></div>
                                     <button
                                         onClick={() => setFileModal({ isOpen: true, type: 'create-file' })}
                                         className="p-1 hover:bg-white dark:hover:bg-gray-700 rounded-md transition-colors text-gray-600 dark:text-gray-300"
@@ -419,7 +709,7 @@ export default function Finder({ initialpath, istrash }: { initialpath?: string[
                     <div className="flex-1 overflow-y-auto p-4 relative"
                         ref={fileViewRef}
                         onClick={() => {
-                         }}
+                        }}
                     >
                         <SelectionArea
                             containerRef={fileViewRef as React.RefObject<HTMLElement>}

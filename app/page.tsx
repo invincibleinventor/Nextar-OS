@@ -45,13 +45,33 @@ const Page = () => {
 
   useEffect(() => {
     const handleGlobalMenu = (e: CustomEvent) => {
-      if (activewindow) return;
+      const { appId, actionId, title } = e.detail;
+      console.log('[Page] Received menu-action:', e.detail);
+      const effectiveActionId = actionId || title;
 
-      const action = e.detail.action;
+      if (appId === 'finder' && effectiveActionId === 'new-window') {
+        addwindow({
+          id: `finder-${Date.now()}`,
+          appname: 'Finder',
+          title: 'Finder',
+          component: 'apps/Finder',
+          icon: '/finder.png',
+          isminimized: false,
+          ismaximized: false,
+          position: { top: 100, left: 100 },
+          size: { width: 800, height: 500 },
+          props: { initialpath: ['Macintosh HD', 'Users', 'Bala', 'Projects'] }
+        });
+        return;
+      }
 
-      if (action === 'New Folder') {
+      if (activewindow) {
+        return;
+      }
+
+      if (effectiveActionId === 'new-folder') {
         setFileModal({ isOpen: true, type: 'create-folder', initialValue: '' });
-      } else if (action === 'New File') {
+      } else if (effectiveActionId === 'new-file') {
         setFileModal({ isOpen: true, type: 'create-file', initialValue: '' });
       }
     };
@@ -101,6 +121,10 @@ const Page = () => {
 
       if (!isMulti) {
         baseItems.push({ label: 'Get Info', action: () => openSystemItem(activeFileItem, context, 'getinfo') });
+        baseItems.push({
+          label: 'Show in Finder',
+          action: () => openSystemItem('finder', context, undefined, { openPath: activeFileItem.parent || 'user-desktop', selectItem: activeFileItem.id })
+        });
         baseItems.push({ separator: true, label: '' });
         baseItems.push({
           label: 'Rename',

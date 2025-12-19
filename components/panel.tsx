@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Menu from './menu';
 import { useWindows } from './WindowContext';
-import { menus, titlemenu, applemenu } from './data';
+import { apps, applemenu, openSystemItem } from './data';
 import Control from './controlcenter';
 import Logo from './applelogo';
 
@@ -13,30 +13,25 @@ import { useDevice } from './DeviceContext';
 import { IoIosBatteryFull, IoIosSettings, IoIosWifi } from 'react-icons/io';
 
 export default function Panel({ ontogglenotifications }: { ontogglenotifications?: () => void }) {
-    const { activewindow, windows } = useWindows();
+    const { activewindow, windows, updatewindow, removewindow, setactivewindow, addwindow } = useWindows();
+    const { ismobile } = useDevice();
     const { setosstate } = useDevice();
 
     const activeappname =
         windows.find((window: any) => window.id === activewindow)?.appname || 'Finder';
-    let apptitlemenu: any = titlemenu.find((menu) => menu.title === activeappname);
-    let appmenus: any = menus.find((app) => app.appname === activeappname)?.menus;
+
+    const activeapp = apps.find(a => a.appname === activeappname);
+    const apptitlemenu = activeapp?.titlemenu || [
+        { title: "About " + activeappname, disabled: false, actionId: "About " + activeappname },
+        { title: "Quit " + activeappname, disabled: false, actionId: "Quit " + activeappname },
+    ];
+    let appmenus: any = activeapp?.menus;
     const [activemenu, setactivemenu] = useState<string | null>(null);
     const [hoverenabled, sethoverenabled] = useState(false);
     const [currentdate, setcurrentdate] = useState<string>('');
     const [currenttime, setcurrenttime] = useState<string>('');
     const [showcontrolcenter, setshowcontrolcenter] = useState(false);
 
-    useEffect(() => {
-        if (activemenu !== null) {
-            document.addEventListener('mousedown', handleclickoutside);
-        } else {
-            document.removeEventListener('mousedown', handleclickoutside);
-        }
-
-        return () => {
-            document.removeEventListener('mousedown', handleclickoutside);
-        };
-    }, [activemenu]);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -59,41 +54,26 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
         return () => clearInterval(interval);
     }, []);
 
-    if (!apptitlemenu) {
-        const menuslist = [
-            {
-                title: activeappname,
-                menu: [
-                    { title: "About " + activeappname, disabled: false },
+    const defaultWindowMenu = [
+        { title: "Minimize", actionId: "minimize", disabled: false },
+        { title: "Zoom", actionId: "zoom", disabled: false },
+        { separator: true },
+        { title: "Bring All to Front", disabled: false }
+    ];
 
-                    { title: "Quit " + activeappname, disabled: false },
-                ]
-            },
-        ]
-        apptitlemenu = menuslist[0];
-    }
+    const defaultHelpMenu = [
+        { title: "macOS Help", disabled: false },
+        { title: "About " + activeappname, disabled: false }
+    ];
 
     if (!appmenus) {
-        const menuslist = [
-            {
-                appname: activeappname,
-                menus: {
-
-                    Window: [
-                        { title: "Minimize", disabled: false },
-                        { title: "Zoom", disabled: true },
-                        { separator: true },
-                        { title: "Bring All to Front", disabled: true }
-                    ],
-                    Help: [
-                        { title: "macOS Help", disabled: false },
-                        { title: "About " + activeappname, disabled: false }
-                    ]
-                }
-            },
-
-        ];
-        appmenus = menuslist[0]?.menus;
+        appmenus = {
+            Window: defaultWindowMenu,
+            Help: defaultHelpMenu
+        };
+    } else {
+        if (!appmenus.Window) appmenus.Window = defaultWindowMenu;
+        if (!appmenus.Help) appmenus.Help = defaultHelpMenu;
     }
 
     const handletogglemenu = (id: string | null) => {
@@ -107,13 +87,11 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
         }
     };
 
-    const handleclickoutside = () => {
-        setactivemenu(null);
-        sethoverenabled(false);
-    };
-
     const handleapplemenuaction = (action: string) => {
         switch (action) {
+            case 'About This Mac':
+                alert('MacOS-Next\nVersion 2.0\nBuilt with Next.js & Tailwind\nBy Bala TBR');
+                break;
             case 'Sleep':
             case 'Lock Screen':
                 setosstate('locked');
@@ -128,8 +106,52 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
         }
     };
 
-    const handleMenuAction = (action: string) => {
-        const event = new CustomEvent('menu-action', { detail: { action } });
+    const handleMenuAction = (item: any) => {
+        if (!item || item.disabled) return;
+
+        const actionId = item.actionId || item.title;
+        console.log('[Debug] Dispatching menu action:', actionId);
+
+        if (actionId === 'minimize') {
+            if (activewindow) {
+                console.log('Minimizing window:', activewindow);
+                updatewindow(activewindow, { isminimized: true });
+                setactivewindow(null);
+            }
+        } else if (actionId === 'zoom') {
+            if (activewindow) {
+                const win = windows.find((w: any) => w.id === activewindow);
+                if (win) {
+                    updatewindow(activewindow, { ismaximized: !win.ismaximized });
+                }
+            }
+        } else if (actionId.startsWith('Quit ') || actionId === 'close-window') {
+            if (activewindow) {
+                removewindow(activewindow);
+            }
+        } else if (actionId.startsWith('About ')) {
+            const app = apps.find(a => a.appname === activeappname);
+            if (app) {
+                const appItem: any = {
+                    id: app.id,
+                    name: app.appname,
+                    mimetype: 'application/x-executable',
+                    isSystem: true,
+                    date: 'Today',
+                    size: 'Application',
+                    icon: app.icon
+                };
+                openSystemItem(appItem, { addwindow, windows, updatewindow, setactivewindow, ismobile }, 'getinfo');
+            }
+        }
+
+        const event = new CustomEvent('menu-action', {
+            detail: {
+                appId: activeapp?.id || 'finder',
+                actionId: actionId,
+                title: item.title
+            }
+        });
         window.dispatchEvent(event);
         setactivemenu(null);
         sethoverenabled(false);
@@ -153,17 +175,16 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
                             onaction={handleapplemenuaction}
                         />
                     </div>
-                    {apptitlemenu && (
-                        <Menu
-                            id="titleMenu"
-                            title={apptitlemenu.title}
-                            data={apptitlemenu.menu}
-                            visible={activemenu === 'titleMenu'}
-                            ontoggle={handletogglemenu}
-                            bold={true}
-                            onhover={handlehovermenu}
-                        />
-                    )}
+                    <Menu
+                        id="titleMenu"
+                        title={activeappname}
+                        data={apptitlemenu}
+                        visible={activemenu === 'titleMenu'}
+                        ontoggle={handletogglemenu}
+                        bold={true}
+                        onhover={handlehovermenu}
+                        onaction={handleMenuAction}
+                    />
                     <div className='hidden md:inline-flex'>
                         {Object.entries(appmenus).map(([menukey, menuitems]) => {
                             if (menukey === 'windowMenu' && activeappname !== 'Finder') return null;

@@ -1,148 +1,379 @@
-import React, { useState } from 'react';
-import { IoSearch, IoPersonCircleOutline, IoGameControllerOutline, IoRocketOutline, IoBrushOutline, IoConstructOutline, IoCodeSlashOutline, IoGlobeOutline } from "react-icons/io5";
+import React, { useState, useEffect } from 'react';
+import { IoSearch, IoRocketOutline, IoGlobeOutline, IoOpenOutline, IoLogoGithub, IoCodeSlashOutline, IoServerOutline, IoPhonePortraitOutline, IoLayersOutline, IoChevronBack } from "react-icons/io5";
 import Image from 'next/image';
-import { FaApple } from "react-icons/fa";
-import { apps, openSystemItem } from './data';
+import { personal, openSystemItem } from './data';
 import { useWindows } from './WindowContext';
 import { useDevice } from './DeviceContext';
+import { useMenuAction } from './hooks/useMenuAction';
+import { useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-export default function AppStore() {
-    const [activetab, setactivetab] = useState('Discover');
+export default function AppStore({ appId = 'appstore', id }: { appId?: string, id?: string }) {
+    const [selectedcategory, setselectedcategory] = useState('All');
+    const [selectedproject, setselectedproject] = useState<any>(null);
     const { addwindow, windows, updatewindow, setactivewindow } = useWindows();
     const { ismobile } = useDevice();
 
-    const sidebaritems = [
-        { name: 'Discover', icon: IoRocketOutline },
-        { name: 'Arcade', icon: IoGameControllerOutline },
-        { name: 'Create', icon: IoBrushOutline },
-        { name: 'Work', icon: IoConstructOutline },
-        { name: 'Develop', icon: IoCodeSlashOutline },
-    ];
+    const menuActions = useMemo(() => ({
+        'reload': () => setselectedcategory('All'),
+        'search': () => {
+            const el = document.querySelector<HTMLInputElement>('input[placeholder="Search projects"]') || document.querySelector<HTMLInputElement>('input[placeholder="Search"]');
+            el?.focus();
+        }
+    }), []);
 
-    const featuredapps = apps.filter(a => ['finder', 'safari', 'photos', 'settings', 'messsages', 'mail'].includes(a.id));
+    useMenuAction(appId, menuActions, id);
 
-    const freeapps = apps.length > 5 ? apps.slice(3, 8) : apps.slice(0, 5);
+    const projects = personal.projects.map((proj, i) => ({
+        id: i,
+        year: proj.date,
+        title: proj.title,
+        desc: proj.desc,
+        color: proj.type === 'Open Source' ? "#007AFF" : "#34C759",
+        icon: proj.icon,
+        tech: proj.stack,
+        type: proj.type,
+    }));
+
+    projects.sort((a, b) => b.year - a.year);
+
+    const allcategories = ['All', ...Array.from(new Set(projects.flatMap(p => p.tech.slice(0, 2))))];
+
+    const filteredprojects = selectedcategory === 'All'
+        ? projects
+        : projects.filter(p => p.tech.includes(selectedcategory));
+
+    const categoryicons: { [key: string]: React.ReactNode } = {
+        'All': <IoLayersOutline size={20} />,
+        'React': <IoCodeSlashOutline size={20} />,
+        'Next.js': <IoGlobeOutline size={20} />,
+        'TypeScript': <IoCodeSlashOutline size={20} />,
+        'Supabase': <IoServerOutline size={20} />,
+        'Firebase': <IoServerOutline size={20} />,
+        'TailwindCSS': <IoPhonePortraitOutline size={20} />,
+    };
+
+    if (ismobile) {
+        return (
+            <div className="relative flex flex-col h-full w-full bg-[#f5f5f7] dark:bg-[#1c1c1e] font-sf text-black dark:text-white overflow-hidden">
+                <AnimatePresence mode="popLayout" initial={false}>
+                    {!selectedproject ? (
+                        <motion.div
+                            key="list"
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.95, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="absolute inset-0 z-30 flex flex-col"
+                        >
+                            <div className="px-4 pt-4 pb-2">
+                                <h1 className="text-[34px] font-bold">Projects</h1>
+                            </div>
+
+                            <div className="px-4 py-2">
+                                <div className="relative">
+                                    <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                    <input
+                                        className="w-full bg-white dark:bg-[#2c2c2e] rounded-xl pl-10 pr-4 py-3 text-[17px] outline-none placeholder-gray-400"
+                                        placeholder="Search projects"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="px-4 py-2 overflow-x-auto scrollbar-hide">
+                                <div className="flex gap-2">
+                                    {allcategories.slice(0, 8).map(cat => (
+                                        <button
+                                            key={cat}
+                                            onClick={() => setselectedcategory(cat)}
+                                            className={`px-4 py-2 rounded-full text-[13px] font-semibold whitespace-nowrap transition-all ${selectedcategory === cat
+                                                ? 'bg-[#007AFF] text-white'
+                                                : 'bg-white dark:bg-[#2c2c2e] text-black dark:text-white'
+                                                }`}
+                                        >
+                                            {cat}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                                {filteredprojects.map((proj) => (
+                                    <motion.div
+                                        key={proj.id}
+                                        layoutId={`project-${proj.id}`}
+                                        className="bg-white dark:bg-[#2c2c2e] rounded-2xl p-4 shadow-sm active:scale-[0.98] transition-transform"
+                                        onClick={() => setselectedproject(proj)}
+                                    >
+                                        <div className="flex items-start gap-4">
+                                            <div className="w-16 h-16 rounded-2xl bg-black/5 dark:bg-white/10 flex items-center justify-center text-3xl shrink-0">
+                                                {proj.icon}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2 mb-0.5">
+                                                    <h3 className="text-[17px] font-semibold truncate">{proj.title}</h3>
+                                                    <span className="text-[11px] px-2 py-0.5 rounded-full shrink-0" style={{ backgroundColor: `${proj.color}20`, color: proj.color }}>{proj.year}</span>
+                                                </div>
+                                                <p className="text-[15px] text-gray-500 dark:text-gray-400 line-clamp-2 mt-1 leading-snug">{proj.desc}</p>
+                                                <div className="flex gap-1.5 mt-2.5 flex-wrap">
+                                                    {proj.tech.slice(0, 3).map((t, ti) => (
+                                                        <span key={ti} className="text-[11px] px-2 py-1 bg-black/5 dark:bg-white/10 rounded-lg text-gray-500">{t}</span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </div>
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            key="detail"
+                            initial={{ x: '100%' }}
+                            animate={{ x: 0 }}
+                            exit={{ x: '100%' }}
+                            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                            className="absolute inset-0 z-30 bg-white dark:bg-[#1c1c1e] flex flex-col"
+                        >
+                            <div className="h-14 flex items-center px-2 border-b border-black/5 dark:border-white/5 bg-white/80 dark:bg-[#1c1c1e]/80 backdrop-blur-xl shrink-0">
+                                <button
+                                    onClick={() => setselectedproject(null)}
+                                    className="flex items-center text-[#007AFF] px-2"
+                                >
+                                    <IoChevronBack size={26} />
+                                    <span className="text-[17px]">Projects</span>
+                                </button>
+                            </div>
+
+                            <div className="flex-1 overflow-y-auto">
+                                <div className="p-5">
+                                    <div className="flex flex-col items-center mb-8">
+                                        <motion.div layoutId={`project-${selectedproject.id}-icon`} className="w-24 h-24 rounded-[22px] bg-white dark:bg-[#2c2c2e] shadow-sm border border-black/5 flex items-center justify-center text-5xl mb-4">
+                                            {selectedproject.icon}
+                                        </motion.div>
+                                        <h1 className="text-[22px] font-bold text-center mb-2">{selectedproject.title}</h1>
+                                        <p className="text-gray-500 text-center text-[15px] leading-relaxed max-w-xs">{selectedproject.desc}</p>
+
+                                        <div className="flex gap-3 mt-6 w-full max-w-sm">
+                                            <a href={selectedproject.link || '#'} target="_blank" rel="noopener noreferrer" className="flex-1 py-3 bg-[#007AFF] text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity text-[15px]">
+                                                <IoOpenOutline size={18} />
+                                                View
+                                            </a>
+                                            <a href={selectedproject.github || '#'} target="_blank" rel="noopener noreferrer" className="flex-1 py-3 bg-[#F2F2F7] dark:bg-white/10 text-[#007AFF] rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-[#e5e5ea] dark:hover:bg-white/20 transition-colors text-[15px]">
+                                                <IoLogoGithub size={18} />
+                                                Code
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <div className="h-px bg-gray-100 dark:bg-white/5 mb-8" />
+
+                                    <div className="space-y-6">
+                                        <div>
+                                            <h3 className="text-[17px] font-bold mb-3">About</h3>
+                                            <p className="text-[15px] text-gray-600 dark:text-gray-300 leading-relaxed">
+                                                {selectedproject.desc} This project showcases advanced implementation of {selectedproject.tech.join(', ')}.
+                                                It was built in {selectedproject.year} and demonstrates core competencies in full-stack development.
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <h3 className="text-[17px] font-bold mb-3">Technologies</h3>
+                                            <div className="flex flex-wrap gap-2">
+                                                {selectedproject.tech.map((t: string) => (
+                                                    <span key={t} className="px-3 py-1.5 bg-gray-100 dark:bg-white/10 rounded-lg text-[13px] font-medium text-gray-600 dark:text-gray-200">
+                                                        {t}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div className="bg-gray-50 dark:bg-[#2c2c2e] rounded-xl p-4 shadow-sm border border-black/5 dark:border-transparent">
+                                            <h3 className="font-semibold mb-3 text-center text-gray-400 uppercase tracking-wide text-[11px]">Preview</h3>
+                                            <div className="aspect-video bg-gray-100 dark:bg-black/20 rounded-lg flex items-center justify-center text-gray-400 overflow-hidden relative">
+                                                <Image
+                                                    src={`/appimages/${selectedproject.title.toLowerCase()}.png`}
+                                                    alt={selectedproject.title}
+                                                    width={800}
+                                                    height={450}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+        );
+    }
 
     return (
-        <div className="flex h-full w-full bg-[#f5f5f7] dark:bg-[#1e1e1e] font-sf text-black dark:text-white overflow-hidden relative">
-
-            <div className={`w-[200px] shrink-0 flex-col pt-[50px] pb-4 px-2 border-r border-black/5 dark:border-white/5 bg-[#fbfbfd]/80 dark:bg-[#2d2d2d]/80 backdrop-blur-xl hidden md:flex`}>
+        <div className="flex h-full w-full bg-[#f5f5f7] dark:bg-[#1e1e1e] font-sf text-black dark:text-white overflow-hidden">
+            <div className="w-[220px] shrink-0 flex-col pt-[50px] pb-4 px-2 border-r border-black/5 dark:border-white/5 bg-[#fbfbfd]/80 dark:bg-[#2d2d2d]/80 backdrop-blur-xl hidden md:flex">
                 <div className="px-4 mb-6">
                     <div className="relative">
                         <IoSearch className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400" />
                         <input
-                            className="w-full bg-black/5 dark:bg-white/10 rounded-lg pl-8 pr-2 py-1.5 text-sm outline-none placeholder-gray-500 focus:ring-1 focus:ring-blue-500/50 transition-all font-medium text-black dark:text-white"
+                            className="w-full bg-black/5 dark:bg-white/10 rounded-lg pl-8 pr-2 py-1.5 text-sm outline-none placeholder-gray-500"
                             placeholder="Search"
                         />
                     </div>
                 </div>
 
-                <div className="space-y-1 flex-1 overflow-y-auto">
-                    {sidebaritems.map((item) => (
+                <div className="space-y-0.5 flex-1 overflow-y-auto px-2">
+                    <div className="text-[11px] font-semibold text-gray-500 uppercase px-3 mb-2">Categories</div>
+                    {allcategories.slice(0, 12).map((cat) => (
                         <button
-                            key={item.name}
-                            onClick={() => setactivetab(item.name)}
-                            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
-                                ${activetab === item.name
+                            key={cat}
+                            onClick={() => setselectedcategory(cat)}
+                            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-colors
+                                ${selectedcategory === cat
                                     ? 'bg-[#007AFF]/10 text-[#007AFF]'
                                     : 'text-gray-600 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5'}`}
                         >
-                            <item.icon className="text-xl" />
-                            {item.name}
+                            {categoryicons[cat] || <IoCodeSlashOutline size={18} />}
+                            {cat}
                         </button>
                     ))}
                 </div>
 
-                <div className="mt-auto px-4 py-4 border-t border-black/5 dark:border-white/5">
-                    <button className="flex items-center gap-3 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors w-full p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5">
-                        <IoPersonCircleOutline className="text-2xl" />
-                        <span>Account</span>
-                    </button>
+                <div className="px-4 py-4 border-t border-black/5 dark:border-white/5">
+                    <div className="text-[11px] text-gray-500 text-center">{projects.length} Projects</div>
                 </div>
             </div>
 
-            <div className="flex-1 flex flex-col h-full overflow-y-auto relative pb-24 md:pb-0 scroll-smooth bg-[#ffffff] dark:bg-[#1e1e1e]">
-
-                <div className="p-6 md:p-10 pb-4 max-w-7xl mx-auto w-full">
-                    <h1 className="text-4xl md:text-5xl font-bold mb-6 md:mb-10 px-2 tracking-tight text-black dark:text-white">{activetab}</h1>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-12 px-2">
-                        <div className="aspect-[16/10] rounded-2xl bg-gradient-to-br from-[#007AFF] to-[#5856D6] p-8 text-white flex flex-col justify-end shadow-2xl cursor-pointer hover:scale-[1.02] transition-transform duration-300 relative overflow-hidden group">
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
-                            <div className="z-10 transform translate-y-0 transition-transform duration-300">
-                                <span className="uppercase text-xs font-bold opacity-80 mb-3 block tracking-widest">Editor&apos;s Choice</span>
-                                <h2 className="text-3xl md:text-4xl font-bold mb-3 leading-tight">The Future of Portfolios</h2>
-                                <p className="opacity-90 max-w-md text-base md:text-lg font-medium leading-relaxed">Experience a fully functional macOS simulation directly in your browser. Built with Next.js.</p>
+            <div className="flex-1 flex flex-col h-full overflow-y-auto bg-white dark:bg-[#1e1e1e] relative">
+                <AnimatePresence mode="wait">
+                    {selectedproject ? (
+                        <motion.div
+                            key="detail"
+                            initial={{ opacity: 0, scale: 0.98 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.98 }}
+                            transition={{ duration: 0.2 }}
+                            className="absolute inset-0 bg-white dark:bg-[#1e1e1e] z-20 flex flex-col"
+                        >
+                            <div className="flex items-center px-4 h-[50px] border-b border-black/5 dark:border-white/5 bg-white dark:bg-[#1c1c1e] pl-20 shrink-0">
+                                <button
+                                    onClick={() => setselectedproject(null)}
+                                    className={`flex items-center gap-1 text-[#007AFF] font-medium hover:opacity-70 transition-opacity text-[14px]`}
+                                >
+                                    <IoChevronBack size={20} />
+                                    Back
+                                </button>
+                                <span className="flex-1 text-center font-semibold mr-8 text-[15px]">Project Details</span>
                             </div>
-                            <IoRocketOutline className="absolute top-8 right-8 text-white/20 text-9xl transform -rotate-12 group-hover:rotate-0 transition-transform duration-500" />
-                        </div>
 
-                        <div className="aspect-[16/10] rounded-2xl bg-gradient-to-br from-[#30D158] to-[#00C7BE] p-8 text-white flex flex-col justify-end shadow-2xl cursor-pointer hover:scale-[1.02] transition-transform duration-300 relative overflow-hidden group">
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300"></div>
-                            <div className="z-10">
-                                <span className="uppercase text-xs font-bold opacity-80 mb-3 block tracking-widest">New Release</span>
-                                <h2 className="text-3xl md:text-4xl font-bold mb-3 leading-tight">Global Connectivity</h2>
-                                <p className="opacity-90 max-w-md text-base md:text-lg font-medium leading-relaxed">Stay connected with integrated Mail and Safari apps. Explore the web within the web.</p>
+                            <div className="flex-1 overflow-y-auto">
+                                <div className="p-6 max-w-4xl mx-auto space-y-8">
+                                    <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+                                        <div className="w-24 h-24 md:w-28 md:h-28 rounded-[22px] bg-white dark:bg-[#2c2c2e] shadow-sm border border-black/5 flex items-center justify-center text-5xl p-2 shrink-0">
+                                            {selectedproject.icon}
+                                        </div>
+                                        <div className="flex-1 text-center md:text-left">
+                                            <h1 className="text-2xl font-bold mb-2">{selectedproject.title}</h1>
+                                            <p className="text-gray-500 text-base mb-4 max-w-xl">{selectedproject.desc}</p>
+                                            <div className="flex flex-wrap justify-center md:justify-start gap-2">
+                                                <a href={selectedproject.link || '#'} target="_blank" rel="noopener noreferrer" className="px-4 py-1.5 bg-[#007AFF] text-white rounded-full font-semibold flex items-center gap-2 hover:opacity-90 transition-opacity text-sm">
+                                                    <IoOpenOutline size={16} />
+                                                    View Project
+                                                </a>
+                                                <a href={selectedproject.github || '#'} target="_blank" rel="noopener noreferrer" className="px-4 py-1.5 bg-[#F2F2F7] dark:bg-white/10 text-[#007AFF] rounded-full font-semibold flex items-center gap-2 hover:bg-[#e5e5ea] dark:hover:bg-white/20 transition-colors text-sm">
+                                                    <IoLogoGithub size={16} />
+                                                    Source Code
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="h-px bg-gray-200 dark:bg-white/10" />
+
+                                    <div className="grid md:grid-cols-2 gap-8">
+                                        <div className="space-y-3">
+                                            <h3 className="text-lg font-bold">About</h3>
+                                            <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-[15px]">
+                                                {selectedproject.desc} This project showcases advanced implementation of {selectedproject.tech.join(', ')}.
+                                                It was built in {selectedproject.year} and demonstrates core competencies in full-stack development.
+                                            </p>
+                                        </div>
+                                        <div className="space-y-3">
+                                            <h3 className="text-lg font-bold">Technologies</h3>
+                                            <div className="flex flex-wrap gap-2">
+                                                {selectedproject.tech.map((t: string) => (
+                                                    <span key={t} className="px-2.5 py-1 bg-white dark:bg-white/10 rounded-md text-[13px] font-medium shadow-sm border border-black/5 dark:border-transparent">
+                                                        {t}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-white dark:bg-[#2c2c2e] rounded-xl p-4 shadow-sm border border-black/5 dark:border-transparent">
+                                        <h3 className="font-semibold mb-3 text-center text-gray-500 uppercase tracking-wide text-[11px]">Preview</h3>
+                                        <div className="aspect-video bg-gray-100 dark:bg-black/20 rounded-lg flex items-center justify-center text-gray-400 overflow-hidden relative">
+                                            <Image
+                                                src={`/appimages/${selectedproject.title.toLowerCase()}.png`}
+                                                alt={selectedproject.title}
+                                                width={800}
+                                                height={450}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <IoGlobeOutline className="absolute top-8 right-8 text-white/20 text-9xl transform -rotate-12 group-hover:rotate-0 transition-transform duration-500" />
-                        </div>
-                    </div>
-                </div>
 
-                <div className="h-px bg-neutral-200 dark:bg-neutral-800 mx-8 md:mx-12 my-2"></div>
-
-                <div className="p-6 md:p-10 pt-4 max-w-7xl mx-auto w-full">
-                    <div className="flex items-center justify-between mb-6 px-2">
-                        <h3 className="text-2xl md:text-3xl font-bold tracking-tight text-black dark:text-white">Top Free Apps</h3>
-                        <button className="text-[#007AFF] text-base font-semibold hover:opacity-70 transition-opacity">See All</button>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 px-2">
-                        {freeapps.map((app, i) => (
-                            <div key={app.id}
-                                className="flex items-center gap-4 p-4 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-2xl transition-all cursor-pointer group bg-white dark:bg-[#2c2c2e] shadow-sm hover:shadow-md border border-neutral-200/50 dark:border-white/5"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    openSystemItem(app.id, { addwindow, windows, updatewindow, setactivewindow, ismobile });
-                                }}
-                            >
-                                <div className="relative w-16 h-16 shrink-0 transition-transform duration-200 group-hover:scale-105">
-                                    <Image src={app.icon} alt={app.appname} fill className="object-contain drop-shadow-md rounded-[14px]" />
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            key="list"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="h-full w-full flex flex-col"
+                        >
+                            <div className="h-px bg-neutral-200 dark:bg-neutral-800 mx-10 mt-6"></div>
+                            <div className="p-6 md:p-10 pt-6 max-w-7xl mx-auto w-full">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h3 className="text-2xl font-bold">{selectedcategory !== 'All' ? selectedcategory : 'All'} Projects</h3>
+                                    <span className="text-[#007AFF] text-sm font-semibold">{filteredprojects.length} items</span>
                                 </div>
-                                <div className="flex-1 min-w-0 pr-2">
-                                    <h4 className="font-semibold text-base truncate text-black dark:text-white leading-tight mb-1">{app.appname}</h4>
-                                    <p className="text-xs text-neutral-500 font-medium">Productivity</p>
-                                </div>
-                                <div className="px-5 py-1.5 bg-[#f0f0f0] dark:bg-[#3d3d3d] rounded-full text-[#007AFF] text-xs font-bold group-hover:bg-[#007AFF] group-hover:text-white transition-all uppercase tracking-wide">
-                                    Open
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {filteredprojects.map((proj) => (
+                                        <div
+                                            key={proj.id}
+                                            className="bg-white dark:bg-[#2c2c2e] rounded-2xl p-5 shadow-sm hover:shadow-md transition-all border border-neutral-100 dark:border-white/5 cursor-pointer group"
+                                            onClick={() => setselectedproject(proj)}
+                                        >
+                                            <div className="flex items-start justify-between mb-3">
+                                                <div className="w-12 h-12 rounded-xl bg-black/5 dark:bg-white/10 flex items-center justify-center text-2xl">
+                                                    {proj.icon}
+                                                </div>
+                                                <span className="text-[11px] px-2 py-1 rounded-full font-semibold" style={{ backgroundColor: `${proj.color}20`, color: proj.color }}>
+                                                    {proj.year}
+                                                </span>
+                                            </div>
+                                            <h4 className="text-[17px] font-semibold mb-1">{proj.title}</h4>
+                                            <p className="text-[13px] text-gray-500 dark:text-gray-400 line-clamp-2 mb-3">{proj.desc}</p>
+                                            <div className="flex gap-1.5 flex-wrap mb-3">
+                                                {proj.tech.slice(0, 3).map((t, ti) => (
+                                                    <span key={ti} className="text-[10px] px-2 py-1 bg-black/5 dark:bg-white/10 rounded-md text-gray-500">{t}</span>
+                                                ))}
+                                            </div>
+                                            <button className="w-full py-2 bg-[#007AFF]/10 text-[#007AFF] rounded-xl text-[13px] font-semibold group-hover:bg-[#007AFF] group-hover:text-white transition-all flex items-center justify-center gap-2">
+                                                <IoOpenOutline size={16} />
+                                                View Details
+                                            </button>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
-                        ))}
-                    </div>
-                </div>
-
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
-
-            <div className="absolute bottom-0 left-0 right-0 h-[80px] pb-[16px] bg-[#fbfbfd]/90 dark:bg-[#2d2d2d]/90 backdrop-blur-xl border-t border-black/5 dark:border-white/5 flex items-start pt-2 justify-around z-50 md:hidden">
-                {sidebaritems.map((item) => (
-                    <button
-                        key={item.name}
-                        onClick={() => setactivetab(item.name)}
-                        className={`flex flex-col items-center justify-center space-y-1 w-full
-                            ${activetab === item.name
-                                ? 'text-[#007AFF]'
-                                : 'text-gray-500 dark:text-gray-400'}`}
-                    >
-                        <item.icon className="text-2xl" />
-                        <span className="text-[10px] font-medium">{item.name}</span>
-                    </button>
-                ))}
-                <button className="flex flex-col items-center justify-center space-y-1 w-full text-gray-500 dark:text-gray-400">
-                    <IoSearch className="text-2xl" />
-                    <span className="text-[10px] font-medium">Search</span>
-                </button>
-            </div>
-
         </div>
     );
 }

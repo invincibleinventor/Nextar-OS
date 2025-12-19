@@ -3,18 +3,50 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useDevice } from '../DeviceContext';
 import { filesystemitem } from '../data';
 import { useFileSystem } from '../FileSystemContext';
+import { useMenuAction } from '../hooks/useMenuAction';
 
 interface CommandResult {
     output: string;
     newCwd?: string;
 }
 
-export default function Terminal({ isFocused = true }: { isFocused?: boolean }) {
+export default function Terminal({ isFocused = true, appId = 'terminal' }: { isFocused?: boolean, appId?: string }) {
     const { ismobile } = useDevice();
     const { files } = useFileSystem();
     const [history, sethistory] = useState(['Welcome to MacOS-Next Terminal v1.0', 'Type "help" for available commands.', '']);
     const [currline, setcurrline] = useState('');
     const [cwd, setcwd] = useState('user-bala');
+    const [fontSize, setFontSize] = useState(13);
+
+    const menuActions = React.useMemo(() => ({
+        'clear': () => {
+            sethistory([]);
+            setcurrline('');
+        },
+        'copy': () => {
+            const selection = window.getSelection()?.toString();
+            if (selection) navigator.clipboard.writeText(selection);
+        },
+        'paste': () => {
+            navigator.clipboard.readText().then(text => {
+                setcurrline(prev => prev + text);
+                inputref.current?.focus();
+            });
+        },
+        'select-all': () => {
+            if (containerref.current) {
+                const range = document.createRange();
+                range.selectNodeContents(containerref.current);
+                const sel = window.getSelection();
+                sel?.removeAllRanges();
+                sel?.addRange(range);
+            }
+        },
+        'zoom-in': () => setFontSize(s => Math.min(s + 2, 24)),
+        'zoom-out': () => setFontSize(s => Math.max(s - 2, 10)),
+    }), []);
+
+    useMenuAction(appId, menuActions);
 
     const containerref = useRef<HTMLDivElement>(null);
     const endref = useRef<HTMLDivElement>(null);
@@ -52,7 +84,7 @@ export default function Terminal({ isFocused = true }: { isFocused?: boolean }) 
         }
 
         if (currentId === 'user-bala') return '~/' + path.join('/');
-        return '/' + path.join('/'); 
+        return '/' + path.join('/');
     };
 
     const getDirectoryItems = (dirId: string) => {
@@ -231,7 +263,7 @@ export default function Terminal({ isFocused = true }: { isFocused?: boolean }) 
                 inputref.current?.focus();
             }}
         >
-            <div className="font-mono text-[13px] leading-relaxed">
+            <div className="font-mono leading-relaxed" style={{ fontSize: `${fontSize}px` }}>
                 {history.map((line, i) => (
                     <div key={i} className="min-h-[20px] whitespace-pre-wrap break-all">
                         {line.startsWith('guest@balatbr') ? (
@@ -270,3 +302,4 @@ export default function Terminal({ isFocused = true }: { isFocused?: boolean }) 
         </div>
     )
 }
+
