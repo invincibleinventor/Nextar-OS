@@ -65,9 +65,9 @@ export default function Settings() {
             className={`flex items-center justify-between px-4 ${ismobile ? 'py-3.5' : 'py-2.5'} ${!last ? 'border-b border-black/5 dark:border-white/5' : ''} ${onClick ? 'active:bg-black/5 dark:active:bg-white/5' : ''}`}
             onClick={onClick}
         >
-            <span className={`${ismobile ? 'text-[17px]' : 'text-[13px] font-medium'}`}>{label}</span>
+            <span className={`${ismobile ? 'text-[16px]' : 'text-[13px] font-medium'}`}>{label}</span>
             <div className="flex items-center gap-2">
-                {value && <span className={`${ismobile ? 'text-[17px]' : 'text-[13px]'} text-gray-500`}>{value}</span>}
+                {value && <span className={`${ismobile ? 'text-[16px]' : 'text-[13px]'} text-gray-500`}>{value}</span>}
                 {toggle && <Toggle value={toggleValue} onChange={onToggle} />}
                 {onClick && <IoChevronForward className="text-gray-400" size={ismobile ? 20 : 14} />}
             </div>
@@ -182,12 +182,12 @@ export default function Settings() {
                             className="absolute pb-10 inset-0 z-30 bg-[#f5f5f7] dark:bg-[#1c1c1e] flex flex-col"
                         >
                             <div className="px-4 pt-12 pb-2">
-                                <h1 className="text-[34px] font-bold">Settings</h1>
+                                <h1 className="text-[32px] font-bold">Settings</h1>
                             </div>
                             <div className="px-4 py-2">
                                 <div className="relative">
                                     <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                                    <input placeholder="Search" className="w-full bg-white dark:bg-[#2c2c2e] rounded-xl pl-9 pr-3 py-2 text-[17px] outline-none placeholder-gray-500" />
+                                    <input placeholder="Search" className="w-full bg-white dark:bg-[#2c2c2e] rounded-xl pl-9 pr-3 py-2 text-[16px] outline-none placeholder-gray-500" />
                                 </div>
                             </div>
                             <div className="flex-1 overflow-y-auto px-4 py-2 space-y-4">
@@ -199,8 +199,8 @@ export default function Settings() {
                                         <Image src="/pfp.png" alt="Profile" width={56} height={56} className="w-full h-full object-cover" />
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <div className="text-[19px] font-semibold truncate">{personal.personal.name}</div>
-                                        <div className="text-[15px] text-gray-500 truncate">Apple ID, iCloud+</div>
+                                        <div className="text-[18px] font-semibold truncate">{personal.personal.name}</div>
+                                        <div className="text-[14px] text-gray-500 truncate">Apple ID, iCloud+</div>
                                     </div>
                                     <IoChevronForward className="text-gray-400" size={24} />
                                 </div>
@@ -215,7 +215,7 @@ export default function Settings() {
                                             <div className="w-7 h-7 rounded-md flex items-center justify-center text-white shrink-0" style={{ backgroundColor: item.color }}>
                                                 <item.icon size={16} />
                                             </div>
-                                            <span className="text-[17px] font-medium flex-1">{item.label}</span>
+                                            <span className="text-[16px] font-medium flex-1">{item.label}</span>
                                             <IoChevronForward className="text-gray-400" size={20} />
                                         </div>
                                     ))}
@@ -237,9 +237,9 @@ export default function Settings() {
                                     className="flex items-center text-[#007AFF] px-2"
                                 >
                                     <IoChevronBack size={26} />
-                                    <span className="text-[17px]">Settings</span>
+                                    <span className="text-[16px]">Settings</span>
                                 </button>
-                                <span className="absolute left-1/2 -translate-x-1/2 font-semibold text-[17px]">
+                                <span className="absolute left-1/2 -translate-x-1/2 font-semibold text-[16px]">
                                     {sidebaritems.find(i => i.id === activetab)?.label}
                                 </span>
                             </div>

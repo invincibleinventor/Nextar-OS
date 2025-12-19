@@ -511,6 +511,7 @@ export const apps: appdata[] = [
         multiwindow: true,
         titlebarblurred: false,
         pinned: false,
+        category: 'Productivity',
         defaultsize: { width: 600, height: 400 },
         acceptedMimeTypes: ['text/markdown', 'text/plain', 'text/x-uri', 'application/pdf']
     },
@@ -1172,17 +1173,6 @@ export const generatefilesystem = (): filesystemitem[] => {
         }
     });
 
-    const oldPortfolioBase: Partial<filesystemitem> = {
-        name: 'Old Portfolio',
-        mimetype: 'text/x-uri',
-        date: 'Today',
-        size: 'Web Link',
-        link: 'https://baladev.vercel.app',
-        icon: <Image className='w-full h-full p-[6px] sm:w-full sm:h-full' src='/code.png' alt="Old Portfolio" width={64} height={64} />,
-        description: "My previous portfolio."
-    };
-    fs.push({ ...oldPortfolioBase, id: 'desktop-oldportfolio', parent: 'user-desktop' } as filesystemitem);
-
 
     fs.push({ ...resumeBase, id: 'desktop-resume', parent: 'user-desktop' } as filesystemitem);
 
@@ -1206,6 +1196,17 @@ export const generatefilesystem = (): filesystemitem[] => {
         });
     });
 
+    const oldPortfolioBase: Partial<filesystemitem> = {
+        name: 'Old Portfolio',
+        mimetype: 'text/x-uri',
+        date: 'Today',
+        size: 'Web Link',
+        link: 'https://baladev.vercel.app',
+        icon: '/code.png', // Changing to string path to avoid React Element issue in data object if unused or ensuring valid element
+        description: "My previous portfolio."
+    };
+    fs.push({ ...oldPortfolioBase, id: 'desktop-oldportfolio', parent: 'user-desktop', icon: <Image className='w-full h-full p-[6px] sm:w-full sm:h-full object-contain' src='/code.png' alt="Old Portfolio" width={64} height={64} /> } as filesystemitem);
+
 
     const shortcuts: filesystemitem[] = [
         {
@@ -1216,7 +1217,8 @@ export const generatefilesystem = (): filesystemitem[] => {
             date: 'Today',
             size: '4 KB',
             linkPath: 'project-MacOS-Next',
-            isSystem: false
+            isSystem: false,
+            icon: <Image src="/folder.png" alt="folder" width={64} height={64} className="w-full h-full object-contain drop-shadow-md" />
         }
     ];
     fs.push(...shortcuts);

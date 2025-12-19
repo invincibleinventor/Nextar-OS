@@ -18,6 +18,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
     const [page, setpage] = useState(0);
     const [editmode, seteditmode] = useState(false);
     const [contextmenu, setcontextmenu] = useState<{ x: number; y: number; item?: filesystemitem } | null>(null);
+    const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
     const longpresstimer = useRef<NodeJS.Timeout | null>(null);
     const [iconorder, seticonorder] = useState<string[]>([]);
 
@@ -144,9 +145,15 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
             if (!item.isReadOnly && !item.isSystem) {
                 items.push({ separator: true, label: '' });
                 items.push({
-                    label: 'Remove from Home Screen',
-                    action: () => moveToTrash(item.id),
-                    danger: true
+                    label: 'Move to Trash',
+                    action: () => {
+                        if (contextmenu.item?.mimetype === 'application/x-executable' || contextmenu.item?.id.startsWith('desktop-app-')) {
+                            moveToTrash(contextmenu.item?.id || '');
+                        } else if (contextmenu.item?.id) {
+                            setConfirmDelete(contextmenu.item.id);
+                        }
+                    },
+                    separator: true
                 });
             }
 
@@ -197,6 +204,51 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                 />
             )}
 
+            <AnimatePresence>
+                {confirmDelete && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute inset-0 z-50 flex items-end justify-center bg-black/20 backdrop-blur-[2px]"
+                        onClick={() => setConfirmDelete(null)}
+                    >
+                        <motion.div
+                            initial={{ y: '100%' }}
+                            animate={{ y: 0 }}
+                            exit={{ y: '100%' }}
+                            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                            className="w-full max-w-sm m-4 mb-6"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="flex flex-col gap-2">
+                                <div className="bg-white/90 dark:bg-[#1e1e1e]/90 backdrop-blur-xl rounded-[14px] overflow-hidden">
+                                    <div className="p-4 text-center border-b border-black/5 dark:border-white/5">
+                                        <h3 className="text-[13px] font-semibold text-gray-500 dark:text-gray-400">Delete Item?</h3>
+                                        <p className="text-[13px] text-gray-500 dark:text-gray-400 mt-1">Are you sure you want to remove this item from the home screen?</p>
+                                    </div>
+                                    <button
+                                        onClick={() => {
+                                            if (confirmDelete) moveToTrash(confirmDelete);
+                                            setConfirmDelete(null);
+                                        }}
+                                        className="w-full py-4 text-[20px] text-red-500 font-normal active:bg-black/5 dark:active:bg-white/5 transition-colors"
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
+                                <button
+                                    onClick={() => setConfirmDelete(null)}
+                                    className="w-full py-4 bg-white dark:bg-[#1e1e1e] rounded-[14px] text-[20px] text-[#007AFF] font-semibold active:scale-[0.98] transition-all shadow-sm"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             <div
                 className="flex w-full h-full overflow-x-auto snap-x snap-mandatory scrollbar-hide [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
                 style={{ scrollBehavior: 'smooth' }}
@@ -219,9 +271,26 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                                     layoutId={item.id}
                                     className="app-icon flex flex-col items-center gap-1 touch-none"
                                     initial={{ opacity: 0, scale: 0.8 }}
-                                    animate={editmode ? { opacity: 1, scale: 1, rotate: [0, -2, 2, -2, 0] } : { opacity: 1, scale: 1, rotate: 0 }}
+                                    animate={editmode ? {
+                                        opacity: 1,
+                                        scale: 1,
+                                        rotate: [-2, 2, -2]
+                                    } : {
+                                        opacity: 1,
+                                        scale: 1,
+                                        rotate: 0
+                                    }}
                                     exit={{ opacity: 0, scale: 0.8 }}
-                                    transition={{ type: 'spring', damping: 25, stiffness: 300, repeat: editmode ? Infinity : 0, duration: editmode ? 0.3 : undefined }}
+                                    transition={{
+                                        rotate: editmode ? {
+                                            repeat: Infinity,
+                                            repeatType: "mirror",
+                                            duration: 0.25,
+                                            ease: "easeInOut"
+                                        } : { duration: 0 },
+                                        scale: { duration: 0.2 },
+                                        default: { type: 'spring', damping: 25, stiffness: 300 }
+                                    }}
                                     draggable={editmode}
                                     onDragStart={() => setdraggeditem(item.id)}
                                     onDragEnd={() => setdraggeditem(null)}
@@ -257,7 +326,11 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                                                 className="absolute -top-1 -left-1 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center z-10"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    moveToTrash(item.id);
+                                                    if (item.mimetype === 'application/x-executable' || item.id.startsWith('desktop-app-')) {
+                                                        moveToTrash(item.id);
+                                                    } else {
+                                                        setConfirmDelete(item.id);
+                                                    }
                                                 }}
                                             >
                                                 <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

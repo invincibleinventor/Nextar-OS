@@ -451,7 +451,6 @@ export default function Finder({ windowId, initialpath, istrash, openPath, selec
                                             className="text-[#007AFF] flex items-center gap-0.5"
                                         >
                                             <IoChevronBack className="text-xl" />
-                                            <span className="text-[15px]">Back</span>
                                         </button>
                                     ) : (
                                         <button
@@ -459,11 +458,11 @@ export default function Finder({ windowId, initialpath, istrash, openPath, selec
                                             className="text-[#007AFF] flex items-center gap-0.5"
                                         >
                                             <IoListOutline className="text-xl" />
-                                            <span className="text-[15px]">Browse</span>
+                                            <span className="text-[16px]">Browse</span>
                                         </button>
                                     )}
                                 </div>
-                                <span className="font-semibold text-[17px] absolute left-1/2 -translate-x-1/2">
+                                <span className="font-semibold text-[16px] absolute left-1/2 -translate-x-1/2">
                                     {isTrashView ? 'Trash' : currentpath[currentpath.length - 1]}
                                 </span>
                                 <div className="flex items-center gap-1">
@@ -532,7 +531,7 @@ export default function Finder({ windowId, initialpath, istrash, openPath, selec
                                                         {file.mimetype === 'inode/directory' ? 'Folder' : file.size || '--'}
                                                     </div>
                                                 </div>
-                                                {file.isReadOnly && (
+                                                {(file.isReadOnly || file.isSystem) && (
                                                     <IoLockClosed className="text-gray-400 text-sm" />
                                                 )}
                                                 {file.mimetype === 'inode/directory' && (
@@ -565,7 +564,7 @@ export default function Finder({ windowId, initialpath, istrash, openPath, selec
                         </motion.div>
                     )}
                 </AnimatePresence>
-            </div>
+            </div >
         );
     }
 
@@ -792,7 +791,7 @@ export default function Finder({ windowId, initialpath, istrash, openPath, selec
                                         ${isSelected ? 'bg-[#007AFF] text-white font-medium' : 'text-gray-700 dark:text-gray-300'}`}>
                                             {file.name}
                                         </span>
-                                        {file.isReadOnly && (
+                                        {(file.isReadOnly || file.isSystem) && (
                                             <div className="absolute top-1 right-1 bg-white/80 dark:bg-black/80 rounded-full p-0.5 shadow-sm">
                                                 <IoLockClosed className="text-[8px] text-black dark:text-white" />
                                             </div>

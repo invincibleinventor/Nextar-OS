@@ -72,10 +72,10 @@ export default function Mail(props: any) {
                             className="absolute inset-0 z-30 bg-[#f5f5f7] dark:bg-[#1c1c1e] flex flex-col"
                         >
                             <div className="h-14 flex items-center justify-between px-4 border-b border-black/5 dark:border-white/10">
-                                <span className="font-bold text-[28px]">Mailboxes</span>
+                                <span className="font-bold text-[26px]">Mailboxes</span>
                                 <button
                                     onClick={() => setmobileview('list')}
-                                    className="text-[#007AFF] font-medium text-[17px]"
+                                    className="text-[#007AFF] font-medium text-[16px]"
                                 >
                                     Done
                                 </button>
@@ -94,9 +94,9 @@ export default function Mail(props: any) {
                                         >
                                             <div className="flex items-center gap-3">
                                                 <item.icon size={22} className={selectedFolder === item.id ? 'text-white' : 'text-[#007AFF]'} />
-                                                <span className="text-[17px] font-medium">{item.label}</span>
+                                                <span className="text-[16px] font-medium">{item.label}</span>
                                             </div>
-                                            <span className={`text-[15px] ${selectedFolder === item.id ? 'text-white/80' : 'text-gray-400'}`}>{item.count}</span>
+                                            <span className={`text-[14px] ${selectedFolder === item.id ? 'text-white/80' : 'text-gray-400'}`}>{item.count}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -118,9 +118,9 @@ export default function Mail(props: any) {
                                     className="text-[#007AFF] flex items-center gap-0.5"
                                 >
                                     <IoChevronBack size={22} />
-                                    <span className="text-[17px]">Mailboxes</span>
+                                    <span className="text-[16px]">Mailboxes</span>
                                 </button>
-                                <span className="font-semibold text-[17px] absolute left-1/2 -translate-x-1/2 capitalize">
+                                <span className="font-semibold text-[16px] absolute left-1/2 -translate-x-1/2 capitalize">
                                     {selectedFolder}
                                 </span>
                             </div>
@@ -150,11 +150,11 @@ export default function Mail(props: any) {
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex justify-between items-baseline mb-1">
-                                                        <span className="font-semibold text-[17px] truncate text-black dark:text-white">{mail.sender}</span>
-                                                        <span className="text-[13px] shrink-0 ml-2 text-gray-400">{mail.date}</span>
+                                                        <span className="font-semibold text-[16px] truncate text-black dark:text-white">{mail.sender}</span>
+                                                        <span className="text-[12px] shrink-0 ml-2 text-gray-400">{mail.date}</span>
                                                     </div>
-                                                    <div className="text-[15px] font-medium mb-1 truncate text-black dark:text-white">{mail.subject}</div>
-                                                    <div className="text-[15px] text-gray-500 dark:text-gray-400 line-clamp-2">{mail.preview}</div>
+                                                    <div className="text-[14px] font-medium mb-1 truncate text-black dark:text-white">{mail.subject}</div>
+                                                    <div className="text-[14px] text-gray-500 dark:text-gray-400 line-clamp-2">{mail.preview}</div>
                                                 </div>
                                             </div>
                                         ))}
@@ -179,7 +179,7 @@ export default function Mail(props: any) {
                                     className="text-[#007AFF] flex items-center gap-0.5"
                                 >
                                     <IoChevronBack size={22} />
-                                    <span className="text-[17px] capitalize">{selectedFolder}</span>
+                                    <span className="text-[16px] capitalize">{selectedFolder}</span>
                                 </button>
                                 <div className="flex gap-5 text-[#007AFF]">
                                     <IoArchiveOutline size={22} />
@@ -190,20 +190,20 @@ export default function Mail(props: any) {
 
                             <div className="flex-1 overflow-y-auto">
                                 <div className="p-4 border-b border-gray-100 dark:border-white/5">
-                                    <h1 className="text-[22px] font-bold text-black dark:text-white mb-4">{activeMail.subject}</h1>
+                                    <h1 className="text-[20px] font-bold text-black dark:text-white mb-4">{activeMail.subject}</h1>
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 shrink-0 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-sm font-bold text-gray-600 dark:text-gray-300">
                                             {activeMail.sender[0]}
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <div className="text-[17px] font-semibold text-black dark:text-white truncate">{activeMail.sender}</div>
-                                            <div className="text-[13px] text-gray-400 truncate">{activeMail.senderEmail}</div>
+                                            <div className="text-[16px] font-semibold text-black dark:text-white truncate">{activeMail.sender}</div>
+                                            <div className="text-[12px] text-gray-400 truncate">{activeMail.senderEmail}</div>
                                         </div>
-                                        <div className="text-[13px] text-gray-400 shrink-0">{activeMail.date}</div>
+                                        <div className="text-[12px] text-gray-400 shrink-0">{activeMail.date}</div>
                                     </div>
                                 </div>
 
-                                <div className="p-4 prose dark:prose-invert max-w-none text-[16px] leading-relaxed">
+                                <div className="p-4 prose dark:prose-invert max-w-none text-[15px] leading-relaxed">
                                     {activeMail.content}
                                 </div>
                             </div>

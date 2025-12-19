@@ -18,7 +18,7 @@ export const initialnotifications: Notification[] = [
         title: 'Welcome to My Portfolio!',
         description: 'Hi! This is Bala! Welcome to my convergent MacOS themed portfolio! Please feel free to explore it!',
         time: '2h ago',
-        icon: '/welcome.png',
+        icon: '/pfp.png',
         appid: 'welcome'
     }
 ];

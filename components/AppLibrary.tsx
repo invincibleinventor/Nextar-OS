@@ -11,10 +11,10 @@ const AppLibrary = () => {
     const { addwindow, windows, setactivewindow, updatewindow } = useWindows();
     const { ismobile } = useDevice();
 
-    const allcategories = Array.from(new Set(apps.filter(a => a.category).map(a => a.category!)));
+    const allcategories = Array.from(new Set(apps.map(a => a.category || 'Miscellaneous')));
 
     const getcategoryapps = (category: string) => {
-        return apps.filter(app => app.category === category);
+        return apps.filter(app => (app.category || 'Miscellaneous') === category);
     };
 
     const openapp = (app: appdata) => {
@@ -25,6 +25,7 @@ const AppLibrary = () => {
         <div
             className="w-full h-full overflow-y-auto overflow-x-hidden pt-14 px-5 pb-32 scrollbar-hide select-none [&::-webkit-scrollbar]:hidden"
             style={{ touchAction: 'pan-x pan-y', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); }}
         >
             <div className="relative w-full text-center mb-6">
                 <div className="relative w-full mx-auto bg-neutral-200/30 dark:bg-neutral-800/30 backdrop-blur-xl rounded-xl h-10 flex items-center px-3">

@@ -111,12 +111,12 @@ export default function Photos({ singleview, src, title, desc, link, projectPath
                             className="absolute inset-0 z-30 bg-[#f5f5f7] dark:bg-[#1c1c1e] flex flex-col"
                         >
                             <div className="h-14 flex items-center justify-between px-4 border-b border-black/5 dark:border-white/10">
-                                <span className="font-bold text-[28px]">Albums</span>
+                                <span className="font-bold text-[26px]">Albums</span>
                                 <button
                                     onClick={() => setmobileview('grid')}
-                                    className="text-[#007AFF] font-medium text-[17px]"
+                                    className="text-[#007AFF] font-medium text-[16px]"
                                 >
-                                    Done
+                                    Select
                                 </button>
                             </div>
                             <div className="flex-1 overflow-y-auto pt-4">
@@ -193,8 +193,8 @@ export default function Photos({ singleview, src, title, desc, link, projectPath
                                     onClick={() => setmobileview('albums')}
                                     className="text-[#007AFF] flex items-center gap-0.5"
                                 >
-                                    <IoListOutline size={22} />
-                                    <span className="text-[17px] ml-1">Albums</span>
+                                    <IoChevronBack size={26} />
+                                    <span className="text-[16px] ml-1">Albums</span>
                                 </button>
                                 <span className="font-semibold text-[17px] absolute left-1/2 -translate-x-1/2">
                                     {sidebaritems.find(i => i.id === selecteditem)?.label || 'Library'}
