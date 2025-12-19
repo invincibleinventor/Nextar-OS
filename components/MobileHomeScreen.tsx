@@ -290,7 +290,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                                         } : { duration: 0 },
                                         scale: { duration: 0.2 },
                                         default: { type: 'spring', damping: 25, stiffness: 300 }
-                                    }}
+                                    } as any}
                                     draggable={editmode}
                                     onDragStart={() => setdraggeditem(item.id)}
                                     onDragEnd={() => setdraggeditem(null)}
@@ -394,7 +394,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                 </div>
             </div>
 
-            <div className={`absolute bottom-[140px] left-0 right-0 flex justify-center gap-2 z-20 pointer-events-none transition-opacity duration-300 ${isoverlayopen ? 'opacity-0' : 'opacity-100'}`}>
+            <div className={`absolute bottom-[140px] left-0 right-0 flex justify-center gap-2 z-20 pointer-events-none transition-opacity duration-300 ${isoverlayopen || page === 1 ? 'opacity-0' : 'opacity-100'}`}>
                 <div className={`w-2 h-2 rounded-full transition-all duration-300 ${page === 0 ? 'bg-white' : 'bg-white/30'}`} />
                 <div className={`w-2 h-2 rounded-full transition-all duration-300 ${page === 1 ? 'bg-white' : 'bg-white/30'}`} />
             </div>

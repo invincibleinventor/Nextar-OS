@@ -175,15 +175,15 @@ export default function Welcome(props: any) {
                 </AnimatePresence>
             </div>
 
-            <div className="h-16 shrink-0 flex items-center justify-between px-6 border-t border-black/5 dark:border-white/5">
+            <div className="h-24 lg:h-16 shrink-0 relative flex items-center justify-between px-6 border-t border-black/5 dark:border-white/5">
                 <button
                     onClick={() => step > 0 && setstep(step - 1)}
                     className={`text-blue-500 text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors ${step === 0 ? 'opacity-0 pointer-events-none' : ''}`}
                 >
-                    Back
+                    Go Back
                 </button>
 
-                <div className="flex gap-1.5">
+                <div className="flex gap-1.5 absolute top-[50%]  w-max h-max mx-auto  left-0 right-0 bottom-[50%}">
                     {steps.map((_, i) => (
                         <button key={i} onClick={() => setstep(i)}
                             className={`w-2 h-2 rounded-full transition-colors ${i === step ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'}`} />
