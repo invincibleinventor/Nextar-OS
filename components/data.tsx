@@ -333,7 +333,7 @@ export const apps: appdata[] = [
                 { title: "Find", actionId: "find", disabled: false }
             ],
             Format: [
-                { title: "Font", disabled: false, actionId: "font-menu" },  
+                { title: "Font", disabled: false, actionId: "font-menu" },
                 { title: "Bold", actionId: "format-bold", disabled: false },
                 { title: "Italic", actionId: "format-italic", disabled: false },
                 { title: "Underline", actionId: "format-underline", disabled: false },
@@ -1156,7 +1156,7 @@ export const generatefilesystem = (): filesystemitem[] => {
             mimetype: 'application/x-executable',
             date: 'Today',
             size: 'App',
-            icon: a.icon, 
+            icon: a.icon,
             appname: a.appname,
             description: `Launch ${a.appname} application.`,
             isSystem: true
@@ -1447,7 +1447,8 @@ export const openSystemItem = (
     const { addwindow, windows, updatewindow, setactivewindow, ismobile, files } = context;
 
     const resolved = resolveTarget(itemOrId, files);
-    let { appId, props, title } = resolved || {};
+    const { title } = resolved || {};
+    let { appId, props } = resolved || {};
 
     if (forceAppId) {
         appId = forceAppId;
