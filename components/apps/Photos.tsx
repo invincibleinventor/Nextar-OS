@@ -29,17 +29,55 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
     const [mobileview, setmobileview] = useState<'grid' | 'photo'>(singleview && src ? 'photo' : 'grid');
 
     const photos = useMemo(() => {
+        if (!user) return [];
+         const icloudFolder = files.find(f => f.name === 'iCloud Drive' && f.owner === user.username);
+        const icloudId = icloudFolder ? icloudFolder.id : (user.username === 'guest' ? 'guest-icloud' : `user-${user.username}-icloud`);
+
         return files.filter(f =>
             (photomimetypes.some(mt => f.mimetype.startsWith('image/') || f.mimetype === mt)) &&
-            (!f.owner || f.owner === user?.username)
+            (f.parent === icloudId)
         )
             .map(f => ({
                 id: f.id,
                 src: f.link || f.content || `/appimages/${f.name.toLowerCase()}`,
                 title: f.name,
-                date: f.date
+                date: f.date,
+                owner: f.owner
             }));
-    }, [files]);
+    }, [files, user]);
+
+    useEffect(() => {
+        if (singleview && src && viewingimage) {
+            const targetFile = files.find(f =>
+                f.link === src ||
+                f.content === src ||
+                `/appimages/${f.name.toLowerCase()}` === src
+            );
+
+            if (targetFile) {
+                const isAdmin = user?.role === 'admin' || user?.username === 'admin'; 
+                const isSystem = !targetFile.owner || targetFile.owner === 'system';
+                const isOwner = targetFile.owner === user?.username;
+
+                let allowed = false;
+
+                if (isAdmin) {
+                    allowed = true;
+                } else if (user?.username === 'guest') {
+                         if (targetFile.owner === 'guest') allowed = true;
+                } else {
+                    if (isOwner) allowed = true;
+                }
+
+                if (!allowed && !isSystem) {       if (targetFile.owner && targetFile.owner !== 'system' && !allowed) {
+                        setviewingimage(null);
+                        setmobileview('grid');
+                    }
+                }
+            } else {
+                    }
+        }
+    }, [singleview, src, user, files]);
 
     useEffect(() => {
         if (!containerref.current) return;
@@ -143,7 +181,7 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
 
     return (
         <div ref={containerref} className="flex h-full w-full bg-white dark:bg-[#1e1e1e] font-sf text-black dark:text-white overflow-hidden">
-            <div className={`${viewingimage?'hidden':''} w-[200px] flex flex-col pt-[50px] border-r border-black/5 dark:border-white/10 bg-[#f5f5f7]/80 dark:bg-[#2d2d2d]/80 backdrop-blur-xl shrink-0`}>
+            <div className={`${viewingimage ? 'hidden' : ''} w-[200px] flex flex-col pt-[50px] border-r border-black/5 dark:border-white/10 bg-[#f5f5f7]/80 dark:bg-[#2d2d2d]/80 backdrop-blur-xl shrink-0`}>
                 <div className="px-4 mb-2 text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Library</div>
                 <div className="px-2">
                     <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-accent/10 text-accent">
@@ -164,7 +202,7 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
                             exit={{ opacity: 0 }}
                             className="flex-1 flex flex-col bg-[#1e1e1e]"
                         >
-                            <div className="h-12 flex items-center justify-between  border-b border-white/10 ">
+                            <div className="h-12 px-4 flex items-center justify-between  border-b border-white/10 ">
                                 <button
                                     onClick={() => setviewingimage(null)}
                                     className="text-accent flex items-center gap-1 text-sm font-medium"
@@ -193,7 +231,7 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
                             className="flex-1 flex flex-col"
                         >
                             <div className="h-[50px] flex items-center justify-between px-4 border-b border-black/5 dark:border-white/10 bg-white/50 dark:bg-black/20">
-                                <span className="font-semibold pl-16">All Photos</span>
+                                <span className="font-semibold">All Photos</span>
                             </div>
                             <div className="flex-1 overflow-y-auto p-4">
                                 {photos.length === 0 ? (
