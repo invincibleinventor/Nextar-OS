@@ -15,8 +15,8 @@ export const initialnotifications: Notification[] = [
     {
         id: 'n4',
         appname: 'Welcome',
-        title: 'Welcome to My Portfolio!',
-        description: 'Hi! This is Bala! Welcome to my convergent MacOS themed portfolio! Please feel free to explore it!',
+        title: 'Welcome to MacOS-Next!',
+        description: 'Hi! This is Bala! Welcome to my convergent MacOS themed web OS simulation! Please feel free to explore it!',
         time: '2h ago',
         icon: '/pfp.png',
         appid: 'welcome'

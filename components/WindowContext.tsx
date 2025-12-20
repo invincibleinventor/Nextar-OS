@@ -1,5 +1,5 @@
 'use client';
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useCallback } from 'react';
 
 const WindowContext = createContext<any>(null);
 
@@ -9,7 +9,7 @@ export const WindowProvider = ({ children }: any) => {
   const [windows, setwindows] = useState<any[]>([]);
   const [activewindow, setactivewindow] = useState<string | null>(null);
 
-  const addwindow = (newwindow: any) => {
+  const addwindow = useCallback((newwindow: any) => {
     setactivewindow(newwindow.id);
     setwindows((prevwindows) => {
       const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
@@ -22,9 +22,9 @@ export const WindowProvider = ({ children }: any) => {
       }
       return [...filtered, { ...newwindow, lastInteraction: Date.now() }];
     });
-  };
+  }, []);
 
-  const removewindow = (id: string) => {
+  const removewindow = useCallback((id: string) => {
     setwindows((prevwindows) => {
       const idx = prevwindows.findIndex((w) => w.id === id);
       const updatedwindows = prevwindows.filter((window) => window.id !== id);
@@ -45,9 +45,9 @@ export const WindowProvider = ({ children }: any) => {
       }
       return updatedwindows;
     });
-  };
+  }, [activewindow]);
 
-  const focusortogglewindow = (appname: string) => {
+  const focusortogglewindow = useCallback((appname: string) => {
     setwindows((prevwindows) => {
       const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
       const appwindows = prevwindows.filter((win) => win.appname === appname);
@@ -75,9 +75,9 @@ export const WindowProvider = ({ children }: any) => {
         });
       }
     });
-  };
+  }, [activewindow]);
 
-  const updatewindow = (id: string, updatedprops: any) => {
+  const updatewindow = useCallback((id: string, updatedprops: any) => {
     setwindows((prevWindows) => {
       const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
@@ -98,7 +98,7 @@ export const WindowProvider = ({ children }: any) => {
     if (updatedprops.isminimized === false) {
       setactivewindow(id);
     }
-  };
+  }, []);
 
   return (
     <WindowContext.Provider

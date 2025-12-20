@@ -7,13 +7,18 @@ import { BiSignal5 } from "react-icons/bi";
 import { FaTowerBroadcast } from 'react-icons/fa6'
 import { useSettings } from './SettingsContext'
 import { useTheme } from './ThemeContext'
+import { useAuth } from './AuthContext'
 import { motion, AnimatePresence } from 'framer-motion'
+import Image from 'next/image'
 
 export default function ControlCenter({ onclose, ismobile = false, isopen = true }: { onclose?: () => void, ismobile?: boolean, isopen?: boolean }) {
   const [brightness, setbrightness] = useState(100)
   const [volume, setvolume] = useState(100)
+  const [focusmode, setfocusmode] = useState(false)
+  const [flashlight, setflashlight] = useState(false)
   const { theme, toggletheme } = useTheme()
   const { reducemotion, reducetransparency } = useSettings()
+  const { user, logout } = useAuth()
 
   return (
     <AnimatePresence>
@@ -24,7 +29,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration:0.2 }}
+              transition={{ duration: 0.2 }}
               className={`fixed inset-0 z-[9999] ${reducetransparency ? 'bg-neutral-100/80 dark:bg-neutral-900/80' : 'dark:bg-black/40 bg-white/40 backdrop-blur-sm'}`}
               onClick={onclose}
               style={{ pointerEvents: isopen ? 'auto' : 'none' }}
@@ -68,16 +73,16 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
 
 
                     <div className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-3xl p-3 grid grid-cols-2 grid-rows-2 gap-2 aspect-square border border-neutral-300 dark:border-neutral-700">
-                      <div className="flex items-center justify-center bg-blue-500 rounded-full aspect-square">
+                      <div className="flex items-center justify-center bg-accent rounded-full aspect-square">
                         <FaPlane className="text-white" size={18} />
                       </div>
                       <div className="flex items-center justify-center bg-green-500 rounded-full aspect-square">
                         <BiSignal5 className="text-white" size={18} />
                       </div>
-                      <div className="flex items-center justify-center bg-blue-500 rounded-full aspect-square">
+                      <div className="flex items-center justify-center bg-accent rounded-full aspect-square">
                         <FaWifi className="text-white" size={18} />
                       </div>
-                      <div className="flex items-center justify-center bg-blue-500 rounded-full aspect-square">
+                      <div className="flex items-center justify-center bg-accent rounded-full aspect-square">
                         <FaBluetoothB className="text-white" size={18} />
                       </div>
                     </div>
@@ -104,8 +109,8 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
                           <BsFillGridFill className="text-white" size={18} />
                         </div>
                       </div>
-                      <div className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-3xl p-3 flex items-center justify-center border border-neutral-300 dark:border-neutral-700">
-                        <div className="bg-neutral-700/50 p-3 rounded-full">
+                      <div onClick={() => setfocusmode(!focusmode)} className={`dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-3xl p-3 flex items-center justify-center border border-neutral-300 dark:border-neutral-700 cursor-pointer active:scale-95 transition-all ${focusmode ? 'ring-2 ring-purple-500' : ''}`}>
+                        <div className={`p-3 rounded-full ${focusmode ? 'bg-purple-500' : 'bg-neutral-700/50'}`}>
                           <FaMoon className="text-white" size={18} />
                         </div>
                       </div>
@@ -128,8 +133,8 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
 
 
                     <div className="grid grid-cols-2 grid-rows-2 gap-3 h-36">
-                      <div className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-3xl flex items-center justify-center border border-neutral-300 dark:border-neutral-700 active:bg-white/20 transition-colors">
-                        <IoFlashlight className="text-neutral-800 dark:text-white" size={24} />
+                      <div onClick={() => setflashlight(!flashlight)} className={`dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-3xl flex items-center justify-center border border-neutral-300 dark:border-neutral-700 active:scale-95 transition-all cursor-pointer ${flashlight ? 'bg-yellow-400/20 ring-2 ring-yellow-400' : 'active:bg-white/20'}`}>
+                        <IoFlashlight className={`${flashlight ? 'text-yellow-400' : 'text-neutral-800 dark:text-white'}`} size={24} />
                       </div>
                       <div className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-[20px] flex items-center justify-center border border-neutral-300 dark:border-neutral-700 active:bg-white/20 transition-colors">
                         <IoStopwatch className="text-neutral-800 dark:text-white" size={24} />
@@ -143,10 +148,25 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
                     </div>
                   </div>
 
-
                   <div onClick={toggletheme} className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-xl rounded-[24px] p-4 flex items-center justify-center border border-neutral-300 dark:border-neutral-700 active:bg-white/20 transition-colors gap-3 cursor-pointer">
                     {theme == 'light' ? <FaSun className='text-neutral-800 dark:text-white' size={20} /> : <FaMoon className="text-white" size={20} />}
                     <span className="text-neutral-800 dark:text-white font-medium">Switch Theme</span>
+                  </div>
+
+                  <div className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-xl rounded-[24px] p-4 flex items-center border border-neutral-300 dark:border-neutral-700 gap-3">
+                    <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white/20 shrink-0">
+                      <Image src={user?.avatar || '/pfp.png'} alt="User" width={48} height={48} className="object-cover" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-neutral-800 dark:text-white font-semibold truncate">{user?.name || 'Guest'}</div>
+                      <div className="text-neutral-500 dark:text-neutral-400 text-xs">@{user?.username || 'guest'}</div>
+                    </div>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); logout(); if (onclose) onclose(); }}
+                      className="px-4 py-2 bg-red-500/20 text-red-500 rounded-full text-sm font-medium active:bg-red-500/30"
+                    >
+                      Lock
+                    </button>
                   </div>
 
                 </div>

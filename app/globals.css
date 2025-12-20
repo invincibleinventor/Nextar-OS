@@ -19,6 +19,10 @@ body {
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --accent-color: #007AFF;
+}
+
 
 
 

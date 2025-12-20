@@ -1,8 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { useFileSystem } from '../FileSystemContext';
-import { filesystemitem, getFileIcon } from '../data';
+import { apps, filesystemitem, getFileIcon, sidebaritems } from '../data';
+import { useAuth } from '../AuthContext';
 import { IoFolderOutline, IoChevronBack, IoClose, IoChevronForward } from 'react-icons/io5';
+import Sidebar from './Sidebar';
 
 interface FilePickerProps {
     mode: 'open' | 'save';
@@ -14,7 +16,10 @@ interface FilePickerProps {
 
 export default function FilePicker({ mode, initialPath, onSelect, onCancel, acceptedMimeTypes }: FilePickerProps) {
     const { files, createFolder } = useFileSystem();
-    const [currentPath, setCurrentPath] = useState<string[]>(initialPath || ['Macintosh HD', 'Users', 'Bala', 'Projects']);
+    const { user } = useAuth();
+    const username = user?.username || 'Guest';
+    const homeDir = username === 'guest' ? 'Guest' : (username.charAt(0).toUpperCase() + username.slice(1));
+    const [currentPath, setCurrentPath] = useState<string[]>(initialPath || ['Macintosh HD', 'Users', homeDir, 'Projects']);
     const [selectedFile, setSelectedFile] = useState<string | null>(null);
     const [saveFileName, setSaveFileName] = useState('');
 
@@ -49,7 +54,7 @@ export default function FilePicker({ mode, initialPath, onSelect, onCancel, acce
                 if (file) onSelect(file);
             }
         } else {
-           let currentParentId = 'root';
+            let currentParentId = 'root';
             let currentParentItem: filesystemitem | null = null;
             for (const folderName of currentPath) {
                 const folder = files.find(i => i.name === folderName && i.parent === currentParentId && !i.isTrash);
@@ -59,7 +64,7 @@ export default function FilePicker({ mode, initialPath, onSelect, onCancel, acce
                 }
             }
 
-          onSelect(currentParentItem, saveFileName);
+            onSelect(currentParentItem, saveFileName);
         }
     };
 
@@ -84,50 +89,73 @@ export default function FilePicker({ mode, initialPath, onSelect, onCancel, acce
                     <span className="text-xs font-medium text-gray-500">{mode === 'open' ? 'Open File' : 'Save File'}</span>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-2 bg-white dark:bg-[#1e1e1e]">
-                    <div className="grid grid-cols-4 gap-2">
-                        {currentFiles.map((file) => {
-                            const isFolder = file.mimetype === 'inode/directory';
-                            const isSelected = selectedFile === file.name;
-                            const isDimmed = !isFolder && mode === 'open' && acceptedMimeTypes && !acceptedMimeTypes.includes(file.mimetype);
+                <div className="flex-1 flex overflow-hidden">
+                    <Sidebar
+                        currentPath={currentPath}
+                        onNavigate={(path) => {
+                            setCurrentPath(path);
+                            setSelectedFile(null);
+                        }}
+                        className="!w-[140px] text-xs"
+                        isOverlay={false}
+                    />
+                    <div className="flex-1 overflow-y-auto p-0 bg-white dark:bg-[#1e1e1e]">
+                        <div className="flex flex-col w-full">
+                            <div className="sticky top-0 z-10 flex items-center px-4 py-2 border-b border-gray-200 dark:border-white/10 text-xs text-gray-500 font-medium bg-gray-50 dark:bg-[#333]">
+                                <span className="flex-1">Name</span>
+                                <span className="w-24 text-right">Date</span>
+                                <span className="w-20 text-right">Size</span>
+                                <span className="w-24 text-right">Kind</span>
+                            </div>
+                            <div className="flex flex-col">
+                                {currentFiles.map((file) => {
+                                    const isFolder = file.mimetype === 'inode/directory';
+                                    const isSelected = selectedFile === file.name;
+                                    const isDimmed = !isFolder && mode === 'open' && acceptedMimeTypes && !acceptedMimeTypes.includes(file.mimetype);
 
-                            return (
-                                <div
-                                    key={file.id}
-                                    onClick={() => {
-                                        if (isDimmed) return;
-                                        if (isSelected && isFolder) {
-                                            handleNavigate(file);
-                                        } else {
-                                            setSelectedFile(file.name);
-                                            if (mode === 'save' && !isFolder) {
-                                                setSaveFileName(file.name);
-                                            }
-                                        }
-                                    }}
-                                    onDoubleClick={() => {
-                                        if (isFolder) handleNavigate(file);
-                                        else if (!isDimmed && mode === 'open') {
-                                            setSelectedFile(file.name);
-                                            handleConfirm();
-                                        }
-                                    }}
-                                    className={`flex flex-col items-center p-2 rounded gap-1 cursor-default
-                                        ${isSelected ? 'bg-blue-500 text-white' : 'hover:bg-gray-100 dark:hover:bg-white/5'}
-                                        ${isDimmed ? 'opacity-30' : ''}
-                                    `}
-                                >
-                                    <div className="w-8 h-8 flex items-center justify-center text-2xl">
-                                        {getFileIcon(file.mimetype, file.name, file.icon)}
-                                    </div>
-                                    <span className="text-xs text-center line-clamp-2 w-full break-words leading-tight">
-                                        {file.name}
-                                    </span>
-                                </div>
-                            );
-                        })}
+                                    return (
+                                        <div
+                                            key={file.id}
+                                            onClick={() => {
+                                                if (isDimmed) return;
+                                                if (isSelected && isFolder) {
+                                                    handleNavigate(file);
+                                                } else {
+                                                    setSelectedFile(file.name);
+                                                    if (mode === 'save' && !isFolder) {
+                                                        setSaveFileName(file.name);
+                                                    }
+                                                }
+                                            }}
+                                            onDoubleClick={() => {
+                                                if (isFolder) handleNavigate(file);
+                                                else if (!isDimmed && mode === 'open') {
+                                                    setSelectedFile(file.name);
+                                                    handleConfirm();
+                                                }
+                                            }}
+                                            className={`flex items-center px-4 py-1.5 border-b border-gray-100 dark:border-white/5 cursor-default text-xs
+                                                ${isSelected ? 'bg-blue-500 text-white' : 'hover:bg-gray-100 dark:hover:bg-white/5'}
+                                                ${isDimmed ? 'opacity-30' : ''}
+                                            `}
+                                        >
+                                            <div className="w-5 h-5 mr-3 shrink-0 flex items-center justify-center text-lg">
+                                                {getFileIcon(file.mimetype, file.name, file.icon)}
+                                            </div>
+                                            <span className="flex-1 truncate font-medium">{file.name}</span>
+                                            <span className={`w-24 text-right truncate ${isSelected ? 'text-white/80' : 'text-gray-500'}`}>{file.date}</span>
+                                            <span className={`w-20 text-right truncate ${isSelected ? 'text-white/80' : 'text-gray-500'}`}>{file.size}</span>
+                                            <span className={`w-24 text-right truncate ${isSelected ? 'text-white/80' : 'text-gray-500'}`}>
+                                                {file.mimetype === 'inode/directory' ? 'Folder' : file.mimetype.split('/')[1] || 'File'}
+                                            </span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
                     </div>
                 </div>
+
 
                 <div className="p-3 border-t border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-[#333] flex items-center gap-3">
                     {mode === 'save' && (
@@ -156,6 +184,6 @@ export default function FilePicker({ mode, initialPath, onSelect, onCancel, acce
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

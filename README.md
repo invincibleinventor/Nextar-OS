@@ -2,7 +2,7 @@
 
 **Production URL:** [https://baladev.in](https://baladev.in)
 
-A "Portfolio OS" simulation built with **Next.js 15** and **React 19**. This project mimics a functional Operating System environment that ships a convergent UI that adapts between a macOS desktop layout and an iOS mobile interface across screen sizes. 
+A MacOS simulation built with **Next.js 15** and **React 19**. This project mimics a functional Operating System environment that ships a convergent UI that adapts between a macOS desktop layout and an iOS mobile interface across screen sizes. 
 
 Default macOS UI
 

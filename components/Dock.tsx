@@ -56,7 +56,7 @@ const Dock = () => {
       return;
     }
 
-    const appwins = windows.filter((win: any) => win.appname === name);
+    const appwins = windows.filter((win: any) => win.appname === name && win.id !== 'finder-desktop');
 
     if (appwins.length > 0) {
       if (ismobile) {
@@ -91,7 +91,7 @@ const Dock = () => {
       id: 'launchpad-item',
       appname: 'LaunchPad',
       icon: '/launchpad.png',
-      pinned: true,  
+      pinned: true,
       isSystem: true,
       componentname: 'apps/Launchpad',
       maximizeable: false,
@@ -161,7 +161,7 @@ const Dock = () => {
           className="fixed z-[9999] mb-2 origin-bottom"
           style={{
             bottom: '70px',
-            left: contextMenu.x,
+            left: Math.min(Math.max(contextMenu.x, 100), window.innerWidth - 100),
             transform: 'translateX(-50%)'
           }}
         >
@@ -171,8 +171,14 @@ const Dock = () => {
             items={[
               {
                 label: 'Open',
-                action: () => onclick(contextMenu.item.id, contextMenu.item.appname),
-                disabled: windows.some((w: any) => w.appname === contextMenu.item.appname)
+                action: () => openSystemItem(contextMenu.item.id, {
+                  addwindow,
+                  windows,
+                  updatewindow,
+                  setactivewindow,
+                  ismobile
+                }),
+                disabled: false
               },
               { separator: true },
               {
@@ -194,6 +200,7 @@ const Dock = () => {
       )}
 
       <motion.div
+        data-tour="dock"
         className="fixed z-0 before:absolute before:inset-0 before:bg-transparent before:content-[''] before:backdrop-blur-[12px] before:webkit-backdrop-blur-[12px] before:z-[-1] bottom-1 mx-auto left-0 right-0 w-max before:rounded-3xl bg-white bg-opacity-30 dark:bg-black dark:bg-opacity-10 px-[8px] pt-[10px] pb-[12px] flex flex-shrink-0 rounded-3xl border-[0.1px] dark:border-neutral-600 border-neutral-500 shadow-2xl transition-colors duration-500"
         style={{
           zIndex: 9999,

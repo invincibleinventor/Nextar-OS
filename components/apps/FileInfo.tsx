@@ -1,3 +1,4 @@
+'use client';
 import React, { useState } from 'react';
 import { useFileSystem } from '../FileSystemContext';
 import { getFileIcon, filesystemitem, humanizeMime } from '../data';
@@ -6,7 +7,7 @@ import Image from 'next/image';
 import FilePicker from '../ui/FilePicker';
 
 interface FileInfoProps {
-    fileId?: string; 
+    fileId?: string;
     item?: filesystemitem;
 }
 

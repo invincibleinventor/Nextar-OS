@@ -1,31 +1,67 @@
 'use client';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
     IoCloseOutline, IoFolderOutline, IoDocumentTextOutline, IoAppsOutline,
     IoGridOutline, IoListOutline, IoChevronBack, IoChevronForward,
     IoSearch, IoGlobeOutline, IoInformationCircleOutline, IoChevronDown, IoChevronUp, IoFolderOpenOutline, IoLockClosed
 } from "react-icons/io5";
+import Sidebar from '../ui/Sidebar';
 import Image from 'next/image';
 import { useWindows } from '../WindowContext';
-import { apps, sidebaritems, filesystemitem, openSystemItem, getFileIcon } from '../data';
+import { apps, filesystemitem, openSystemItem, getFileIcon } from '../data';
 import { useDevice } from '../DeviceContext';
 
-import { IoTrashOutline, IoAddCircleOutline } from "react-icons/io5";
+import { IoTrashOutline, IoTrash, IoAddCircleOutline } from "react-icons/io5";
 import { useFileSystem } from '../FileSystemContext';
 import { useMenuAction } from '../hooks/useMenuAction';
+import { useMenuRegistration } from '../AppMenuContext';
 import ContextMenu from '../ui/ContextMenu';
 import FileModal from '../ui/FileModal';
 import { SelectionArea } from '../ui/SelectionArea';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../AuthContext';
 
-export default function Finder({ windowId, initialpath, istrash, openPath, selectItem }: { windowId?: string, initialpath?: string[], istrash?: boolean, openPath?: string, selectItem?: string }) {
-    const [selected, setselected] = useState(istrash ? 'Trash' : 'Projects');
+export default function Finder({ windowId, initialpath, istrash, openPath, selectItem, isDesktopBackend }: { windowId?: string, initialpath?: string[], istrash?: boolean, openPath?: string, selectItem?: string, isDesktopBackend?: boolean }) {
+    const [selected, setselected] = useState(istrash ? 'Trash' : 'Desktop');
     const [selectedFileIds, setSelectedFileIds] = useState<string[]>(selectItem ? [selectItem] : []);
     const [showsidebar, setshowsidebar] = useState(true);
     const [showpreview, setshowpreview] = useState(true);
     const { addwindow, windows, updatewindow, setactivewindow, activewindow } = useWindows();
     const { ismobile } = useDevice();
-    const { files, deleteItem, createFolder, createFile, moveToTrash, emptyTrash, restoreFromTrash, moveItem, copyItem, cutItem, pasteItem, clipboard, renameItem } = useFileSystem();
+    const { files, deleteItem, createFolder, createFile, moveToTrash, emptyTrash, restoreFromTrash, moveItem, copyItem, cutItem, pasteItem, clipboard, renameItem, isLoading, currentUserDesktopId, currentUserDocsId, currentUserDownloadsId, currentUserTrashId, isLocked } = useFileSystem();
+    const { user, isGuest } = useAuth();
+
+    const username = user?.username || 'guest';
+    const userhome = isGuest ? 'Guest' : (username.charAt(0).toUpperCase() + username.slice(1));
+
+    const sidebaritems = useMemo(() => [
+        {
+            title: 'Favorites',
+            items: [
+                { name: 'Desktop', icon: IoAppsOutline, path: ['Macintosh HD', 'Users', userhome, 'Desktop'] },
+                { name: 'Documents', icon: IoDocumentTextOutline, path: ['Macintosh HD', 'Users', userhome, 'Documents'] },
+                { name: 'Downloads', icon: IoAppsOutline, path: ['Macintosh HD', 'Users', userhome, 'Downloads'] },
+                ...(isGuest ? [
+                    { name: 'Projects', icon: IoFolderOutline, path: ['Macintosh HD', 'Users', userhome, 'Projects'] },
+                    { name: 'About Me', icon: IoDocumentTextOutline, path: ['Macintosh HD', 'Users', userhome, 'About Me'] },
+                ] : []),
+                { name: 'Applications', icon: IoAppsOutline, path: ['Macintosh HD', 'Applications'] },
+            ]
+        },
+        {
+            title: 'iCloud',
+            items: [
+                { name: 'iCloud Drive', icon: IoFolderOutline, path: ['iCloud Drive'] },
+            ]
+        },
+        {
+            title: 'Locations',
+            items: [
+                { name: 'Macintosh HD', icon: IoAppsOutline, path: ['Macintosh HD'] },
+                { name: 'Network', icon: IoGlobeOutline, path: ['Network'] },
+            ]
+        }
+    ], [userhome, isGuest]);
 
     const getPathFromId = (folderId: string): string[] => {
         const pathsegments: string[] = [];
@@ -36,17 +72,21 @@ export default function Finder({ windowId, initialpath, istrash, openPath, selec
             pathsegments.unshift(item.name);
             currentId = item.parent;
         }
-        return ['Macintosh HD', 'Users', 'Bala', ...pathsegments];
+        return pathsegments.length > 0 ? pathsegments : ['Macintosh HD', 'Users', userhome, 'Desktop'];
     };
 
     const initialPathFromOpen = openPath ? getPathFromId(openPath) : null;
-    const [currentpath, setcurrentpath] = useState<string[]>(initialPathFromOpen || initialpath || ['Macintosh HD', 'Users', 'Bala', 'Projects']);
+    const [currentpath, setcurrentpath] = useState<string[]>(initialPathFromOpen || initialpath || ['Macintosh HD', 'Users', userhome, 'Desktop']);
     const [searchquery, setsearchquery] = useState("");
 
     const [isnarrow, setisnarrow] = useState(false);
     const containerref = useRef<HTMLDivElement>(null);
     const fileViewRef = useRef<HTMLDivElement>(null);
     const [isTrashView, setIsTrashView] = useState(istrash || false);
+
+    const trashHasItems = useMemo(() => {
+        return files.some(f => f.parent === currentUserTrashId);
+    }, [files, currentUserTrashId]);
 
     const [mobileview, setmobileview] = useState<'sidebar' | 'files' | 'preview'>('files');
 
@@ -68,6 +108,16 @@ export default function Finder({ windowId, initialpath, istrash, openPath, selec
         observer.observe(containerref.current);
         return () => observer.disconnect();
     }, [isnarrow]);
+
+    useEffect(() => {
+        if (windowId && !isDesktopBackend) {
+            const currentTitle = windows.find((w: any) => w.id === windowId)?.title;
+            const newTitle = currentpath[currentpath.length - 1];
+            if (currentTitle !== newTitle) {
+                updatewindow(windowId, { title: newTitle });
+            }
+        }
+    }, [currentpath, windowId, updatewindow, isDesktopBackend, windows]);
 
     const handlesidebarclick = (itemname: string, path: string[]) => {
         setselected(itemname);
@@ -181,6 +231,46 @@ export default function Finder({ windowId, initialpath, istrash, openPath, selec
     }), [currentpath, selectedFileIds, clipboard, files, windowId]);
 
     useMenuAction('finder', menuActions, windowId);
+
+    const isActiveWindow = activewindow === windowId;
+
+    const finderMenus = useMemo(() => ({
+        File: [
+            { title: "New Finder Window", actionId: "new-window", shortcut: "⌘N" },
+            { title: "New Folder", actionId: "new-folder", shortcut: "⇧⌘N" },
+            { separator: true },
+            { title: "Open", actionId: "open" },
+            { title: "Close Window", actionId: "close-window", shortcut: "⌘W" },
+            { separator: true },
+            { title: "Move to Trash", actionId: "move-to-trash", shortcut: "⌘⌫" },
+            { separator: true },
+            { title: "Get Info", actionId: "get-info", shortcut: "⌘I" },
+            { title: "Rename", actionId: "rename" }
+        ],
+        Edit: [
+            { title: "Cut", actionId: "cut", shortcut: "⌘X" },
+            { title: "Copy", actionId: "copy", shortcut: "⌘C" },
+            { title: "Paste", actionId: "paste", shortcut: "⌘V" },
+            { title: "Select All", actionId: "select-all", shortcut: "⌘A" }
+        ],
+        View: [
+            { title: "As Icons", actionId: "view-icons" },
+            { title: "As List", actionId: "view-list" },
+            { separator: true },
+            { title: "Toggle Sidebar", actionId: "toggle-sidebar" },
+            { title: "Toggle Preview", actionId: "toggle-preview" }
+        ],
+        Go: [
+            { title: "Back", actionId: "go-back", shortcut: "⌘[" },
+            { title: "Enclosing Folder", actionId: "go-up", shortcut: "⌘↑" },
+            { separator: true },
+            { title: "Desktop", actionId: "go-desktop" },
+            { title: "Documents", actionId: "go-documents" },
+            { title: "Downloads", actionId: "go-downloads" }
+        ]
+    }), []);
+
+    useMenuRegistration(finderMenus, isActiveWindow);
 
     const [contextMenu, setContextMenu] = useState<{ x: number, y: number, fileId?: string } | null>(null);
 
@@ -390,7 +480,7 @@ export default function Finder({ windowId, initialpath, istrash, openPath, selec
                                 <span className="font-semibold text-lg">Browse</span>
                                 <button
                                     onClick={() => setmobileview('files')}
-                                    className="text-[#007AFF] font-medium"
+                                    className="text-accent font-medium"
                                 >
                                     Done
                                 </button>
@@ -408,10 +498,10 @@ export default function Finder({ windowId, initialpath, istrash, openPath, selec
                                                     onClick={() => handlesidebarclick(item.name, item.path)}
                                                     className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200
                                                         ${selected === item.name
-                                                            ? 'bg-[#007AFF] text-white'
+                                                            ? 'bg-accent text-white'
                                                             : 'text-black dark:text-white active:bg-black/5 dark:active:bg-white/10'}`}
                                                 >
-                                                    <item.icon className={`text-xl ${selected === item.name ? 'text-white' : 'text-[#007AFF]'}`} />
+                                                    <item.icon className={`text-xl ${selected === item.name ? 'text-white' : 'text-accent'}`} />
                                                     <span className="font-medium">{item.name}</span>
                                                 </div>
                                             ))}
@@ -421,10 +511,13 @@ export default function Finder({ windowId, initialpath, istrash, openPath, selec
                                                     onClick={() => handlesidebarclick('Trash', [])}
                                                     className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200 mt-4
                                                         ${selected === 'Trash'
-                                                            ? 'bg-[#007AFF] text-white'
+                                                            ? 'bg-accent text-white'
                                                             : 'text-black dark:text-white active:bg-black/5 dark:active:bg-white/10'}`}
                                                 >
-                                                    <IoTrashOutline className={`text-xl ${selected === 'Trash' ? 'text-white' : 'text-red-500'}`} />
+                                                    {trashHasItems
+                                                        ? <IoTrash className={`text-xl ${selected === 'Trash' ? 'text-white' : 'text-red-500'}`} />
+                                                        : <IoTrashOutline className={`text-xl ${selected === 'Trash' ? 'text-white' : 'text-red-500'}`} />
+                                                    }
                                                     <span className="font-medium">Trash</span>
                                                 </div>
                                             )}
@@ -448,14 +541,14 @@ export default function Finder({ windowId, initialpath, istrash, openPath, selec
                                     {currentpath.length > 1 ? (
                                         <button
                                             onClick={() => setcurrentpath(currentpath.slice(0, -1))}
-                                            className="text-[#007AFF] flex items-center gap-0.5"
+                                            className="text-accent flex items-center gap-0.5"
                                         >
                                             <IoChevronBack className="text-xl" />
                                         </button>
                                     ) : (
                                         <button
                                             onClick={() => setmobileview('sidebar')}
-                                            className="text-[#007AFF] flex items-center gap-0.5"
+                                            className="text-accent flex items-center gap-0.5"
                                         >
                                             <IoListOutline className="text-xl" />
                                             <span className="text-[16px]">Browse</span>
@@ -470,13 +563,13 @@ export default function Finder({ windowId, initialpath, istrash, openPath, selec
                                         <>
                                             <button
                                                 onClick={() => setFileModal({ isOpen: true, type: 'create-file' })}
-                                                className="text-[#007AFF] p-2"
+                                                className="text-accent p-2"
                                             >
                                                 <IoDocumentTextOutline className="text-xl" />
                                             </button>
                                             <button
                                                 onClick={() => setFileModal({ isOpen: true, type: 'create-folder' })}
-                                                className="text-[#007AFF] p-2"
+                                                className="text-accent p-2"
                                             >
                                                 <IoFolderOpenOutline className="text-xl" />
                                             </button>
@@ -501,7 +594,12 @@ export default function Finder({ windowId, initialpath, istrash, openPath, selec
                                 className="flex-1 overflow-y-auto"
                                 onContextMenu={(e) => handleContextMenu(e)}
                             >
-                                {filesList.length === 0 ? (
+                                {isLoading ? (
+                                    <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-500 mb-2"></div>
+                                        <span className="text-sm">Loading Files...</span>
+                                    </div>
+                                ) : filesList.length === 0 ? (
                                     <div className="flex flex-col items-center justify-center h-full text-gray-400">
                                         <span className="text-4xl mb-2 opacity-50">¯\_(ツ)_/¯</span>
                                         <span className="text-sm">No items found</span>
@@ -531,7 +629,7 @@ export default function Finder({ windowId, initialpath, istrash, openPath, selec
                                                         {file.mimetype === 'inode/directory' ? 'Folder' : file.size || '--'}
                                                     </div>
                                                 </div>
-                                                {(file.isReadOnly || file.isSystem) && (
+                                                {isLocked(file.id) && (
                                                     <IoLockClosed className="text-gray-400 text-sm" />
                                                 )}
                                                 {file.mimetype === 'inode/directory' && (
@@ -597,55 +695,28 @@ export default function Finder({ windowId, initialpath, istrash, openPath, selec
                 />
             )}
 
-            <div className={`
-                ${showsidebar
-                    ? isnarrow ? 'absolute inset-y-0 left-0 z-30 w-[220px] shadow-2xl bg-white/95 dark:bg-[#1e1e1e]/95 backdrop-blur border-r border-black/5 dark:border-white/5'
-                        : 'relative w-[200px] border-r border-black/5 dark:border-white/5 bg-[#f5f5f7]/80 dark:bg-[#1e1e1e]/80 backdrop-blur-xl'
-                    : '-translate-x-full w-0 border-none'
-                } 
-                transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] 
-                flex flex-col pt-4 h-full transform
-            `}
-                onClick={(e) => e.stopPropagation()}
+
+            <Sidebar
+                currentPath={currentpath}
+                onNavigate={(path: string[]) => handlesidebarclick(path[path.length - 1], path)}
+                show={showsidebar}
+                isOverlay={isnarrow}
+                items={sidebaritems}
             >
-                <div className={`flex-1 overflow-y-auto ${ismobile ? '' : 'pt-[36px]'} px-2 ${showsidebar ? 'opacity-100' : 'opacity-0'} transition-opacity duration-200 delay-100`}>
-                    {sidebaritems.map((group, idx) => (
-                        <div key={idx} className="mb-4">
-                            <div className="text-[11px] font-bold text-gray-500/80 dark:text-gray-400/80 uppercase tracking-wide mb-1 px-3">
-                                {group.title}
-                            </div>
-                            <div className="space-y-[1px]">
-                                {group.items.map((item) => (
-                                    <div
-                                        key={item.name}
-                                        onClick={() => handlesidebarclick(item.name, item.path)}
-                                        className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg cursor-pointer transition-all duration-200
-                                            ${selected === item.name
-                                                ? 'bg-black/10 dark:bg-white/10 text-black dark:text-white font-medium'
-                                                : 'text-black/80 dark:text-white/80 hover:bg-black/5 dark:hover:bg-white/5'}`}
-                                    >
-                                        <item.icon className={`text-[16px] ${selected === item.name ? 'text-[#007AFF]' : 'text-[#007AFF]/80'}`} />
-                                        <span className="truncate leading-none pb-[2px] block">{item.name}</span>
-                                    </div>
-                                ))}
-                                {idx === sidebaritems.length - 1 && (
-                                    <div
-                                        key="Trash"
-                                        onClick={() => handlesidebarclick('Trash', [])}
-                                        className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg cursor-pointer transition-all duration-200 mt-2
-                                            ${selected === 'Trash'
-                                                ? 'bg-black/10 dark:bg-white/10 text-black dark:text-white font-medium'
-                                                : 'text-black/80 dark:text-white/80 hover:bg-black/5 dark:hover:bg-white/5'}`}
-                                    >
-                                        <IoTrashOutline className={`text-[16px] ${selected === 'Trash' ? 'text-red-500' : 'text-gray-500'}`} />
-                                        <span className="truncate leading-none pb-[2px] block">Trash</span>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    ))}
+                <div
+                    onClick={() => handlesidebarclick('Trash', [])}
+                    className={`flex items-center gap-3 px-3 py-1.5 rounded-md cursor-pointer transition-colors mt-4 mx-1
+                        ${selected === 'Trash'
+                            ? 'bg-black/10 dark:bg-white/10 text-black dark:text-white'
+                            : 'text-gray-600 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5'}`}
+                >
+                    {trashHasItems
+                        ? <IoTrash className={`text-lg ${selected === 'Trash' ? 'text-blue-500' : 'text-gray-500'}`} />
+                        : <IoTrashOutline className={`text-lg ${selected === 'Trash' ? 'text-blue-500' : 'text-gray-500'}`} />
+                    }
+                    <span className="text-[13px] font-medium leading-none pb-0.5">Trash</span>
                 </div>
-            </div>
+            </Sidebar>
 
             <div className={`flex-1 flex ${isnarrow ? 'flex-col' : 'flex-row'} min-w-0 dark:bg-neutral-900 bg-white relative overflow-hidden`}>
 
@@ -697,7 +768,7 @@ export default function Finder({ windowId, initialpath, istrash, openPath, selec
                             </div>
                             <button
                                 onClick={() => setshowpreview(!showpreview)}
-                                className={`p-1 rounded-md transition-colors ${showpreview ? 'bg-black/10 dark:bg-white/10 text-[#007AFF]' : 'hover:bg-black/5 dark:hover:bg-white/5 text-gray-500'}`}
+                                className={`p-1 rounded-md transition-colors ${showpreview ? 'bg-black/10 dark:bg-white/10 text-accent' : 'hover:bg-black/5 dark:hover:bg-white/5 text-gray-500'}`}
                                 title="Toggle Preview"
                             >
                                 <IoInformationCircleOutline className="text-lg" />
@@ -788,10 +859,10 @@ export default function Finder({ windowId, initialpath, istrash, openPath, selec
                                             {getFileIcon(file.mimetype, file.name, file.icon)}
                                         </div>
                                         <span className={`text-[12px] text-center leading-tight px-2 py-0.5 rounded break-words w-full line-clamp-2
-                                        ${isSelected ? 'bg-[#007AFF] text-white font-medium' : 'text-gray-700 dark:text-gray-300'}`}>
+                                        ${isSelected ? 'bg-accent text-white font-medium' : 'text-gray-700 dark:text-gray-300'}`}>
                                             {file.name}
                                         </span>
-                                        {(file.isReadOnly || file.isSystem) && (
+                                        {isLocked(file.id) && (
                                             <div className="absolute top-1 right-1 bg-white/80 dark:bg-black/80 rounded-full p-0.5 shadow-sm">
                                                 <IoLockClosed className="text-[8px] text-black dark:text-white" />
                                             </div>
@@ -855,7 +926,7 @@ export default function Finder({ windowId, initialpath, istrash, openPath, selec
                                     <div className="pt-4 flex justify-center gap-2">
                                         <button
                                             onClick={() => handlefileopen(activefile)}
-                                            className="bg-[#007AFF] hover:bg-[#007afe] text-white px-4 py-1.5 rounded-full text-xs font-medium shadow-sm active:scale-95 transition-all"
+                                            className="bg-accent hover:bg-[#007afe] text-white px-4 py-1.5 rounded-full text-xs font-medium shadow-sm active:scale-95 transition-all"
                                         >
                                             Open
                                         </button>

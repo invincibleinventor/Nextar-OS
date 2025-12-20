@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useRe
 import { Notification, initialnotifications } from './notifications';
 import { useWindows } from './WindowContext';
 import { useDevice } from './DeviceContext';
+import { useAuth } from './AuthContext';
 import { apps, openSystemItem } from './data';
 
 interface NotificationContextType {
@@ -31,7 +32,16 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
     const [toast, settoast] = useState<Notification | null>(null);
 
+    const { isGuest } = useAuth();
+
     useEffect(() => {
+        if (isGuest) {
+            setnotifications(initialnotifications);
+            setversion(v => v + 1);
+            setisloaded(true);
+            return;
+        }
+
         const stored = localStorage.getItem('clearedNotifications');
         const clearedids = stored ? JSON.parse(stored) : [];
 
@@ -39,9 +49,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         setnotifications(active);
         setversion(v => v + 1);
         setisloaded(true);
-    }, []);
-
-
+    }, [isGuest]);
 
     const addnotification = (n: Notification) => {
         setnotifications(prev => [n, ...prev]);
@@ -63,11 +71,14 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         });
     };
 
+
     const hidetoast = () => settoast(null);
 
     const clearnotification = (id: string) => {
         setnotifications(prev => prev.filter(n => n.id !== id));
         if (toast?.id === id) settoast(null);
+
+        if (isGuest) return; 
 
         const stored = localStorage.getItem('clearedNotifications');
         const clearedids = stored ? JSON.parse(stored) : [];

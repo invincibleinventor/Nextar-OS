@@ -5,6 +5,8 @@ import { ThemeProvider } from '@/components/ThemeContext';
 import { DeviceProvider } from '@/components/DeviceContext';
 import { SettingsProvider } from '@/components/SettingsContext';
 import { FileSystemProvider } from '@/components/FileSystemContext';
+import { AppPreferencesProvider } from '@/components/AppPreferencesContext';
+import { AppMenuProvider } from '@/components/AppMenuContext';
 import { Analytics } from "@vercel/analytics/next"
 
 import { personal as portfoliodata } from '@/components/data';
@@ -97,6 +99,7 @@ export const viewport: Viewport = {
 };
 
 import { NotificationProvider } from '@/components/NotificationContext';
+import { AuthProvider } from '@/components/AuthContext';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -107,15 +110,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <WindowProvider>
             <div className="fixed inset-0 bg-black h-[100dvh] w-screen overflow-hidden transition-colors duration-500">
 
-              <SettingsProvider>
-                <DeviceProvider>
-                  <NotificationProvider>
-                    <FileSystemProvider>
-                      {children}
-                    </FileSystemProvider>
-                  </NotificationProvider>
-                </DeviceProvider>
-              </SettingsProvider>
+              <DeviceProvider>
+                <AuthProvider>
+                  <SettingsProvider>
+                    <NotificationProvider>
+                      <FileSystemProvider>
+                        <AppPreferencesProvider>
+                          <AppMenuProvider>
+                            {children}
+                          </AppMenuProvider>
+                        </AppPreferencesProvider>
+                      </FileSystemProvider>
+                    </NotificationProvider>
+                  </SettingsProvider>
+                </AuthProvider>
+              </DeviceProvider>
             </div>
             <script
               type="application/ld+json"

@@ -1,22 +1,25 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { FaPlay, FaStop, FaTerminal, FaFolder, FaPython } from 'react-icons/fa';
 import { VscDebugStart, VscDebugStop, VscFiles, VscSearch, VscSourceControl, VscWarning } from "react-icons/vsc";
 import { IoIosArrowForward, IoIosArrowDown, IoLogoPython as IoPython } from "react-icons/io";
 
 import { useDevice } from '../DeviceContext';
+import { useAuth } from '../AuthContext';
 import { useMenuAction } from '../hooks/useMenuAction';
-import { useMemo } from 'react';
 
 export default function Python({ isFocused = true, appId = 'python', id }: { isFocused?: boolean, appId?: string, id?: string }) {
     const [code, setcode] = useState('print("Made with love by BalaTBR!")\n\n# Keep Building!\n\nfor i in range(5):\n    print(f"Count: {i}")');
-    const [currentPath, setCurrentPath] = useState<string[]>(['Macintosh HD', 'Users', 'Bala', 'Projects']);
+    const { ismobile } = useDevice();
+    const { user } = useAuth();
+    const username = user?.username || 'Guest';
+    const homeDir = username === 'guest' ? 'Guest' : (username.charAt(0).toUpperCase() + username.slice(1));
+    const [currentPath, setCurrentPath] = useState<string[]>(['Macintosh HD', 'Users', homeDir, 'Projects']);
     const [output, setoutput] = useState('');
     const [isrunning, setisrunning] = useState(false);
-    const { ismobile } = useDevice();
     const [showsidebar, setshowsidebar] = useState(false);
 
-    const runcode = async () => {
+    const runcode = useCallback(async () => {
         setisrunning(true);
         setoutput('Building and Running...\n');
         try {
@@ -40,14 +43,14 @@ export default function Python({ isFocused = true, appId = 'python', id }: { isF
         } finally {
             setisrunning(false);
         }
-    };
+    }, [code]);
 
     const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
-    const execCmd = (command: string, value: string | undefined = undefined) => {
+    const execCmd = useCallback((command: string, value: string | undefined = undefined) => {
         document.execCommand(command, false, value);
         if (textareaRef.current) textareaRef.current.focus();
-    };
+    }, []);
 
     const menuActions = useMemo(() => ({
         'new-file': () => setcode(''),
@@ -73,7 +76,7 @@ export default function Python({ isFocused = true, appId = 'python', id }: { isF
         'cut': () => execCmd('cut'),
         'select-all': () => textareaRef.current?.select(),
         'run-code': () => runcode(),
-    }), [code, runcode]);
+    }), [code, runcode, execCmd]);
 
     useMenuAction(appId, menuActions, id);
 

@@ -32,37 +32,48 @@ const FileModal: React.FC<FileModalProps> = ({ isOpen, type, initialValue = '', 
     const displayTitle = title || (
         type === 'create-folder' ? 'New Folder' :
             type === 'create-file' ? 'New File' : 'Rename'
-    );                
+    );
 
     return (
         <div className="fixed inset-0 z-[100000] flex items-center justify-center bg-black/20 backdrop-blur-sm" onClick={onCancel}>
             <div
-                className="w-[300px] bg-white dark:bg-[#252526] rounded-xl shadow-2xl p-4 border border-black/10 dark:border-white/10"
+                className="w-[320px] bg-[#f5f5f7]/90 dark:bg-[#2c2c2e]/90 backdrop-blur-xl rounded-xl shadow-2xl p-0 border border-black/5 dark:border-white/10 overflow-hidden transform transition-all scale-100"
                 onClick={e => e.stopPropagation()}
             >
-                <div className="text-center font-semibold mb-4 text-black dark:text-white">{displayTitle}</div>
-                <form onSubmit={handleSubmit}>
+                <div className="px-4 py-3 border-b border-black/5 dark:border-white/10 flex flex-col items-center">
+                    <div className="font-semibold text-[15px] text-black dark:text-white">{displayTitle}</div>
+                    <div className="text-[12px] text-gray-500 mt-0.5">Enter a name for this item</div>
+                </div>
+
+                <form onSubmit={handleSubmit} className="p-4">
+                    <div className="flex items-center justify-center mb-4">
+                        <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center shadow-lg text-white text-2xl">
+                            {type === 'create-folder' ? '📂' : '📄'}
+                        </div>
+                    </div>
+
                     <input
                         ref={inputRef}
                         type="text"
                         value={inputValue}
                         onChange={e => setInputValue(e.target.value)}
-                        className="w-full px-3 py-1.5 bg-gray-100 dark:bg-[#1e1e1e] border border-gray-300 dark:border-gray-600 rounded-md outline-none focus:ring-2 ring-blue-500 mb-4 text-black dark:text-white"
-                        placeholder="Enter name..."
+                        className="w-full px-3 py-1.5 bg-white dark:bg-black/20 border border-gray-300 dark:border-gray-600 rounded-lg outline-none focus:ring-2 ring-blue-500/50 text-[14px] text-black dark:text-white text-center shadow-inner"
+                        placeholder="Name"
                     />
-                    <div className="flex justify-end gap-2 text-[13px]">
+
+                    <div className="flex gap-2 mt-4">
                         <button
                             type="button"
                             onClick={onCancel}
-                            className="px-4 py-1 rounded-md bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 font-medium text-black dark:text-white transition-colors"
+                            className="flex-1 py-1.5 rounded-lg bg-gray-200/80 dark:bg-gray-600/50 hover:bg-gray-300 dark:hover:bg-gray-600 font-medium text-[13px] text-black dark:text-white transition-colors"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
-                            className="px-4 py-1 rounded-md bg-blue-500 hover:bg-blue-600 text-white font-medium transition-colors"
+                            className="flex-1 py-1.5 rounded-lg bg-accent hover:bg-[#0071eb] text-white font-medium text-[13px] shadow-sm transition-all active:scale-95"
                         >
-                            {type === 'rename' ? 'Rename' : 'Create'}
+                            {title || (type === 'rename' ? 'Rename' : 'Create')}
                         </button>
                     </div>
                 </form>

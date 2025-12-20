@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, memo } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { useWindows } from './WindowContext';
-import { apps } from './data';
+import { apps, componentmap } from './data';
 import { motion } from 'framer-motion';
 import { useDevice } from './DeviceContext';
 import { useSettings } from './SettingsContext';
@@ -11,32 +11,15 @@ import { useSettings } from './SettingsContext';
 const panelheight = 35;
 const dockheight = 70;
 
-import dynamic from 'next/dynamic';
-
-const componentmap: { [key: string]: any } = {
-  'apps/Finder': dynamic(() => import('./apps/Finder')),
-  'apps/FileInfo': dynamic(() => import('./apps/FileInfo')),
-  'apps/TextEdit': dynamic(() => import('./apps/TextEdit')),
-  'apps/Settings': dynamic(() => import('./apps/Settings')),
-  'apps/Calendar': dynamic(() => import('./apps/Calendar')),
-  'apps/Safari': dynamic(() => import('./apps/Safari')),
-  'apps/Photos': dynamic(() => import('./apps/Photos')),
-  'apps/Terminal': dynamic(() => import('./apps/Terminal')),
-  'apps/Launchpad': dynamic(() => import('./apps/Launchpad')),
-  'apps/Python': dynamic(() => import('./apps/Python')),
-  'apps/FileViewer': dynamic(() => import('./apps/FileViewer')),
-
-  'AppStore': dynamic(() => import('./AppStore')),
-  'BalaDev': dynamic(() => import('./BalaDev')),
-  'Welcome': dynamic(() => import('./Welcome')),
-
-  'Mail': dynamic(() => import('./Mail')),
-  'Calculator': dynamic(() => import('./Calculator')),
-};
-
-
 const MemoizedDynamicComponent = memo(
-  ({ icon, component, appname, appprops, isFocused }: { icon: string, component: string; appname: string, appprops: any; isFocused: boolean }) => {
+  ({ icon, component, appname, appprops, isFocused, isExternal, externalUrl }: { icon: string, component: string; appname: string, appprops: any; isFocused: boolean, isExternal?: boolean, externalUrl?: string }) => {
+    if (isExternal && externalUrl) {
+      const ExternalLoader = componentmap['apps/ExternalAppLoader'];
+      if (ExternalLoader) {
+        return <ExternalLoader externalUrl={externalUrl} appname={appname} icon={icon} />;
+      }
+    }
+
     const DynamicComponent = componentmap[component];
 
     if (!DynamicComponent) {
@@ -465,7 +448,7 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
       <div
         className={`w-full h-full flex-1 overflow-hidden ${ismaximized || ismobile ? '' : ''} ${(isminimized || issystemgestureactive || shouldblur || isRecentAppView) ? 'pointer-events-none' : 'pointer-events-auto'}`}
       >
-        <MemoizedDynamicComponent appname={app ? app.appname : ''} icon={app ? app.icon : ''} component={app?.componentname ? app.componentname : component} appprops={{ ...props, windowId: id }} isFocused={activewindow === id && !shouldblur} />
+        <MemoizedDynamicComponent appname={app ? app.appname : ''} icon={app ? app.icon : ''} component={app?.componentname ? app.componentname : component} appprops={{ ...props, windowId: id }} isFocused={activewindow === id && !shouldblur} isExternal={app?.isExternal} externalUrl={app?.externalUrl} />
 
         {((ismobile && shouldblur && !isRecentAppView) || issystemgestureactive) && (
           <div className="absolute inset-0 z-[9999] bg-transparent w-full h-full pointer-events-auto" />

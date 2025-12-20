@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { IoArrowBack, IoArrowForward, IoShareOutline, IoBookOutline, IoCopyOutline, IoLockClosedOutline, IoRefreshOutline, IoReaderOutline, IoChevronBack, IoChevronForward, IoReloadOutline, IoLockClosed, IoAddOutline, IoStarOutline, IoSearchOutline } from 'react-icons/io5';
 import { useDevice } from '../DeviceContext';
+import { useWindows } from '../WindowContext';
+import { useMenuRegistration } from '../AppMenuContext';
 import { useMenuAction } from '../hooks/useMenuAction';
 import { useMemo, useCallback } from 'react';
 
@@ -20,6 +22,10 @@ export default function Safari({ initialurl = 'https://baladev.vercel.app', appI
     const [history, setHistory] = useState<string[]>([initialurl]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [zoom, setZoom] = useState(1);
+    const { activewindow } = useWindows();
+    const isActiveWindow = activewindow === id;
+
+
 
     const navigateTo = useCallback((newUrl: string) => {
         let target = newUrl;
@@ -85,10 +91,44 @@ export default function Safari({ initialurl = 'https://baladev.vercel.app', appI
         },
         'zoom-in': () => setZoom(z => Math.min(z + 0.1, 3)),
         'zoom-out': () => setZoom(z => Math.max(z - 0.1, 0.5)),
+        'zoom-reset': () => setZoom(1),
         'go-back': () => goBack(),
         'go-forward': () => goForward(),
-    }), [url, goBack, goForward]);
+        'go-home': () => navigateTo('https://baladev.vercel.app'),
+    }), [url, goBack, goForward, navigateTo]);
 
+    const safariMenus = useMemo(() => ({
+        File: [
+            { title: "New Window", actionId: "new-window", shortcut: "⌘N" },
+            { title: "New Tab", actionId: "new-tab", shortcut: "⌘T" },
+            { title: "Open Location...", actionId: "open-location", shortcut: "⌘L" },
+            { separator: true },
+            { title: "Close Window", actionId: "close-window", shortcut: "⌘W" },
+        ],
+        Edit: [
+            { title: "Undo", actionId: "undo", shortcut: "⌘Z" },
+            { title: "Redo", actionId: "redo", shortcut: "⇧⌘Z" },
+            { separator: true },
+            { title: "Cut", actionId: "cut", shortcut: "⌘X" },
+            { title: "Copy", actionId: "copy", shortcut: "⌘C" },
+            { title: "Paste", actionId: "paste", shortcut: "⌘V" },
+            { title: "Select All", actionId: "select-all", shortcut: "⌘A" },
+        ],
+        View: [
+            { title: "Zoom In", actionId: "zoom-in", shortcut: "⌘+" },
+            { title: "Zoom Out", actionId: "zoom-out", shortcut: "⌘-" },
+            { title: "Actual Size", actionId: "zoom-reset", shortcut: "⌘0" },
+            { separator: true },
+            { title: "Reload Page", actionId: "reload", shortcut: "⌘R" },
+        ],
+        History: [
+            { title: "Back", actionId: "go-back", shortcut: "⌘[" },
+            { title: "Forward", actionId: "go-forward", shortcut: "⌘]" },
+            { title: "Home", actionId: "go-home", shortcut: "⇧⌘H" }
+        ]
+    }), []);
+
+    useMenuRegistration(safariMenus, isActiveWindow);
     useMenuAction(appId, menuActions, id);
 
     const getdomain = (urlstr: string) => {
@@ -117,7 +157,7 @@ export default function Safari({ initialurl = 'https://baladev.vercel.app', appI
                                     href={url}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="px-6 py-3 bg-[#007AFF] text-white rounded-xl font-semibold text-[15px]"
+                                    className="px-6 py-3 bg-accent text-white rounded-xl font-semibold text-[15px]"
                                 >
                                     Open in New Tab
                                 </a>
@@ -149,7 +189,7 @@ export default function Safari({ initialurl = 'https://baladev.vercel.app', appI
                     )}
 
                     {isloading && (
-                        <div className="absolute top-0 left-0 right-0 h-0.5 bg-[#007AFF] animate-pulse" />
+                        <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent animate-pulse" />
                     )}
                 </div>
 
@@ -165,25 +205,25 @@ export default function Safari({ initialurl = 'https://baladev.vercel.app', appI
                                 placeholder="Search or enter website"
                             />
                             {inputvalue !== url && (
-                                <button type="submit" className="text-[#007AFF] font-medium text-sm">Go</button>
+                                <button type="submit" className="text-accent font-medium text-sm">Go</button>
                             )}
                         </div>
                     </form>
 
                     <div className="flex items-center justify-around py-2 pb-4">
-                        <button className="p-3 text-[#007AFF]">
+                        <button className="p-3 text-accent">
                             <IoArrowBack size={22} />
                         </button>
-                        <button className="p-3 text-[#007AFF]">
+                        <button className="p-3 text-accent">
                             <IoArrowForward size={22} />
                         </button>
-                        <button className="p-3 text-[#007AFF]">
+                        <button className="p-3 text-accent">
                             <IoShareOutline size={22} />
                         </button>
-                        <button className="p-3 text-[#007AFF]">
+                        <button className="p-3 text-accent">
                             <IoBookOutline size={22} />
                         </button>
-                        <button className="p-3 text-[#007AFF]">
+                        <button className="p-3 text-accent">
                             <IoCopyOutline size={22} />
                         </button>
                     </div>
@@ -194,7 +234,7 @@ export default function Safari({ initialurl = 'https://baladev.vercel.app', appI
 
     return (
         <div className="flex flex-col h-full w-full bg-[#f5f5f7] dark:bg-[#1e1e1e] font-sf text-black dark:text-white rounded-xl overflow-hidden shadow-2xl relative">
-            <div className={`${ismobile?'':'ps-20'} h-12 bg-white/40 dark:bg-[#343434]/40 backdrop-blur-lg border-b border-gray-200 dark:border-black/10 flex items-center px-4 gap-4 shrink-0 z-20 draggable-area `}>
+            <div className={`${ismobile ? '' : 'ps-20'} h-12 bg-white/40 dark:bg-[#343434]/40 backdrop-blur-lg border-b border-gray-200 dark:border-black/10 flex items-center px-4 gap-4 shrink-0 z-20 draggable-area `}>
                 <div className="flex gap-4 text-gray-500 dark:text-gray-400">
                     <button onClick={goBack} className="hover:text-black dark:hover:text-white transition"><IoChevronBack size={18} /></button>
                     <button onClick={goForward} className="hover:text-black dark:hover:text-white transition"><IoChevronForward size={18} /></button>
@@ -236,7 +276,7 @@ export default function Safari({ initialurl = 'https://baladev.vercel.app', appI
             </div>
 
             <div className="flex-1 relative flex">
-              
+
                 <div className="flex-1 bg-white dark:bg-[#1e1e1e] relative">
                     {url ? (
                         isloading ? (

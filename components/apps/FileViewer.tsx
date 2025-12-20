@@ -1,3 +1,4 @@
+'use client';
 import React, { useState, useEffect } from 'react';
 import { IoDocumentTextOutline, IoFolderOutline, IoChevronBack, IoChevronForward, IoGridOutline, IoListOutline, IoSearch } from 'react-icons/io5';
 import ReactMarkdown from 'react-markdown';
@@ -9,6 +10,10 @@ import ContextMenu from '../ui/ContextMenu';
 import FileModal from '../ui/FileModal';
 import { useWindows } from '../WindowContext';
 import { IoFolderOpenOutline } from "react-icons/io5";
+import Sidebar from '../ui/Sidebar';
+
+
+import { useAuth } from '../AuthContext';
 
 interface fileviewerprops {
     content?: string;
@@ -23,8 +28,13 @@ export default function FileViewer({ content: initialContent, title: initialTitl
     const [viewingTitle, setViewingTitle] = useState<string>(initialTitle);
     const [viewingType, setViewingType] = useState<string>(initialType);
 
-    const [currentPath, setCurrentPath] = useState<string[]>(['Macintosh HD', 'Users', 'Bala', 'Projects']);
-    const [history, setHistory] = useState<string[][]>([['Macintosh HD', 'Users', 'Bala', 'Projects']]);
+
+
+    const { user } = useAuth();
+    const username = user?.username || 'Guest';
+    const homeDir = username === 'guest' ? 'Guest' : (username.charAt(0).toUpperCase() + username.slice(1));
+    const [currentPath, setCurrentPath] = useState<string[]>(['Macintosh HD', 'Users', homeDir, 'Projects']);
+    const [history, setHistory] = useState<string[][]>([['Macintosh HD', 'Users', homeDir, 'Projects']]);
     const [historyIndex, setHistoryIndex] = useState(0);
     const [selectedFile, setSelectedFile] = useState<string | null>(null);
 
@@ -216,23 +226,11 @@ export default function FileViewer({ content: initialContent, title: initialTitl
                 />
             )}
 
-            <div className={`w-[200px] bg-[#e3e3e3]/50 dark:bg-[#252526] border-r border-black/10 dark:border-white/10 flex flex-col pt-10 hidden md:flex`}>
-                {sidebaritems.map((group, idx) => (
-                    <div key={group.title || idx} className="mb-4">
-                        <div className="px-4 mb-2 text-xs font-bold text-gray-500 uppercase">{group.title}</div>
-                        {group.items.map(loc => (
-                            <div
-                                key={loc.name}
-                                onClick={(e) => { e.stopPropagation(); navigateTo(loc.path); }}
-                                className={`mx-2 px-3 py-1.5 flex items-center gap-2 rounded-md cursor-pointer transition-colors ${JSON.stringify(currentPath) === JSON.stringify(loc.path) ? 'bg-black/10 dark:bg-white/10' : 'hover:bg-black/5 dark:hover:bg-white/5'}`}
-                            >
-                                <loc.icon className="text-blue-500" />
-                                <span className="text-sm">{loc.name}</span>
-                            </div>
-                        ))}
-                    </div>
-                ))}
-            </div>
+            <Sidebar
+                currentPath={currentPath}
+                onNavigate={navigateTo}
+                className="hidden md:flex"
+            />
 
             <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-[#1e1e1e]">
                 <div className="h-[50px] border-b border-black/5 dark:border-white/5 flex items-center px-4 gap-4 bg-[#f6f6f6] dark:bg-[#252526]">
@@ -304,7 +302,7 @@ export default function FileViewer({ content: initialContent, title: initialTitl
                                         }}
                                         className={`flex items-center px-4 py-1.5 border-b border-black/5 dark:border-white/5 cursor-default text-xs
                                             ${selectedFile === item.name
-                                                ? 'bg-[#007AFF] text-white'
+                                                ? 'bg-accent text-white'
                                                 : 'hover:bg-black/5 dark:hover:bg-white/5 odd:bg-gray-50/50 dark:odd:bg-white/5'
                                             }
                                             ${!supported ? 'opacity-50 grayscale' : ''}
@@ -342,7 +340,7 @@ export default function FileViewer({ content: initialContent, title: initialTitl
                             const item = currentFiles.find(i => i.name === selectedFile);
                             if (item) handleItemDoubleClick(item);
                         }}
-                        className="px-4 py-1.5 rounded-md bg-[#007AFF] text-white font-medium shadow-sm hover:bg-[#007afe] disabled:opacity-50 disabled:cursor-not-allowed min-w-[80px]"
+                        className="px-4 py-1.5 rounded-md bg-accent text-white font-medium shadow-sm hover:bg-[#007afe] disabled:opacity-50 disabled:cursor-not-allowed min-w-[80px]"
                     >
                         Open
                     </button>

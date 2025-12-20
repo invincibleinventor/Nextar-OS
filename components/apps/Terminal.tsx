@@ -1,9 +1,11 @@
 'use client';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useDevice } from '../DeviceContext';
 import { filesystemitem } from '../data';
 import { useFileSystem } from '../FileSystemContext';
 import { useMenuAction } from '../hooks/useMenuAction';
+import { useMenuRegistration } from '../AppMenuContext';
+import { useAuth } from '../AuthContext';
 
 interface CommandResult {
     output: string;
@@ -12,13 +14,18 @@ interface CommandResult {
 
 export default function Terminal({ isFocused = true, appId = 'terminal' }: { isFocused?: boolean, appId?: string }) {
     const { ismobile } = useDevice();
-    const { files } = useFileSystem();
+    const { files, currentUserDesktopId } = useFileSystem();
+    const { user, isGuest } = useAuth();
+
+    const username = user?.username || 'guest';
+    const userhomeid = isGuest ? 'user-guest' : `user-${username}`;
+
     const [history, sethistory] = useState(['Welcome to MacOS-Next Terminal v1.0', 'Type "help" for available commands.', '']);
     const [currline, setcurrline] = useState('');
-    const [cwd, setcwd] = useState('user-bala');
+    const [cwd, setcwd] = useState(userhomeid);
     const [fontSize, setFontSize] = useState(13);
 
-    const menuActions = React.useMemo(() => ({
+    const menuActions = useMemo(() => ({
         'clear': () => {
             sethistory([]);
             setcurrline('');
@@ -46,6 +53,21 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
         'zoom-out': () => setFontSize(s => Math.max(s - 2, 10)),
     }), []);
 
+    const terminalMenus = useMemo(() => ({
+        Edit: [
+            { title: "Copy", actionId: "copy", shortcut: "⌘C" },
+            { title: "Paste", actionId: "paste", shortcut: "⌘V" },
+            { title: "Select All", actionId: "select-all", shortcut: "⌘A" },
+            { separator: true },
+            { title: "Clear Buffer", actionId: "clear", shortcut: "⌘K" }
+        ],
+        View: [
+            { title: "Increase Font Size", actionId: "zoom-in", shortcut: "⌘+" },
+            { title: "Decrease Font Size", actionId: "zoom-out", shortcut: "⌘-" }
+        ]
+    }), []);
+
+    useMenuRegistration(terminalMenus, isFocused);
     useMenuAction(appId, menuActions);
 
     const containerref = useRef<HTMLDivElement>(null);
@@ -66,14 +88,14 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
     }, [isFocused, ismobile]);
 
     const getPathString = (id: string): string => {
-        if (id === 'user-bala') return '~';
+        if (id === userhomeid) return '~';
 
         let currentId = id;
         const path: string[] = [];
 
         let iterations = 0;
 
-        while (currentId !== 'root' && currentId !== 'user-bala' && iterations < 20) {
+        while (currentId !== 'root' && currentId !== userhomeid && iterations < 20) {
             const item = files.find(i => i.id === currentId);
             if (!item) break;
 
@@ -83,7 +105,7 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
             iterations++;
         }
 
-        if (currentId === 'user-bala') return '~/' + path.join('/');
+        if (currentId === userhomeid) return '~/' + path.join('/');
         return '/' + path.join('/');
     };
 
@@ -93,7 +115,7 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
 
     const resolvePath = (pathArg: string): string | null => {
         if (!pathArg || pathArg === '.') return cwd;
-        if (pathArg === '~') return 'user-bala';
+        if (pathArg === '~') return userhomeid;
 
         let startId = cwd;
         let parts = pathArg.split('/').filter(p => p.length > 0);
@@ -101,7 +123,7 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
         if (pathArg.startsWith('/')) {
             startId = 'root';
         } else if (pathArg.startsWith('~/')) {
-            startId = 'user-bala';
+            startId = userhomeid;
             parts = pathArg.slice(2).split('/').filter(p => p.length > 0);
         }
 
@@ -155,7 +177,7 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
             let response = '';
 
             const promptPath = getPathString(cwd);
-            const fullPrompt = `guest@balatbr ${promptPath} $ ${currline}`;
+            const fullPrompt = `${username}@macosdev ${promptPath} $ ${currline}`;
 
             switch (command) {
                 case 'help':
@@ -170,9 +192,9 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
                         } else {
                             const outputItems = items.map(i => {
                                 const isDir = i.mimetype === 'inode/directory';
-                                return isDir ? `<span class="text-blue-400 font-bold">${i.name}/</span>` : i.name;
+                                return isDir ? `${i.name}/` : i.name;
                             });
-                            response = outputItems.join('  ');
+                            response = 'LS_OUTPUT:' + outputItems.join('  ');
                         }
                     } else {
                         response = `ls: ${arg1}: No such file or directory`;
@@ -180,7 +202,7 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
                     break;
                 case 'cd':
                     if (!args[1]) {
-                        setcwd('user-bala');
+                        setcwd(userhomeid);
                     } else {
                         const newId = resolvePath(arg1);
                         if (newId) {
@@ -191,7 +213,7 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
                     }
                     break;
                 case 'pwd':
-                    response = getPathString(cwd).replace('~', '/home/guest');
+                    response = getPathString(cwd).replace('~', `/home/${username}`);
                     break;
                 case 'cat':
                     if (!arg1) {
@@ -216,20 +238,20 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
                     response = 'React • Next.js • TypeScript • Tailwind CSS • Node.js • Python • AI/ML';
                     break;
                 case 'projects':
-                    response = 'Visit the Finder app to browse my portfolio projects.';
+                    response = 'Visit the Finder app to browse my projects.';
                     break;
                 case 'contact':
                     response = 'Email: invincibleinventor@gmail.com';
                     break;
                 case 'whoami':
-                    response = 'guest@balatbr';
+                    response = `${username}@macosdev`;
                     break;
                 case 'clear':
                     sethistory([]);
                     setcurrline('');
                     return;
                 case '':
-                    sethistory(prev => [...prev, `guest@balatbr ${promptPath} $`, '']);
+                    sethistory(prev => [...prev, `${username}@macosdev ${promptPath} $`, '']);
                     setcurrline('');
                     return;
                 default:
@@ -247,9 +269,21 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
         }
     }, [history, isFocused]);
 
-    const renderLine = (line: string) => {
-        if (line.includes('<span')) {
-            return <span dangerouslySetInnerHTML={{ __html: line }} />;
+    const renderLine = (line: string, isLsOutput: boolean = false) => {
+        if (isLsOutput) {
+            return line.split('  ').map((item, idx) => {
+                const isDir = item.endsWith('/');
+                return (
+                    <span key={idx}>
+                        {isDir ? (
+                            <span className="text-blue-400 font-bold">{item}</span>
+                        ) : (
+                            <span>{item}</span>
+                        )}
+                        {idx < line.split('  ').length - 1 && '  '}
+                    </span>
+                );
+            });
         }
         return <span>{line}</span>;
     };
@@ -266,24 +300,28 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
             <div className="font-mono leading-relaxed" style={{ fontSize: `${fontSize}px` }}>
                 {history.map((line, i) => (
                     <div key={i} className="min-h-[20px] whitespace-pre-wrap break-all">
-                        {line.startsWith('guest@balatbr') ? (
+                        {line.includes('@macosdev') && line.includes('$') ? (
                             <span>
-                                <span className="text-[#50fa7b]">guest</span>
+                                <span className="text-[#50fa7b]">{line.split('@')[0]}</span>
                                 <span className="text-white">@</span>
-                                <span className="text-[#8be9fd]">balatbr</span>
-                                <span className="text-white"> {line.split(' ')[1]} </span>
+                                <span className="text-[#8be9fd]">macosdev</span>
+                                <span className="text-white"> {line.split('@macosdev ')[1]?.split(' $')[0] || ''} </span>
                                 <span className="text-white">$ </span>
-                                <span className="text-white">{line.split('$')[1]}</span>
+                                <span className="text-white">{line.split('$')[1] || ''}</span>
                             </span>
                         ) : (
-                            <span className="text-[#f8f8f2]">{renderLine(line)}</span>
+                            <span className="text-[#f8f8f2]">
+                                {line.startsWith('LS_OUTPUT:')
+                                    ? renderLine(line.replace('LS_OUTPUT:', ''), true)
+                                    : renderLine(line)}
+                            </span>
                         )}
                     </div>
                 ))}
                 <div className="flex items-center">
-                    <span className="text-[#50fa7b]">guest</span>
+                    <span className="text-[#50fa7b]">{username}</span>
                     <span className="text-white">@</span>
-                    <span className="text-[#8be9fd]">balatbr</span>
+                    <span className="text-[#8be9fd]">macosdev</span>
                     <span className="text-white"> {getPathString(cwd)} </span>
                     <span className="text-white">$ </span>
                     <input

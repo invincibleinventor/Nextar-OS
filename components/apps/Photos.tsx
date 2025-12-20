@@ -1,227 +1,104 @@
 'use client';
 import Image from 'next/image';
-import React, { useState, useEffect, useRef } from 'react';
-import { personal, apps, openSystemItem } from '../data';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useWindows } from '../WindowContext';
+import { useAuth } from '../AuthContext';
 import { useDevice } from '../DeviceContext';
-import { IoImagesOutline, IoHeartOutline, IoAlbumsOutline, IoTrashOutline, IoMenu, IoArrowBack, IoInformationCircleOutline, IoShareOutline, IoChevronBack, IoGlobeOutline, IoFolderOpenOutline, IoListOutline } from "react-icons/io5";
+import { useFileSystem } from '../FileSystemContext';
+import { IoImagesOutline, IoChevronBack, IoGridOutline, IoListOutline, IoInformationCircleOutline, IoClose, IoTrashOutline } from 'react-icons/io5';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface photosprops {
     singleview?: boolean;
     src?: string;
     title?: string;
-    desc?: string;
-    link?: string;
-    projectPath?: string;
+    windowId?: string;
 }
 
-export default function Photos({ singleview, src, title, desc, link, projectPath }: photosprops) {
-    const [selecteditem, setselecteditem] = useState("all");
-    const [isnarrow, setisnarrow] = useState(false);
-    const [showsidebar, setshowsidebar] = useState(true);
-    const [viewingimage, setviewingimage] = useState<{ src: string, title?: string, desc?: string, link?: string, projectPath?: string } | null>(
-        singleview && src ? { src, title, desc, link, projectPath } : null
-    );
+const photomimetypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml', 'image/bmp'];
 
-    const containerref = useRef<HTMLDivElement>(null);
-    const { addwindow, windows, updatewindow, setactivewindow } = useWindows();
+export default function Photos({ singleview, src, title, windowId }: photosprops) {
+    const { files } = useFileSystem();
     const { ismobile } = useDevice();
-    const [mobileview, setmobileview] = useState<'albums' | 'grid' | 'photo'>(singleview && src ? 'photo' : 'grid');
+    const { user } = useAuth();
+    const containerref = useRef<HTMLDivElement>(null);
+    const [isnarrow, setisnarrow] = useState(false);
+    const [viewingimage, setviewingimage] = useState<{ src: string, title: string, id: string } | null>(
+        singleview && src ? { src, title: title || 'Image', id: 'single' } : null
+    );
+    const [mobileview, setmobileview] = useState<'grid' | 'photo'>(singleview && src ? 'photo' : 'grid');
+
+    const photos = useMemo(() => {
+        return files.filter(f =>
+            (photomimetypes.some(mt => f.mimetype.startsWith('image/') || f.mimetype === mt)) &&
+            (!f.owner || f.owner === user?.username)
+        )
+            .map(f => ({
+                id: f.id,
+                src: f.link || f.content || `/appimages/${f.name.toLowerCase()}`,
+                title: f.name,
+                date: f.date
+            }));
+    }, [files]);
 
     useEffect(() => {
         if (!containerref.current) return;
         const observer = new ResizeObserver((entries) => {
             for (const entry of entries) {
-                const width = entry.contentRect.width;
-                const isnownarrow = width < 768;
-                setisnarrow(isnownarrow);
-                if (!isnownarrow) {
-                    setshowsidebar(true);
-                }
+                setisnarrow(entry.contentRect.width < 768);
             }
         });
         observer.observe(containerref.current);
         return () => observer.disconnect();
-    }, [isnarrow]);
+    }, []);
 
-    const openInFinder = (path: string) => {
-        openSystemItem(`project-${path}`, { addwindow, windows, updatewindow, setactivewindow, ismobile });
-    };
-
-    const allcategories = Array.from(new Set(personal.projects.map(p => p.stack[0].trim() || 'Uncategorized')));
-
-    const sidebaritems = [
-        { id: 'all', label: 'Library', icon: IoImagesOutline },
-        { id: 'fav', label: 'Favorites', icon: IoHeartOutline },
-        ...allcategories.map((cat) => ({ id: `album-${cat.toLowerCase()}`, label: cat, icon: IoAlbumsOutline })),
-        { id: 'deleted', label: 'Recently Deleted', icon: IoTrashOutline },
-    ];
-
-    const projectphotos = personal.projects
-        .filter(proj => {
-            if (selecteditem === 'all') return true;
-            if (selecteditem === 'fav') return false;
-            if (selecteditem === 'deleted') return false;
-            const albumId = selecteditem.replace('album-', '');
-            return (proj.stack[0].trim() || 'Uncategorized').toLowerCase() === albumId.toLowerCase();
-        })
-        .map((proj, i) => ({
-            id: `photo-${proj.title}-${i}`,
-            src: `/appimages/${proj.title.toLowerCase()}.png`,
-            title: proj.title,
-            desc: proj.desc,
-            link: proj.link,
-            defaultsize: { width: 1000, height: 600 }
-        }));
-
-    useEffect(() => {
-        if (viewingimage && (!viewingimage.desc || !viewingimage.link) && viewingimage.title) {
-            const project = personal.projects.find(p => p.title === viewingimage.title);
-            if (project) {
-                setviewingimage(prev => ({ ...prev!, desc: project.desc, link: project.link }));
-            }
-        }
-    }, [viewingimage]);
-
-    const [showInspector, setShowInspector] = useState(false);
-
-    const handleSelectAlbum = (id: string) => {
-        setselecteditem(id);
-        if (ismobile) setmobileview('grid');
-        else if (isnarrow) setshowsidebar(false);
-    };
-
-    const handlePhotoClick = (photo: typeof projectphotos[0]) => {
-        setviewingimage({ src: photo.src, title: photo.title, desc: photo.desc, link: photo.link });
+    const handlePhotoClick = (photo: typeof photos[0]) => {
+        setviewingimage(photo);
         if (ismobile) setmobileview('photo');
     };
 
     if (ismobile) {
         return (
-            <div ref={containerref} className="flex flex-col h-full w-full bg-white dark:bg-[#1e1e1e] font-sf text-black dark:text-white overflow-hidden">
-                <AnimatePresence mode="wait">
-                    {mobileview === 'albums' && (
-                        <motion.div
-                            key="albums"
-                            initial={{ x: '-105%' }}
-                            animate={{ x: 0 }}
-                            exit={{ x: '-105%' }}
-                            transition={{ type: 'tween', ease: 'easeOut', duration: 0.25 }}
-                            className="absolute inset-0 z-30 bg-[#f5f5f7] dark:bg-[#1c1c1e] flex flex-col"
-                        >
-                            <div className="h-14 flex items-center justify-between px-4 border-b border-black/5 dark:border-white/10">
-                                <span className="font-bold text-[26px]">Albums</span>
-                                <button
-                                    onClick={() => setmobileview('grid')}
-                                    className="text-[#007AFF] font-medium text-[16px]"
-                                >
-                                    Select
-                                </button>
-                            </div>
-                            <div className="flex-1 overflow-y-auto pt-4">
-                                <div className="px-4 mb-2 text-[13px] font-semibold text-gray-500 uppercase tracking-wider">Library</div>
-                                <div className="space-y-0.5 px-2">
-                                    {sidebaritems.slice(0, 2).map(item => (
-                                        <div
-                                            key={item.id}
-                                            onClick={() => handleSelectAlbum(item.id)}
-                                            className={`flex items-center justify-between px-4 py-3.5 rounded-xl cursor-pointer
-                                                ${selecteditem === item.id
-                                                    ? 'bg-[#007AFF] text-white'
-                                                    : 'active:bg-black/5 dark:active:bg-white/10'}`}
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <item.icon size={22} className={selecteditem === item.id ? 'text-white' : 'text-[#007AFF]'} />
-                                                <span className="text-[17px] font-medium">{item.label}</span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                <div className="px-4 mb-2 mt-6 text-[13px] font-semibold text-gray-500 uppercase tracking-wider">Albums</div>
-                                <div className="space-y-0.5 px-2">
-                                    {sidebaritems.slice(2, -1).map(item => (
-                                        <div
-                                            key={item.id}
-                                            onClick={() => handleSelectAlbum(item.id)}
-                                            className={`flex items-center justify-between px-4 py-3.5 rounded-xl cursor-pointer
-                                                ${selecteditem === item.id
-                                                    ? 'bg-[#007AFF] text-white'
-                                                    : 'active:bg-black/5 dark:active:bg-white/10'}`}
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <item.icon size={22} className={selecteditem === item.id ? 'text-white' : 'text-[#007AFF]'} />
-                                                <span className="text-[17px] font-medium">{item.label}</span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                <div className="px-4 mb-2 mt-6 text-[13px] font-semibold text-gray-500 uppercase tracking-wider">Other</div>
-                                <div className="space-y-0.5 px-2 pb-10">
-                                    {sidebaritems.slice(-1).map(item => (
-                                        <div
-                                            key={item.id}
-                                            onClick={() => handleSelectAlbum(item.id)}
-                                            className={`flex items-center justify-between px-4 py-3.5 rounded-xl cursor-pointer
-                                                ${selecteditem === item.id
-                                                    ? 'bg-[#007AFF] text-white'
-                                                    : 'active:bg-black/5 dark:active:bg-white/10'}`}
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <item.icon size={22} className={selecteditem === item.id ? 'text-white' : 'text-red-500'} />
-                                                <span className="text-[17px] font-medium">{item.label}</span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </motion.div>
-                    )}
-
+            <div className="flex flex-col h-full w-full bg-white dark:bg-[#1c1c1e] font-sf overflow-hidden">
+                <AnimatePresence mode="popLayout">
                     {mobileview === 'grid' && (
                         <motion.div
                             key="grid"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="flex-1 flex flex-col h-full"
+                            className="flex-1 flex flex-col"
                         >
-                            <div className="h-14 border-b border-black/5 dark:border-white/10 flex items-center px-4 bg-white/80 dark:bg-[#1e1e1e]/80 backdrop-blur-xl">
-                                <button
-                                    onClick={() => setmobileview('albums')}
-                                    className="text-[#007AFF] flex items-center gap-0.5"
-                                >
-                                    <IoChevronBack size={26} />
-                                    <span className="text-[16px] ml-1">Albums</span>
-                                </button>
-                                <span className="font-semibold text-[17px] absolute left-1/2 -translate-x-1/2">
-                                    {sidebaritems.find(i => i.id === selecteditem)?.label || 'Library'}
-                                </span>
+                            <div className="h-14 flex items-center justify-between px-4 border-b border-black/5 dark:border-white/10">
+                                <span className="text-[26px] font-bold">Photos</span>
+                                <div className="flex gap-4 text-accent">
+                                    <IoGridOutline size={22} />
+                                </div>
                             </div>
                             <div className="flex-1 overflow-y-auto p-2">
-                                <div className="grid grid-cols-3 gap-0.5">
-                                    {projectphotos.map((photo) => (
-                                        <div
-                                            key={photo.id}
-                                            onClick={() => handlePhotoClick(photo)}
-                                            className="aspect-square bg-gray-100 dark:bg-gray-800 overflow-hidden relative cursor-pointer active:opacity-70"
-                                        >
-                                            <Image
-                                                src={photo.src}
-                                                width={200}
-                                                height={200}
-                                                className="w-full h-full object-cover"
-                                                alt={photo.title}
-                                            />
-                                        </div>
-                                    ))}
-                                </div>
-                                {projectphotos.length === 0 && (
-                                    <div className="flex flex-col items-center justify-center h-full text-gray-400 py-20">
-                                        <IoImagesOutline size={48} className="opacity-30 mb-2" />
-                                        <span className="text-sm">No Photos</span>
+                                {photos.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                                        <IoImagesOutline size={48} className="mb-4 opacity-50" />
+                                        <span className="text-sm">No photos in file system</span>
+                                        <span className="text-xs mt-1">Add image files to see them here</span>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-3 gap-1">
+                                        {photos.map((photo) => (
+                                            <div
+                                                key={photo.id}
+                                                className="aspect-square relative cursor-pointer"
+                                                onClick={() => handlePhotoClick(photo)}
+                                            >
+                                                <Image
+                                                    src={photo.src}
+                                                    alt={photo.title}
+                                                    fill
+                                                    className="object-cover"
+                                                    sizes="33vw"
+                                                />
+                                            </div>
+                                        ))}
                                     </div>
                                 )}
                             </div>
@@ -231,94 +108,32 @@ export default function Photos({ singleview, src, title, desc, link, projectPath
                     {mobileview === 'photo' && viewingimage && (
                         <motion.div
                             key="photo"
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            transition={{ duration: 0.2 }}
-                            className="absolute inset-0 z-20 bg-black flex flex-col"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute inset-0 z-30 bg-black flex flex-col"
                         >
-                            <div className="h-14 flex items-center justify-between px-4 bg-black/80 backdrop-blur-xl shrink-0 z-50">
+                            <div className="h-14 flex items-center justify-between px-4 bg-black/80 backdrop-blur-xl">
                                 <button
-                                    onClick={() => {
-                                        setmobileview('grid');
-                                        setviewingimage(null);
-                                    }}
-                                    className="text-[#007AFF] flex items-center gap-0.5"
+                                    onClick={() => { setviewingimage(null); setmobileview('grid'); }}
+                                    className="text-white flex items-center gap-1"
                                 >
-                                    <IoChevronBack size={22} />
-                                    <span className="text-[17px]">Library</span>
+                                    <IoChevronBack size={24} />
+                                    <span>Photos</span>
                                 </button>
-                                <div className="flex items-center gap-4">
-                                    <button
-                                        onClick={() => setShowInspector(prev => !prev)}
-                                        className={`p-2 rounded-full transition-colors ${showInspector ? 'bg-white text-black' : 'text-white/70'}`}
-                                    >
-                                        <IoInformationCircleOutline size={22} />
-                                    </button>
-                                    <IoHeartOutline size={22} className="text-white/70" />
-                                    <IoTrashOutline size={22} className="text-white/70" />
-                                </div>
                             </div>
-
-                            <div className="flex-1 relative flex items-center justify-center" onClick={() => setShowInspector(false)}>
+                            <div className="flex-1 flex items-center justify-center p-4">
                                 <Image
                                     src={viewingimage.src}
-                                    alt={viewingimage.title || 'Photo'}
-                                    fill
-                                    className="object-contain"
-                                    draggable={false}
+                                    alt={viewingimage.title}
+                                    width={800}
+                                    height={600}
+                                    className="max-w-full max-h-full object-contain"
                                 />
                             </div>
-
-                            {showInspector && (
-                                <motion.div
-                                    initial={{ y: '100%' }}
-                                    animate={{ y: 0 }}
-                                    exit={{ y: '100%' }}
-                                    transition={{ type: 'tween', ease: 'easeOut', duration: 0.2 }}
-                                    className="absolute bottom-0 left-0 right-0 bg-[#2d2d2d]/95 backdrop-blur-xl rounded-t-3xl p-5 z-50 max-h-[60vh] overflow-y-auto"
-                                    onClick={(e) => e.stopPropagation()}
-                                >
-                                    <div className="w-10 h-1 bg-white/30 rounded-full mx-auto mb-4" />
-                                    <h2 className="text-xl text-white font-bold mb-1">{viewingimage.title}</h2>
-                                    <p className="text-white/50 text-xs mb-4">Project Screenshot</p>
-                                    <p className="text-white/80 text-sm leading-relaxed mb-4">{viewingimage.desc || "No description available."}</p>
-
-                                    <div className="space-y-2">
-                                        {viewingimage.link && (
-                                            <a
-                                                href={viewingimage.link}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                                className="flex items-center justify-between p-3 bg-white/10 rounded-xl"
-                                            >
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-9 h-9 rounded-full bg-[#007AFF] flex items-center justify-center">
-                                                        <IoGlobeOutline size={18} className="text-white" />
-                                                    </div>
-                                                    <span className="text-white text-[15px]">View Project</span>
-                                                </div>
-                                                <IoChevronBack size={18} className="text-white/50 rotate-180" />
-                                            </a>
-                                        )}
-                                        <button
-                                            onClick={() => {
-                                                if (viewingimage.projectPath) openInFinder(viewingimage.projectPath);
-                                                else if (viewingimage.title) openInFinder(viewingimage.title.trim());
-                                            }}
-                                            className="flex items-center justify-between p-3 bg-white/10 rounded-xl w-full"
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-9 h-9 rounded-full bg-gray-500 flex items-center justify-center">
-                                                    <IoFolderOpenOutline size={18} className="text-white" />
-                                                </div>
-                                                <span className="text-white text-[15px]">Open in Finder</span>
-                                            </div>
-                                            <IoChevronBack size={18} className="text-white/50 rotate-180" />
-                                        </button>
-                                    </div>
-                                </motion.div>
-                            )}
+                            <div className="h-16 flex items-center justify-center px-4 bg-black/80 backdrop-blur-xl">
+                                <span className="text-white text-sm">{viewingimage.title}</span>
+                            </div>
                         </motion.div>
                     )}
                 </AnimatePresence>
@@ -326,252 +141,91 @@ export default function Photos({ singleview, src, title, desc, link, projectPath
         );
     }
 
-    if (viewingimage) {
-        return (
-            <div ref={containerref} className="flex flex-col h-full w-full bg-[#1e1e1e] text-white relative items-center justify-center overflow-hidden animate-in fade-in duration-300">
-                <div
-                    className="flex-1 w-full h-full relative flex items-center justify-center p-0 md:p-4"
-                    onClick={() => setShowInspector(false)}
-                >
-                    <Image
-                        src={viewingimage.src}
-                        alt={viewingimage.title || 'Photo'}
-                        fill
-                        className="object-contain"
-                        draggable={false}
-                    />
-                </div>
-
-                <div className="absolute top-0 left-0 right-0 h-12 md:h-14 bg-neutral-900  border-b border-white/10 z-50 flex items-center justify-between px-4">
-                    <div className="flex items-center flex-1">
-                        <button
-                            onClick={() => setviewingimage(null)}
-                            className="flex items-center gap-1.5 text-white/90 hover:text-white transition-colors px-2 py-1 rounded-md hover:bg-white/10"
-                        >
-                            <IoChevronBack size={20} className="text-[#007AFF]" />
-                            <span className="text-[#007AFF] text-[15px] font-medium">Library</span>
-                        </button>
-                    </div>
-
-                    <div className="flex items-center gap-2 md:gap-4 flex-1 justify-end">
-                        <button className="p-2 rounded-full hover:bg-white/10 text-white/70 hover:text-white transition-colors">
-                            <IoHeartOutline size={20} />
-                        </button>
-                        <button
-                            onClick={(e) => { e.stopPropagation(); setShowInspector(prev => !prev); }}
-                            className={`p-2 rounded-full transition-colors ${showInspector ? 'bg-white text-black' : 'hover:bg-white/10 text-white/70 hover:text-white'}`}
-                        >
-                            <IoInformationCircleOutline size={20} />
-                        </button>
-                        <button className="p-2 rounded-full hover:bg-white/10 text-white/70 hover:text-white transition-colors">
-                            <IoShareOutline size={20} />
-                        </button>
-                        <button className="p-2 rounded-full hover:bg-white/10 text-white/70 hover:text-white transition-colors">
-                            <IoTrashOutline size={20} />
-                        </button>
+    return (
+        <div ref={containerref} className="flex h-full w-full bg-white dark:bg-[#1e1e1e] font-sf text-black dark:text-white overflow-hidden">
+            <div className="w-[200px] flex flex-col pt-[50px] border-r border-black/5 dark:border-white/10 bg-[#f5f5f7]/80 dark:bg-[#2d2d2d]/80 backdrop-blur-xl shrink-0">
+                <div className="px-4 mb-2 text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Library</div>
+                <div className="px-2">
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-accent/10 text-accent">
+                        <IoImagesOutline size={16} />
+                        <span className="text-[13px] font-medium">All Photos</span>
+                        <span className="ml-auto text-[11px] opacity-70">{photos.length}</span>
                     </div>
                 </div>
+            </div>
 
-                {showInspector && (
-                    <div
-                        className="absolute top-16 right-4 w-[320px] bg-[#2d2d2d]/90 backdrop-blur-xl shadow-2xl border border-white/10 rounded-xl overflow-hidden flex flex-col z-50 animate-in slide-in-from-right-4 fade-in duration-200"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="p-4 border-b border-white/10">
-                            <h3 className="font-semibold text-sm">Info</h3>
-                        </div>
-                        <div className="p-5 space-y-4">
-                            <div>
-                                <h2 className="text-xl font-bold mb-1">{viewingimage.title}</h2>
-                                <p className="text-white/50 text-xs">Recently Added</p>
+            <div className="flex-1 flex flex-col min-w-0">
+                <AnimatePresence mode="wait">
+                    {viewingimage ? (
+                        <motion.div
+                            key="viewer"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="flex-1 flex flex-col bg-[#1e1e1e]"
+                        >
+                            <div className="h-12 flex items-center justify-between  border-b border-white/10 ">
+                                <button
+                                    onClick={() => setviewingimage(null)}
+                                    className="text-accent flex items-center gap-1 text-sm font-medium"
+                                >
+                                    <IoChevronBack size={18} />
+                                    All Photos
+                                </button>
+                                <span className="text-white/60 text-sm">{viewingimage.title}</span>
                             </div>
-
-                            <div className="py-3 border-y border-white/10">
-                                <p className="text-sm text-white/80 leading-relaxed font-light">
-                                    {viewingimage.desc || "No description available for this project."}
-                                </p>
+                            <div className="flex-1 flex items-center justify-center p-8 bg-black">
+                                <Image
+                                    src={viewingimage.src}
+                                    alt={viewingimage.title}
+                                    width={1000}
+                                    height={700}
+                                    className="max-w-full max-h-full object-contain"
+                                />
                             </div>
-
-                            <div className="space-y-2 pt-1">
-                                {viewingimage.link && (
-                                    <div className="flex items-center justify-between group cursor-pointer hover:bg-white/5 p-2 -mx-2 rounded-lg transition-colors">
-                                        <div className="flex items-center gap-3 text-sm text-white/80">
-                                            <div className="w-8 h-8 rounded-full bg-[#007AFF] flex items-center justify-center">
-                                                <IoGlobeOutline size={16} />
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            key="grid"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="flex-1 flex flex-col"
+                        >
+                            <div className="h-[50px] flex items-center justify-between px-4 border-b border-black/5 dark:border-white/10 bg-white/50 dark:bg-black/20">
+                                <span className="font-semibold pl-16">All Photos</span>
+                            </div>
+                            <div className="flex-1 overflow-y-auto p-4">
+                                {photos.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                                        <IoImagesOutline size={64} className="mb-4 opacity-50" />
+                                        <span className="text-lg">No Photos</span>
+                                        <span className="text-sm mt-1">Add image files to your file system to see them here</span>
+                                    </div>
+                                ) : (
+                                    <div className={`grid ${isnarrow ? 'grid-cols-3' : 'grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'} gap-2`}>
+                                        {photos.map((photo) => (
+                                            <div
+                                                key={photo.id}
+                                                className="aspect-square relative rounded-lg overflow-hidden cursor-pointer group"
+                                                onClick={() => handlePhotoClick(photo)}
+                                            >
+                                                <Image
+                                                    src={photo.src}
+                                                    alt={photo.title}
+                                                    fill
+                                                    className="object-cover group-hover:scale-105 transition-transform"
+                                                    sizes="(max-width: 768px) 33vw, 20vw"
+                                                />
+                                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
                                             </div>
-                                            <span>Project Link</span>
-                                        </div>
-                                        <a href={viewingimage.link} target="_blank" rel="noreferrer" className="text-xs bg-white/10 px-3 py-1 rounded-full hover:bg-white/20 transition-colors">
-                                            Open
-                                        </a>
+                                        ))}
                                     </div>
                                 )}
-
-                                <div className="flex items-center justify-between group cursor-pointer hover:bg-white/5 p-2 -mx-2 rounded-lg transition-colors">
-                                    <div className="flex items-center gap-3 text-sm text-white/80">
-                                        <div className="w-8 h-8 rounded-full bg-gray-500 flex items-center justify-center">
-                                            <IoFolderOpenOutline size={16} />
-                                        </div>
-                                        <span>Location</span>
-                                    </div>
-                                    <button
-                                        onClick={() => {
-                                            if (viewingimage.projectPath) {
-                                                openInFinder(viewingimage.projectPath);
-                                            } else if (viewingimage.title) {
-                                                openInFinder(viewingimage.title.trim());
-                                            }
-                                        }}
-                                        className="text-xs bg-white/10 px-3 py-1 rounded-full hover:bg-white/20 transition-colors"
-                                    >
-                                        Finder
-                                    </button>
-                                </div>
                             </div>
-
-                            <div className="grid grid-cols-2 gap-4 pt-2 text-[11px] text-white/40">
-                                <div>
-                                    <span className="block font-semibold mb-0.5">Dimensions</span>
-                                    1920 × 1080
-                                </div>
-                                <div>
-                                    <span className="block font-semibold mb-0.5">Size</span>
-                                    2.4 MB
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </div>
-        );
-    }
-
-    return (
-        <div
-            ref={containerref}
-            className="flex h-full w-full bg-white dark:bg-[#1e1e1e] font-sf text-black dark:text-white relative overflow-hidden"
-            onClick={() => {
-                if (isnarrow && showsidebar) setshowsidebar(false);
-            }}
-        >
-            <div
-                className={`
-                ${showsidebar
-                        ? isnarrow ? 'absolute inset-y-0 left-0 z-30 w-[220px] shadow-2xl bg-white/95 dark:bg-[#1e1e1e]/95 backdrop-blur border-r border-black/5 dark:border-white/5'
-                            : 'relative w-[200px] border-r border-black/5 dark:border-white/5 bg-[#f5f5f7]/80 dark:bg-[#1e1e1e]/80 backdrop-blur-xl'
-                        : '-translate-x-full w-0 border-none overflow-hidden absolute'
-                    }
-                transition-all duration-300 flex flex-col pt-4 pt-[50px] h-full 
-            `}
-                onClick={(e) => e.stopPropagation()}
-            >
-                <div className="flex-1 overflow-y-auto px-2">
-                    <div className="mb-4">
-                        <div className="text-[11px] font-bold text-gray-500/80 dark:text-gray-400/80 uppercase tracking-wide mb-1 px-3">
-                            Library
-                        </div>
-                        <div className="space-y-[1px]">
-                            {sidebaritems.slice(0, 2).map((item) => (
-                                <div
-                                    key={item.id}
-                                    onClick={() => handleSelectAlbum(item.id)}
-                                    className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg cursor-pointer transition-all duration-200
-                                        ${selecteditem === item.id
-                                            ? 'bg-black/10 dark:bg-white/10 text-black dark:text-white font-medium'
-                                            : 'text-black/80 dark:text-white/80 hover:bg-black/5 dark:hover:bg-white/5'}`}
-                                >
-                                    <item.icon className={`text-[16px] ${selecteditem === item.id ? 'text-[#007AFF]' : 'text-[#007AFF]/80'}`} />
-                                    <span className="truncate leading-none pb-[2px] block text-[13px]">{item.label}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="mb-4">
-                        <div className="text-[11px] font-bold text-gray-500/80 dark:text-gray-400/80 uppercase tracking-wide mb-1 px-3">
-                            Albums
-                        </div>
-                        <div className="space-y-[1px]">
-                            {sidebaritems.slice(2, -1).map((item) => (
-                                <div
-                                    key={item.id}
-                                    onClick={() => handleSelectAlbum(item.id)}
-                                    className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg cursor-pointer transition-all duration-200
-                                        ${selecteditem === item.id
-                                            ? 'bg-black/10 dark:bg-white/10 text-black dark:text-white font-medium'
-                                            : 'text-black/80 dark:text-white/80 hover:bg-black/5 dark:hover:bg-white/5'}`}
-                                >
-                                    <item.icon className={`text-[16px] ${selecteditem === item.id ? 'text-[#007AFF]' : 'text-[#007AFF]/80'}`} />
-                                    <span className="truncate leading-none pb-[2px] block text-[13px]">{item.label}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="mb-4">
-                        <div className="text-[11px] font-bold text-gray-500/80 dark:text-gray-400/80 uppercase tracking-wide mb-1 px-3">
-                            Other
-                        </div>
-                        <div className="space-y-[1px]">
-                            {sidebaritems.slice(-1).map((item) => (
-                                <div
-                                    key={item.id}
-                                    onClick={() => handleSelectAlbum(item.id)}
-                                    className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg cursor-pointer transition-all duration-200
-                                        ${selecteditem === item.id
-                                            ? 'bg-black/10 dark:bg-white/10 text-black dark:text-white font-medium'
-                                            : 'text-black/80 dark:text-white/80 hover:bg-black/5 dark:hover:bg-white/5'}`}
-                                >
-                                    <item.icon className={`text-[16px] ${selecteditem === item.id ? 'text-[#007AFF]' : 'text-[#007AFF]/80'}`} />
-                                    <span className="truncate leading-none pb-[2px] block text-[13px]">{item.label}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-4 z-10 w-full min-w-0 pt-8">
-                <div className="flex justify-between items-center mb-6 px-2 sticky top-0 bg-white/80 dark:bg-[#1e1e1e]/80 backdrop-blur-md z-10 py-2 border-b border-transparent">
-                    <div className="flex items-center gap-3">
-                        <button onClick={() => setshowsidebar(true)} className="p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5" title="Show Sidebar">
-                            <IoMenu className="text-xl" />
-                        </button>
-                        <div>
-                            <h1 className="text-2xl font-bold leading-none">{sidebaritems.find(i => i.id === selecteditem)?.label}</h1>
-                            <span className="text-xs text-gray-500">{projectphotos.length} Items</span>
-                        </div>
-                    </div>
-                    <div className="flex gap-2">
-                        <button className="text-[12px] font-medium bg-black/5 dark:bg-white/10 px-3 py-1 rounded-full">Select</button>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-20">
-                    {projectphotos.map((photo) => (
-                        <div
-                            key={photo.id}
-                            onClick={() => handlePhotoClick(photo)}
-                            className="aspect-square bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden relative group cursor-pointer shadow-sm"
-                        >
-                            <Image
-                                src={photo.src}
-                                width={300}
-                                height={300}
-                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                alt={photo.title}
-                            />
-                            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-                            <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end">
-                                <span className="text-white text-sm font-semibold truncate">{photo.title}</span>
-                                <span className="text-gray-200 text-[10px] truncate">{photo.desc}</span>
-                            </div>
-                            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <IoHeartOutline className="text-white hover:text-red-500 drop-shadow-md text-xl" />
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
         </div>
     );

@@ -130,7 +130,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose, classNa
                     </div>
                     <button
                         onClick={onClose}
-                        className="w-full mt-2 py-3.5 rounded-xl bg-white dark:bg-[#3a3a3c] text-[17px] font-semibold text-[#007AFF] active:bg-gray-100 dark:active:bg-white/10 transition-colors"
+                        className="w-full mt-2 py-3.5 rounded-xl bg-white dark:bg-[#3a3a3c] text-[17px] font-semibold text-accent active:bg-gray-100 dark:active:bg-white/10 transition-colors"
                     >
                         Cancel
                     </button>
@@ -174,7 +174,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose, classNa
                                 ? 'opacity-50 cursor-not-allowed text-gray-400'
                                 : item.danger
                                     ? 'text-black dark:text-white hover:bg-red-500 hover:text-white'
-                                    : 'text-black dark:text-white hover:bg-[#007AFF] hover:text-white'
+                                    : 'text-black dark:text-white hover:bg-accent hover:text-white'
                             }
                         `}
                     >

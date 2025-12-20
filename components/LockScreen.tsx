@@ -1,178 +1,269 @@
 'use client';
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { useAuth } from './AuthContext';
+import { getUsers, User } from '../utils/db';
+import { hashPassword } from '../utils/crypto';
 import { useDevice } from './DeviceContext';
-import { IoMdCamera, IoMdFlashlight } from "react-icons/io";
-import { useNotifications } from './NotificationContext';
+import { motion, AnimatePresence } from 'framer-motion';
+import { IoArrowForward, IoLockClosed, IoPerson, IoInformationCircleOutline } from 'react-icons/io5';
 
 export default function LockScreen() {
-    const { osstate, setosstate, ismobile } = useDevice();
-    const [password, setpassword] = useState('');
-    const [error, seterror] = useState(false);
-    const [hint, sethint] = useState(false);
-    const inputref = useRef<HTMLInputElement>(null);
-    const [shaking, setshaking] = useState(false);
-    const [time, settime] = useState(new Date());
-    const [dragy, setdragy] = useState(0);
-    const { notifications } = useNotifications();
+    const { login, user, isLoading: authLoading, guestLogin } = useAuth();
+    const { setosstate, osstate, ismobile } = useDevice();
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [currentTime, setCurrentTime] = useState<Date | null>(null);
+
+    const [users, setUsers] = useState<User[]>([]);
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const [loadingUsers, setLoadingUsers] = useState(true);
 
     useEffect(() => {
-        const timer = setInterval(() => settime(new Date()), 1000);
+        const fetchUsers = async () => {
+            try {
+                const fetchedUsers = await getUsers();
+                setUsers(fetchedUsers);
+                const lastUsername = localStorage.getItem('lastLoggedInUser');
+                const lastUser = lastUsername ? fetchedUsers.find(u => u.username === lastUsername) : null;
+                if (lastUser) {
+                    setSelectedUser(lastUser);
+                } else if (fetchedUsers.length > 0) {
+                    setSelectedUser(fetchedUsers[0]);
+                }
+            } catch (err) {
+                console.error("Failed to fetch users", err);
+            } finally {
+                setLoadingUsers(false);
+            }
+        };
+        fetchUsers();
+    }, []);
+
+    useEffect(() => {
+        setCurrentTime(new Date());
+        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
         return () => clearInterval(timer);
     }, []);
 
-    const handlelogin = (e?: React.FormEvent) => {
+    const handleLogin = async (e?: React.FormEvent) => {
         if (e) e.preventDefault();
-        if (password === '' || password === '1234' || password === 'user') {
-            setosstate('unlocked');
-        } else {
-            setshaking(true);
-            sethint(true);
-            setTimeout(() => {
-                setshaking(false);
-                setpassword('');
-            }, 500);
-        }
+        if (isSubmitting || !selectedUser) return;
+
+        setIsSubmitting(true);
+        setError(false);
+
+        setTimeout(async () => {
+             const hashedInput = await hashPassword(password);
+            const isValid = selectedUser.passwordHash === hashedInput;
+
+            if (!isValid) {
+                setError(true);
+                setIsSubmitting(false);
+                setTimeout(() => setError(false), 500);
+            } else {
+              
+                const success = await login(password);
+                if (!success) {
+                    setError(true);
+                    setIsSubmitting(false);
+                } else {
+                    if (selectedUser?.username) {
+                        localStorage.setItem('lastLoggedInUser', selectedUser.username);
+                    }
+                }
+            }
+        }, 600);
     };
 
-    if (osstate === 'unlocked' || osstate === 'booting') return null;
+    if (user && osstate === 'unlocked') return null;
+    if (authLoading || loadingUsers) return null;
+    if (osstate === 'booting') return null;
 
-    const formatteddate = time.toLocaleDateString('en-US', {
-        weekday: 'long',
-        month: 'long',
-        day: 'numeric'
-    });
+    if (ismobile) {
+        return (
+            <div className="fixed inset-0 z-[99999] flex flex-col items-center bg-black overflow-hidden font-sf">
+                <div className="absolute inset-0 z-0 bg-[url('/bg.jpg')] bg-cover bg-center filter blur-md brightness-75"></div>
 
-    const hours = time.getHours();
-    const minutes = time.getMinutes().toString().padStart(2, '0');
-    const timestring = `${hours}:${minutes}`;
+                <div className="h-12 w-full z-10"></div>
+
+                <div className="z-10 mt-8 mb-4">
+                    <IoLockClosed className="text-white text-3xl opacity-80" />
+                </div>
+
+                <div className="z-10 flex flex-col items-center mb-8">
+                    <h1 className="text-7xl font-semibold text-white tracking-wide drop-shadow-lg">
+                        {currentTime?.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: false })}
+                    </h1>
+                    <p className="text-lg text-white font-semibold mt-2 drop-shadow-md">
+                        {currentTime?.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}
+                    </p>
+                </div>
+
+                <div className="z-20 w-full px-8 flex flex-col items-center gap-6 flex-1 justify-center">
+                    <div className="flex items-center gap-6 overflow-x-auto w-full justify-center py-4 no-scrollbar">
+                        {users.map(u => (
+                            <div
+                                key={u.username}
+                                onClick={() => { setSelectedUser(u); setPassword(''); setError(false); }}
+                                className={`flex flex-col items-center gap-2 cursor-pointer transition-all duration-300 shrink-0
+                                    ${selectedUser?.username === u.username ? 'scale-110 opacity-100' : 'scale-90 opacity-60'}`}
+                            >
+                                <div className={`relative w-20 h-20 rounded-full overflow-hidden shadow-xl border-2 ${selectedUser?.username === u.username ? 'border-white' : 'border-transparent'}`}>
+                                    <Image src={u.avatar || "/pfp.png"} alt={u.name} fill className="object-cover" />
+                                </div>
+                                <span className="text-sm font-medium text-white">{u.name}</span>
+                            </div>
+                        ))}
+                        <div
+                            onClick={() => guestLogin()}
+                            className="flex flex-col items-center gap-2 cursor-pointer transition-all duration-300 shrink-0 scale-90 opacity-60"
+                        >
+                            <div className="relative w-20 h-20 rounded-full bg-gray-600/50 backdrop-blur-md flex items-center justify-center shadow-xl border-2 border-transparent">
+                                <IoPerson size={32} className="text-white/80" />
+                            </div>
+                            <span className="text-sm font-medium text-white">Guest</span>
+                        </div>
+                    </div>
+
+                    <AnimatePresence mode="wait">
+                        {selectedUser && (
+                            <motion.form
+                                key={selectedUser.username}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                onSubmit={handleLogin}
+                                className="w-full max-w-[280px] relative mt-4"
+                            >
+                                <motion.div
+                                    animate={error ? { x: [-5, 5, -5, 5, 0] } : {}}
+                                    transition={{ duration: 0.4 }}
+                                >
+                                    <input
+                                        type="password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        placeholder="Password"
+                                        className="w-full bg-white/10 hover:bg-white/20 focus:bg-white/20 transition-colors backdrop-blur-xl border border-white/20 rounded-full py-3 px-4 outline-none placeholder-white/40 text-white"
+                                    />
+                                </motion.div>
+                                <button type="submit" className="hidden" />
+                            </motion.form>
+                        )}
+                    </AnimatePresence>
+                </div>
+
+                <div className="w-full flex flex-col items-center pb-8 z-10 gap-6 mt-auto">
+                    <div className="w-32 h-1 bg-white rounded-full opacity-50"></div>
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <AnimatePresence>
-            {osstate === 'locked' && (
-                <motion.div
-                    key="lockscreen"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0, y: -50, scale: 1.02, transition: { duration: 0.4 } }}
-                    className="fixed inset-0 bg-cover bg-center bg-no-repeat dark:bg-[url('/bg-dark.jpg')] bg-[url('/bg.jpg')] z-[9990] flex flex-col items-center text-white select-none"
+        <div className="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-black text-white font-sf">
+            <div className="absolute inset-0 z-0 bg-[url('/bg.jpg')] bg-cover bg-center">
+                <div className="absolute inset-0 backdrop-blur-2xl bg-black/20"></div>
+            </div>
 
-                >
-                    {!ismobile && <div className="absolute inset-0 bg-black/20 backdrop-blur-[80px]" />}
-
-                    {!ismobile && (
-                        <div className="relative z-10 flex flex-col items-center justify-between h-full pt-20 pb-20">
-                            <div className="flex flex-col items-center mt-6">
-                                <h1 className="text-[7rem] xl:text-[9rem] leading-none text-white/90 font-bold font-sf tracking-tight drop-shadow-2xl select-none">{timestring}</h1>
-                                <h2 className="text-xl xl:text-2xl text-white/80 font-semibold mt-2 drop-shadow-lg select-none">{formatteddate}</h2>
-                            </div>
-
-                            <div className="flex flex-col items-center mb-10">
-                                <div className="w-24 h-24 rounded-full mb-5 shadow-2xl relative group overflow-hidden border border-white/10">
-                                    <Image src="/pfp.png" width={96} height={96} className="w-full h-full object-cover" alt="User Profile" />
-                                </div>
-                                <div className="text-xl text-white font-semibold mb-5 drop-shadow-md tracking-wide">Bala TBR</div>
-
-                                <motion.form
-                                    onSubmit={handlelogin}
-                                    animate={shaking ? { x: [-10, 10, -10, 10, 0] } : {}}
-                                >
-                                    <div className="relative group">
-                                        <input
-                                            type="password"
-                                            value={password}
-                                            onChange={(e) => setpassword(e.target.value)}
-                                            placeholder="Enter Password"
-                                            className="w-48 bg-black/20 backdrop-blur-xl rounded-full px-4 py-1.5 text-white placeholder-white/30 text-center text-[13px] outline-none border border-white/5 focus:bg-black/30 transition-all shadow-inner"
-                                            autoComplete="off"
-                                            data-lpignore="true"
-                                            autoFocus
-                                            onBlur={(e) => e.target.focus()}
-                                        />
-                                        <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-opacity">
-                                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
-                                        </button>
-                                    </div>
-                                </motion.form>
-                                <div className="mt-8 text-white/50 text-[11px] font-medium cursor-pointer hover:text-white transition-colors flex flex-col items-center gap-2">
-                                    <span>Hit Enter - There&apos;s no password!</span>
-                                    {hint && (
-                                        <span className="text-white/80 font-semibold animate-pulse">Hint: user</span>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {ismobile && (
-                        <motion.div
-                            className="relative z-10 flex flex-col items-center justify-between h-full w-full pt-20 pb-4"
-                            drag="y"
-                            dragConstraints={{ top: -200, bottom: 0 }}
-                            dragElastic={0.3}
-                            onDrag={(_, info) => {
-                                setdragy(info.offset.y);
-                            }}
-                            onDragEnd={(_, info) => {
-                                if (info.offset.y < -100) {
-                                    setosstate('unlocked');
-                                }
-                                setdragy(0);
-                            }}
-                            animate={{ y: 0 }}
-                            style={{ opacity: 1 - Math.abs(dragy) / 300 }}
+            <div className="z-10 flex flex-col items-center w-full max-w-md">
+                <div className="flex items-center gap-8 mt-32 overflow-x-auto p-4 mask-fade">
+                    {users.map(u => (
+                        <div
+                            key={u.username}
+                            onClick={() => { setSelectedUser(u); setPassword(''); setError(false); }}
+                            className={`flex flex-col items-center gap-3 cursor-pointer transition-all duration-300
+                                ${selectedUser?.username === u.username ? 'scale-110 opacity-100' : 'scale-90 opacity-60 hover:opacity-80'}`}
                         >
-                            <div className="flex flex-col items-center space-y-4 w-full px-4">
-                                <div className="text-white text-8xl font-bold mb-2 drop-shadow-lg font-sf tracking-tight">
-                                    {timestring}
-                                </div>
-                                <div className="text-white/80 text-xl font-medium drop-shadow-md">
-                                    {formatteddate}
-                                </div>
-
-                                {notifications.length > 0 && (
-                                    <div className="w-full flex hidden flex-col items-center space-y-2 mt-4">
-                                        {notifications.slice(0, 3).map(n => (
-                                            <div key={n.id} className="w-full max-w-sm bg-white/20 backdrop-blur-md border border-white/10 p-3 rounded-xl flex items-center space-x-3 shadow-sm">
-                                                <Image src={n.icon} width={32} height={32} className="w-8 h-8 rounded-lg" alt={n.appname} />
-                                                <div className="flex-1 min-w-0 text-white text-left">
-                                                    <div className="flex justify-between items-baseline">
-                                                        <span className="text-xs font-bold">{n.appname}</span>
-                                                        <span className="text-[10px] opacity-70">{n.time}</span>
-                                                    </div>
-                                                    <div className="text-xs opacity-90 truncate">{n.title}</div>
-                                                    <div className="text-[10px] opacity-70 truncate">{n.description}</div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
+                            <div className={`relative w-24 h-24 rounded-full overflow-hidden shadow-2xl border-2 transition-colors ${selectedUser?.username === u.username ? 'border-white' : 'border-transparent'}`}>
+                                <Image src={u.avatar || "/pfp.png"} alt={u.name} fill className="object-cover" />
                             </div>
+                            <span className="text-lg font-medium drop-shadow-md">{u.name}</span>
+                        </div>
+                    ))}
 
-                            <div className="flex flex-col items-center gap-3 pb-6">
-                                <div className="text-[12px] font-medium uppercase tracking-[0.15em] opacity-70">
-                                    Swipe up to unlock
-                                </div>
-                                <motion.div
-                                    className="w-36 h-[5px] bg-white rounded-full"
-                                    animate={{ opacity: [0.5, 1, 0.5] }}
-                                    transition={{ duration: 2, repeat: Infinity }}
+                    <div
+                        onClick={() => {
+                            guestLogin();
+                        }}
+                        className={`flex flex-col items-center gap-3 cursor-pointer transition-all duration-300 scale-90 opacity-60 hover:opacity-80`}
+                    >
+                        <div className="w-24 h-24 rounded-full bg-gray-500/50 backdrop-blur-md flex items-center justify-center border-2 border-transparent shadow-2xl">
+                            <IoPerson size={40} className="text-white/80" />
+                        </div>
+                        <span className="text-lg font-medium drop-shadow-md">Guest User</span>
+                    </div>
+                </div>
+
+                <AnimatePresence mode="wait">
+                    {selectedUser && (
+                        <motion.form
+                            key={selectedUser.username}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            onSubmit={handleLogin}
+                            className="w-full max-w-[240px] relative flex flex-col items-center"
+                        >
+                            <motion.div
+                                animate={error ? { x: [-5, 5, -5, 5, 0] } : {}}
+                                transition={{ duration: 0.4 }}
+                                className="w-full relative"
+                            >
+                                <input
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="Enter Password"
+                                    className="w-full bg-white/20 hover:bg-white/25 focus:bg-white/25 transition-colors backdrop-blur-md border border-white/10 rounded-full py-1.5  outline-none placeholder-white/50 shadow-inner text-sm pl-4 appearance-none"
+                                    autoFocus
                                 />
-                            </div>
+                                <button
+                                    type="submit"
+                                    disabled={!password || isSubmitting}
+                                    className={`absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full flex items-center justify-center transition-all
+                                        ${password ? 'bg-white text-black' : 'bg-transparent text-transparent'}`}
+                                >
+                                    {!isSubmitting && <IoArrowForward size={14} />}
+                                    {isSubmitting && <div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin" />}
+                                </button>
+                            </motion.div>
 
-                            <div className="absolute bottom-12 w-full px-10 flex justify-between pointer-events-auto">
-                                <button className="w-14 h-14 bg-black/30 backdrop-blur-2xl rounded-full flex items-center justify-center active:scale-95 transition-transform">
-                                    <IoMdFlashlight size={24} />
-                                </button>
-                                <button className="w-14 h-14 bg-black/30 backdrop-blur-2xl rounded-full flex items-center justify-center active:scale-95 transition-transform">
-                                    <IoMdCamera size={24} />
-                                </button>
+                            <div className="h-6 mt-2">
+                                {error && <span className="text-xs font-medium text-red-300 drop-shadow-md">Incorrect password</span>}
+                                {!error && <span className="text-[10px] text-white/40">Touch ID or Enter Password</span>}
                             </div>
-                        </motion.div>
+                        </motion.form>
                     )}
-                </motion.div>
-            )}
-        </AnimatePresence>
+                </AnimatePresence>
+            </div>
+
+            <div className="absolute top-32 flex flex-col items-center gap-1">
+                <span className="text-8xl font-bold tracking-tight drop-shadow-xl text-white/90">{currentTime?.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: false })}</span>
+                <span className="text-xl text-white/80 font-semibold drop-shadow-md">
+                    {currentTime?.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}
+                </span>
+            </div>
+
+            <div className="absolute bottom-12 flex flex-col items-center gap-4">
+                <div className="flex gap-6">
+                    <div className="flex flex-col items-center gap-1 cursor-pointer group">
+                        <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                            <IoLockClosed size={18} />
+                        </div>
+                        <span className="text-[10px] font-medium opacity-60">Sleep</span>
+                    </div>
+                    <div className="flex flex-col items-center gap-1 cursor-pointer group">
+                        <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                            <IoInformationCircleOutline size={20} />
+                        </div>
+                        <span className="text-[10px] font-medium opacity-60">Restart</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 }

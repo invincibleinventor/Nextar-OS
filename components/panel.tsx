@@ -6,11 +6,14 @@ import { useWindows } from './WindowContext';
 import { apps, applemenu, openSystemItem } from './data';
 import Control from './controlcenter';
 import Logo from './applelogo';
+import { useAppMenus } from './AppMenuContext';
 
 import { IoWifi, IoBatteryFull, IoToggle, IoSettingsOutline } from 'react-icons/io5';
 import { BsToggles2 } from "react-icons/bs";
 import { useDevice } from './DeviceContext';
 import { IoIosBatteryFull, IoIosSettings, IoIosWifi } from 'react-icons/io';
+import { useAuth } from './AuthContext';
+import { useNotifications } from './NotificationContext';
 
 export default function Panel({ ontogglenotifications }: { ontogglenotifications?: () => void }) {
     const { activewindow, windows, updatewindow, removewindow, setactivewindow, addwindow } = useWindows();
@@ -25,7 +28,10 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
         { title: "About " + activeappname, disabled: false, actionId: "About " + activeappname },
         { title: "Quit " + activeappname, disabled: false, actionId: "Quit " + activeappname },
     ];
-    let appmenus: any = activeapp?.menus;
+
+    const { activeAppMenus, triggerAction } = useAppMenus();
+    const hasDynamicMenus = Object.keys(activeAppMenus).length > 0;
+    let appmenus: any = hasDynamicMenus ? activeAppMenus : activeapp?.menus;
     const [activemenu, setactivemenu] = useState<string | null>(null);
     const [hoverenabled, sethoverenabled] = useState(false);
     const [currentdate, setcurrentdate] = useState<string>('');
@@ -87,18 +93,52 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
         }
     };
 
+    const { user, logout, isGuest } = useAuth();
+    const { addToast } = useNotifications();
+
+    const hasShownGuestToast = React.useRef(false);
+
+    useEffect(() => {
+        if (isGuest && !hasShownGuestToast.current) {
+            addToast("Guest Mode Enabled. No data will be preserved.", "info");
+            hasShownGuestToast.current = true;
+        }
+        if (!isGuest) {
+            hasShownGuestToast.current = false;
+        }
+    }, [isGuest, addToast]);
+
+    const dynamicAppleMenu = [
+        { title: `About This Mac`, actionId: 'about' },
+        { separator: true },
+        { title: 'System Settings...', actionId: 'settings' },
+        { title: 'App Store...', actionId: 'appstore' },
+        { separator: true },
+        { title: 'Force Quit...', actionId: 'forcequit' },
+        { separator: true },
+        { title: 'Sleep', actionId: 'sleep' },
+        { title: 'Restart...', actionId: 'restart' },
+        { title: 'Shut Down...', actionId: 'shutdown' },
+        { separator: true },
+        { title: `Log Out ${user?.name || 'User'}...`, actionId: 'logout' }
+    ];
+
     const handleapplemenuaction = (action: string) => {
         switch (action) {
-            case 'About This Mac':
-                alert('MacOS-Next\nVersion 2.0\nBuilt with Next.js & Tailwind\nBy Bala TBR');
+            case 'about':
+                window.dispatchEvent(new CustomEvent('show-about-mac'));
                 break;
-            case 'Sleep':
-            case 'Lock Screen':
+            case 'forcequit':
+                window.dispatchEvent(new CustomEvent('show-force-quit'));
+                break;
+            case 'sleep':
                 setosstate('locked');
                 break;
-            case 'Restart...':
-            case 'Shut Down...':
-            case 'Log Out User...':
+            case 'logout':
+                logout();
+                break;
+            case 'restart':
+            case 'shutdown':
                 setosstate('booting');
                 break;
             default:
@@ -129,6 +169,20 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
             if (activewindow) {
                 removewindow(activewindow);
             }
+        } else if (actionId === 'new-window') {
+            const finderApp = apps.find(a => a.id === 'finder');
+            if (finderApp) {
+                addwindow({
+                    id: `finder-${Date.now()}`,
+                    appname: finderApp.appname,
+                    component: finderApp.componentname,
+                    props: {},
+                    isminimized: false,
+                    ismaximized: false,
+                    position: { top: 80, left: 80 },
+                    size: finderApp.defaultsize || { width: 900, height: 600 }
+                });
+            }
         } else if (actionId.startsWith('About ')) {
             const app = apps.find(a => a.appname === activeappname);
             if (app) {
@@ -143,6 +197,8 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
                 };
                 openSystemItem(appItem, { addwindow, windows, updatewindow, setactivewindow, ismobile }, 'getinfo');
             }
+        } else {
+            triggerAction(actionId);
         }
 
         const event = new CustomEvent('menu-action', {
@@ -161,14 +217,15 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
         <div>
             <div
                 style={{ zIndex: 99999 }}
+                data-tour="menubar"
                 className="fixed h-[35px] z-[99999] before:absolute before:inset-0 before:bg-transparent before:content-[''] before:backdrop-blur-[12px] before:webkit-backdrop-blur-[12px] before:z-[-1] top-0 w-screen py-[6px] flex px-4 justify-between items-center content-center bg-white bg-opacity-30 dark:bg-black dark:bg-opacity-10 transition-colors duration-500"
             >
                 <div className="relative flex flex-row items-center content-center space-x-0">
-                    <div className="flex items-center justify-center h-full mr-2">
+                    <div className="flex items-center justify-center h-full mr-2" data-tour="apple-menu">
                         <Menu
                             id="appleMenu"
                             title={<div className="flex items-center justify-center h-full"><Logo /></div>}
-                            data={applemenu}
+                            data={dynamicAppleMenu}
                             visible={activemenu === 'appleMenu'}
                             ontoggle={handletogglemenu}
                             onhover={handlehovermenu}
@@ -205,7 +262,16 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
                     </div>
                 </div>
                 <div className='flex space-x-6 flex-row items-center content-center'>
-                    <div className='hidden md:flex flex-row space-x-7 items-center pl-2'>
+                    <div className='hidden md:flex flex-row space-x-4 items-center pl-2'>
+                        <button
+                            onClick={() => window.dispatchEvent(new CustomEvent('toggle-spotlight'))}
+                            className="p-1 rounded hover:bg-white/10 transition-colors"
+                            title="Spotlight (⌘K)"
+                        >
+                            <svg className="w-4 h-4 dark:text-white text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </button>
                         <IoIosWifi className="text-black dark:text-white w-[20px] h-[20px]" />
                         <div className='flex items-center space-x-2'>
                             <IoIosBatteryFull className="text-black dark:text-white w-[24px] h-[24px]" />

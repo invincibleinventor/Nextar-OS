@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useWindows } from './WindowContext';
 import { apps } from './data';
 import { useDevice } from './DeviceContext';
+import { useSettings } from './SettingsContext';
 
 
 
@@ -13,6 +14,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
     const { windows, removewindow, setactivewindow, updatewindow } = useWindows();
     const containerref = useRef<HTMLDivElement>(null);
     const ignoreclickref = useRef(false);
+  const { wallpaperurl } = useSettings();
 
     useEffect(() => {
         if (isopen) {
@@ -52,8 +54,9 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                         }
                     `}</style>
                     <motion.div
-                        className="absolute backdrop-blur-sm inset-0 bg-[url('/bg.jpg')] bg-center dark:bg-[url('/bg-dark.jpg')] bg-cover bg-no-repeat"
+                        className={`absolute backdrop-blur-sm inset-0  bg-center  bg-cover bg-no-repeat`}
                         onClick={onclose}
+                         style={{ backgroundImage: `url('${wallpaperurl}')` }}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}

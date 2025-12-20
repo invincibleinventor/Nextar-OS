@@ -1,7 +1,7 @@
 {
     "name": "BalaTBR - MacOS-Next",
     "short_name": "MacOS-Next",
-    "description": "A macos-based operating system portfolio.",
+    "description": "A macOS inspired operating system simulation on the web.",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#000000",

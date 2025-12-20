@@ -14,7 +14,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
     const { addwindow, windows, setactivewindow, updatewindow } = useWindows();
     const { reducemotion } = useSettings();
     const { ismobile } = useDevice();
-    const { files, moveToTrash, createFolder, createFile } = useFileSystem();
+    const { files, moveToTrash, createFolder, createFile, currentUserDesktopId } = useFileSystem();
     const [page, setpage] = useState(0);
     const [editmode, seteditmode] = useState(false);
     const [contextmenu, setcontextmenu] = useState<{ x: number; y: number; item?: filesystemitem } | null>(null);
@@ -22,7 +22,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
     const longpresstimer = useRef<NodeJS.Timeout | null>(null);
     const [iconorder, seticonorder] = useState<string[]>([]);
 
-    const desktopItems = files.filter(item => item.parent === 'user-desktop' && !item.isTrash);
+    const desktopItems = files.filter(item => item.parent === currentUserDesktopId && !item.isTrash);
 
     React.useEffect(() => {
         const savedorder = localStorage.getItem('mobile-icon-order');
@@ -139,7 +139,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
 
             items.push({
                 label: 'Show in Finder',
-                action: () => openSystemItem('finder', { addwindow, windows, setactivewindow, updatewindow, ismobile, files }, undefined, { openPath: item.parent || 'user-desktop', selectItem: item.id })
+                action: () => openSystemItem('finder', { addwindow, windows, setactivewindow, updatewindow, ismobile, files }, undefined, { openPath: item.parent || currentUserDesktopId, selectItem: item.id })
             });
 
             if (!item.isReadOnly && !item.isSystem) {
@@ -162,11 +162,11 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
             return [
                 {
                     label: 'New Folder',
-                    action: () => createFolder('New Folder', 'user-desktop')
+                    action: () => createFolder('New Folder', currentUserDesktopId)
                 },
                 {
                     label: 'New File',
-                    action: () => createFile('Untitled.txt', 'user-desktop')
+                    action: () => createFile('Untitled.txt', currentUserDesktopId)
                 },
                 { separator: true, label: '' },
                 {
@@ -239,7 +239,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                                 </div>
                                 <button
                                     onClick={() => setConfirmDelete(null)}
-                                    className="w-full py-4 bg-white dark:bg-[#1e1e1e] rounded-[14px] text-[20px] text-[#007AFF] font-semibold active:scale-[0.98] transition-all shadow-sm"
+                                    className="w-full py-4 bg-white dark:bg-[#1e1e1e] rounded-[14px] text-[20px] text-accent font-semibold active:scale-[0.98] transition-all shadow-sm"
                                 >
                                     Cancel
                                 </button>
@@ -263,7 +263,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
             >
                 <div className="w-[100vw] h-full flex flex-col pt-14 relative snap-center flex-shrink-0">
                     <div className="flex-1 px-4">
-                        <div className="grid grid-cols-4 gap-x-2 gap-y-5">
+                        <div data-tour="ios-apps" className="grid grid-cols-4 gap-x-2 gap-y-5">
                             {griditems.map((item, index) => (
                                 <motion.div
                                     key={item.id}
@@ -366,7 +366,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                         </motion.button>
                     )}
 
-                    <div className={`mx-auto mb-7 p-3 rounded-[25px] w-max flex items-center justify-between gap-4 transition-all duration-300 ${isoverlayopen ? 'bg-transparent' : 'dark:bg-black/10 bg-white/10 backdrop-blur-sm shadow-lg border border-white/10'}`}>
+                    <div data-tour="ios-dock" className={`mx-auto mb-7 p-3 rounded-[25px] w-max flex items-center justify-between gap-4 transition-all duration-300 ${isoverlayopen ? 'bg-transparent' : 'dark:bg-black/10 bg-white/10 backdrop-blur-sm shadow-lg border border-white/10'}`}>
                         {dockapps.map(app => (
                             <motion.button
                                 key={app.id}

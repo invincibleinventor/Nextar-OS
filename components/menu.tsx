@@ -60,7 +60,7 @@ export default function Menu(props: any) {
                                 key={item.title || idx}
                                 className={`px-3 py-1 rounded-[5px] text-[13px] font-medium transition-colors ${item.disabled
                                     ? 'opacity-50 cursor-not-allowed text-gray-400'
-                                    : 'text-black dark:text-white hover:bg-[#007AFF] hover:text-white cursor-pointer active:bg-blue-600'
+                                    : 'text-black dark:text-white hover:bg-accent hover:text-white cursor-pointer active:bg-accent/80'
                                     }`}
                                 onMouseDown={(e) => e.preventDefault()}
                                 onClick={(e) => {

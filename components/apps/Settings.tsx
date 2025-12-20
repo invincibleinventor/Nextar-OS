@@ -6,30 +6,34 @@ import { useSettings } from '../SettingsContext';
 import { useTheme } from '../ThemeContext';
 import { useWindows } from '../WindowContext';
 import { useDevice } from '../DeviceContext';
+import { useAuth } from '../AuthContext';
 import { personal, openSystemItem } from '../data';
 import { motion, AnimatePresence } from 'framer-motion';
+import UserManagement from './Settings/UserManagement';
+import { IoPeopleOutline } from 'react-icons/io5';
 
 const sidebaritems = [
-    { id: 'wifi', label: 'Wi-Fi', icon: IoWifi, color: '#007AFF' },
-    { id: 'bluetooth', label: 'Bluetooth', icon: IoBluetooth, color: '#007AFF' },
-    { id: 'network', label: 'Network', icon: IoGlobeOutline, color: '#007AFF' },
+    { id: 'wifi', label: 'Wi-Fi', icon: IoWifi, color: 'var(--accent-color)' },
+    { id: 'bluetooth', label: 'Bluetooth', icon: IoBluetooth, color: 'var(--accent-color)' },
+    { id: 'network', label: 'Network', icon: IoGlobeOutline, color: 'var(--accent-color)' },
     { type: 'spacer' },
     { id: 'notifications', label: 'Notifications', icon: IoNotificationsOutline, color: '#FF3B30' },
     { id: 'focus', label: 'Focus', icon: IoMoon, color: '#5856D6' },
     { type: 'spacer' },
     { id: 'general', label: 'General', icon: IoSettingsOutline, color: '#8E8E93' },
     { id: 'appearance', label: 'Appearance', icon: IoColorPaletteOutline, color: '#FF9500' },
-    { id: 'accessibility', label: 'Accessibility', icon: IoAccessibilityOutline, color: '#007AFF' },
+    { id: 'accessibility', label: 'Accessibility', icon: IoAccessibilityOutline, color: 'var(--accent-color)' },
     { id: 'wallpaper', label: 'Wallpaper', icon: IoImageOutline, color: '#32ADE6' },
 ];
 
 export default function Settings() {
     const [activetab, setactivetab] = useState("general");
     const [showsidebar, setshowsidebar] = useState(true);
-    const { reducemotion, setreducemotion, reducetransparency, setreducetransparency } = useSettings();
+    const { reducemotion, setreducemotion, reducetransparency, setreducetransparency, wallpaperurl, setwallpaperurl, accentcolor, setaccentcolor } = useSettings();
     const { theme, toggletheme } = useTheme();
     const { addwindow, windows, updatewindow, setactivewindow } = useWindows();
     const { ismobile } = useDevice();
+    const { user } = useAuth();
     const containerref = useRef<HTMLDivElement>(null);
     const [isnarrow, setisnarrow] = useState(false);
 
@@ -89,7 +93,7 @@ export default function Settings() {
                                 return <IoSettingsOutline size={16} />;
                             })()}
                         </div>
-                        <h1 className="text-[20px] font-bold">{sidebaritems.find(i => i.id === activetab)?.label}</h1>
+                        <h1 className="text-[20px] font-bold">{sidebaritems.find(i => i.id === activetab)?.label || 'Settings'}</h1>
                     </div>
                 )}
 
@@ -97,7 +101,7 @@ export default function Settings() {
                     {activetab === 'general' && (
                         <>
                             <div className="flex flex-col items-center mb-6 bg-gray-50 dark:bg-white/5 p-5 rounded-xl border border-black/5 dark:border-white/5">
-                                <div className="w-14 h-14 bg-gradient-to-br from-[#007AFF] to-[#5856D6] rounded-xl mb-3 shadow-md flex items-center justify-center text-white">
+                                <div className="w-14 h-14 bg-gradient-to-br from-accent to-[#5856D6] rounded-xl mb-3 shadow-md flex items-center justify-center text-white">
                                     <IoSettingsOutline size={28} />
                                 </div>
                                 <h2 className="text-lg font-bold">MacOS-Next</h2>
@@ -122,13 +126,13 @@ export default function Settings() {
 
                     {activetab === 'appearance' && (
                         <>
-                            <div className="text-[11px] uppercase font-semibold text-gray-400 pl-3 mb-2">Theme</div>
+                            <div className="text-[11px] uppercase font-semibold text-gray-400 pl-3 mb-2">Colors</div>
                             <SettingsGroup>
                                 <div className="p-5 flex justify-center gap-8">
                                     <button onClick={() => theme !== 'light' && toggletheme()} className="flex flex-col items-center gap-2 group">
-                                        <div className={`w-28 h-18 rounded-lg border flex overflow-hidden shadow-sm transition-all ${theme === 'light' ? 'border-[#007AFF] ring-2 ring-[#007AFF]/20' : 'border-gray-200 dark:border-white/10 group-hover:border-gray-300'}`}>
+                                        <div className={`w-32 h-20 rounded-lg border flex overflow-hidden shadow-sm transition-all ${theme === 'light' ? 'border-accent ring-2 ring-accent/20' : 'border-gray-200 dark:border-white/10 group-hover:border-gray-300'}`}>
                                             <div className="w-1/3 bg-[#f5f5f7]" />
-                                            <div className="w-2/3 bg-white relative">
+                                            <div className="w-2/3  bg-white relative">
                                                 <div className="absolute top-2 left-2 w-10 h-2 bg-blue-500 rounded-full opacity-20"></div>
                                                 <div className="absolute top-5 left-2 w-6 h-2 bg-gray-200 rounded-full"></div>
                                             </div>
@@ -136,7 +140,7 @@ export default function Settings() {
                                         <span className={`text-[12px] font-medium ${theme === 'light' ? 'text-blue-600' : 'text-gray-500'}`}>Light</span>
                                     </button>
                                     <button onClick={() => theme !== 'dark' && toggletheme()} className="flex flex-col items-center gap-2 group">
-                                        <div className={`w-28 h-18 rounded-lg border flex overflow-hidden shadow-sm transition-all ${theme === 'dark' ? 'border-[#007AFF] ring-2 ring-[#007AFF]/20' : 'border-gray-200 dark:border-white/10 group-hover:border-gray-300'}`}>
+                                        <div className={`w-32 h-20 rounded-lg border flex overflow-hidden shadow-sm transition-all ${theme === 'dark' ? 'border-accent ring-2 ring-accent/20' : 'border-gray-200 dark:border-white/10 group-hover:border-gray-300'}`}>
                                             <div className="w-1/3 bg-[#2d2d2d]" />
                                             <div className="w-2/3 bg-[#1e1e1e] relative">
                                                 <div className="absolute top-2 left-2 w-10 h-2 bg-blue-500 rounded-full opacity-50"></div>
@@ -156,7 +160,60 @@ export default function Settings() {
                         </>
                     )}
 
-                    {activetab !== 'general' && activetab !== 'appearance' && (
+                    {activetab === 'users' && (
+                        
+                        <div className="h-full -m-8 md:-m-0 border border-black/5 dark:border-white/5 rounded-xl overflow-hidden shadow-sm">
+                            <UserManagement />
+                        </div>
+                    )}
+
+                    {activetab === 'wallpaper' && (
+                        <>
+                            <div className="text-[11px] uppercase font-semibold text-gray-400 pl-3 mb-2">Wallpaper URL</div>
+                            <SettingsGroup>
+                                <div className="p-4">
+                                    <input
+                                        type="text"
+                                        value={wallpaperurl}
+                                        onChange={(e) => setwallpaperurl(e.target.value)}
+                                        placeholder="https://example.com/wallpaper.jpg"
+                                        className="w-full px-3 py-2 bg-gray-100 dark:bg-white/10 rounded-lg outline-none text-[14px] border border-black/5 dark:border-white/10 focus:ring-2 ring-blue-500/50"
+                                    />
+                                    <p className="text-[11px] text-gray-400 mt-2">Enter a URL to use as your wallpaper</p>
+                                </div>
+                            </SettingsGroup>
+
+                            <div className="text-[11px] uppercase font-semibold text-gray-400 pl-3 mb-2 mt-4">Preset Wallpapers</div>
+                            <SettingsGroup>
+                                <div className="p-4 grid grid-cols-3 gap-3">
+                                    {['/bg.jpg', '/bg-dark.jpg', '/wallpaper-1.jpg', '/wallpaper-2.jpg', '/wallpaper-3.jpg', '/wallpaper-4.jpg'].map((wp) => (
+                                        <button
+                                            key={wp}
+                                            onClick={() => setwallpaperurl(wp)}
+                                            className={`aspect-video rounded-lg bg-cover bg-center border-2 transition-all ${wallpaperurl === wp ? 'border-blue-500 ring-2 ring-blue-500/30' : 'border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20'}`}
+                                            style={{ backgroundImage: `url('${wp}')` }}
+                                        />
+                                    ))}
+                                </div>
+                            </SettingsGroup>
+
+                            <div className="text-[11px] uppercase font-semibold text-gray-400 pl-3 mb-2 mt-4">Accent Color</div>
+                            <SettingsGroup>
+                                <div className="p-4 flex gap-3 flex-wrap">
+                                    {['#007AFF', '#34C759', '#FF9500', '#FF3B30', '#AF52DE', '#5856D6', '#FF2D55', '#00C7BE'].map((color) => (
+                                        <button
+                                            key={color}
+                                            onClick={() => setaccentcolor(color)}
+                                            className={`w-8 h-8 rounded-full transition-all ${accentcolor === color ? 'ring-2 ring-offset-2 ring-gray-400 dark:ring-white scale-110' : 'hover:scale-105'}`}
+                                            style={{ backgroundColor: color }}
+                                        />
+                                    ))}
+                                </div>
+                            </SettingsGroup>
+                        </>
+                    )}
+
+                    {activetab !== 'general' && activetab !== 'appearance' && activetab !== 'users' && activetab !== 'wallpaper' && (
                         <div className="flex flex-col items-center justify-center py-20 text-center opacity-50">
                             <IoSettingsOutline size={48} className="mb-4" />
                             <h3 className="text-lg font-semibold">Settings for {sidebaritems.find(i => i.id === activetab)?.label}</h3>
@@ -193,20 +250,20 @@ export default function Settings() {
                             <div className="flex-1 overflow-y-auto px-4 py-2 space-y-4">
                                 <div
                                     className="flex items-center gap-3 p-4 bg-white dark:bg-[#2c2c2e] rounded-2xl cursor-pointer"
-                                    onClick={() => openSystemItem('mail', { addwindow, windows, updatewindow, setactivewindow, ismobile })}
+                                    onClick={() => { setactivetab('users'); setshowsidebar(false); }}
                                 >
                                     <div className="w-14 h-14 rounded-full overflow-hidden shrink-0 border border-black/5">
-                                        <Image src="/pfp.png" alt="Profile" width={56} height={56} className="w-full h-full object-cover" />
+                                        <Image src={user?.avatar || '/pfp.png'} alt="Profile" width={56} height={56} className="w-full h-full object-cover" />
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <div className="text-[18px] font-semibold truncate">{personal.personal.name}</div>
-                                        <div className="text-[14px] text-gray-500 truncate">Apple ID, iCloud+</div>
+                                        <div className="text-[18px] font-semibold truncate">{user?.name || 'Guest'}</div>
+                                        <div className="text-[14px] text-gray-500 truncate">{user?.role === 'admin' ? 'Administrator' : 'Standard User'}</div>
                                     </div>
                                     <IoChevronForward className="text-gray-400" size={24} />
                                 </div>
 
                                 <div className="bg-white dark:bg-[#2c2c2e] rounded-2xl overflow-hidden">
-                                    {sidebaritems.filter(i => i.type !== 'spacer').map((item: any, i, arr) => (
+                                    {sidebaritems.filter((i: any) => i.type !== 'spacer').map((item: any, i: number, arr: any[]) => (
                                         <div
                                             key={item.id}
                                             onClick={() => { setactivetab(item.id); setshowsidebar(false); }}
@@ -234,7 +291,7 @@ export default function Settings() {
                             <div className="h-14 flex items-center px-2 border-b border-black/5 dark:border-white/5 bg-white/80 dark:bg-[#1c1c1e]/80 backdrop-blur-xl">
                                 <button
                                     onClick={() => setshowsidebar(true)}
-                                    className="flex items-center text-[#007AFF] px-2"
+                                    className="flex items-center text-accent px-2"
                                 >
                                     <IoChevronBack size={26} />
                                     <span className="text-[16px]">Settings</span>
@@ -264,7 +321,7 @@ export default function Settings() {
                 <div className="px-3 pb-2">
                     <div
                         className="flex items-center gap-3 p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-lg cursor-pointer transition-colors"
-                        onClick={() => openSystemItem('mail', { addwindow, windows, updatewindow, setactivewindow, ismobile })}
+                        onClick={() => setactivetab('users')}
                     >
                         <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-black/5">
                             <Image src="/pfp.png" alt="Profile" width={40} height={40} className="w-full h-full object-cover" />
@@ -283,7 +340,7 @@ export default function Settings() {
                             <div
                                 key={item.id}
                                 onClick={() => setactivetab(item.id)}
-                                className={`flex items-center gap-2.5 px-3 py-1 rounded-md cursor-pointer mx-1 transition-colors ${activetab === item.id ? 'bg-[#007AFF] text-white' : 'text-black dark:text-gray-200 hover:bg-black/5 dark:hover:bg-white/5'}`}
+                                className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg cursor-pointer mx-1 transition-colors ${activetab === item.id ? 'bg-accent text-white' : 'text-black dark:text-gray-200 hover:bg-black/5 dark:hover:bg-white/5'}`}
                             >
                                 <div className="w-5 h-5 rounded flex items-center justify-center text-white shrink-0 text-[12px]" style={{ backgroundColor: activetab === item.id ? 'transparent' : item.color }}>
                                     <item.icon size={12} className={activetab === item.id ? 'text-white' : ''} />

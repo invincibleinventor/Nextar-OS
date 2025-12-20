@@ -1,16 +1,105 @@
 'use client';
-import React, { useState } from 'react';
-import { IoChevronBack, IoChevronForward, IoAddCircleOutline } from "react-icons/io5";
+import React, { useState, useMemo, useEffect } from 'react';
+import { IoChevronBack, IoChevronForward, IoAddCircleOutline, IoClose, IoTrash } from "react-icons/io5";
 import { useDevice } from '../DeviceContext';
+import { useMenuAction } from '../hooks/useMenuAction';
+import { useAppPreferences } from '../AppPreferencesContext';
+import { motion, AnimatePresence } from 'framer-motion';
+
+interface CalendarEvent {
+    id: string;
+    title: string;
+    date: string;
+    time?: string;
+    color: string;
+}
 
 const monthnames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const eventcolors = ['#007AFF', '#34C759', '#FF3B30', '#FF9500', '#AF52DE', '#5856D6'];
 
-export default function Calendar() {
+export default function Calendar({ windowId }: { windowId?: string }) {
     const { ismobile } = useDevice();
+    const { getPreference, setPreference } = useAppPreferences();
     const today = new Date();
     const [currentmonth, setcurrentmonth] = useState(today.getMonth());
     const [currentyear, setcurrentyear] = useState(today.getFullYear());
+    const [events, setEvents] = useState<CalendarEvent[]>([]);
+    const [showmodal, setshowmodal] = useState(false);
+    const [selectedday, setselectedday] = useState<number | null>(null);
+    const [editingevent, seteditingevent] = useState<CalendarEvent | null>(null);
+    const [neweventtitle, setneweventtitle] = useState('');
+    const [neweventtime, setneweventtime] = useState('');
+    const [neweventcolor, setneweventcolor] = useState(eventcolors[0]);
+
+    useEffect(() => {
+        const saved = getPreference('calendar', 'events', []);
+        setEvents(saved);
+    }, []);
+
+    const saveEvents = (newEvents: CalendarEvent[]) => {
+        setEvents(newEvents);
+        setPreference('calendar', 'events', newEvents);
+    };
+
+    const addEvent = () => {
+        if (!neweventtitle.trim() || selectedday === null) return;
+        const datestr = `${currentyear}-${String(currentmonth + 1).padStart(2, '0')}-${String(selectedday).padStart(2, '0')}`;
+        const newEvent: CalendarEvent = {
+            id: `event-${Date.now()}`,
+            title: neweventtitle.trim(),
+            date: datestr,
+            time: neweventtime || undefined,
+            color: neweventcolor
+        };
+        saveEvents([...events, newEvent]);
+        resetmodal();
+    };
+
+    const updateEvent = () => {
+        if (!editingevent || !neweventtitle.trim()) return;
+        const updated = events.map(e =>
+            e.id === editingevent.id ? { ...e, title: neweventtitle.trim(), time: neweventtime || undefined, color: neweventcolor } : e
+        );
+        saveEvents(updated);
+        resetmodal();
+    };
+
+    const deleteEvent = (id: string) => {
+        saveEvents(events.filter(e => e.id !== id));
+        resetmodal();
+    };
+
+    const resetmodal = () => {
+        setshowmodal(false);
+        setselectedday(null);
+        seteditingevent(null);
+        setneweventtitle('');
+        setneweventtime('');
+        setneweventcolor(eventcolors[0]);
+    };
+
+    const openaddmodal = (day: number) => {
+        setselectedday(day);
+        seteditingevent(null);
+        setneweventtitle('');
+        setneweventtime('');
+        setneweventcolor(eventcolors[0]);
+        setshowmodal(true);
+    };
+
+    const openeditmodal = (event: CalendarEvent) => {
+        seteditingevent(event);
+        setneweventtitle(event.title);
+        setneweventtime(event.time || '');
+        setneweventcolor(event.color);
+        setshowmodal(true);
+    };
+
+    const geteventsforday = (day: number) => {
+        const datestr = `${currentyear}-${String(currentmonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        return events.filter(e => e.date === datestr);
+    };
 
     const getdaysinmonth = (month: number, year: number) => {
         return new Date(year, month + 1, 0).getDate();
@@ -40,7 +129,7 @@ export default function Calendar() {
 
     const daysinmonth = getdaysinmonth(currentmonth, currentyear);
     const firstday = getfirstdayofmonth(currentmonth, currentyear);
-    const days = [];
+    const days: (number | null)[] = [];
 
     for (let i = 0; i < firstday; i++) {
         days.push(null);
@@ -54,6 +143,86 @@ export default function Calendar() {
         return day === today.getDate() && currentmonth === today.getMonth() && currentyear === today.getFullYear();
     };
 
+    const gotoday = () => { setcurrentmonth(today.getMonth()); setcurrentyear(today.getFullYear()); };
+
+    const menuActions = useMemo(() => ({
+        'today': gotoday,
+        'prev-month': prevmonth,
+        'next-month': nextmonth,
+        'new-event': () => openaddmodal(today.getDate())
+    }), [currentmonth, currentyear]);
+
+    useMenuAction('calendar', menuActions, windowId);
+
+    const EventModal = () => (
+        <AnimatePresence>
+            {showmodal && (
+                <>
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/40 z-50"
+                        onClick={resetmodal}
+                    />
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] w-[320px] bg-white dark:bg-[#2a2a2a] rounded-xl shadow-2xl z-50 p-4"
+                    >
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="font-semibold">{editingevent ? 'Edit Event' : 'New Event'}</h3>
+                            <button onClick={resetmodal} className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded">
+                                <IoClose size={20} />
+                            </button>
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Event title"
+                            value={neweventtitle}
+                            onChange={e => setneweventtitle(e.target.value)}
+                            className="w-full px-3 py-2 bg-gray-100 dark:bg-white/10 rounded-lg mb-3 outline-none text-sm"
+                            autoFocus
+                        />
+                        <input
+                            type="time"
+                            value={neweventtime}
+                            onChange={e => setneweventtime(e.target.value)}
+                            className="w-full px-3 py-2 bg-gray-100 dark:bg-white/10 rounded-lg mb-3 outline-none text-sm"
+                        />
+                        <div className="flex gap-2 mb-4">
+                            {eventcolors.map(c => (
+                                <button
+                                    key={c}
+                                    onClick={() => setneweventcolor(c)}
+                                    className={`w-6 h-6 rounded-full ${neweventcolor === c ? 'ring-2 ring-offset-2 ring-blue-500' : ''}`}
+                                    style={{ backgroundColor: c }}
+                                />
+                            ))}
+                        </div>
+                        <div className="flex gap-2">
+                            {editingevent && (
+                                <button
+                                    onClick={() => deleteEvent(editingevent.id)}
+                                    className="px-3 py-2 bg-red-500/10 text-red-500 rounded-lg text-sm font-medium flex items-center gap-1"
+                                >
+                                    <IoTrash size={16} /> Delete
+                                </button>
+                            )}
+                            <button
+                                onClick={editingevent ? updateEvent : addEvent}
+                                className="flex-1 px-3 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium"
+                            >
+                                {editingevent ? 'Update' : 'Add Event'}
+                            </button>
+                        </div>
+                    </motion.div>
+                </>
+            )}
+        </AnimatePresence>
+    );
+
     if (ismobile) {
         return (
             <div className="h-full w-full bg-[#f5f5f7] dark:bg-[#1c1c1e] flex flex-col font-sf text-black dark:text-white">
@@ -64,16 +233,16 @@ export default function Calendar() {
                     </div>
                     <div className="flex items-center gap-4">
                         <button onClick={prevmonth} className="p-2 rounded-full bg-white dark:bg-[#2c2c2e]">
-                            <IoChevronBack size={20} className="text-[#007AFF]" />
+                            <IoChevronBack size={20} className="text-accent" />
                         </button>
                         <button
                             onClick={() => { setcurrentmonth(today.getMonth()); setcurrentyear(today.getFullYear()); }}
-                            className="px-4 py-2 rounded-xl bg-[#007AFF] text-white text-[15px] font-semibold"
+                            className="px-4 py-2 rounded-xl bg-accent text-white text-[15px] font-semibold"
                         >
                             Today
                         </button>
                         <button onClick={nextmonth} className="p-2 rounded-full bg-white dark:bg-[#2c2c2e]">
-                            <IoChevronForward size={20} className="text-[#007AFF]" />
+                            <IoChevronForward size={20} className="text-accent" />
                         </button>
                     </div>
                 </div>
@@ -92,7 +261,7 @@ export default function Calendar() {
                                 <div
                                     key={i}
                                     className={`aspect-square flex items-center justify-center rounded-full text-[15px] font-medium ${day === null ? '' :
-                                            istoday(day) ? 'bg-[#007AFF] text-white' : 'hover:bg-black/5 dark:hover:bg-white/10'
+                                        istoday(day) ? 'bg-accent text-white' : 'hover:bg-black/5 dark:hover:bg-white/10'
                                         }`}
                                 >
                                     {day}
@@ -120,7 +289,7 @@ export default function Calendar() {
                         <span>All Calendars</span>
                     </div>
                     <div className="px-3 py-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg text-[13px] text-black/70 dark:text-white/70 flex items-center gap-2 cursor-pointer">
-                        <span className="w-2 h-2 rounded-full bg-[#007AFF]"></span>
+                        <span className="w-2 h-2 rounded-full bg-accent"></span>
                         <span>Personal</span>
                     </div>
                     <div className="px-3 py-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg text-[13px] text-black/70 dark:text-white/70 flex items-center gap-2 cursor-pointer">
@@ -130,9 +299,12 @@ export default function Calendar() {
                 </div>
 
                 <div className="p-4 border-t border-black/5 dark:border-white/5">
-                    <button className="flex items-center gap-2 text-[#007AFF] text-[13px] font-medium">
+                    <button
+                        onClick={() => openaddmodal(today.getDate())}
+                        className="flex items-center gap-2 text-accent text-[13px] font-medium"
+                    >
                         <IoAddCircleOutline size={18} />
-                        Add Calendar
+                        Add Event
                     </button>
                 </div>
             </div>
@@ -163,23 +335,45 @@ export default function Calendar() {
                                 {day}
                             </div>
                         ))}
-                        {days.map((day, i) => (
-                            <div
-                                key={i}
-                                className={`min-h-[80px] p-2 border-r border-b border-black/10 dark:border-white/10 ${day === null ? 'bg-gray-50 dark:bg-[#252525]' : 'hover:bg-gray-50 dark:hover:bg-[#252525] cursor-pointer'
-                                    }`}
-                            >
-                                {day && (
-                                    <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-[13px] font-medium ${istoday(day) ? 'bg-[#007AFF] text-white' : ''
-                                        }`}>
-                                        {day}
-                                    </span>
-                                )}
-                            </div>
-                        ))}
+                        {days.map((day, i) => {
+                            const dayevents = day ? geteventsforday(day) : [];
+                            return (
+                                <div
+                                    key={i}
+                                    className={`min-h-[80px] p-2 border-r border-b border-black/10 dark:border-white/10 ${day === null ? 'bg-gray-50 dark:bg-[#252525]' : 'hover:bg-gray-50 dark:hover:bg-[#252525] cursor-pointer'
+                                        }`}
+                                    onDoubleClick={() => day && openaddmodal(day)}
+                                >
+                                    {day && (
+                                        <>
+                                            <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-[13px] font-medium ${istoday(day) ? 'bg-accent text-white' : ''
+                                                }`}>
+                                                {day}
+                                            </span>
+                                            <div className="mt-1 space-y-1">
+                                                {dayevents.slice(0, 2).map(ev => (
+                                                    <div
+                                                        key={ev.id}
+                                                        onClick={(e) => { e.stopPropagation(); openeditmodal(ev); }}
+                                                        className="text-[11px] px-1.5 py-0.5 rounded truncate cursor-pointer hover:opacity-80"
+                                                        style={{ backgroundColor: ev.color + '20', color: ev.color }}
+                                                    >
+                                                        {ev.time && <span className="font-semibold">{ev.time} </span>}{ev.title}
+                                                    </div>
+                                                ))}
+                                                {dayevents.length > 2 && (
+                                                    <div className="text-[10px] text-gray-500">+{dayevents.length - 2} more</div>
+                                                )}
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
             </div>
+            <EventModal />
         </div>
     );
 }

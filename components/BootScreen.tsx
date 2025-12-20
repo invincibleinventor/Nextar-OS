@@ -14,7 +14,7 @@ export default function BootScreen() {
                     if (prev >= 100) {
                         clearInterval(interval);
                         setTimeout(() => {
-                            if (osstate === 'booting') setosstate('locked');
+                                if (osstate === 'booting') setosstate('locked');
                         }, 500);
                         return 100;
                     }

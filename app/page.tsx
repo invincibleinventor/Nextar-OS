@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Image from 'next/image';
 import { useWindows } from '@/components/WindowContext';
 import Window from '@/components/Window';
@@ -22,18 +22,36 @@ import ContextMenu from '@/components/ui/ContextMenu';
 import { SelectionArea } from '@/components/ui/SelectionArea';
 import FileModal from '@/components/ui/FileModal';
 import { useFileSystem } from '@/components/FileSystemContext';
+import { useAuth } from '@/components/AuthContext';
+import Spotlight from '@/components/Spotlight';
+import AppSwitcher from '@/components/AppSwitcher';
+import TourGuide from '@/components/TourGuide';
+import ForceQuit from '@/components/ForceQuit';
+import AboutThisMac from '@/components/AboutThisMac';
+import { useSettings } from '@/components/SettingsContext';
+import { useMenuRegistration } from '@/components/AppMenuContext';
 
-const Page = () => {
+const Desktop = () => {
   const { windows, addwindow, setwindows, updatewindow, setactivewindow, activewindow } = useWindows();
   const { osstate, ismobile } = useDevice();
+  const { wallpaperurl } = useSettings();
   const [showcontrolcenter, setshowcontrolcenter] = useState(false);
   const [shownotificationcenter, setshownotificationcenter] = useState(false);
   const [showrecentapps, setshowrecentapps] = useState(false);
+  const [showspotlight, setshowspotlight] = useState(false);
+  const [showappswitcher, setshowappswitcher] = useState(false);
+  const [showtour, setshowtour] = useState(false);
+  const [showforcequit, setshowforcequit] = useState(false);
+  const [showaboutmac, setshowaboutmac] = useState(false);
   const [issystemgestureactive, setissystemgestureactive] = useState(false);
+
+  const { user } = useAuth();
+
+
 
   const haslaunchedwelcome = React.useRef(false);
 
-  const { createFolder, createFile, files, emptyTrash, moveItem, refreshFileSystem, copyItem, cutItem, pasteItem, clipboard, moveToTrash, renameItem } = useFileSystem();
+  const { createFolder, createFile, files, emptyTrash, moveItem, refreshFileSystem, copyItem, cutItem, pasteItem, clipboard, moveToTrash, renameItem, currentUserDesktopId } = useFileSystem();
 
   const context = { addwindow, windows, updatewindow, setactivewindow, ismobile, activewindow, files };
   const containerRef = useRef<HTMLDivElement>(null);
@@ -50,6 +68,15 @@ const Page = () => {
       const effectiveActionId = actionId || title;
 
       if (appId === 'finder' && effectiveActionId === 'new-window') {
+        const lastWindow = windows[windows.length - 1];
+        if (lastWindow && lastWindow.appname === 'Finder' && (Date.now() - (lastWindow.lastInteraction || 0) < 500)) {
+          console.log('[Page] Ignoring duplicate new-window request');
+          return;
+        }
+
+        const username = user?.username || 'Guest';
+        const homeDir = username === 'guest' ? 'Guest' : (username.charAt(0).toUpperCase() + username.slice(1));
+
         addwindow({
           id: `finder-${Date.now()}`,
           appname: 'Finder',
@@ -60,13 +87,16 @@ const Page = () => {
           ismaximized: false,
           position: { top: 100, left: 100 },
           size: { width: 800, height: 500 },
-          props: { initialpath: ['Macintosh HD', 'Users', 'Bala', 'Projects'] }
+          props: { initialpath: ['Macintosh HD', 'Users', homeDir, 'Desktop'] }
         });
         return;
       }
 
       if (activewindow) {
         return;
+      }
+
+      if (effectiveActionId === 'new-window') {
       }
 
       if (effectiveActionId === 'new-folder') {
@@ -80,6 +110,46 @@ const Page = () => {
     return () => window.removeEventListener('menu-action' as any, handleGlobalMenu);
   }, [windows, activewindow]);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setshowspotlight(prev => !prev);
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === '`') {
+        e.preventDefault();
+        if (!showappswitcher) {
+          setshowappswitcher(true);
+        }
+      }
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 't') {
+        e.preventDefault();
+        setshowtour(true);
+      }
+      if ((e.metaKey || e.ctrlKey) && e.altKey && (e.key === 'Escape' || e.key === 'Esc')) {
+        e.preventDefault();
+        setshowforcequit(true);
+      }
+    };
+
+    const handleStartTour = () => setshowtour(true);
+    const handleToggleSpotlight = () => setshowspotlight(prev => !prev);
+    const handleForceQuit = () => setshowforcequit(true);
+    const handleAboutMac = () => setshowaboutmac(true);
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('start-tour', handleStartTour);
+    window.addEventListener('toggle-spotlight', handleToggleSpotlight);
+    window.addEventListener('show-force-quit', handleForceQuit);
+    window.addEventListener('show-about-mac', handleAboutMac);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('start-tour', handleStartTour);
+      window.removeEventListener('toggle-spotlight', handleToggleSpotlight);
+      window.removeEventListener('show-force-quit', handleForceQuit);
+      window.removeEventListener('show-about-mac', handleAboutMac);
+    };
+  }, [showappswitcher]);
+
   const handleContextMenu = (e: React.MouseEvent, fileId?: string) => {
     if (ismobile) return;
     e.preventDefault();
@@ -91,13 +161,37 @@ const Page = () => {
 
   const handleModalConfirm = (inputValue: string) => {
     if (fileModal.type === 'create-folder') {
-      createFolder(inputValue, 'user-desktop');
+      createFolder(inputValue, currentUserDesktopId);
     } else if (fileModal.type === 'create-file') {
-      createFile(inputValue, 'user-desktop');
+      createFile(inputValue, currentUserDesktopId);
     } else if (fileModal.type === 'rename' && contextMenu?.fileId) {
       renameItem(contextMenu.fileId, inputValue);
     }
     setFileModal({ ...fileModal, isOpen: false });
+  };
+
+  useEffect(() => {
+    if (osstate === 'unlocked' && user && !ismobile) {
+      const desktopFinder = windows.find((w: any) => w.id === 'finder-desktop');
+      if (!desktopFinder) {
+        addwindow({
+          id: 'finder-desktop',
+          appname: 'Finder',
+          component: 'apps/Finder',
+          props: { isDesktopBackend: true },
+          isminimized: true,
+          ismaximized: false,
+          position: { top: 0, left: 0 },
+          size: { width: 0, height: 0 }
+        });
+      }
+    }
+  }, [osstate, user, windows, addwindow]);
+
+  const handleDesktopClick = () => {
+    if (shownotificationcenter) setshownotificationcenter(false);
+    setContextMenu(null);
+    setactivewindow('finder-desktop'); 
   };
 
   const getContextMenuItems = () => {
@@ -123,7 +217,7 @@ const Page = () => {
         baseItems.push({ label: 'Get Info', action: () => openSystemItem(activeFileItem, context, 'getinfo') });
         baseItems.push({
           label: 'Show in Finder',
-          action: () => openSystemItem('finder', context, undefined, { openPath: activeFileItem.parent || 'user-desktop', selectItem: activeFileItem.id })
+          action: () => openSystemItem('finder', context, undefined, { openPath: activeFileItem.parent || currentUserDesktopId, selectItem: activeFileItem.id })
         });
         baseItems.push({ separator: true, label: '' });
         baseItems.push({
@@ -145,7 +239,7 @@ const Page = () => {
         { label: 'New Folder', action: () => setFileModal({ isOpen: true, type: 'create-folder', initialValue: '' }) },
         { label: 'New File', action: () => setFileModal({ isOpen: true, type: 'create-file', initialValue: '' }) },
         { separator: true, label: '' },
-        { label: 'Paste', action: () => pasteItem('user-desktop'), disabled: !clipboard },
+        { label: 'Paste', action: () => pasteItem(currentUserDesktopId), disabled: !clipboard },
         { separator: true, label: '' },
         { label: 'Get Info', action: () => { }, disabled: true },
         { label: 'Change Wallpaper', action: () => openSystemItem('settings', context) },
@@ -178,12 +272,12 @@ const Page = () => {
   };
 
   useEffect(() => {
-    if (osstate === 'unlocked' && !haslaunchedwelcome.current) {
+    if (osstate === 'unlocked' && user && !haslaunchedwelcome.current) {
       openSystemItem('welcome', context);
       haslaunchedwelcome.current = true;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [osstate, addwindow]);
+  }, [osstate, addwindow, user]);
 
   const StatusBar = () => {
     const now = new Date();
@@ -191,6 +285,7 @@ const Page = () => {
 
     return (
       <motion.div
+        data-tour="ios-statusbar"
         className="absolute top-0 left-0 right-0 h-11 z-[10000] flex items-center justify-between px-6 cursor-pointer bg-transparent backdrop-blur-md"
         drag="y"
         dragConstraints={{ top: 0, bottom: 0 }}
@@ -219,16 +314,18 @@ const Page = () => {
     );
   };
 
+  if (!user && osstate !== 'booting') {
+    return <></>;
+  }
+
   return (
     <>
-      <BootScreen />
-      <LockScreen />
-
       <div
-        className={`relative w-full h-full transition-all duration-500 ease-out bg-center bg-cover bg-no-repeat bg-[url('/bg.jpg')] dark:bg-[url('/bg-dark.jpg')]
+        className={`relative w-full h-full transition-all duration-500 ease-out bg-center bg-cover bg-no-repeat
                     ${osstate === 'unlocked'
             ? 'opacity-100 scale-100'
             : osstate === 'booting' ? 'opacity-0 scale-100' : 'opacity-0 scale-[0.98] pointer-events-none'}`}
+        style={{ backgroundImage: `url('${wallpaperurl}')` }}
       >
         {!ismobile && (
           <>
@@ -252,15 +349,11 @@ const Page = () => {
               id="desktop-main"
               className="absolute inset-0 pt-6 pb-16"
               onContextMenu={handleContextMenu}
-              onClick={() => {
-                if (shownotificationcenter) setshownotificationcenter(false);
-                setContextMenu(null);
-                setactivewindow(null);
-              }}
+              onClick={handleDesktopClick}
               onDragOver={handleDragOver}
-              onDrop={(e) => handleDrop(e, 'user-desktop')}
+              onDrop={(e) => handleDrop(e, currentUserDesktopId)}
             >
-              <div className='p-4 pt-10 gap-4 flex flex-col flex-wrap-reverse content-start h-full w-full' ref={containerRef}>
+              <div data-tour="desktop" className='p-4 pt-10 gap-4 flex flex-col flex-wrap-reverse content-start h-full w-full' ref={containerRef}>
                 <SelectionArea
                   containerRef={containerRef as React.RefObject<HTMLElement>}
                   onSelectionChange={(rect) => {
@@ -289,7 +382,7 @@ const Page = () => {
                   }}
                 />
 
-                {files.filter(file => file.parent === 'user-desktop' && !file.isTrash).map((item) => {
+                {files.filter(file => file.parent === currentUserDesktopId && !file.isTrash).map((item) => {
                   const isSelected = selectedFileIds.includes(item.id);
                   return (
                     <div
@@ -341,7 +434,7 @@ const Page = () => {
                           {getFileIcon(item.mimetype, item.name, item.icon)}
                         </div>
                       </div>
-                      <span className={`text-[11px] w-full font-semibold text-white drop-shadow-md text-center break-words leading-tight line-clamp-2 px-1 rounded-sm ${isSelected ? 'bg-blue-600' : ''} group-hover:text-white`}>{item.name}</span>
+                      <span className={`text-[11px] w-full font-semibold text-white drop-shadow-md text-center break-words leading-tight line-clamp-2 px-1 rounded-sm ${isSelected ? 'bg-accent' : ''} group-hover:text-white`}>{item.name}</span>
                     </div>
                   )
                 })}
@@ -455,6 +548,21 @@ const Page = () => {
         )}
       </div>
       <MacOSNotifications isopen={shownotificationcenter} onclose={() => setshownotificationcenter(false)} />
+      <Spotlight isOpen={showspotlight} onClose={() => setshowspotlight(false)} />
+      <AppSwitcher isOpen={showappswitcher} onClose={() => setshowappswitcher(false)} />
+      <TourGuide isOpen={showtour} onClose={() => setshowtour(false)} />
+      <ForceQuit isopen={showforcequit} onclose={() => setshowforcequit(false)} />
+      <AboutThisMac isopen={showaboutmac} onclose={() => setshowaboutmac(false)} />
+    </>
+  );
+}
+
+const Page = () => {
+  return (
+    <>
+      <BootScreen />
+      <LockScreen />
+      <Desktop />
     </>
   );
 };

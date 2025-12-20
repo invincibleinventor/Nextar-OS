@@ -1,11 +1,14 @@
-
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+'use client';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useFileSystem } from '../FileSystemContext';
-import { IoSaveOutline, IoText, IoSearchOutline, IoClose, IoFolderOpenOutline } from 'react-icons/io5';
+import { IoSaveOutline, IoText, IoSearchOutline, IoClose, IoFolderOpenOutline, IoPlay, IoStop } from 'react-icons/io5';
+import { useAuth } from '../AuthContext';
 import ContextMenu from '../ui/ContextMenu';
 import FilePicker from '../ui/FilePicker';
 import { filesystemitem } from '../data';
 import { useMenuAction } from '../hooks/useMenuAction';
+import { useMenuRegistration } from '../AppMenuContext';
+import { useWindows } from '../WindowContext';
 
 
 interface TextEditProps {
@@ -31,7 +34,110 @@ export default function TextEdit({ id, content: initialContent, title, isFocused
 
     const [showPicker, setShowPicker] = useState<boolean>(false);
     const [pickerMode, setPickerMode] = useState<'open' | 'save'>('open');
-    const [currentPath, setCurrentPath] = useState<string[]>(['Macintosh HD', 'Users', 'Bala', 'Projects']);
+
+    const { user } = useAuth();
+    const username = user?.username || 'Guest';
+    const homeDir = username === 'guest' ? 'Guest' : (username.charAt(0).toUpperCase() + username.slice(1));
+    const [currentPath, setCurrentPath] = useState<string[]>(['Macintosh HD', 'Users', homeDir, 'Projects']);
+
+
+
+    const { activewindow } = useWindows();
+    const isActiveWindow = activewindow === id;
+
+    const textEditMenus = useMemo(() => ({
+        File: [
+            { title: "New", actionId: "new-file", shortcut: "⌘N" },
+            { title: "Open...", actionId: "open", shortcut: "⌘O" },
+            { separator: true },
+            { title: "Save", actionId: "save", shortcut: "⌘S" },
+            { separator: true },
+            { title: "Close Window", actionId: "close-window", shortcut: "⌘W" }
+        ],
+        Edit: [
+            { title: "Undo", actionId: "undo", shortcut: "⌘Z" },
+            { title: "Redo", actionId: "redo", shortcut: "⇧⌘Z" },
+            { separator: true },
+            { title: "Cut", actionId: "cut", shortcut: "⌘X" },
+            { title: "Copy", actionId: "copy", shortcut: "⌘C" },
+            { title: "Paste", actionId: "paste", shortcut: "⌘V" },
+            { title: "Delete", actionId: "delete" },
+            { separator: true },
+            { title: "Select All", actionId: "select-all", shortcut: "⌘A" },
+            { separator: true },
+            { title: "Find...", actionId: "find", shortcut: "⌘F" }
+        ],
+        Format: [
+            { title: "Bold", actionId: "format-bold", shortcut: "⌘B" },
+            { title: "Italic", actionId: "format-italic", shortcut: "⌘I" },
+            { title: "Underline", actionId: "format-underline", shortcut: "⌘U" },
+            { separator: true },
+            { title: "Align Left", actionId: "align-left" },
+            { title: "Center", actionId: "align-center" },
+            { title: "Align Right", actionId: "align-right" }
+        ]
+    }), []);
+
+    useMenuRegistration(textEditMenus, isActiveWindow);
+
+
+
+    useEffect(() => {
+        if (!id) {
+            setPickerMode('open');
+            setShowPicker(true);
+        }
+    }, [id]);
+
+    useEffect(() => {
+        if (contentRef.current && contentRef.current.innerHTML !== initialContent && initialContent !== undefined) {
+            if (initialContent === '') contentRef.current.innerHTML = '';
+            else if (contentRef.current.innerHTML === '') contentRef.current.innerHTML = initialContent;
+        }
+    }, [initialContent]);
+
+    const handleInput = useCallback(() => {
+        if (contentRef.current) {
+            setContent(contentRef.current.innerHTML);
+            setIsSaved(false);
+        }
+    }, []);
+
+    const handleSave = useCallback(async () => {
+        if (currentFileId && contentRef.current) {
+            await updateFileContent(currentFileId, contentRef.current.innerHTML);
+            setIsSaved(true);
+        } else {
+            setPickerMode('save');
+            setShowPicker(true);
+        }
+    }, [currentFileId, updateFileContent]);
+
+    const handleOpen = () => {
+        setPickerMode('open');
+        setShowPicker(true);
+    }
+
+    const handleFileSelect = async (item: filesystemitem | null, saveName?: string) => {
+        if (pickerMode === 'open' && item) {
+            setContent(item.content || '');
+            if (contentRef.current) contentRef.current.innerHTML = item.content || '';
+            setCurrentFileId(item.id);
+            setIsSaved(true);
+        } else if (pickerMode === 'save' && saveName) {
+            const parentId = item ? item.id : 'root';
+            const newId = await createFile(saveName, parentId, contentRef.current?.innerHTML || '');
+            setCurrentFileId(newId);
+            setIsSaved(true);
+        }
+        setShowPicker(false);
+    };
+
+    const execCmd = useCallback((command: string, value: string | undefined = undefined) => {
+        document.execCommand(command, false, value);
+        handleInput();
+        if (contentRef.current) contentRef.current.focus();
+    }, [handleInput]);
 
     const menuActions = useMemo(() => ({
         'new-file': () => {
@@ -61,68 +167,9 @@ export default function TextEdit({ id, content: initialContent, title, isFocused
         'align-left': () => execCmd('justifyLeft'),
         'align-center': () => execCmd('justifyCenter'),
         'align-right': () => execCmd('justifyRight'),
-    }), [currentFileId]);
+    }), [currentFileId, handleSave, execCmd]);
 
     useMenuAction(appId, menuActions, id);
-
-
-
-    useEffect(() => {
-        if (!id) {
-            setPickerMode('open');
-            setShowPicker(true);
-        }
-    }, [id]);
-
-    useEffect(() => {
-        if (contentRef.current && contentRef.current.innerHTML !== initialContent && initialContent !== undefined) {
-            if (initialContent === '') contentRef.current.innerHTML = '';
-            else if (contentRef.current.innerHTML === '') contentRef.current.innerHTML = initialContent;
-        }
-    }, [initialContent]);
-
-    const handleInput = () => {
-        if (contentRef.current) {
-            setContent(contentRef.current.innerHTML);
-            setIsSaved(false);
-        }
-    };
-
-    const handleSave = () => {
-        if (currentFileId && contentRef.current) {
-            updateFileContent(currentFileId, contentRef.current.innerHTML);
-            setIsSaved(true);
-        } else {
-            setPickerMode('save');
-            setShowPicker(true);
-        }
-    };
-
-    const handleOpen = () => {
-        setPickerMode('open');
-        setShowPicker(true);
-    }
-
-    const handleFileSelect = (item: filesystemitem | null, saveName?: string) => {
-        if (pickerMode === 'open' && item) {
-            setContent(item.content || '');
-            if (contentRef.current) contentRef.current.innerHTML = item.content || '';
-            setCurrentFileId(item.id);
-            setIsSaved(true);
-        } else if (pickerMode === 'save' && saveName) {
-            const parentId = item ? item.id : 'root';
-            const newId = createFile(saveName, parentId, contentRef.current?.innerHTML || '');
-            setCurrentFileId(newId);
-            setIsSaved(true);
-        }
-        setShowPicker(false);
-    };
-
-    const execCmd = (command: string, value: string | undefined = undefined) => {
-        document.execCommand(command, false, value);
-        handleInput();
-        if (contentRef.current) contentRef.current.focus();
-    };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if ((e.metaKey || e.ctrlKey) && e.key === 's') {
