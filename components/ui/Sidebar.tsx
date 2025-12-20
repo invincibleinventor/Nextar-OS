@@ -31,7 +31,7 @@ export default function Sidebar({ currentPath, onNavigate, className = '', show 
             } 
             ${className}
             transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] 
-            flex flex-col  mt-[50px] h-full transform bg-[#f5f5f7]/80 dark:bg-[#1e1e1e]/80 backdrop-blur-xl border-r border-black/5 dark:border-white/5
+            flex flex-col  pt-[50px] h-full transform bg-[#f5f5f7]/80 dark:bg-[#1e1e1e]/80 backdrop-blur-xl border-r border-black/5 dark:border-white/5
         `}>
             <div className={`flex-1 overflow-y-auto px-2 ${show ? 'opacity-100' : 'opacity-0'} transition-opacity duration-200 delay-100`}>
                 {items.map((group, idx) => (
