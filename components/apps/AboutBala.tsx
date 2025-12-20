@@ -64,7 +64,7 @@ export default function AboutBala() {
                                 >
                                     <button
                                         onClick={() => setActiveProject(null)}
-                                        className="flex items-center gap-1 text-sm text-accent mb-4 hover:opacity-80 transition-opacity"
+                                        className="flex items-center gap-1 text-sm text-accent mb-8 hover:opacity-80 transition-opacity"
                                     >
                                         <IoChevronBack size={16} />
                                         Back to Projects
@@ -240,7 +240,7 @@ export default function AboutBala() {
 
     return (
         <div className="flex flex-col h-full w-full pt-[50px] bg-white dark:bg-[#1e1e1e] text-black dark:text-white font-sf rounded-b-xl overflow-hidden">
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="flex-1 pl-8 pr-6" style={{scrollbarGutter: 'stable', overflow: 'auto'}}>
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={activetab}

@@ -202,7 +202,7 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
                             exit={{ opacity: 0 }}
                             className="flex-1 flex flex-col bg-[#1e1e1e]"
                         >
-                            <div className="h-12 px-4 flex items-center justify-between  border-b border-white/10 ">
+                            <div className="h-12 px-4 pl-20 flex items-center justify-between  border-b border-white/10 ">
                                 <button
                                     onClick={() => setviewingimage(null)}
                                     className="text-accent flex items-center gap-1 text-sm font-medium"
