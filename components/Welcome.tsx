@@ -195,7 +195,7 @@ export default function Welcome(props: any) {
                         if (step < steps.length - 1) {
                             setstep(step + 1);
                         } else {
-                            removewindow(props.id || 'welcome');
+                            removewindow(props.windowId || 'welcome');
                         }
                     }}
                     className="flex items-center gap-1.5 bg-blue-500 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors"
