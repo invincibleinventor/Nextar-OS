@@ -143,7 +143,7 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
 
     return (
         <div ref={containerref} className="flex h-full w-full bg-white dark:bg-[#1e1e1e] font-sf text-black dark:text-white overflow-hidden">
-            <div className="w-[200px] flex flex-col pt-[50px] border-r border-black/5 dark:border-white/10 bg-[#f5f5f7]/80 dark:bg-[#2d2d2d]/80 backdrop-blur-xl shrink-0">
+            <div className={`${viewingimage?'hidden':''} w-[200px] flex flex-col pt-[50px] border-r border-black/5 dark:border-white/10 bg-[#f5f5f7]/80 dark:bg-[#2d2d2d]/80 backdrop-blur-xl shrink-0`}>
                 <div className="px-4 mb-2 text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Library</div>
                 <div className="px-2">
                     <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-accent/10 text-accent">
