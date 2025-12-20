@@ -219,7 +219,7 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
                     response = 'Visit the Finder app to browse my portfolio projects.';
                     break;
                 case 'contact':
-                    response = 'Email: invincibleinvnentor@gmail.com';
+                    response = 'Email: invincibleinventor@gmail.com';
                     break;
                 case 'whoami':
                     response = 'guest@balatbr';
