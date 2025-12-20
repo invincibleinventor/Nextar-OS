@@ -261,11 +261,11 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
                         })}
                     </div>
                 </div>
-                <div className='flex space-x-6 flex-row items-center content-center'>
+                <div className='flex space-x-3 flex-row items-center content-center'>
                     <div className='hidden md:flex flex-row space-x-4 items-center pl-2'>
                         <button
                             onClick={() => window.dispatchEvent(new CustomEvent('toggle-spotlight'))}
-                            className="p-1 rounded hover:bg-white/10 transition-colors"
+                            className=" rounded hover:bg-white/10 transition-colors"
                             title="Spotlight (⌘K)"
                         >
                             <svg className="w-4 h-4 dark:text-white text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
