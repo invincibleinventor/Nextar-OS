@@ -504,9 +504,7 @@ const Desktop = () => {
               <Control isopen={showcontrolcenter} onclose={() => setshowcontrolcenter(false)} ismobile={true} />
             </div>
 
-            <div className={`absolute top-0 left-0 z-[10000] w-full h-full pointer-events-none visible`}>
-              <NotificationCenter isopen={shownotificationcenter} onclose={() => setshownotificationcenter(false)} />
-            </div>
+
 
             {!showcontrolcenter && !shownotificationcenter && <StatusBar />}
 

@@ -43,7 +43,106 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
     if (!mounted) return null;
     if (osstate !== 'unlocked') return null;
 
+    const formattime = () => {
+        const date = new Date();
+        return {
+            time: date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: false }),
+            date: date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
+        };
+    };
+
     if (ismobile) {
+        const { time, date } = formattime();
+
+        if (isopen) {
+            return createPortal(
+                <>
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        style={{ zIndex: 2147483647 }}
+                        className="fixed inset-0 bg-white/40 dark:bg-black/40 backdrop-blur-sm"
+                        onClick={onclose}
+                    />
+
+                    <motion.div
+                        key="notification-center"
+                        initial={{ y: '-100%' }}
+                        animate={{ y: 0 }}
+                        exit={{ y: '-100%' }}
+                        transition={{ type: "spring", stiffness: 300, damping: 40, mass: 1 }}
+                        drag="y"
+                        dragConstraints={{ top: -1000, bottom: 0 }}
+                        dragElastic={0.05}
+                        onDragEnd={(_, info) => {
+                            if (info.offset.y < -100 || info.velocity.y < -500) {
+                                onclose();
+                            }
+                        }}
+                        onClick={onclose}
+                        style={{ zIndex: 2147483647 }}
+                        className="fixed inset-0 flex flex-col h-full w-full pointer-events-auto"
+                    >
+                        <div className="flex flex-col items-center mt-16 mb-8 shrink-0">
+                            <h1 className="text-7xl font-medium text-neutral-700 dark:text-white tracking-tight drop-shadow-lg">{time.split(' ')[0]}</h1>
+                            <div className="text-xl text-black/40 dark:text-white/90 font-medium mt-1 drop-shadow-md">{date}</div>
+                        </div>
+
+                        <div className="flex-1 w-full px-4 pb-24">
+                            {notifications.length === 0 ? (
+                                <div className="text-center text-black/50 dark:text-white/50 mt-10 text-lg font-medium">No Notifications</div>
+                            ) : (
+                                <div className="flex flex-col gap-3 max-w-md mx-auto">
+                                    <AnimatePresence mode='popLayout'>
+                                        {notifications.map((n) => (
+                                            <motion.div
+                                                key={n.id}
+                                                layout
+                                                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                                exit={{ opacity: 0, scale: 0.95, height: 0 }}
+                                                transition={{ duration: 0.2 }}
+                                                drag="x"
+                                                dragConstraints={{ left: -1000, right: 1000 }}
+                                                onDragEnd={(_, info) => {
+                                                    if (Math.abs(info.offset.x) > 80) {
+                                                        clearnotification(n.id);
+                                                    }
+                                                }}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handlenotificationclick(n);
+                                                    onclose();
+                                                }}
+                                                className="w-full bg-white/40 dark:bg-neutral-800/40 backdrop-blur-xl rounded-[20px] p-4 shadow-sm active:scale-[0.98] transition-transform relative overflow-hidden"
+                                            >
+                                                <div className="flex items-start gap-4">
+                                                    <div className="w-[42px] h-[42px] rounded-[10px] bg-white overflow-hidden shrink-0 shadow-sm">
+                                                        <Image src={n.icon} width={42} height={42} className="w-full h-full object-cover" alt={n.appname} />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0 pt-0.5">
+                                                        <div className="flex justify-between items-baseline mb-0.5">
+                                                            <span className="text-[15px] font-semibold text-black dark:text-white truncate">{n.appname}</span>
+                                                            <span className="text-[13px] text-black/60 dark:text-white/60">{n.time}</span>
+                                                        </div>
+                                                        <h3 className="text-[15px] font-semibold text-black dark:text-white leading-tight mb-0.5">{n.title}</h3>
+                                                        <p className="text-[15px] text-black/80 dark:text-white/80 leading-snug line-clamp-3">{n.description}</p>
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+                                        ))}
+                                    </AnimatePresence>
+                                </div>
+                            )}
+                        </div>
+                    </motion.div>
+                </>,
+                document.body
+            );
+        }
+
         return createPortal(
             <div style={{ zIndex: 2147483647 }} className="fixed top-12 left-2 right-2 flex flex-col items-center space-y-2 pointer-events-none">
                 <AnimatePresence>
@@ -92,7 +191,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                             animate={{ opacity: 1, x: 0, scale: 1 }}
                             exit={{ opacity: 0, x: 50, scale: 0.95, transition: { duration: 0.15 } }}
                             transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                            className="group relative w-[340px] bg-white dark:bg-[#2c2c2e] shadow-2xl shadow-black/20 rounded-2xl p-4 cursor-pointer select-none pointer-events-auto border border-black/5 dark:border-white/10"
+                            className="group relative w-[340px] bg-white/40 dark:bg-neutral-900/40 backdrop-blur-xl shadow-2xl shadow-black/20 rounded-2xl p-4 cursor-pointer select-none pointer-events-auto border border-black/5 dark:border-white/10"
                             onClick={() => { handlenotificationclick(n); markasviewed(n.id); }}
                             whileHover={{ scale: 1.01 }}
                         >
