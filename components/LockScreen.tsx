@@ -170,7 +170,7 @@ export default function LockScreen() {
             </div>
 
             <div className="z-10 flex flex-col items-center w-full max-w-md">
-                <div className="flex items-center gap-8 mt-32 overflow-x-auto p-4 mask-fade">
+                <div className="flex items-center gap-8 mt-32 mb-10 overflow-x-auto p-4 mask-fade">
                     {users.map(u => (
                         <div
                             key={u.username}
@@ -178,7 +178,7 @@ export default function LockScreen() {
                             className={`flex flex-col items-center gap-3 cursor-pointer transition-all duration-300
                                 ${selectedUser?.username === u.username ? 'scale-110 opacity-100' : 'scale-90 opacity-60 hover:opacity-80'}`}
                         >
-                            <div className={`relative w-24 h-24 rounded-full overflow-hidden shadow-2xl border-2 transition-colors ${selectedUser?.username === u.username ? 'border-white' : 'border-transparent'}`}>
+                            <div className={`relative w-24 h-24 rounded-full overflow-hidden  border-2 transition-colors ${selectedUser?.username === u.username ? 'border-white' : 'border-transparent'}`}>
                                 <Image src={u.avatar || "/pfp.png"} alt={u.name} fill className="object-cover" />
                             </div>
                             <span className="text-lg font-medium drop-shadow-md">{u.name}</span>
@@ -216,6 +216,7 @@ export default function LockScreen() {
                                 <input
                                     type="password"
                                     value={password}
+                                    name="search"
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="Enter Password"
                                     className="w-full bg-white/20 hover:bg-white/25 focus:bg-white/25 transition-colors backdrop-blur-md border border-white/10 rounded-full py-1.5  outline-none placeholder-white/50 shadow-inner text-sm pl-4 appearance-none"
@@ -256,7 +257,7 @@ export default function LockScreen() {
                         </div>
                         <span className="text-[10px] font-medium opacity-60">Sleep</span>
                     </div>
-                    <div className="flex flex-col items-center gap-1 cursor-pointer group">
+                    <div onClick={()=>window.location.reload()} className="flex flex-col items-center gap-1 cursor-pointer group">
                         <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur flex items-center justify-center group-hover:bg-white/20 transition-colors">
                             <IoInformationCircleOutline size={20} />
                         </div>

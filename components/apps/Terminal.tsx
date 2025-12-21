@@ -20,7 +20,9 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
     const username = user?.username || 'guest';
     const userhomeid = isGuest ? 'user-guest' : `user-${username}`;
 
-    const [history, sethistory] = useState(['Welcome to MacOS-Next Terminal v1.0', 'Type "help" for available commands.', '']);
+    const userhomepath = isGuest ? 'Guest' : (username.charAt(0).toUpperCase() + username.slice(1));
+
+    const [history, sethistory] = useState(['Welcome to NextarOS Terminal v1.0', 'Type "help" for available commands.', '']);
     const [currline, setcurrline] = useState('');
     const [cwd, setcwd] = useState(userhomeid);
     const [fontSize, setFontSize] = useState(13);
@@ -177,7 +179,7 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
             let response = '';
 
             const promptPath = getPathString(cwd);
-            const fullPrompt = `${username}@macosdev ${promptPath} $ ${currline}`;
+            const fullPrompt = `${username}@nextardev ${promptPath} $ ${currline}`;
 
             switch (command) {
                 case 'help':
@@ -213,7 +215,7 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
                     }
                     break;
                 case 'pwd':
-                    response = getPathString(cwd).replace('~', `/home/${username}`);
+                    response = getPathString(cwd).replace('~', `/Users/${userhomepath}`);
                     break;
                 case 'cat':
                     if (!arg1) {
@@ -244,14 +246,14 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
                     response = 'Email: invincibleinventor@gmail.com';
                     break;
                 case 'whoami':
-                    response = `${username}@macosdev`;
+                    response = `${username}@nextardev`;
                     break;
                 case 'clear':
                     sethistory([]);
                     setcurrline('');
                     return;
                 case '':
-                    sethistory(prev => [...prev, `${username}@macosdev ${promptPath} $`, '']);
+                    sethistory(prev => [...prev, `${username}@nextardev ${promptPath} $`, '']);
                     setcurrline('');
                     return;
                 default:
@@ -300,12 +302,12 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
             <div className="font-mono leading-relaxed" style={{ fontSize: `${fontSize}px` }}>
                 {history.map((line, i) => (
                     <div key={i} className="min-h-[20px] whitespace-pre-wrap break-all">
-                        {line.includes('@macosdev') && line.includes('$') ? (
+                        {line.includes('@nextardev') && line.includes('$') ? (
                             <span>
                                 <span className="text-[#50fa7b]">{line.split('@')[0]}</span>
                                 <span className="text-white">@</span>
-                                <span className="text-[#8be9fd]">macosdev</span>
-                                <span className="text-white"> {line.split('@macosdev ')[1]?.split(' $')[0] || ''} </span>
+                                <span className="text-[#8be9fd]">nextardev</span>
+                                <span className="text-white"> {line.split('@nextardev ')[1]?.split(' $')[0] || ''} </span>
                                 <span className="text-white">$ </span>
                                 <span className="text-white">{line.split('$')[1] || ''}</span>
                             </span>
@@ -321,7 +323,7 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
                 <div className="flex items-center">
                     <span className="text-[#50fa7b]">{username}</span>
                     <span className="text-white">@</span>
-                    <span className="text-[#8be9fd]">macosdev</span>
+                    <span className="text-[#8be9fd]">nextardev</span>
                     <span className="text-white"> {getPathString(cwd)} </span>
                     <span className="text-white">$ </span>
                     <input

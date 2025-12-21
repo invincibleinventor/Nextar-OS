@@ -54,10 +54,14 @@ export default function Calculator({ appId = 'calculator', id }: { appId?: strin
             case '+': result = prev + current; break;
             case '-': result = prev - current; break;
             case '×': result = prev * current; break;
-            case '÷': result = prev / current; break;
+            case '÷': result = current !== 0 ? prev / current : NaN; break;
         }
 
-        setdisplay(result.toString());
+        if (isNaN(result) || !isFinite(result)) {
+            setdisplay('Error');
+        } else {
+            setdisplay(result.toString());
+        }
         setoperation(null);
         setwaitingfornewvalue(true);
     };

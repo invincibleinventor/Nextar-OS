@@ -38,7 +38,7 @@ export default function TextEdit({ id, content: initialContent, title, isFocused
     const { user } = useAuth();
     const username = user?.username || 'Guest';
     const homeDir = username === 'guest' ? 'Guest' : (username.charAt(0).toUpperCase() + username.slice(1));
-    const [currentPath, setCurrentPath] = useState<string[]>(['Macintosh HD', 'Users', homeDir, 'Projects']);
+    const [currentPath, setCurrentPath] = useState<string[]>(['System', 'Users', homeDir, 'Projects']);
 
 
 

@@ -26,10 +26,10 @@ const sidebaritems = [
     { id: 'wallpaper', label: 'Wallpaper', icon: IoImageOutline, color: '#32ADE6' },
 ];
 
-export default function Settings() {
-    const [activetab, setactivetab] = useState("general");
+export default function Settings({ initialPage }: { initialPage?: string }) {
+    const [activetab, setactivetab] = useState(initialPage || "general");
     const [showsidebar, setshowsidebar] = useState(true);
-    const { reducemotion, setreducemotion, reducetransparency, setreducetransparency, wallpaperurl, setwallpaperurl, accentcolor, setaccentcolor } = useSettings();
+    const { reducemotion, setreducemotion, reducetransparency, setreducetransparency, soundeffects, setsoundeffects, wallpaperurl, setwallpaperurl, accentcolor, setaccentcolor } = useSettings();
     const { theme, toggletheme } = useTheme();
     const { addwindow, windows, updatewindow, setactivewindow } = useWindows();
     const { ismobile } = useDevice();
@@ -104,7 +104,7 @@ export default function Settings() {
                                 <div className="w-14 h-14 bg-gradient-to-br from-accent to-[#5856D6] rounded-xl mb-3 shadow-md flex items-center justify-center text-white">
                                     <IoSettingsOutline size={28} />
                                 </div>
-                                <h2 className="text-lg font-bold">MacOS-Next</h2>
+                                <h2 className="text-lg font-bold">NextarOS</h2>
                                 <p className="text-[12px] text-gray-500 mt-0.5">Version 14.5 (23A5212a)</p>
                             </div>
 
@@ -155,13 +155,14 @@ export default function Settings() {
                             <div className="text-[11px] uppercase font-semibold text-gray-400 pl-3 mb-2">Accessibility</div>
                             <SettingsGroup>
                                 <SettingsRow label="Reduce Transparency" toggle toggleValue={reducetransparency} onToggle={setreducetransparency} />
-                                <SettingsRow label="Reduce Motion" toggle toggleValue={reducemotion} onToggle={setreducemotion} last />
+                                <SettingsRow label="Reduce Motion" toggle toggleValue={reducemotion} onToggle={setreducemotion} />
+                                <SettingsRow label="Sound Effects" toggle toggleValue={soundeffects} onToggle={setsoundeffects} last />
                             </SettingsGroup>
                         </>
                     )}
 
                     {activetab === 'users' && (
-                        
+
                         <div className="h-full -m-8 md:-m-0 border border-black/5 dark:border-white/5 rounded-xl overflow-hidden shadow-sm">
                             <UserManagement />
                         </div>

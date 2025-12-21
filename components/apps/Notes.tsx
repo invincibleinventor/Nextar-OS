@@ -26,10 +26,10 @@ export default function Notes({ isFocused = true, appId = 'notes', windowId }: {
     useEffect(() => {
         const saved = getPreference('notes', 'notes', []);
         setNotes(saved);
-        if (saved.length > 0 && !selectedNote) {
-            setSelectedNote(saved[0]);
+        if (saved.length > 0) {
+            setSelectedNote(prev => prev || saved[0]);
         }
-    }, []);
+    }, [getPreference]);
 
     const saveNotes = (newNotes: Note[]) => {
         setNotes(newNotes);
@@ -68,9 +68,31 @@ export default function Notes({ isFocused = true, appId = 'notes', windowId }: {
     };
 
     const menuActions = useMemo(() => ({
-        'new-note': createNote,
-        'delete-note': () => selectedNote && deleteNote(selectedNote.id)
-    }), [selectedNote, notes]);
+        'new-note': () => {
+            const newNote: Note = {
+                id: `note-${Date.now()}`,
+                title: 'New Note',
+                content: '',
+                createdAt: Date.now(),
+                updatedAt: Date.now()
+            };
+            setNotes(prev => {
+                const newNotes = [newNote, ...prev];
+                setPreference('notes', 'notes', newNotes);
+                return newNotes;
+            });
+            setSelectedNote(newNote);
+        },
+        'delete-note': () => {
+            if (!selectedNote) return;
+            setNotes(prev => {
+                const newNotes = prev.filter(n => n.id !== selectedNote.id);
+                setPreference('notes', 'notes', newNotes);
+                setSelectedNote(newNotes[0] || null);
+                return newNotes;
+            });
+        }
+    }), [selectedNote, setPreference]);
 
     useMenuAction('notes', menuActions, windowId);
 

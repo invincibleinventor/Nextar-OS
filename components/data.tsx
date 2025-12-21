@@ -3,7 +3,7 @@ import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import {
     FaReact, FaPython, FaHtml5, FaCss3Alt, FaLinux, FaGitAlt, FaJava,
-    FaApple, FaGithub, FaSafari, FaLinkedin
+    FaGithub, FaSafari, FaLinkedin
 } from 'react-icons/fa';
 import {
     SiNextdotjs, SiTailwindcss, SiTypescript, SiSupabase, SiFirebase,
@@ -14,7 +14,9 @@ import {
     IoCloseOutline, IoFolderOutline, IoDocumentTextOutline, IoAppsOutline,
     IoGridOutline, IoListOutline, IoChevronBack, IoChevronForward,
     IoSearch, IoGlobeOutline, IoInformationCircleOutline,
-    IoCodeOutline, IoMailOutline, IoPersonCircleOutline, IoFlagOutline, IoSchoolOutline, IoConstructOutline, IoFolderOpenOutline, IoLogoGithub, IoHeartOutline
+    IoCodeOutline, IoMailOutline, IoPersonCircleOutline, IoFlagOutline, IoSchoolOutline, IoConstructOutline, IoFolderOpenOutline, IoLogoGithub, IoHeartOutline,
+    IoDesktopOutline,
+    IoDownloadOutline
 } from "react-icons/io5";
 
 export interface appdata {
@@ -80,6 +82,8 @@ export const componentmap: { [key: string]: any } = {
     'apps/Mail': dynamic(() => import('./apps/Mail')),
     'apps/Calculator': dynamic(() => import('./apps/Calculator')),
     'apps/ExternalAppLoader': dynamic(() => import('./apps/ExternalAppLoader')),
+    'apps/ApiDocs': dynamic(() => import('./apps/ApiDocs')),
+    'DynamicAppRunner': dynamic(() => import('./DynamicAppRunner')),
 };
 
 
@@ -119,13 +123,13 @@ export const personal = {
             icon: <SiNextdotjs className="text-black dark:text-white" />
         },
         {
-            title: "MacOS-Next",
+            title: "NextarOS",
             date: 2023,
             type: "Open Source",
-            desc: "Built a macOS-style interactive simulated operating system with window management on desktop and a responsive convergent iOS-style UI on mobile. Implemented custom animations and responsive transitions using Framer Motion and GSAP.",
+            desc: "Built an interactive simulated operating system with window management on desktop and a responsive convergent mobile UI. Implemented custom animations and responsive transitions using Framer Motion and GSAP.",
             stack: ["Next.js", "TailwindCSS"],
             link: "https://baladev.in",
-            github: "https://github.com/invincibleinventor/macos",
+            github: "https://github.com/invincibleinventor/nextar-os",
             icon: <FaReact className="text-blue-500" />
         },
         {
@@ -248,7 +252,7 @@ export const apps: appdata[] = [
     },
     {
         id: 'python',
-        appname: 'Python IDE',
+        appname: 'Code Editor',
         icon: '/code.png',
         maximizeable: true,
         componentname: 'apps/Python',
@@ -347,6 +351,18 @@ export const apps: appdata[] = [
         category: 'Creativity'
     },
     {
+        id: 'apidocs',
+        appname: 'API Docs',
+        icon: '/terminal.png',
+        maximizeable: true,
+        componentname: 'apps/ApiDocs',
+        additionaldata: {},
+        multiwindow: false,
+        titlebarblurred: false,
+        pinned: false,
+        category: 'Developer Tools'
+    },
+    {
         id: 'safari',
         appname: 'Safari',
         icon: '/safari.png',
@@ -426,7 +442,7 @@ export const apps: appdata[] = [
     {
         id: 'aboutbala',
         appname: 'About Bala',
-        icon: '/info.png',
+        icon: '/about.png',
         maximizeable: false,
         componentname: 'apps/AboutBala',
         additionaldata: {},
@@ -511,7 +527,7 @@ export const titlemenu = [
     }
 ];
 
-export const applemenu = [
+export const mainmenu = [
     { title: "About This Mac", disabled: false },
     { separator: true },
     { title: "System Settings...", disabled: false },
@@ -533,12 +549,12 @@ export const sidebaritems = [
     {
         title: 'Favorites',
         items: [
-            { name: 'Projects', icon: IoFolderOutline, path: ['Macintosh HD', 'Users', 'Guest', 'Projects'] },
-            { name: 'Applications', icon: IoAppsOutline, path: ['Macintosh HD', 'Applications'] },
-            { name: 'About Me', icon: IoDocumentTextOutline, path: ['Macintosh HD', 'Users', 'Guest', 'About Me'] },
-            { name: 'Desktop', icon: IoAppsOutline, path: ['Macintosh HD', 'Users', 'Guest', 'Desktop'] },
-            { name: 'Documents', icon: IoDocumentTextOutline, path: ['Macintosh HD', 'Users', 'Guest', 'Documents'] },
-            { name: 'Downloads', icon: IoAppsOutline, path: ['Macintosh HD', 'Users', 'Guest', 'Downloads'] },
+            { name: 'Projects', icon: IoFolderOutline, path: ['System', 'Users', 'Guest', 'Projects'] },
+            { name: 'Applications', icon: IoAppsOutline, path: ['System', 'Applications'] },
+            { name: 'About Me', icon: IoDocumentTextOutline, path: ['System', 'Users', 'Guest', 'About Me'] },
+            { name: 'Desktop', icon: IoDesktopOutline, path: ['System', 'Users', 'Guest', 'Desktop'] },
+            { name: 'Documents', icon: IoDocumentTextOutline, path: ['System', 'Users', 'Guest', 'Documents'] },
+            { name: 'Downloads', icon: IoDownloadOutline, path: ['System', 'Users', 'Guest', 'Downloads'] },
         ]
     },
     {
@@ -550,7 +566,7 @@ export const sidebaritems = [
     {
         title: 'Locations',
         items: [
-            { name: 'Macintosh HD', icon: IoAppsOutline, path: ['Macintosh HD'] },
+            { name: 'System', icon: IoAppsOutline, path: ['System'] },
             { name: 'Network', icon: IoGlobeOutline, path: ['Network'] },
         ]
     }
@@ -586,7 +602,7 @@ export const ALL_MAILS: MailItem[] = [
         content: (
             <div className="space-y-4 text-sm leading-relaxed text-black dark:text-white">
                 <p>Hi there,</p>
-                <p>Welcome to <strong>MacOS-Next</strong>! I built this &quot;Portfolio OS&quot; to demonstrate the power of modern web technologies.</p>
+                <p>Welcome to <strong>NextarOS</strong>! I built this &quot;Portfolio OS&quot; to demonstrate the power of modern web technologies.</p>
                 <p><strong>About Me:</strong></p>
                 <p>{personal.personal.bio}</p>
                 <p>Feel free to explore the apps, check out my projects in the &quot;Projects&quot; folder, or read my latest thoughts in &quot;Blog&quot;.</p>
@@ -639,7 +655,7 @@ export const generateSystemFilesystem = (): filesystemitem[] => {
 
     fs.push({
         id: 'root-hd',
-        name: 'Macintosh HD',
+        name: 'System',
         parent: 'root',
         mimetype: 'inode/directory',
         date: 'Today',
@@ -943,13 +959,13 @@ export const generateGuestFilesystem = (): filesystemitem[] => {
 
 
     fs.push({
-        id: 'guest-shortcut-macos-next',
-        name: 'MacOS-Next',
+        id: 'guest-shortcut-nextar-os',
+        name: 'NextarOS',
         parent: 'guest-desktop',
         mimetype: 'inode/shortcut',
         date: 'Today',
         size: '4 KB',
-        linkPath: 'guest-project-MacOS-Next',
+        linkPath: 'guest-project-NextarOS',
         isSystem: false,
         isReadOnly: true,
         icon: <Image src="/folder.png" alt="folder" width={64} height={64} className="w-full h-full object-contain drop-shadow-md" />,
@@ -1153,9 +1169,10 @@ const FileConfig: Record<string, {
 export const getFileIcon = (mimetype: string, name: string, itemicon?: React.ReactNode | string) => {
     if (itemicon) {
         if (typeof itemicon === 'string') {
-            if (itemicon.startsWith('/')) {
+            if (itemicon.startsWith('/') || itemicon.startsWith('http://') || itemicon.startsWith('https://')) {
                 return <Image className='w-full h-full p-[6px] sm:w-full sm:h-full object-contain' src={itemicon} alt={name} width={64} height={64} />;
             }
+            return <span className="text-3xl flex items-center justify-center w-full h-full">{itemicon}</span>;
         }
         return itemicon;
     }
@@ -1165,15 +1182,15 @@ export const getFileIcon = (mimetype: string, name: string, itemicon?: React.Rea
 };
 
 const FolderPathMap: Record<string, string[]> = {
-    'user-projects': ['Macintosh HD', 'Users', 'Bala', 'Projects'],
-    'root-apps': ['Macintosh HD', 'Applications'],
+    'user-projects': ['System', 'Users', 'Bala', 'Projects'],
+    'root-apps': ['System', 'Applications'],
     'root-icloud': ['iCloud Drive'],
-    'user-docs': ['Macintosh HD', 'Users', 'Bala', 'Documents'],
-    'user-downloads': ['Macintosh HD', 'Users', 'Bala', 'Downloads'],
+    'user-docs': ['System', 'Users', 'Bala', 'Documents'],
+    'user-downloads': ['System', 'Users', 'Bala', 'Downloads'],
     'root-network': ['Network'],
-    'root-hd': ['Macintosh HD'],
-    'user-desktop': ['Macintosh HD', 'Users', 'Bala', 'Desktop'],
-    'user-about': ['Macintosh HD', 'Users', 'Bala', 'About Me'],
+    'root-hd': ['System'],
+    'user-desktop': ['System', 'Users', 'Bala', 'Desktop'],
+    'user-about': ['System', 'Users', 'Bala', 'About Me'],
 };
 
 const ParentFolderMap: Record<string, string> = {
@@ -1204,14 +1221,14 @@ const resolveFolderPath = (file: filesystemitem): string[] => {
 
     if (file.parent) {
         if (file.parent.endsWith('-desktop') || file.parent === 'user-desktop') {
-            return ['Macintosh HD', 'Users', userHome, 'Desktop', file.name];
+            return ['System', 'Users', userHome, 'Desktop', file.name];
         }
 
         if (ParentFolderMap[file.parent]) {
             if (file.parent === 'user-projects' || file.parent.endsWith('-projects')) {
-                return ['Macintosh HD', 'Users', userHome, 'Projects', file.name];
+                return ['System', 'Users', userHome, 'Projects', file.name];
             }
-            return ['Macintosh HD', 'Users', userHome, ParentFolderMap[file.parent], file.name];
+            return ['System', 'Users', userHome, ParentFolderMap[file.parent], file.name];
         }
 
         if (file.parent.startsWith('project-') || file.parent.includes('-project-')) {
@@ -1219,7 +1236,7 @@ const resolveFolderPath = (file: filesystemitem): string[] => {
             if (projectName.startsWith('project-')) projectName = projectName.replace('project-', '');
             if (projectName.startsWith('guest-project-')) projectName = projectName.replace('guest-project-', '');
 
-            return ['Macintosh HD', 'Users', userHome, 'Projects', projectName, file.name];
+            return ['System', 'Users', userHome, 'Projects', projectName, file.name];
         }
     }
 
@@ -1244,7 +1261,7 @@ const resolveTarget = (itemOrId: string | filesystemitem, currentFiles?: filesys
 
         if (itemOrId.startsWith('project-')) {
             const projectName = itemOrId.replace('project-', '');
-            return { appId: 'finder', props: { initialpath: ['Macintosh HD', 'Users', 'Bala', 'Projects', projectName] }, title: projectName };
+            return { appId: 'finder', props: { initialpath: ['System', 'Users', 'Bala', 'Projects', projectName] }, title: projectName };
         }
 
         console.warn(`System logic: Item '${itemOrId}' not found.`);

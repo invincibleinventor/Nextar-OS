@@ -17,7 +17,6 @@ import { motion } from 'framer-motion';
 import { BiSignal5 } from "react-icons/bi";
 
 import NotificationCenter from '@/components/NotificationCenter';
-import MacOSNotifications from '@/components/MacOSNotifications';
 import ContextMenu from '@/components/ui/ContextMenu';
 import { SelectionArea } from '@/components/ui/SelectionArea';
 import FileModal from '@/components/ui/FileModal';
@@ -27,7 +26,7 @@ import Spotlight from '@/components/Spotlight';
 import AppSwitcher from '@/components/AppSwitcher';
 import TourGuide from '@/components/TourGuide';
 import ForceQuit from '@/components/ForceQuit';
-import AboutThisMac from '@/components/AboutThisMac';
+import AboutDevice from '@/components/AboutDevice';
 import { useSettings } from '@/components/SettingsContext';
 import { useMenuRegistration } from '@/components/AppMenuContext';
 
@@ -87,7 +86,7 @@ const Desktop = () => {
           ismaximized: false,
           position: { top: 100, left: 100 },
           size: { width: 800, height: 500 },
-          props: { initialpath: ['Macintosh HD', 'Users', homeDir, 'Desktop'] }
+          props: { initialpath: ['System', 'Users', homeDir, 'Desktop'] }
         });
         return;
       }
@@ -129,6 +128,40 @@ const Desktop = () => {
       if ((e.metaKey || e.ctrlKey) && e.altKey && (e.key === 'Escape' || e.key === 'Esc')) {
         e.preventDefault();
         setshowforcequit(true);
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === 'q') {
+        e.preventDefault();
+        if (activewindow && activewindow !== 'finder-desktop') {
+          setwindows(windows.filter((w: any) => w.id !== activewindow));
+        }
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === 'w') {
+        e.preventDefault();
+        if (activewindow && activewindow !== 'finder-desktop') {
+          setwindows(windows.filter((w: any) => w.id !== activewindow));
+        }
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === 'm') {
+        e.preventDefault();
+        if (activewindow) {
+          updatewindow(activewindow, { isminimized: true });
+        }
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === ',') {
+        e.preventDefault();
+        const settingsExists = windows.find((w: any) => w.appname === 'Settings');
+        if (!settingsExists) {
+          addwindow({
+            id: `settings-${Date.now()}`,
+            appname: 'Settings',
+            component: 'apps/Settings',
+            props: {},
+            isminimized: false,
+            ismaximized: false,
+          });
+        } else {
+          setactivewindow(settingsExists.id);
+        }
       }
     };
 
@@ -191,7 +224,7 @@ const Desktop = () => {
   const handleDesktopClick = () => {
     if (shownotificationcenter) setshownotificationcenter(false);
     setContextMenu(null);
-    setactivewindow('finder-desktop'); 
+    setactivewindow('finder-desktop');
   };
 
   const getContextMenuItems = () => {
@@ -242,7 +275,18 @@ const Desktop = () => {
         { label: 'Paste', action: () => pasteItem(currentUserDesktopId), disabled: !clipboard },
         { separator: true, label: '' },
         { label: 'Get Info', action: () => { }, disabled: true },
-        { label: 'Change Wallpaper', action: () => openSystemItem('settings', context) },
+        {
+          label: 'Change Wallpaper', action: () => {
+            addwindow({
+              id: `settings-${Date.now()}`,
+              appname: 'Settings',
+              component: 'apps/Settings',
+              props: { initialPage: 'wallpaper' },
+              isminimized: false,
+              ismaximized: false,
+            });
+          }
+        },
         { separator: true, label: '' },
         { label: 'Refresh', action: refreshFileSystem },
         { separator: true, label: '' },
@@ -547,12 +591,12 @@ const Desktop = () => {
           </div>
         )}
       </div>
-      <MacOSNotifications isopen={shownotificationcenter} onclose={() => setshownotificationcenter(false)} />
+      <NotificationCenter isopen={shownotificationcenter} onclose={() => setshownotificationcenter(false)} />
       <Spotlight isOpen={showspotlight} onClose={() => setshowspotlight(false)} />
       <AppSwitcher isOpen={showappswitcher} onClose={() => setshowappswitcher(false)} />
       <TourGuide isOpen={showtour} onClose={() => setshowtour(false)} />
       <ForceQuit isopen={showforcequit} onclose={() => setshowforcequit(false)} />
-      <AboutThisMac isopen={showaboutmac} onclose={() => setshowaboutmac(false)} />
+      <AboutDevice isopen={showaboutmac} onclose={() => setshowaboutmac(false)} />
     </>
   );
 }

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Menu from './menu';
 import { useWindows } from './WindowContext';
-import { apps, applemenu, openSystemItem } from './data';
+import { apps, mainmenu, openSystemItem } from './data';
 import Control from './controlcenter';
 import Logo from './applelogo';
 import { useAppMenus } from './AppMenuContext';
@@ -68,7 +68,7 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
     ];
 
     const defaultHelpMenu = [
-        { title: "macOS Help", disabled: false },
+        { title: "NextarOS Help", disabled: false },
         { title: "About " + activeappname, disabled: false }
     ];
 
@@ -108,7 +108,7 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
         }
     }, [isGuest, addToast]);
 
-    const dynamicAppleMenu = [
+    const dynamicmainmenu = [
         { title: `About This Mac`, actionId: 'about' },
         { separator: true },
         { title: 'System Settings...', actionId: 'settings' },
@@ -123,7 +123,7 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
         { title: `Log Out ${user?.name || 'User'}...`, actionId: 'logout' }
     ];
 
-    const handleapplemenuaction = (action: string) => {
+    const handledynamicmainmenu = (action: string) => {
         switch (action) {
             case 'about':
                 window.dispatchEvent(new CustomEvent('show-about-mac'));
@@ -150,11 +150,9 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
         if (!item || item.disabled) return;
 
         const actionId = item.actionId || item.title;
-        console.log('[Debug] Dispatching menu action:', actionId);
 
         if (actionId === 'minimize') {
             if (activewindow) {
-                console.log('Minimizing window:', activewindow);
                 updatewindow(activewindow, { isminimized: true });
                 setactivewindow(null);
             }
@@ -221,15 +219,15 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
                 className="fixed h-[35px] z-[99999] before:absolute before:inset-0 before:bg-transparent before:content-[''] before:backdrop-blur-[12px] before:webkit-backdrop-blur-[12px] before:z-[-1] top-0 w-screen py-[6px] flex px-4 justify-between items-center content-center bg-white bg-opacity-30 dark:bg-black dark:bg-opacity-10 transition-colors duration-500"
             >
                 <div className="relative flex flex-row items-center content-center space-x-0">
-                    <div className="flex items-center justify-center h-full mr-2" data-tour="apple-menu">
+                    <div className="flex items-center justify-center h-full mr-2" data-tour="dynamic-main-menu">
                         <Menu
-                            id="appleMenu"
+                            id="dynamicMainMenu"
                             title={<div className="flex items-center justify-center h-full"><Logo /></div>}
-                            data={dynamicAppleMenu}
-                            visible={activemenu === 'appleMenu'}
+                            data={dynamicmainmenu}
+                            visible={activemenu === 'dynamicMainMenu'}
                             ontoggle={handletogglemenu}
                             onhover={handlehovermenu}
-                            onaction={handleapplemenuaction}
+                            onaction={handledynamicmainmenu}
                         />
                     </div>
                     <Menu

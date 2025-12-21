@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useWindows } from '../WindowContext';
 import { useDevice } from '../DeviceContext';
 import { personal, openSystemItem } from '../data';
-import { IoArrowForward, IoCheckmarkCircle, IoLogoApple, IoAppsOutline, IoDesktopOutline, IoPhonePortraitOutline, IoLogoGithub, IoFolderOpenOutline, IoTerminalOutline, IoDocumentTextOutline, IoLogoLinkedin, IoPersonAdd, IoMail } from "react-icons/io5";
+import { IoArrowForward, IoCheckmarkCircle, IoSparkles, IoAppsOutline, IoDesktopOutline, IoPhonePortraitOutline, IoLogoGithub, IoFolderOpenOutline, IoTerminalOutline, IoDocumentTextOutline, IoLogoLinkedin, IoPersonAdd, IoMail } from "react-icons/io5";
 import { useAuth } from '../AuthContext';
 import { createUser, getUsers, User } from '../../utils/db';
 import { hashPassword } from '../../utils/crypto';
@@ -15,6 +15,7 @@ export default function Welcome(props: any) {
     const { ismobile } = useDevice();
     const [step, setstep] = useState(0);
     const [isnarrow, setisnarrow] = useState(false);
+    const [dontshowagain, setdontshowagain] = useState(false);
     const containerref = useRef<HTMLDivElement>(null);
 
     const { user, login, logout } = useAuth();
@@ -28,6 +29,15 @@ export default function Welcome(props: any) {
             setIsReady(true);
         });
     }, []);
+
+    useEffect(() => {
+        if (user && user.username !== 'guest') {
+            const hidden = localStorage.getItem('nextaros-hide-welcome');
+            if (hidden === 'true' && props.windowId) {
+                removewindow(props.windowId);
+            }
+        }
+    }, [user, props.windowId, removewindow]);
 
     const [view, setView] = useState<'welcome' | 'create-account'>('welcome');
     const [username, setUsername] = useState('');
@@ -88,12 +98,12 @@ export default function Welcome(props: any) {
                 passwordHash: hashedPassword,
                 name,
                 role,
-                avatar: '/me.png', 
+                avatar: '/me.png',
                 bio: 'New User'
             };
 
             await createUser(newUser);
-            await login(password); 
+            await login(password);
 
             alert(`Account created! You are now logged in as ${name} (${role}).`);
             setView('welcome');
@@ -112,10 +122,10 @@ export default function Welcome(props: any) {
             content: (
                 <div className="text-center space-y-6">
                     <div className="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
-                        <IoLogoApple size={40} className="text-white" />
+                        <IoSparkles size={40} className="text-white" />
                     </div>
                     <div>
-                        <h2 className="text-2xl font-semibold mb-2">MacOS-Next</h2>
+                        <h2 className="text-2xl font-semibold mb-2">NextarOS</h2>
                         <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
                             A web-based operating system interface built with Next.js, featuring window management, file operations, and native-like interactions.
                         </p>
@@ -143,7 +153,7 @@ export default function Welcome(props: any) {
                                 <div className="space-y-1">
                                     <label className="text-[13px] font-medium ml-1 text-gray-500">Display Name</label>
                                     <input
-                                        type="text" placeholder="John Appleseed" value={name} onChange={e => setName(e.target.value)}
+                                        type="text" placeholder="John Doe" value={name} onChange={e => setName(e.target.value)}
                                         className="w-full px-3 py-2 bg-gray-100/50 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-lg outline-none focus:ring-2 ring-blue-500/50 transition-all font-medium placeholder-gray-400"
                                     />
                                 </div>
@@ -297,6 +307,26 @@ export default function Welcome(props: any) {
                             Open Finder
                         </button>
                     </div>
+                    <a
+                        href="https://github.com/invincibleinventor/nextar-os"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                    >
+                        <IoLogoGithub size={18} />
+                        View on GitHub
+                    </a>
+                    {user?.username !== 'guest' && (
+                        <label className="flex items-center justify-center gap-2 text-sm text-gray-500 dark:text-gray-400 cursor-pointer select-none">
+                            <input
+                                type="checkbox"
+                                checked={dontshowagain}
+                                onChange={(e) => setdontshowagain(e.target.checked)}
+                                className="w-4 h-4 rounded border-gray-300 text-blue-500 focus:ring-blue-500"
+                            />
+                            Don&apos;t show this again
+                        </label>
+                    )}
                 </div>
             )
         }
@@ -341,6 +371,9 @@ export default function Welcome(props: any) {
                         if (step < steps.length - 1) {
                             setstep(step + 1);
                         } else {
+                            if (dontshowagain && user?.username !== 'guest') {
+                                localStorage.setItem('nextaros-hide-welcome', 'true');
+                            }
                             openSystemItem('aboutbala', context);
                             removewindow(props.windowId || 'welcome');
                         }

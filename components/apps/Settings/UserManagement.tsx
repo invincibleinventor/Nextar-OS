@@ -43,18 +43,18 @@ export default function UserManagement() {
     const [error, setError] = useState('');
     const [successMsg, setSuccessMsg] = useState('');
 
-    const refreshUsers = useCallback(async () => {
+    const refreshUsers = useCallback(async (selectedUsername?: string) => {
         try {
             const u = await getUsers();
             setUsers(u);
-            if (selectedUser) {
-                const refreshed = u.find(user => user.username === selectedUser.username);
+            if (selectedUsername) {
+                const refreshed = u.find(user => user.username === selectedUsername);
                 if (refreshed) setSelectedUser(refreshed);
             }
         } catch (e) {
             console.error('Failed to load users', e);
         }
-    }, [getUsers, selectedUser]);
+    }, []);
 
     useEffect(() => {
         refreshUsers();
@@ -132,7 +132,7 @@ export default function UserManagement() {
 
                 await updateUser(selectedUser.username, updates);
                 setSuccessMsg('Changes saved');
-                await refreshUsers();
+                await refreshUsers(selectedUser.username);
             }
         } catch (err: any) {
             setError(typeof err === 'string' ? err : 'Operation failed');
@@ -267,7 +267,7 @@ export default function UserManagement() {
                                             <input
                                                 className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-md px-3 py-1.5 text-sm"
                                                 value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                                placeholder="John Appleseed" required
+                                                placeholder="John Doe" required
                                             />
                                         </div>
                                         <div>
@@ -371,8 +371,8 @@ export default function UserManagement() {
             </div>
             <div className="flex-1 h-full overflow-hidden">
                 {selectedUser || isCreating ? renderDetail() : (
-                    <div className="flex flex-col items-center justify-center h-full text-center text-gray-400 bg-white items-center content-center dark:bg-[#1e1e1e] mt-16">
-                        
+                    <div className="flex flex-col items-center justify-center h-full text-center text-gray-400 items-center content-center mt-16">
+
                         <div className="w-16 h-16 mt-auto bg-gray-100 dark:bg-white/5 rounded-full flex items-center justify-center mb-4">
                             <IoPerson size={32} className="opacity-20" />
                         </div>

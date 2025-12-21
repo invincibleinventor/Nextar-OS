@@ -30,7 +30,7 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
 
     const photos = useMemo(() => {
         if (!user) return [];
-         const icloudFolder = files.find(f => f.name === 'iCloud Drive' && f.owner === user.username);
+        const icloudFolder = files.find(f => f.name === 'iCloud Drive' && f.owner === user.username);
         const icloudId = icloudFolder ? icloudFolder.id : (user.username === 'guest' ? 'guest-icloud' : `user-${user.username}-icloud`);
 
         return files.filter(f =>
@@ -55,7 +55,7 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
             );
 
             if (targetFile) {
-                const isAdmin = user?.role === 'admin' || user?.username === 'admin'; 
+                const isAdmin = user?.role === 'admin' || user?.username === 'admin';
                 const isSystem = !targetFile.owner || targetFile.owner === 'system';
                 const isOwner = targetFile.owner === user?.username;
 
@@ -64,20 +64,18 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
                 if (isAdmin) {
                     allowed = true;
                 } else if (user?.username === 'guest') {
-                         if (targetFile.owner === 'guest') allowed = true;
+                    if (targetFile.owner === 'guest') allowed = true;
                 } else {
                     if (isOwner) allowed = true;
                 }
 
-                if (!allowed && !isSystem) {       if (targetFile.owner && targetFile.owner !== 'system' && !allowed) {
-                        setviewingimage(null);
-                        setmobileview('grid');
-                    }
+                if (!allowed && !isSystem && targetFile.owner) {
+                    setviewingimage(null);
+                    setmobileview('grid');
                 }
-            } else {
-                    }
+            }
         }
-    }, [singleview, src, user, files]);
+    }, [singleview, src, user, files, viewingimage]);
 
     useEffect(() => {
         if (!containerref.current) return;
@@ -108,7 +106,7 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
                             className="flex-1 flex flex-col"
                         >
                             <div className="h-14 flex items-center justify-between px-4 border-b border-black/5 dark:border-white/10">
-                                <span className="text-[26px] font-bold">Photos</span>
+                                <span className="text-[26px] dark:text-white text-black font-bold">Photos</span>
                                 <div className="flex gap-4 text-accent">
                                     <IoGridOutline size={22} />
                                 </div>
@@ -212,13 +210,13 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
                                 </button>
                                 <span className="text-white/60 text-sm">{viewingimage.title}</span>
                             </div>
-                            <div className="flex-1 flex items-center justify-center p-8 bg-black">
+                            <div className="flex-1 flex overflow-y-scroll items-center justify-center p-8 bg-black">
                                 <Image
                                     src={viewingimage.src}
                                     alt={viewingimage.title}
                                     width={1000}
                                     height={700}
-                                    className="max-w-full max-h-full object-contain"
+                                    className="max-h-auto max-w-auto object-contain"
                                 />
                             </div>
                         </motion.div>

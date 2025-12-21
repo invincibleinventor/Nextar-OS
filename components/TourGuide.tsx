@@ -104,7 +104,7 @@ export default function TourGuide({ isOpen, onClose }: TourGuideProps) {
     const { ismobile } = useDevice();
 
     useEffect(() => {
-        const styleId = 'tour-macos-styles';
+        const styleId = 'tour-nextaros-styles';
         if (!document.getElementById(styleId)) {
             const style = document.createElement('style');
             style.id = styleId;
@@ -124,7 +124,7 @@ export default function TourGuide({ isOpen, onClose }: TourGuideProps) {
             overlayColor: 'rgba(0, 0, 0, 0.6)',
             stagePadding: 8,
             stageRadius: 12,
-            popoverClass: 'macos-tour-popover',
+            popoverClass: 'nextaros-tour-popover',
             onDestroyStarted: () => {
                 driverInstance.destroy();
                 onClose();
@@ -132,9 +132,8 @@ export default function TourGuide({ isOpen, onClose }: TourGuideProps) {
             steps: ismobile ? [
                 {
                     popover: {
-                        title: '👋 Welcome to iOS Mode!',
-                        description: 'Experience a web-based iOS interface. Let us show you around!',
-                        side: 'bottom',
+                        title: '👋 Welcome to Mobile Mode!',
+                        description: 'Experience NextarOS on mobile. Let us show you around!', side: 'bottom',
                         align: 'center'
                     }
                 },
@@ -172,15 +171,15 @@ export default function TourGuide({ isOpen, onClose }: TourGuideProps) {
                 {
                     popover: {
                         title: '🎉 Enjoy!',
-                        description: 'Explore apps, swipe between pages, and experience iOS on the web!',
+                        description: 'Explore apps, swipe between pages, and experience NextarOS mobile!',
                         side: 'bottom'
                     }
                 }
             ] : [
                 {
                     popover: {
-                        title: '👋 Welcome to macOS-Next!',
-                        description: 'A web-based macOS experience. Let us give you a quick tour!',
+                        title: '👋 Welcome to NextarOS!',
+                        description: 'A web-based desktop experience. Let us give you a quick tour!',
                         side: 'bottom',
                         align: 'center'
                     }
@@ -194,9 +193,9 @@ export default function TourGuide({ isOpen, onClose }: TourGuideProps) {
                     }
                 },
                 {
-                    element: '[data-tour="apple-menu"]',
+                    element: '[data-tour="dynamic-main-menu"]',
                     popover: {
-                        title: ' Apple Menu',
+                        title: ' Main Menu',
                         description: 'Access System Settings, sleep, restart, and logout from here.',
                         side: 'bottom'
                     }
@@ -233,7 +232,7 @@ export default function TourGuide({ isOpen, onClose }: TourGuideProps) {
                 },
                 {
                     popover: {
-                        title: '🎉 Enjoy macOS-Next!',
+                        title: '🎉 Enjoy NextarOS!',
                         description: 'Explore Finder, Safari, Settings, Music, and more.\nBuilt with Next.js, React, and IndexedDB.',
                         side: 'bottom'
                     }

@@ -53,7 +53,6 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
               : `${reducetransparency ? 'bg-[#e5e5e5] dark:bg-[#1a1a1a] border-opacity-50' : 'backdrop-blur-lg bg-white/10 dark:bg-black/10'} w-[320px] fixed top-14 right-4 rounded-2xl border border-white/20 block`} 
                    font-sans origin-top-right  overflow-y-auto z-[9999]` }
             onClick={(e: React.MouseEvent) => {
-              if (ismobile && onclose) onclose();
               e.stopPropagation();
             }}
             style={{ pointerEvents: isopen ? 'auto' : 'none' }}

@@ -33,8 +33,8 @@ export default function FileViewer({ content: initialContent, title: initialTitl
     const { user } = useAuth();
     const username = user?.username || 'Guest';
     const homeDir = username === 'guest' ? 'Guest' : (username.charAt(0).toUpperCase() + username.slice(1));
-    const [currentPath, setCurrentPath] = useState<string[]>(['Macintosh HD', 'Users', homeDir, 'Projects']);
-    const [history, setHistory] = useState<string[][]>([['Macintosh HD', 'Users', homeDir, 'Projects']]);
+    const [currentPath, setCurrentPath] = useState<string[]>(['System', 'Users', homeDir, 'Projects']);
+    const [history, setHistory] = useState<string[][]>([['System', 'Users', homeDir, 'Projects']]);
     const [historyIndex, setHistoryIndex] = useState(0);
     const [selectedFile, setSelectedFile] = useState<string | null>(null);
 

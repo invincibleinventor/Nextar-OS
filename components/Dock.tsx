@@ -20,7 +20,7 @@ const Dock = () => {
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem('macos-dock-pinned');
+    const saved = localStorage.getItem('nextaros-dock-pinned');
     if (saved) {
       setPinnedAppIds(JSON.parse(saved));
     } else {
@@ -31,7 +31,7 @@ const Dock = () => {
 
   const savePinnedApps = (ids: string[]) => {
     setPinnedAppIds(ids);
-    localStorage.setItem('macos-dock-pinned', JSON.stringify(ids));
+    localStorage.setItem('nextaros-dock-pinned', JSON.stringify(ids));
   };
 
   const togglePin = (appId: string) => {
@@ -160,8 +160,8 @@ const Dock = () => {
         <div
           className="fixed z-[9999] mb-2 origin-bottom"
           style={{
-            bottom: '70px',
-            left: Math.min(Math.max(contextMenu.x, 100), window.innerWidth - 100),
+            bottom: '80px',
+            left: contextMenu.x,
             transform: 'translateX(-50%)'
           }}
         >

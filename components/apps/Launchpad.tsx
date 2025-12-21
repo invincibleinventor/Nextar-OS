@@ -4,20 +4,30 @@ import Image from 'next/image';
 import { apps, openSystemItem } from '../data';
 import { useWindows } from '../WindowContext';
 import { useDevice } from '../DeviceContext';
+import { useFileSystem } from '../FileSystemContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { IoSearch } from 'react-icons/io5';
+import { useExternalApps } from '../ExternalAppsContext';
 
 const appsperpage = 35;
 
 export default function Launchpad({ onclose }: { onclose: () => void }) {
     const { addwindow, removewindow, windows, setactivewindow, updatewindow } = useWindows();
     const { ismobile } = useDevice();
+    const { files } = useFileSystem();
+    const { launchApp } = useExternalApps();
     const [searchterm, setsearchterm] = useState('');
     const [page, setpage] = useState(0);
 
     const handleappclick = (app: any) => {
         if (app.id === 'launchpad') return;
+
+        if (app.isInstalledApp) {
+            launchApp(app.id);
+            onclose();
+            return;
+        }
 
         setTimeout(() => {
             openSystemItem(app.id, { addwindow, windows, updatewindow, setactivewindow, ismobile });
@@ -25,7 +35,26 @@ export default function Launchpad({ onclose }: { onclose: () => void }) {
         }, 100);
     };
 
-    const filteredapps = apps.filter(a =>
+    const allApps = useMemo(() => {
+        const installedAppFiles = files.filter(f => f.parent === 'root-apps' && f.name.endsWith('.app'));
+        const installedApps = installedAppFiles.map(f => {
+            try {
+                const data = JSON.parse(f.content || '{}');
+                return {
+                    id: data.id,
+                    appname: data.name,
+                    icon: data.icon || '/python.png',
+                    isInstalledApp: true,
+                    category: data.category
+                };
+            } catch {
+                return null;
+            }
+        }).filter((a): a is NonNullable<typeof a> => a !== null);
+        return [...apps, ...installedApps];
+    }, [files]);
+
+    const filteredapps = allApps.filter(a =>
         a.id !== 'launchpad' &&
         a.appname.toLowerCase().includes(searchterm.toLowerCase())
     );

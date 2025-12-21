@@ -5,11 +5,13 @@ import { filesystemitem, generateGuestFilesystem, generateUserFilesystem, genera
 import { useNotifications } from './NotificationContext';
 import { initDB, getAllFiles, saveFile, deleteFile, getUsers } from '../utils/db';
 import { useAuth } from './AuthContext';
+import { playSound } from './SoundEffects';
 
 interface FileSystemContextType {
     files: filesystemitem[];
     createFolder: (name: string, parentId: string) => Promise<string>;
-    createFile: (name: string, parentId: string, content?: string) => Promise<string>;
+    createFile: (name: string, parentId: string, content?: string, icon?: string) => Promise<string>;
+    uploadFile: (file: File, parentId: string) => Promise<string>;
     deleteItem: (id: string) => Promise<void>;
     moveToTrash: (id: string) => Promise<void>;
     restoreFromTrash: (id: string) => Promise<void>;
@@ -169,14 +171,14 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         return newFolder.id;
     }, [isLocked, addToast, getUniqueName, username]);
 
-    const createFile = useCallback(async (name: string, parentId: string, content: string = '') => {
+    const createFile = useCallback(async (name: string, parentId: string, content: string = '', icon?: string) => {
         if (isLocked(parentId)) {
             addToast("Cannot create file in a read-only directory.", "error");
             return "";
         }
 
         const finalName = getUniqueName(name, parentId);
-        const mimetype = getMimeTypeFromExtension(finalName);
+        const mimetype = icon ? 'application/x-nextaros-app' : getMimeTypeFromExtension(finalName);
 
         const newFile: filesystemitem = {
             id: `file-${Date.now()}`,
@@ -188,11 +190,65 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             content: content,
             isSystem: false,
             isReadOnly: false,
+            owner: username,
+            icon: icon
+        };
+
+        await persistFile(newFile);
+        setFiles(prev => [...prev, newFile]);
+        return newFile.id;
+    }, [isLocked, addToast, getUniqueName, username]);
+
+    const uploadFile = useCallback(async (file: File, parentId: string): Promise<string> => {
+        const maxSizeMB = 5;
+        const maxSizeBytes = maxSizeMB * 1024 * 1024;
+
+        if (file.size > maxSizeBytes) {
+            const fileSizeMB = (file.size / (1024 * 1024)).toFixed(1);
+            addToast(`File too large (${fileSizeMB}MB). Maximum size is ${maxSizeMB}MB.`, "error");
+            return "";
+        }
+
+        if (isLocked(parentId)) {
+            addToast("Cannot upload to a read-only directory.", "error");
+            return "";
+        }
+
+        const finalName = getUniqueName(file.name, parentId);
+        const isTextFile = file.type.startsWith('text/') ||
+            ['application/json', 'application/javascript', 'application/xml'].includes(file.type);
+
+        let content: string;
+        if (isTextFile) {
+            content = await file.text();
+        } else {
+            content = await new Promise<string>((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result as string);
+                reader.onerror = () => reject(reader.error);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        const sizeKB = Math.round(file.size / 1024);
+        const sizeStr = sizeKB < 1 ? '< 1 KB' : `${sizeKB} KB`;
+
+        const newFile: filesystemitem = {
+            id: `file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            name: finalName,
+            parent: parentId,
+            mimetype: file.type || getMimeTypeFromExtension(finalName),
+            date: 'Today',
+            size: sizeStr,
+            content: content,
+            isSystem: false,
+            isReadOnly: false,
             owner: username
         };
 
         await persistFile(newFile);
         setFiles(prev => [...prev, newFile]);
+        addToast(`Uploaded ${finalName}`, "success");
         return newFile.id;
     }, [isLocked, addToast, getUniqueName, username]);
 
@@ -247,6 +303,7 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
         const updatedItem = { ...item, parent: currentUserTrashId, isTrash: true, originalParent: item.parent || currentUserDesktopId };
         await persistFile(updatedItem);
+        playSound('trash');
 
         setFiles(prev => prev.map(f => {
             if (f.id === id) {
@@ -473,6 +530,7 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             files,
             createFolder,
             createFile,
+            uploadFile,
             deleteItem,
             moveToTrash,
             restoreFromTrash,

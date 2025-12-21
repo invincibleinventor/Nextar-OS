@@ -24,7 +24,7 @@ export default function AboutBala() {
         switch (activetab) {
             case 'about':
                 return (
-                    <div className="space-y-6">
+                    <div className="space-y-6 pb-20">
                         <div className="flex flex-col items-center text-center">
                             <div className="w-24 h-24 rounded-full overflow-hidden mb-4 shadow-lg">
                                 <Image src="/pfp.png" alt={personal.personal.name} width={96} height={96} className="object-cover" />
@@ -52,7 +52,7 @@ export default function AboutBala() {
 
             case 'projects':
                 return (
-                    <div className="space-y-3">
+                    <div className="space-y-3 pb-20">
                         <AnimatePresence mode="wait">
                             {activeProject ? (
                                 <motion.div

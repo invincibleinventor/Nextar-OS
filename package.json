@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@babel/standalone": "^7.28.5",
+    "@monaco-editor/react": "^4.7.0",
     "@vercel/analytics": "^1.6.1",
     "driver.js": "^1.4.0",
     "next": "^15.0.4",

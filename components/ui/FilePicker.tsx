@@ -19,7 +19,7 @@ export default function FilePicker({ mode, initialPath, onSelect, onCancel, acce
     const { user } = useAuth();
     const username = user?.username || 'Guest';
     const homeDir = username === 'guest' ? 'Guest' : (username.charAt(0).toUpperCase() + username.slice(1));
-    const [currentPath, setCurrentPath] = useState<string[]>(initialPath || ['Macintosh HD', 'Users', homeDir, 'Projects']);
+    const [currentPath, setCurrentPath] = useState<string[]>(initialPath || ['System', 'Users', homeDir, 'Projects']);
     const [selectedFile, setSelectedFile] = useState<string | null>(null);
     const [saveFileName, setSaveFileName] = useState('');
 

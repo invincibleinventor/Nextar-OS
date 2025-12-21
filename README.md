@@ -1,111 +1,137 @@
-# macOS-next
+# NextarOS
 
 **Production URL:** [https://baladev.in](https://baladev.in)
 
-A MacOS simulation built with **Next.js 15** and **React 19**. This project mimics a functional Operating System environment that ships a convergent UI that adapts between a macOS desktop layout and an iOS mobile interface across screen sizes. 
+A fully-featured **Web Operating System** built with **Next.js 15** and **React 19**. NextarOS delivers a complete desktop and mobile experience in your browser, featuring window management, a virtual file system, external apps ecosystem, and adaptive interfaces.
 
-Default macOS UI
-
-![macOS-next Desktop UI](./public/appimages/macos-next.png)
-
-iOS UI (Rendered automatically on smaller screen sizes)
-
-![macOS-next Mobile UI](./public/appimages/ios-macOS-next.png)
-
-## 🧠 Core Architecture: Virtual File System & Deep Linking
-
-`macOS-next` is built upon a custom architecture that simulates an operating system's logic.
-
-### Virtual File System (VFS)
-The application state is grounded in a **JSON-based directory structure (`/`)**. This is a hierarchical file system supporting:
-- **MIME Types**: Differentiates between folders (`inode/directory`), images (`image/png`), text (`text/plain`), and URIs (`text/x-uri`).
-- **Metadata**: Tracks file creation dates, sizes, and parent directories.
-- **Dynamic Content**: Files act as objects that can trigger specific applications when interacted with.
-
-### Deep Linking Architecture
-This file system enables **app-to-app communication**, connecting different components:
-- **Mail ↔️ Finder**: Clicking a GitHub project notification in the **Mail** app sends a command to **Finder** to navigate to and highlight that specific project folder.
-- **Finder ↔️ Apps**:
-    - Opening a `.md` or `.pdf` file resolves and renders the content in **File Viewer**.
-    - Clicking an image file launches **Photos** in a modal preview state.
-- **Universal Access**: Resources are addressable through this central logic layer.
+> **UI Inspiration**: The interface design is inspired by Apple's macOS and iOS, reimagined for the web with custom implementations.
+**AI Credit**: This README was writen and formatted with the help of GPT-5.2!
+![NextarOS Desktop](./public/appimages/macos-next.png)
 
 ---
 
-## 🖥️ Dual Interface Design
+## ✨ Key Features
 
-The project features a responsive design that shifts the interface layout based on the device using CSS container queries and media matches.
+### 🖥️ Desktop Experience
+- **Window Management** - Drag, resize, minimize, maximize, stack windows
+- **Menu Bar** - Dynamic app-specific menus
+- **Dock** - Interactive with magnification animations
+- **Control Center** - Quick settings, brightness, volume
+- **Notification Center** - System alerts with slide-in panel
+- **Spotlight Search** - Universal app and file search
 
-### macOS (Desktop Experience)
-- **Window Management**: Windowing system with dragging, resizing, minimizing, maximizing, and Z-index stacking.
-- **Control Center**: Panel for managing system connectivity (Wi-Fi, Bluetooth), Display Brightness, and Sound Volume.
-- **Notification System**: Aggregates alerts, system messages, and app notifications.
-- **Dock**: Interactive dock with magnification animations.
-- **Menu Bar**: Functional global menu bar with dynamic app-specific menus (File, Edit, View, Window, Help).
+### 📱 Mobile Experience
+Auto-adapts on smaller screens:
+- Touch-optimized iOS-style interface
+- Swipeable home pages
+- Full-screen apps with gesture navigation
+- Lock screen and notification banners
 
-### iOS (Mobile Experience)
-- **Convergent Design**: Interface transforms into a touch-optimized iOS layout on smaller screens.
-- **Home Screen & Library**: Swipeable home pages and a searchable App Library.
-- **Touch Gestures**: Swipe gestures for navigation between screens.
-- **Adaptive Apps**: Windowed apps transform into full-screen mobile experiences with bottom-sheet multitasking interactions.
+### 📁 Virtual File System
+JSON-based hierarchical file system:
+- Create, rename, delete files and folders
+- Upload files (up to 5MB, stored in IndexedDB)
+- Trash and restore functionality
+- MIME type handling for different file types
+- Persistent storage across sessions
 
-## 🚀 Applications
+### 🚀 External Apps Ecosystem
+Install and run third-party apps:
+- Add custom GitHub repositories
+- Browse and install apps from App Store
+- 80+ documented APIs for developers
+- SDK documentation included
 
-### 📁 Finder
-File manager. Browse projects, documents, and system files in List, Icon, or Gallery views. Supports navigation history (Back/Forward) and breadcrumbs.
+---
 
-### 🌐 Safari
-Browser simulation. Renders external websites or internal portfolio projects within an iframe, complete with address bar navigation.
+## 🎯 Built-in Applications
 
-### 💻 Terminal
-Interactive `zsh` simulation.
-- Run commands like `ls`, `cd`, `cat`, `echo`, `clear`.
-- Execute Easter eggs and system commands.
-- View project details via CLI.
+| App | Description |
+|-----|-------------|
+| **Finder** | File manager with list, icon, and gallery views |
+| **Safari** | Web browser with tabs and navigation |
+| **Code Editor** | Monaco-powered IDE with Python/JS execution |
+| **Terminal** | ZSH simulation with command support |
+| **Mail** | Email client with deep linking |
+| **Photos** | Image gallery with viewer |
+| **Notes** | Note-taking with rich text |
+| **Music** | Audio player |
+| **Settings** | Theme, wallpaper, accessibility |
+| **Calculator** | Standard calculator |
+| **Calendar** | Date and event management |
+| **App Store** | Browse and install external apps |
+| **API Docs** | Searchable API reference for developers |
 
-### ✉️ Mail
-Email client simulation showcasing portfolio messages.
-- **Integration**: Emails from "GitHub" about projects contain "View in Finder" buttons that deep-link directly to the project's assets in the file system.
+---
 
-### 📸 Photos
-Gallery application to view project screenshots and personal photos.
-- **Integration**: Works with Finder to preview image files.
+## 🛠️ For Developers
 
-### ⚙️ Settings
-System control panel.
-- **Theming**: Toggle Dark/Light mode.
-- **Wallpapers**: Change the desktop background.
+### External Apps SDK
+Build apps that run inside NextarOS:
 
-### 📝 File Viewer
-Document reader.
-- Renders Markdown (READMEs), Plain Text, and PDFs (Resume).
+```jsx
+export default function MyApp({ appData }) {
+  const { addToast } = useNotifications();
+  
+  return (
+    <button onClick={() => addToast('Hello!', 'success')}>
+      Click Me
+    </button>
+  );
+}
+```
 
-### 🐍 Python
-Added for those python enthusiasts who look around for python everywhere :P
+**Available APIs:**
+- Window management (open, close, resize)
+- File system (read, write, create)
+- Notifications (toasts, alerts)
+- Theme and settings access
+- Device detection
+- Sound effects
 
-## 🛠️ Tech Stack
+See [docs/SDK.md](./docs/SDK.md) for complete documentation.
+
+### Create Your App Repository
+1. Fork [nextar-apps](https://github.com/invincibleinventor/nextar-apps)
+2. Add your apps to `apps.json`
+3. Submit PR or add as custom repository
+
+---
+
+## 🔧 Tech Stack
 
 - **Framework**: [Next.js 15](https://nextjs.org/) (App Router)
 - **Core**: [React 19](https://react.dev/)
+- **Editor**: [Monaco Editor](https://microsoft.github.io/monaco-editor/)
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/)
-- **Animations**: [Framer Motion](https://www.framer.com/motion/) & [GSAP](https://greensock.com/gsap/)
-- **State Management**: React Context & Hooks (Window Manager, File System)
+- **Animations**: [Framer Motion](https://www.framer.com/motion/)
+- **Storage**: IndexedDB (via custom abstraction)
+- **Auth**: Client Side Auth Context
 
-## Getting Started
+---
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/invincibleinventor/macos.git
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   # or
-   pnpm install
-   ```
-3. Run the development server:
-   ```bash
-   npm run dev
-   ```
+## 🚀 Getting Started
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to experience the OS.
+```bash
+# Clone repository
+git clone https://github.com/invincibleinventor/macos.git
+cd macos
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) to experience NextarOS.
+
+---
+
+## 📄 License
+
+MIT License - feel free to use, modify, and distribute.
+
+---
+
+**Built by [Bala TBR](https://github.com/invincibleinventor)**

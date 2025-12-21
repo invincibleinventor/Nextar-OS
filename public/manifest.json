@@ -1,6 +1,6 @@
 {
-    "name": "BalaTBR - MacOS-Next",
-    "short_name": "MacOS-Next",
+    "name": "BalaTBR - NextarOS",
+    "short_name": "NextarOS",
     "description": "A macOS inspired operating system simulation on the web.",
     "start_url": "/",
     "display": "standalone",

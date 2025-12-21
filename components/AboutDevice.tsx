@@ -5,12 +5,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from './AuthContext';
 import { personal } from './data';
 
-interface AboutThisMacProps {
+interface AboutDeviceProps {
     isopen: boolean;
     onclose: () => void;
 }
 
-export default function AboutThisMac({ isopen, onclose }: AboutThisMacProps) {
+export default function AboutDevice({ isopen, onclose }: AboutDeviceProps) {
     const { user } = useAuth();
 
     return (
@@ -34,14 +34,14 @@ export default function AboutThisMac({ isopen, onclose }: AboutThisMacProps) {
                             <div className="w-20 h-20 mb-4">
                                 <Image
                                     src="/logo.svg"
-                                    alt="MacOS-Next"
+                                    alt="NextarOS"
                                     width={80}
                                     height={80}
                                     className="w-full h-full dark:invert"
                                 />
                             </div>
 
-                            <h1 className="text-xl font-bold dark:text-white mb-1">MacOS-Next</h1>
+                            <h1 className="text-xl font-bold dark:text-white mb-1">NextarOS</h1>
                             <p className="text-xs text-gray-500 mb-4">Version 2.0</p>
 
                             <div className="w-full space-y-2 text-sm text-left mb-4">

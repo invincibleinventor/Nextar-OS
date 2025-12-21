@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     template: `%s | ${portfoliodata.personal.name}`,
   },
   description: portfoliodata.personal.bio,
-  applicationName: 'BalaTBR - MacOS-Next',
+  applicationName: 'BalaTBR - NextarOS',
   authors: [{ name: portfoliodata.personal.name, url: 'https://baladev.in' }],
   generator: 'Next.js',
   keywords: [...portfoliodata.skills, 'Next.js', 'React', 'TailwindCSS', 'Portfolio', 'macOS Web', 'System Simulator', 'WebOS'],
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     title: portfoliodata.personal.name,
     description: portfoliodata.personal.bio,
     url: 'https://baladev.in',
-    siteName: 'BalaTBR - MacOS-Next',
+    siteName: 'BalaTBR - NextarOS',
     locale: 'en_US',
     type: 'website',
     images: [
@@ -66,7 +66,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'BalaTBR - MacOS-Next',
+    title: 'BalaTBR - NextarOS',
   },
 };
 
@@ -100,6 +100,7 @@ export const viewport: Viewport = {
 
 import { NotificationProvider } from '@/components/NotificationContext';
 import { AuthProvider } from '@/components/AuthContext';
+import { ExternalAppsProvider } from '@/components/ExternalAppsContext';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -117,7 +118,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                       <FileSystemProvider>
                         <AppPreferencesProvider>
                           <AppMenuProvider>
-                            {children}
+                            <ExternalAppsProvider>
+                              {children}
+                            </ExternalAppsProvider>
                           </AppMenuProvider>
                         </AppPreferencesProvider>
                       </FileSystemProvider>

@@ -20,6 +20,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
     const [contextmenu, setcontextmenu] = useState<{ x: number; y: number; item?: filesystemitem } | null>(null);
     const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
     const longpresstimer = useRef<NodeJS.Timeout | null>(null);
+    const touchstartpos = useRef<{ x: number; y: number } | null>(null);
     const [iconorder, seticonorder] = useState<string[]>([]);
 
     const desktopItems = files.filter(item => item.parent === currentUserDesktopId && !item.isTrash);
@@ -73,13 +74,24 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
     ).slice(0, 4);
 
     const handlelongpressstart = (item: filesystemitem | null, e: React.TouchEvent | React.MouseEvent) => {
+        const touch = 'touches' in e ? e.touches[0] : e;
+        touchstartpos.current = { x: touch.clientX, y: touch.clientY };
         longpresstimer.current = setTimeout(() => {
             if ('vibrate' in navigator) {
                 navigator.vibrate(10);
             }
-            const touch = 'touches' in e ? e.touches[0] : e;
             setcontextmenu({ x: touch.clientX, y: touch.clientY, item: item || undefined });
         }, 500);
+    };
+
+    const handlelongpressmove = (e: React.TouchEvent) => {
+        if (!touchstartpos.current || !longpresstimer.current) return;
+        const touch = e.touches[0];
+        const dx = Math.abs(touch.clientX - touchstartpos.current.x);
+        const dy = Math.abs(touch.clientY - touchstartpos.current.y);
+        if (dx > 10 || dy > 10) {
+            handlelongpressend();
+        }
     };
 
     const handlelongpressend = () => {
@@ -87,6 +99,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
             clearTimeout(longpresstimer.current);
             longpresstimer.current = null;
         }
+        touchstartpos.current = null;
     };
 
     const handlereorder = (draggedId: string, targetIndex: number) => {
@@ -187,6 +200,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                 if ((e.target as HTMLElement).closest('.app-icon')) return;
                 handlelongpressstart(null, e);
             }}
+            onTouchMove={handlelongpressmove}
             onTouchEnd={handlelongpressend}
             onTouchCancel={handlelongpressend}
             onContextMenu={(e) => {

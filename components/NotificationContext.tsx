@@ -6,6 +6,7 @@ import { useWindows } from './WindowContext';
 import { useDevice } from './DeviceContext';
 import { useAuth } from './AuthContext';
 import { apps, openSystemItem } from './data';
+import { playSound } from './SoundEffects';
 
 interface NotificationContextType {
     notifications: Notification[];
@@ -59,6 +60,10 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     };
 
     const addToast = (message: string, type: 'info' | 'success' | 'error' | 'warning' = 'info') => {
+        if (type === 'error') playSound('error');
+        else if (type === 'success') playSound('success');
+        else playSound('notification');
+
         addnotification({
             id: Math.random().toString(36).substr(2, 9),
             title: type === 'error' ? 'Error' : type === 'success' ? 'Success' : 'Notification',
@@ -78,7 +83,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         setnotifications(prev => prev.filter(n => n.id !== id));
         if (toast?.id === id) settoast(null);
 
-        if (isGuest) return; 
+        if (isGuest) return;
 
         const stored = localStorage.getItem('clearedNotifications');
         const clearedids = stored ? JSON.parse(stored) : [];

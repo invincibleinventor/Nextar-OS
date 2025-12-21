@@ -3,13 +3,16 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
     IoCloseOutline, IoFolderOutline, IoDocumentTextOutline, IoAppsOutline,
     IoGridOutline, IoListOutline, IoChevronBack, IoChevronForward,
-    IoSearch, IoGlobeOutline, IoInformationCircleOutline, IoChevronDown, IoChevronUp, IoFolderOpenOutline, IoLockClosed
+    IoSearch, IoGlobeOutline, IoInformationCircleOutline, IoChevronDown, IoChevronUp, IoFolderOpenOutline, IoLockClosed,
+    IoDesktopOutline,
+    IoDownloadOutline
 } from "react-icons/io5";
 import Sidebar from '../ui/Sidebar';
 import Image from 'next/image';
 import { useWindows } from '../WindowContext';
 import { apps, filesystemitem, openSystemItem, getFileIcon } from '../data';
 import { useDevice } from '../DeviceContext';
+import { useExternalApps } from '../ExternalAppsContext';
 
 import { IoTrashOutline, IoTrash, IoAddCircleOutline } from "react-icons/io5";
 import { useFileSystem } from '../FileSystemContext';
@@ -28,8 +31,9 @@ export default function Finder({ windowId, initialpath, istrash, openPath, selec
     const [showpreview, setshowpreview] = useState(true);
     const { addwindow, windows, updatewindow, setactivewindow, activewindow } = useWindows();
     const { ismobile } = useDevice();
-    const { files, deleteItem, createFolder, createFile, moveToTrash, emptyTrash, restoreFromTrash, moveItem, copyItem, cutItem, pasteItem, clipboard, renameItem, isLoading, currentUserDesktopId, currentUserDocsId, currentUserDownloadsId, currentUserTrashId, isLocked } = useFileSystem();
+    const { files, deleteItem, createFolder, createFile, uploadFile, moveToTrash, emptyTrash, restoreFromTrash, moveItem, copyItem, cutItem, pasteItem, clipboard, renameItem, isLoading, currentUserDesktopId, currentUserDocsId, currentUserDownloadsId, currentUserTrashId, isLocked } = useFileSystem();
     const { user, isGuest } = useAuth();
+    const { launchApp } = useExternalApps();
 
     const username = user?.username || 'guest';
     const userhome = isGuest ? 'Guest' : (username.charAt(0).toUpperCase() + username.slice(1));
@@ -38,14 +42,14 @@ export default function Finder({ windowId, initialpath, istrash, openPath, selec
         {
             title: 'Favorites',
             items: [
-                { name: 'Desktop', icon: IoAppsOutline, path: ['Macintosh HD', 'Users', userhome, 'Desktop'] },
-                { name: 'Documents', icon: IoDocumentTextOutline, path: ['Macintosh HD', 'Users', userhome, 'Documents'] },
-                { name: 'Downloads', icon: IoAppsOutline, path: ['Macintosh HD', 'Users', userhome, 'Downloads'] },
+                { name: 'Desktop', icon: IoDesktopOutline, path: ['System', 'Users', userhome, 'Desktop'] },
+                { name: 'Documents', icon: IoDocumentTextOutline, path: ['System', 'Users', userhome, 'Documents'] },
+                { name: 'Downloads', icon: IoDownloadOutline, path: ['System', 'Users', userhome, 'Downloads'] },
                 ...(isGuest ? [
-                    { name: 'Projects', icon: IoFolderOutline, path: ['Macintosh HD', 'Users', userhome, 'Projects'] },
-                    { name: 'About Me', icon: IoDocumentTextOutline, path: ['Macintosh HD', 'Users', userhome, 'About Me'] },
+                    { name: 'Projects', icon: IoFolderOutline, path: ['System', 'Users', userhome, 'Projects'] },
+                    { name: 'About Me', icon: IoDocumentTextOutline, path: ['System', 'Users', userhome, 'About Me'] },
                 ] : []),
-                { name: 'Applications', icon: IoAppsOutline, path: ['Macintosh HD', 'Applications'] },
+                { name: 'Applications', icon: IoAppsOutline, path: ['System', 'Applications'] },
             ]
         },
         {
@@ -57,7 +61,7 @@ export default function Finder({ windowId, initialpath, istrash, openPath, selec
         {
             title: 'Locations',
             items: [
-                { name: 'Macintosh HD', icon: IoAppsOutline, path: ['Macintosh HD'] },
+                { name: 'System', icon: IoAppsOutline, path: ['System'] },
                 { name: 'Network', icon: IoGlobeOutline, path: ['Network'] },
             ]
         }
@@ -72,11 +76,11 @@ export default function Finder({ windowId, initialpath, istrash, openPath, selec
             pathsegments.unshift(item.name);
             currentId = item.parent;
         }
-        return pathsegments.length > 0 ? pathsegments : ['Macintosh HD', 'Users', userhome, 'Desktop'];
+        return pathsegments.length > 0 ? pathsegments : ['System', 'Users', userhome, 'Desktop'];
     };
 
     const initialPathFromOpen = openPath ? getPathFromId(openPath) : null;
-    const [currentpath, setcurrentpath] = useState<string[]>(initialPathFromOpen || initialpath || ['Macintosh HD', 'Users', userhome, 'Desktop']);
+    const [currentpath, setcurrentpath] = useState<string[]>(initialPathFromOpen || initialpath || ['System', 'Users', userhome, 'Desktop']);
     const [searchquery, setsearchquery] = useState("");
 
     const [isnarrow, setisnarrow] = useState(false);
@@ -91,6 +95,26 @@ export default function Finder({ windowId, initialpath, istrash, openPath, selec
     const [mobileview, setmobileview] = useState<'sidebar' | 'files' | 'preview'>('files');
 
     const longpresstimer = useRef<NodeJS.Timeout | null>(null);
+    const fileinputref = useRef<HTMLInputElement>(null);
+
+    const getcurrentparentid = () => {
+        let currentparentid = 'root';
+        for (const foldername of currentpath) {
+            const folder = files.find(i => i.name.trim() === foldername.trim() && i.parent === currentparentid && !i.isTrash);
+            if (folder) currentparentid = folder.id;
+        }
+        return currentparentid;
+    };
+
+    const handlefileupload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const filelist = e.target.files;
+        if (!filelist) return;
+        const parentid = getcurrentparentid();
+        for (let i = 0; i < filelist.length; i++) {
+            await uploadFile(filelist[i], parentid);
+        }
+        if (fileinputref.current) fileinputref.current.value = '';
+    };
 
     useEffect(() => {
         if (!containerref.current) return;
@@ -130,7 +154,7 @@ export default function Finder({ windowId, initialpath, istrash, openPath, selec
 
     const getcurrentfiles = (): filesystemitem[] => {
         if (isTrashView) {
-            return files.filter(f => f.parent === 'root-trash' && f.id !== 'root-trash');
+            return files.filter(f => f.parent === currentUserTrashId && f.id !== currentUserTrashId);
         }
 
         let currentparentid = 'root';
@@ -139,7 +163,6 @@ export default function Finder({ windowId, initialpath, istrash, openPath, selec
             const folder = files.find(i => i.name.trim() === foldername.trim() && i.parent === currentparentid && !i.isTrash);
             if (folder) {
                 currentparentid = folder.id;
-            } else if (currentpath.length > 0 && currentparentid === 'root') {
             }
         }
 
@@ -165,10 +188,28 @@ export default function Finder({ windowId, initialpath, istrash, openPath, selec
         } else if (file.mimetype === 'inode/shortcut') {
             if (isTrashView) return;
             openSystemItem(file, { addwindow, windows, updatewindow, setactivewindow, ismobile, files });
+        } else if (file.mimetype === 'application/x-nextaros-app' || file.name.endsWith('.app')) {
+            if (isTrashView) return;
+            try {
+                const appData = JSON.parse(file.content || '{}');
+                if (appData.id) {
+                    launchApp(appData.id);
+                }
+            } catch { }
         } else {
             if (isTrashView) return;
             openSystemItem(file, { addwindow, windows, updatewindow, setactivewindow, ismobile, files });
         }
+    };
+
+    const getDisplayName = (file: filesystemitem) => {
+        if (file.name.endsWith('.app') && file.content) {
+            try {
+                const data = JSON.parse(file.content);
+                if (data.name) return data.name;
+            } catch { }
+        }
+        return file.name;
     };
 
     const [fileModal, setFileModal] = useState<{ isOpen: boolean, type: 'create-folder' | 'create-file' | 'rename', initialValue?: string }>({ isOpen: false, type: 'create-folder' });
@@ -191,9 +232,9 @@ export default function Finder({ windowId, initialpath, istrash, openPath, selec
         'view-list': () => { },
         'go-back': () => currentpath.length > 1 && setcurrentpath(currentpath.slice(0, -1)),
         'go-up': () => currentpath.length > 1 && setcurrentpath(currentpath.slice(0, -1)),
-        'go-desktop': () => setcurrentpath(['Macintosh HD', 'Users', 'Bala', 'Desktop']),
-        'go-documents': () => setcurrentpath(['Macintosh HD', 'Users', 'Bala', 'Documents']),
-        'go-downloads': () => setcurrentpath(['Macintosh HD', 'Users', 'Bala', 'Downloads']),
+        'go-desktop': () => setcurrentpath(['System', 'Users', userhome, 'Desktop']),
+        'go-documents': () => setcurrentpath(['System', 'Users', userhome, 'Documents']),
+        'go-downloads': () => setcurrentpath(['System', 'Users', userhome, 'Downloads']),
         'cut': () => {
             if (selectedFileIds.length > 0) cutItem(selectedFileIds);
         },
@@ -372,9 +413,12 @@ export default function Finder({ windowId, initialpath, istrash, openPath, selec
                 { label: isMulti ? `Move ${targets.length} Items to Trash` : 'Move to Trash', action: () => targets.forEach(id => moveToTrash(id)), danger: true, disabled: hasReadOnly }
             ];
         } else {
+            const parentid = getcurrentparentid();
+            const isReadOnlyDir = isLocked(parentid);
             return [
-                { label: 'New Folder', action: () => setFileModal({ isOpen: true, type: 'create-folder', initialValue: '' }) },
-                { label: 'New File', action: () => setFileModal({ isOpen: true, type: 'create-file', initialValue: '' }) },
+                { label: 'New Folder', action: () => setFileModal({ isOpen: true, type: 'create-folder', initialValue: '' }), disabled: isReadOnlyDir },
+                { label: 'New File', action: () => setFileModal({ isOpen: true, type: 'create-file', initialValue: '' }), disabled: isReadOnlyDir },
+                { label: 'Upload File', action: () => fileinputref.current?.click(), disabled: isReadOnlyDir },
                 { separator: true, label: '' },
                 {
                     label: 'Paste', action: () => {
@@ -384,7 +428,7 @@ export default function Finder({ windowId, initialpath, istrash, openPath, selec
                             if (folder) currentParentId = folder.id;
                         }
                         pasteItem(currentParentId);
-                    }, disabled: !clipboard
+                    }, disabled: !clipboard || isReadOnlyDir
                 },
                 { separator: true, label: '' },
                 {
@@ -419,27 +463,25 @@ export default function Finder({ windowId, initialpath, istrash, openPath, selec
         e.dataTransfer.dropEffect = 'move';
     };
 
-    const handleDrop = (e: React.DragEvent, targetParentId?: string) => {
+    const handleDrop = async (e: React.DragEvent, targetParentId?: string) => {
         e.preventDefault();
         e.stopPropagation();
-        const sourceId = e.dataTransfer.getData('sourceId');
-        if (!sourceId) return;
 
         let destinationId = targetParentId;
-
         if (!destinationId) {
-            let currentparentid = 'root';
-            for (const foldername of currentpath) {
-                const folder = files.find(i => i.name.trim() === foldername.trim() && i.parent === currentparentid && !i.isTrash);
-                if (folder) {
-                    currentparentid = folder.id;
-                }
-            }
-            destinationId = currentparentid;
+            destinationId = getcurrentparentid();
         }
 
-        if (sourceId === destinationId) return;
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            for (let i = 0; i < e.dataTransfer.files.length; i++) {
+                await uploadFile(e.dataTransfer.files[i], destinationId);
+            }
+            return;
+        }
 
+        const sourceId = e.dataTransfer.getData('sourceId');
+        if (!sourceId) return;
+        if (sourceId === destinationId) return;
         moveItem(sourceId, destinationId);
     };
 
@@ -449,6 +491,13 @@ export default function Finder({ windowId, initialpath, istrash, openPath, selec
                 ref={containerref}
                 className="flex flex-col h-full w-full bg-white dark:bg-[#1e1e1e] text-black dark:text-white font-sf text-[15px] overflow-hidden relative select-none"
             >
+                <input
+                    type="file"
+                    ref={fileinputref}
+                    onChange={handlefileupload}
+                    multiple
+                    className="hidden"
+                />
                 <FileModal
                     isOpen={fileModal.isOpen}
                     type={fileModal.type}
@@ -624,7 +673,7 @@ export default function Finder({ windowId, initialpath, istrash, openPath, selec
                                                     {getFileIcon(file.mimetype, file.name, file.icon)}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <div className="font-medium text-[17px] truncate">{file.name}</div>
+                                                    <div className="font-medium text-[17px] truncate">{getDisplayName(file)}</div>
                                                     <div className="text-[13px] text-gray-500 dark:text-gray-400">
                                                         {file.mimetype === 'inode/directory' ? 'Folder' : file.size || '--'}
                                                     </div>
@@ -678,6 +727,13 @@ export default function Finder({ windowId, initialpath, istrash, openPath, selec
             onDragOver={handleDragOver}
             onDrop={(e) => handleDrop(e)}
         >
+            <input
+                type="file"
+                ref={fileinputref}
+                onChange={handlefileupload}
+                multiple
+                className="hidden"
+            />
             <FileModal
                 isOpen={fileModal.isOpen}
                 type={fileModal.type}
@@ -860,7 +916,7 @@ export default function Finder({ windowId, initialpath, istrash, openPath, selec
                                         </div>
                                         <span className={`text-[12px] text-center leading-tight px-2 py-0.5 rounded break-words w-full line-clamp-2
                                         ${isSelected ? 'bg-accent text-white font-medium' : 'text-gray-700 dark:text-gray-300'}`}>
-                                            {file.name}
+                                            {getDisplayName(file)}
                                         </span>
                                         {isLocked(file.id) && (
                                             <div className="absolute top-1 right-1 bg-white/80 dark:bg-black/80 rounded-full p-0.5 shadow-sm">
@@ -900,7 +956,7 @@ export default function Finder({ windowId, initialpath, istrash, openPath, selec
                                 <div className="w-24 object-cover h-24 mb-4 drop-shadow-xl relative">
                                     {getFileIcon(activefile.mimetype, activefile.name, activefile.icon)}
                                 </div>
-                                <h3 className="text-lg font-semibold text-black dark:text-white mb-1 break-words w-full">{activefile.name}</h3>
+                                <h3 className="text-lg font-semibold text-black dark:text-white mb-1 break-words w-full">{getDisplayName(activefile)}</h3>
                                 <p className="text-[11px] text-gray-500 dark:text-gray-400 mb-4">{activefile.mimetype}</p>
 
                                 <div className="w-full space-y-3 text-left">

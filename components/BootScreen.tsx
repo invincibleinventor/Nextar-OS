@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDevice } from './DeviceContext';
-import { FaApple } from 'react-icons/fa';
+import { HiSparkles } from 'react-icons/hi2';
 
 export default function BootScreen() {
     const { osstate, setosstate } = useDevice();
@@ -14,7 +14,7 @@ export default function BootScreen() {
                     if (prev >= 100) {
                         clearInterval(interval);
                         setTimeout(() => {
-                                if (osstate === 'booting') setosstate('locked');
+                            if (osstate === 'booting') setosstate('locked');
                         }, 500);
                         return 100;
                     }
@@ -40,7 +40,7 @@ export default function BootScreen() {
                         transition={{ duration: 0.5 }}
                         className="mb-16"
                     >
-                        <FaApple className="text-white w-24 h-24" />
+                        <HiSparkles className="text-white w-24 h-24" />
                     </motion.div>
 
                     <button
