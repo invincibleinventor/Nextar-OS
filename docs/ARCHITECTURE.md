@@ -209,14 +209,27 @@ NextarOS is a web-based operating system simulation built with Next.js, implemen
    │
 3. User enters password
    │
-4. Hash password with SHA-256
+4. Check rate limiting (5 attempts max, 30s lockout)
    │
-5. Compare with stored hash
+5. Hash password with PBKDF2 (100k iterations, 16-byte salt)
+   │
+6. Constant-time comparison with stored hash
    │  ├── Match → Set user, unlock OS
-   │  └── No match → Show error
+   │  └── No match → Increment attempts, show error
    │
-6. Guest can logout, admin can switch users
+7. Guest can logout, admin can switch users
 ```
+
+### Password Security
+
+| Feature | Implementation |
+|---------|----------------|
+| Algorithm | PBKDF2-HMAC-SHA256 |
+| Iterations | 100,000 |
+| Salt Length | 16 bytes (random per password) |
+| Key Length | 32 bytes |
+| Comparison | Constant-time to prevent timing attacks |
+| Rate Limiting | 5 attempts, 30 second lockout |
 
 ## Snapshot System
 
@@ -295,3 +308,60 @@ Each app is wrapped in an `AppErrorBoundary` that:
 3. **Virtual Scrolling**: Large file lists use windowed rendering
 4. **Static Export**: Pre-rendered HTML for instant load
 5. **Service Worker**: Aggressive caching for repeat visits
+6. **Animation Throttling**: 60ms throttle on layout tracking
+
+## Security Architecture
+
+### External App Sandbox
+
+External apps run in a restricted environment:
+
+| API | Restriction |
+|-----|-------------|
+| FileSystem | Read-only, system files filtered |
+| Settings | Read-only (no setwallpaper, setaccentcolor) |
+| Auth | Limited user info (username/name only) |
+| Storage | Namespaced localStorage (`userapp_{appname}_{key}`) |
+| Fetch | HTTP/HTTPS only, other protocols blocked |
+| External Apps | No installApp, uninstallApp, launchApp |
+
+### Code Integrity
+
+External apps are verified before execution:
+
+```
+1. App installed → SHA-256 hash computed and stored
+2. App launched → Hash recomputed from stored code
+3. Compare hashes
+   ├── Match → Execute app
+   └── Mismatch → Block with "Code integrity check failed"
+```
+
+### URL Validation (Browser)
+
+Blocked URL protocols:
+- `javascript:` (XSS vector)
+- `data:` (code injection)
+- `vbscript:` (legacy attacks)
+
+### iframe Sandbox
+
+Browser iframes use restricted sandbox:
+```
+allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox
+```
+
+**Notably missing**: `allow-same-origin` (prevents sandbox escapes)
+
+### Service Worker Security
+
+Cache validation before storing:
+- Only cache responses with `status === 200`
+- Only cache responses with `type === 'basic'`
+- Prevents cache poisoning from error pages
+
+### Global Error Handling
+
+- Unhandled promise rejections silently caught
+- Per-window error boundaries contain app crashes
+- Process manager tracks crash state

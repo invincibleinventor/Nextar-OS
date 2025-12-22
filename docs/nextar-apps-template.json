@@ -22,54 +22,6 @@
             "license": "MIT"
         },
         {
-            "id": "notes-app",
-            "name": "Quick Notes",
-            "description": "Simple note-taking app with markdown support",
-            "icon": "📝",
-            "author": "NextarOS Team",
-            "version": "1.0.0",
-            "category": "Productivity",
-            "component": "QuickNotes",
-            "tags": [
-                "notes",
-                "markdown",
-                "writing"
-            ],
-            "license": "MIT"
-        },
-        {
-            "id": "weather-widget",
-            "name": "Weather",
-            "description": "Beautiful weather forecasts with location-based data",
-            "icon": "🌤",
-            "author": "NextarOS Team",
-            "version": "1.0.0",
-            "category": "Weather",
-            "component": "Weather",
-            "tags": [
-                "weather",
-                "forecast",
-                "location"
-            ],
-            "license": "MIT"
-        },
-        {
-            "id": "clock-world",
-            "name": "World Clock",
-            "description": "View times across multiple time zones",
-            "icon": "🕐",
-            "author": "NextarOS Team",
-            "version": "1.0.0",
-            "category": "Utilities",
-            "component": "WorldClock",
-            "tags": [
-                "clock",
-                "timezone",
-                "time"
-            ],
-            "license": "MIT"
-        },
-        {
             "id": "color-picker",
             "name": "Color Picker",
             "description": "Pick colors from screen and convert between formats",
