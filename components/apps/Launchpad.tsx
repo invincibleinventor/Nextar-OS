@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import React, { useState, useMemo } from 'react';
 import { IoSearch } from 'react-icons/io5';
 import { useExternalApps } from '../ExternalAppsContext';
+import TintedAppIcon from '../ui/TintedAppIcon';
 
 const appsperpage = 35;
 
@@ -126,13 +127,11 @@ export default function Launchpad({ onclose }: { onclose: () => void }) {
                                 onClick={() => handleappclick(app)}
                             >
                                 <div className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 relative">
-                                    <Image
-                                        src={app.icon}
-                                        alt={app.appname}
-                                        fill
-                                        sizes="(max-width: 768px) 64px, (max-width: 1024px) 80px, 96px"
-                                        className="object-contain drop-shadow-2xl"
-                                        draggable={false}
+                                    <TintedAppIcon
+                                        appId={app.id}
+                                        appName={app.appname}
+                                        originalIcon={app.icon}
+                                        size={96}
                                     />
                                 </div>
                                 <span className="text-white text-[13px] font-medium text-center leading-tight drop-shadow-md truncate max-w-[90px]">

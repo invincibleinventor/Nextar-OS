@@ -22,7 +22,7 @@ import { SelectionArea } from '@/components/ui/SelectionArea';
 import FileModal from '@/components/ui/FileModal';
 import { useFileSystem } from '@/components/FileSystemContext';
 import { useAuth } from '@/components/AuthContext';
-import Spotlight from '@/components/Spotlight';
+import Next from '@/components/Next';
 import AppSwitcher from '@/components/AppSwitcher';
 import TourGuide from '@/components/TourGuide';
 import ForceQuit from '@/components/ForceQuit';
@@ -37,7 +37,7 @@ const Desktop = () => {
   const [showcontrolcenter, setshowcontrolcenter] = useState(false);
   const [shownotificationcenter, setshownotificationcenter] = useState(false);
   const [showrecentapps, setshowrecentapps] = useState(false);
-  const [showspotlight, setshowspotlight] = useState(false);
+  const [shownext, setshownext] = useState(false);
   const [showappswitcher, setshowappswitcher] = useState(false);
   const [showtour, setshowtour] = useState(false);
   const [showforcequit, setshowforcequit] = useState(false);
@@ -66,9 +66,9 @@ const Desktop = () => {
       console.log('[Page] Received menu-action:', e.detail);
       const effectiveActionId = actionId || title;
 
-      if (appId === 'finder' && effectiveActionId === 'new-window') {
+      if (appId === 'explorer' && effectiveActionId === 'new-window') {
         const lastWindow = windows[windows.length - 1];
-        if (lastWindow && lastWindow.appname === 'Finder' && (Date.now() - (lastWindow.lastInteraction || 0) < 500)) {
+        if (lastWindow && lastWindow.appname === 'Explorer' && (Date.now() - (lastWindow.lastInteraction || 0) < 500)) {
           console.log('[Page] Ignoring duplicate new-window request');
           return;
         }
@@ -77,11 +77,11 @@ const Desktop = () => {
         const homeDir = username === 'guest' ? 'Guest' : (username.charAt(0).toUpperCase() + username.slice(1));
 
         addwindow({
-          id: `finder-${Date.now()}`,
-          appname: 'Finder',
-          title: 'Finder',
-          component: 'apps/Finder',
-          icon: '/finder.png',
+          id: `explorer-${Date.now()}`,
+          appname: 'Explorer',
+          title: 'Explorer',
+          component: 'apps/Explorer',
+          icon: '/explorer.png',
           isminimized: false,
           ismaximized: false,
           position: { top: 100, left: 100 },
@@ -113,7 +113,7 @@ const Desktop = () => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
-        setshowspotlight(prev => !prev);
+        setshownext(prev => !prev);
       }
       if ((e.metaKey || e.ctrlKey) && e.key === '`') {
         e.preventDefault();
@@ -131,13 +131,13 @@ const Desktop = () => {
       }
       if ((e.metaKey || e.ctrlKey) && e.key === 'q') {
         e.preventDefault();
-        if (activewindow && activewindow !== 'finder-desktop') {
+        if (activewindow && activewindow !== 'explorer-desktop') {
           setwindows(windows.filter((w: any) => w.id !== activewindow));
         }
       }
       if ((e.metaKey || e.ctrlKey) && e.key === 'w') {
         e.preventDefault();
-        if (activewindow && activewindow !== 'finder-desktop') {
+        if (activewindow && activewindow !== 'explorer-desktop') {
           setwindows(windows.filter((w: any) => w.id !== activewindow));
         }
       }
@@ -166,18 +166,18 @@ const Desktop = () => {
     };
 
     const handleStartTour = () => setshowtour(true);
-    const handleToggleSpotlight = () => setshowspotlight(prev => !prev);
+    const handleToggleNext = () => setshownext(prev => !prev);
     const handleForceQuit = () => setshowforcequit(true);
     const handleAboutMac = () => setshowaboutmac(true);
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('start-tour', handleStartTour);
-    window.addEventListener('toggle-spotlight', handleToggleSpotlight);
+    window.addEventListener('toggle-next', handleToggleNext);
     window.addEventListener('show-force-quit', handleForceQuit);
     window.addEventListener('show-about-mac', handleAboutMac);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('start-tour', handleStartTour);
-      window.removeEventListener('toggle-spotlight', handleToggleSpotlight);
+      window.removeEventListener('toggle-next', handleToggleNext);
       window.removeEventListener('show-force-quit', handleForceQuit);
       window.removeEventListener('show-about-mac', handleAboutMac);
     };
@@ -205,12 +205,12 @@ const Desktop = () => {
 
   useEffect(() => {
     if (osstate === 'unlocked' && user && !ismobile) {
-      const desktopFinder = windows.find((w: any) => w.id === 'finder-desktop');
-      if (!desktopFinder) {
+      const desktopExplorer = windows.find((w: any) => w.id === 'explorer-desktop');
+      if (!desktopExplorer) {
         addwindow({
-          id: 'finder-desktop',
-          appname: 'Finder',
-          component: 'apps/Finder',
+          id: 'explorer-desktop',
+          appname: 'Explorer',
+          component: 'apps/Explorer',
           props: { isDesktopBackend: true },
           isminimized: true,
           ismaximized: false,
@@ -224,7 +224,7 @@ const Desktop = () => {
   const handleDesktopClick = () => {
     if (shownotificationcenter) setshownotificationcenter(false);
     setContextMenu(null);
-    setactivewindow('finder-desktop');
+    setactivewindow('explorer-desktop');
   };
 
   const getContextMenuItems = () => {
@@ -249,8 +249,8 @@ const Desktop = () => {
       if (!isMulti) {
         baseItems.push({ label: 'Get Info', action: () => openSystemItem(activeFileItem, context, 'getinfo') });
         baseItems.push({
-          label: 'Show in Finder',
-          action: () => openSystemItem('finder', context, undefined, { openPath: activeFileItem.parent || currentUserDesktopId, selectItem: activeFileItem.id })
+          label: 'Show in Explorer',
+          action: () => openSystemItem('explorer', context, undefined, { openPath: activeFileItem.parent || currentUserDesktopId, selectItem: activeFileItem.id })
         });
         baseItems.push({ separator: true, label: '' });
         baseItems.push({
@@ -475,7 +475,7 @@ const Desktop = () => {
                     >
                       <div className="w-14 h-14 relative mb-1 drop-shadow-md">
                         <div className="w-full h-full aspect-square">
-                          {getFileIcon(item.mimetype, item.name, item.icon)}
+                          {getFileIcon(item.mimetype, item.name, item.icon, item.id)}
                         </div>
                       </div>
                       <span className={`text-[11px] w-full font-semibold text-white drop-shadow-md text-center break-words leading-tight line-clamp-2 px-1 rounded-sm ${isSelected ? 'bg-accent' : ''} group-hover:text-white`}>{item.name}</span>
@@ -590,7 +590,7 @@ const Desktop = () => {
         )}
       </div>
       <NotificationCenter isopen={shownotificationcenter} onclose={() => setshownotificationcenter(false)} />
-      <Spotlight isOpen={showspotlight} onClose={() => setshowspotlight(false)} />
+      <Next isOpen={shownext} onClose={() => setshownext(false)} />
       <AppSwitcher isOpen={showappswitcher} onClose={() => setshowappswitcher(false)} />
       <TourGuide isOpen={showtour} onClose={() => setshowtour(false)} />
       <ForceQuit isopen={showforcequit} onclose={() => setshowforcequit(false)} />

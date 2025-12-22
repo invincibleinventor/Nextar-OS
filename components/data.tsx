@@ -1,6 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
+import TintedAppIcon from './ui/TintedAppIcon';
 import {
     FaReact, FaPython, FaHtml5, FaCss3Alt, FaLinux, FaGitAlt, FaJava,
     FaGithub, FaSafari, FaLinkedin
@@ -36,6 +37,14 @@ export interface appdata {
     menus?: Record<string, { title?: string; disabled?: boolean; separator?: boolean; actionId?: string }[]>;
     isExternal?: boolean;
     externalUrl?: string;
+    manifest?: {
+        permissions: {
+            fs?: string[];
+            system?: string[];
+            window?: string[];
+            user?: string[];
+        };
+    };
 }
 
 export interface filesystemitem {
@@ -62,12 +71,12 @@ export interface filesystemitem {
 }
 
 export const componentmap: { [key: string]: any } = {
-    'apps/Finder': dynamic(() => import('./apps/Finder')),
+    'apps/Explorer': dynamic(() => import('./apps/Explorer')),
     'apps/FileInfo': dynamic(() => import('./apps/FileInfo')),
     'apps/TextEdit': dynamic(() => import('./apps/TextEdit')),
     'apps/Settings': dynamic(() => import('./apps/Settings')),
     'apps/Calendar': dynamic(() => import('./apps/Calendar')),
-    'apps/Safari': dynamic(() => import('./apps/Safari')),
+    'apps/Browser': dynamic(() => import('./apps/Browser')),
     'apps/Photos': dynamic(() => import('./apps/Photos')),
     'apps/Terminal': dynamic(() => import('./apps/Terminal')),
     'apps/Launchpad': dynamic(() => import('./apps/Launchpad')),
@@ -83,6 +92,7 @@ export const componentmap: { [key: string]: any } = {
     'apps/Calculator': dynamic(() => import('./apps/Calculator')),
     'apps/ExternalAppLoader': dynamic(() => import('./apps/ExternalAppLoader')),
     'apps/ApiDocs': dynamic(() => import('./apps/ApiDocs')),
+    'apps/SystemMonitor': dynamic(() => import('./apps/SystemMonitor')),
     'DynamicAppRunner': dynamic(() => import('./DynamicAppRunner')),
 };
 
@@ -222,11 +232,11 @@ export const personal = {
 
 export const apps: appdata[] = [
     {
-        id: 'finder',
-        appname: 'Finder',
-        icon: '/finder.png',
+        id: 'explorer',
+        appname: 'Explorer',
+        icon: '/explorer.png',
         maximizeable: true,
-        componentname: 'apps/Finder',
+        componentname: 'apps/Explorer',
         additionaldata: {},
         multiwindow: true,
         titlebarblurred: true,
@@ -234,9 +244,15 @@ export const apps: appdata[] = [
         defaultsize: { width: 1000, height: 600 },
         category: 'Utilities',
         titlemenu: [
-            { title: "About Finder", disabled: false },
-            { title: "Quit Finder", disabled: false },
-        ]
+            { title: "About Explorer", disabled: false },
+            { title: "Quit Explorer", disabled: false },
+        ],
+        manifest: {
+            permissions: {
+                fs: ['fs.read', 'fs.write', 'fs.system'],
+                window: ['window.multiInstance']
+            }
+        }
     },
     {
         id: 'settings',
@@ -248,7 +264,13 @@ export const apps: appdata[] = [
         multiwindow: true,
         titlebarblurred: true,
         pinned: true,
-        category: 'Utilities'
+        category: 'Utilities',
+        manifest: {
+            permissions: {
+                system: ['system.settings', 'system.theme'],
+                user: ['user.current']
+            }
+        }
     },
     {
         id: 'python',
@@ -363,11 +385,11 @@ export const apps: appdata[] = [
         category: 'Developer Tools'
     },
     {
-        id: 'safari',
-        appname: 'Safari',
-        icon: '/safari.png',
+        id: 'browser',
+        appname: 'Browser',
+        icon: '/browser.png',
         maximizeable: true,
-        componentname: 'apps/Safari',
+        componentname: 'apps/Browser',
         additionaldata: {},
         multiwindow: true,
         titlebarblurred: true,
@@ -385,7 +407,13 @@ export const apps: appdata[] = [
         multiwindow: true,
         titlebarblurred: true,
         pinned: true,
-        category: 'Utilities'
+        category: 'Utilities',
+        manifest: {
+            permissions: {
+                fs: ['fs.read', 'fs.write', 'fs.system'],
+                window: ['window.multiInstance']
+            }
+        }
     },
     {
         id: 'photos',
@@ -398,7 +426,13 @@ export const apps: appdata[] = [
         titlebarblurred: true,
         pinned: true,
         acceptedMimeTypes: ['image/png', 'image/jpeg', 'image/webp', 'image/gif'],
-        category: 'Creativity'
+        category: 'Creativity',
+        manifest: {
+            permissions: {
+                fs: ['fs.read', 'fs.homeOnly'],
+                window: ['window.multiInstance', 'window.fullscreen']
+            }
+        }
     },
     {
         id: 'welcome',
@@ -430,7 +464,7 @@ export const apps: appdata[] = [
     {
         id: 'getinfo',
         appname: 'Get Info',
-        icon: '/finder.png',
+        icon: '/explorer.png',
         maximizeable: false,
         componentname: 'apps/FileInfo',
         additionaldata: {},
@@ -451,15 +485,34 @@ export const apps: appdata[] = [
         pinned: true,
         defaultsize: { width: 400, height: 550 },
         category: 'Utilities'
+    },
+    {
+        id: 'systemmonitor',
+        appname: 'System Monitor',
+        icon: '/terminal.webp',
+        maximizeable: true,
+        componentname: 'apps/SystemMonitor',
+        additionaldata: {},
+        multiwindow: false,
+        titlebarblurred: false,
+        pinned: false,
+        defaultsize: { width: 800, height: 500 },
+        category: 'Utilities',
+        manifest: {
+            permissions: {
+                system: ['system.settings'],
+                user: ['user.current']
+            }
+        }
     }
 ];
 
 export const menus = [
     {
-        appname: "Finder",
+        appname: "Explorer",
         menus: {
             File: [
-                { title: "New Finder Window", actionId: "new-window", disabled: false },
+                { title: "New Explorer Window", actionId: "new-window", disabled: false },
                 { title: "New Folder", actionId: "new-folder", disabled: false },
                 { title: "New Folder with Selection", actionId: "new-folder-selection", disabled: true },
                 { title: "New Smart Folder", actionId: "new-smart-folder", disabled: false },
@@ -512,10 +565,10 @@ export const menus = [
 
 export const titlemenu = [
     {
-        title: "Finder",
+        title: "Explorer",
         menu: [
-            { title: "About Finder", disabled: false },
-            { title: "Quit Finder", disabled: false },
+            { title: "About Explorer", disabled: false },
+            { title: "Quit Explorer", disabled: false },
         ]
     },
     {
@@ -700,7 +753,7 @@ export const generateSystemFilesystem = (): filesystemitem[] => {
     });
 
     apps.forEach(a => {
-        if (a.id !== 'finder') {
+        if (a.id !== 'explorer') {
             fs.push({
                 id: `app-${a.id}`,
                 name: a.appname,
@@ -914,7 +967,7 @@ export const generateGuestFilesystem = (): filesystemitem[] => {
     fs.push({ ...resumeBase, id: 'guest-resume', parent: 'guest-docs' } as filesystemitem);
 
     apps.forEach(a => {
-        if (a.id !== 'finder' && a.id !== 'launchpad') {
+        if (a.id !== 'explorer' && a.id !== 'launchpad') {
             fs.push({
                 id: `guest-desktop-app-${a.id}`,
                 name: a.appname,
@@ -1047,8 +1100,8 @@ export const generateUserFilesystem = (username: string): filesystemitem[] => {
     });
 
     const defaultApps = [
-        { appId: 'finder', name: 'Finder', icon: '/finder.png' },
-        { appId: 'safari', name: 'Safari', icon: '/safari.png' },
+        { appId: 'explorer', name: 'Explorer', icon: '/explorer.png' },
+        { appId: 'browser', name: 'Browser', icon: '/browser.png' },
         { appId: 'settings', name: 'Settings', icon: '/settings.png' },
         { appId: 'calculator', name: 'Calculator', icon: '/calculator.png' },
         { appId: 'notes', name: 'Notes', icon: '/notes.png' },
@@ -1093,11 +1146,11 @@ const FileConfig: Record<string, {
     getLaunchProps?: (file: filesystemitem) => any;
 }> = {
     'inode/directory': {
-        appId: 'finder',
+        appId: 'explorer',
         icon: <Image src="/folder.png" alt="folder" width={64} height={64} className="w-full h-full object-contain drop-shadow-md" />,
     },
     'inode/shortcut': {
-        appId: 'finder',
+        appId: 'explorer',
         icon: <Image src="/folder.png" alt="shortcut" width={64} height={64} className="w-full h-full object-contain drop-shadow-md" />,
     },
     'application/x-executable': {
@@ -1138,7 +1191,7 @@ const FileConfig: Record<string, {
         })
     },
     'text/x-uri': {
-        appId: 'safari',
+        appId: 'browser',
         icon: <IoGlobeOutline className="w-full h-full text-blue-500" />,
         getLaunchProps: (file) => ({
             initialurl: file.link || file.content
@@ -1166,7 +1219,30 @@ const FileConfig: Record<string, {
     }
 };
 
-export const getFileIcon = (mimetype: string, name: string, itemicon?: React.ReactNode | string) => {
+export const getFileIcon = (mimetype: string, name: string, itemicon?: React.ReactNode | string, fileId?: string) => {
+    if ((mimetype === 'application/x-executable' || mimetype === 'application/x-app') && fileId) {
+        let appId = fileId;
+        if (appId.includes('desktop-app-')) {
+            appId = appId.split('desktop-app-').pop() || '';
+        } else if (appId.startsWith('app-')) {
+            appId = appId.split('app-').pop() || '';
+        } else if (appId.includes('-app-')) {
+            appId = appId.split('-app-').pop() || '';
+        }
+        const appData = apps.find(a => a.id === appId);
+        if (appData) {
+            return (
+                <TintedAppIcon
+                    appId={appData.id}
+                    appName={appData.appname}
+                    originalIcon={appData.icon}
+                    size={64}
+                    useFill={true}
+                />
+            );
+        }
+    }
+
     if (itemicon) {
         if (typeof itemicon === 'string') {
             if (itemicon.startsWith('/') || itemicon.startsWith('http://') || itemicon.startsWith('https://')) {
@@ -1261,7 +1337,7 @@ const resolveTarget = (itemOrId: string | filesystemitem, currentFiles?: filesys
 
         if (itemOrId.startsWith('project-')) {
             const projectName = itemOrId.replace('project-', '');
-            return { appId: 'finder', props: { initialpath: ['System', 'Users', 'Bala', 'Projects', projectName] }, title: projectName };
+            return { appId: 'explorer', props: { initialpath: ['System', 'Users', 'Bala', 'Projects', projectName] }, title: projectName };
         }
 
         console.warn(`System logic: Item '${itemOrId}' not found.`);
@@ -1275,7 +1351,7 @@ const resolveTarget = (itemOrId: string | filesystemitem, currentFiles?: filesys
     }
 
     if (mimetype === 'inode/directory' || mimetype === 'inode/directory-alias') {
-        return { appId: 'finder', props: { initialpath: resolveFolderPath(file) }, title: name };
+        return { appId: 'explorer', props: { initialpath: resolveFolderPath(file) }, title: name };
     }
 
     if (mimetype === 'application/x-executable') {
@@ -1361,7 +1437,7 @@ export const openSystemItem = (
             appname: 'Get Info',
             title: `${itemOrId.name} Info`,
             component: 'apps/FileInfo',
-            icon: itemOrId.icon || '/finder.png',
+            icon: itemOrId.icon || '/explorer.png',
             isminimized: false,
             ismaximized: false,
             position: { top: 100, left: 100 },
@@ -1374,7 +1450,7 @@ export const openSystemItem = (
     const existingWins = windows.filter((w: any) => w.appname === app.appname);
 
 
-    const reuseApps = ['Text Edit', 'File Viewer', 'Photos', 'Safari'];
+    const reuseApps = ['Text Edit', 'File Viewer', 'Photos', 'Browser'];
     if (reuseApps.includes(app.appname)) {
         const existingInstance = existingWins.find(w => w.props && w.props.id === (props?.id));
 

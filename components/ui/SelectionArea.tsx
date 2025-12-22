@@ -20,7 +20,7 @@ export const SelectionArea: React.FC<SelectionAreaProps> = ({ onSelectionChange,
         if (
             target.closest('button') ||
             target.closest('.clickable-item') ||
-            target.closest('.finder-item') ||
+            target.closest('.explorer-item') ||
             target.closest('.desktop-item') ||
             target.closest('[data-no-selection]') ||
             target.closest('.toolbar') ||

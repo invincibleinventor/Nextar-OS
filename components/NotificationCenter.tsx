@@ -154,7 +154,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: -20, scale: 0.9, transition: { duration: 0.2 } }}
                             transition={{ type: "tween", ease: "easeOut", duration: 0.2 }}
-                            className="w-full max-w-[400px] bg-white/40 dark:bg-neutral-900/40 backdrop-blur-xl border border-black/5 dark:border-white/10 shadow-2xl rounded-2xl p-3 cursor-pointer select-none pointer-events-auto"
+                            className="w-full max-w-[400px] bg-white/40 dark:bg-neutral-900/40 backdrop-blur-xl border border-black/5 dark:border-white/10 shadow-2xl rounded-xl p-3 cursor-pointer select-none pointer-events-auto"
                             onClick={() => { handlenotificationclick(n); markasviewed(n.id); }}
                             drag="x"
                             dragConstraints={{ left: 0, right: 0 }}
@@ -168,7 +168,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                         <span className="text-[10px] text-neutral-500 dark:text-neutral-400">{n.time}</span>
                                     </div>
                                     <h4 className="font-semibold text-[13px] text-black dark:text-white leading-tight">{n.title}</h4>
-                                    <p className="text-[12px] text-neutral-600 dark:text-neutral-300 leading-snug mt-0.5 line-clamp-2">{n.description}</p>
+                                    <p className="text-[12px] text-neutral-300 dark:text-neutral-300 leading-snug mt-0.5 line-clamp-2">{n.description}</p>
                                 </div>
                             </div>
                         </motion.div>
@@ -181,7 +181,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
 
     return createPortal(
         <>
-            <div style={{ zIndex: 2147483647 }} className="fixed top-8 right-4 flex flex-col items-end space-y-2 pointer-events-none">
+            <div style={{ zIndex: 2147483647 }} className="fixed top-14 right-4 flex flex-col items-end space-y-2 pointer-events-none">
                 <AnimatePresence>
                     {unviewednotifications.slice(0, 4).map((n) => (
                         <motion.div
@@ -191,7 +191,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                             animate={{ opacity: 1, x: 0, scale: 1 }}
                             exit={{ opacity: 0, x: 50, scale: 0.95, transition: { duration: 0.15 } }}
                             transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                            className="group relative w-[340px] bg-white/40 dark:bg-neutral-900/40 backdrop-blur-xl shadow-2xl shadow-black/20 rounded-2xl p-4 cursor-pointer select-none pointer-events-auto border border-black/5 dark:border-white/10"
+                            className="group relative w-[340px] bg-white/20 dark:bg-neutral-900/20 backdrop-blur-2xl shadow-2xl shadow-black/20 rounded-xl p-4 cursor-pointer select-none pointer-events-auto border border-white/30 dark:border-white/10"
                             onClick={() => { handlenotificationclick(n); markasviewed(n.id); }}
                             whileHover={{ scale: 1.01 }}
                         >
@@ -206,11 +206,11 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                 <Image src={n.icon} width={40} height={40} className="w-10 h-10 rounded-xl object-cover shadow-sm" alt={n.appname} />
                                 <div className="flex-1 min-w-0 text-left">
                                     <div className="flex justify-between items-center mb-1">
-                                        <span className="font-semibold text-[11px] uppercase tracking-wide text-neutral-500 dark:text-neutral-400">{n.appname}</span>
-                                        <span className="text-[10px] text-neutral-400 dark:text-neutral-500">{n.time}</span>
+                                        <span className="font-semibold text-[11px] uppercase tracking-wide text-neutral-800 dark:text-neutral-200">{n.appname}</span>
+                                        <span className="text-[10px] text-neutral-800 dark:text-neutral-200">{n.time}</span>
                                     </div>
                                     <h4 className="font-semibold text-[14px] text-black dark:text-white leading-tight">{n.title}</h4>
-                                    <p className="text-[13px] text-neutral-600 dark:text-neutral-300 leading-snug mt-0.5 line-clamp-2">{n.description}</p>
+                                    <p className="text-[13px] text-neutral-800 dark:text-neutral-200 leading-snug mt-0.5 line-clamp-2">{n.description}</p>
                                 </div>
                             </div>
                         </motion.div>
@@ -285,7 +285,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                                         <span className="text-[10px] text-neutral-600 dark:text-neutral-400">{n.time}</span>
                                                     </div>
                                                     <h4 className="font-semibold text-[14px] text-black dark:text-white leading-tight">{n.title}</h4>
-                                                    <p className="text-[13px] text-neutral-600 dark:text-neutral-300 leading-snug mt-1">{n.description}</p>
+                                                    <p className="text-[13px] text-neutral-800 dark:text-neutral-300 leading-snug mt-1">{n.description}</p>
                                                 </div>
                                             </div>
                                         </motion.div>

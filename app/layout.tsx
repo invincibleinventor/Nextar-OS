@@ -7,7 +7,8 @@ import { SettingsProvider } from '@/components/SettingsContext';
 import { FileSystemProvider } from '@/components/FileSystemContext';
 import { AppPreferencesProvider } from '@/components/AppPreferencesContext';
 import { AppMenuProvider } from '@/components/AppMenuContext';
-import { Analytics } from "@vercel/analytics/next"
+import { ProcessProvider } from '@/components/ProcessContext';
+import { PermissionsProvider } from '@/components/PermissionsContext';
 
 import { personal as portfoliodata } from '@/components/data';
 
@@ -101,31 +102,53 @@ export const viewport: Viewport = {
 import { NotificationProvider } from '@/components/NotificationContext';
 import { AuthProvider } from '@/components/AuthContext';
 import { ExternalAppsProvider } from '@/components/ExternalAppsContext';
+import PermissionDialog from '@/components/PermissionDialog';
+import Script from 'next/script';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider>
       <html className='bg-black' lang="en" suppressHydrationWarning>
-        <Analytics />
+        <head />
         <body className="font-sf w-screen h-screen overflow-hidden bg-black antialiased">
+          <Script
+            id="service-worker"
+            strategy="afterInteractive"
+            dangerouslySetInnerHTML={{
+              __html: `
+                if ('serviceWorker' in navigator && '${process.env.NODE_ENV}' !== 'development') {
+                  navigator.serviceWorker.register('/sw.js').then(function(registration) {
+                    console.log('SW registered: ', registration);
+                  }, function(registrationError) {
+                    console.log('SW registration failed: ', registrationError);
+                  });
+                }
+              `,
+            }}
+          />
           <WindowProvider>
             <div className="fixed inset-0 bg-black h-[100dvh] w-screen overflow-hidden transition-colors duration-500">
 
               <DeviceProvider>
                 <AuthProvider>
-                  <SettingsProvider>
-                    <NotificationProvider>
-                      <FileSystemProvider>
-                        <AppPreferencesProvider>
-                          <AppMenuProvider>
-                            <ExternalAppsProvider>
-                              {children}
-                            </ExternalAppsProvider>
-                          </AppMenuProvider>
-                        </AppPreferencesProvider>
-                      </FileSystemProvider>
-                    </NotificationProvider>
-                  </SettingsProvider>
+                  <ProcessProvider>
+                    <SettingsProvider>
+                      <NotificationProvider>
+                        <PermissionsProvider>
+                          <FileSystemProvider>
+                            <AppPreferencesProvider>
+                              <AppMenuProvider>
+                                <ExternalAppsProvider>
+                                  {children}
+                                  <PermissionDialog />
+                                </ExternalAppsProvider>
+                              </AppMenuProvider>
+                            </AppPreferencesProvider>
+                          </FileSystemProvider>
+                        </PermissionsProvider>
+                      </NotificationProvider>
+                    </SettingsProvider>
+                  </ProcessProvider>
                 </AuthProvider>
               </DeviceProvider>
             </div>

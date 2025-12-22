@@ -18,7 +18,7 @@ A fully-featured **Web Operating System** built with **Next.js 15** and **React 
 - **Dock** - Interactive with magnification animations
 - **Control Center** - Quick settings, brightness, volume
 - **Notification Center** - System alerts with slide-in panel
-- **Spotlight Search** - Universal app and file search
+- **Next Search** - Universal app and file search
 
 ### 📱 Mobile Experience
 Auto-adapts on smaller screens:
@@ -48,8 +48,8 @@ Install and run third-party apps:
 
 | App | Description |
 |-----|-------------|
-| **Finder** | File manager with list, icon, and gallery views |
-| **Safari** | Web browser with tabs and navigation |
+| **Explorer** | File manager with list, icon, and gallery views |
+| **Browser** | Web browser with tabs and navigation |
 | **Code Editor** | Monaco-powered IDE with Python/JS execution |
 | **Terminal** | ZSH simulation with command support |
 | **Mail** | Email client with deep linking |

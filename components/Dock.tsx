@@ -9,6 +9,7 @@ import Launchpad from './apps/Launchpad';
 import { useState, useEffect } from 'react';
 import { useDevice } from './DeviceContext';
 import ContextMenu from './ui/ContextMenu';
+import TintedAppIcon from './ui/TintedAppIcon';
 
 const Dock = () => {
   const { windows, addwindow, setactivewindow, focusortogglewindow, updatewindow, removewindow } = useWindows();
@@ -45,10 +46,10 @@ const Dock = () => {
   const onclick = (id: string, name: string, title?: string) => {
     if (id === 'trash-folder') {
       addwindow({
-        id: `finder-trash-${Date.now()}`,
-        appname: 'Finder',
+        id: `explorer-trash-${Date.now()}`,
+        appname: 'Explorer',
         title: 'Trash',
-        component: 'apps/Finder',
+        component: 'apps/Explorer',
         props: { istrash: true },
         isminimized: false,
         defaultSize: { width: 900, height: 600 }
@@ -56,7 +57,7 @@ const Dock = () => {
       return;
     }
 
-    const appwins = windows.filter((win: any) => win.appname === name && win.id !== 'finder-desktop');
+    const appwins = windows.filter((win: any) => win.appname === name && win.id !== 'explorer-desktop');
 
     if (appwins.length > 0) {
       if (ismobile) {
@@ -107,7 +108,7 @@ const Dock = () => {
       icon: '/trash.png',
       pinned: true,
       isSystem: true,
-      componentname: 'Finder',
+      componentname: 'Explorer',
       maximizeable: true,
       multiwindow: true,
       titlebarblurred: true,
@@ -115,7 +116,7 @@ const Dock = () => {
     }
   ];
 
-  const basesize = 55;
+  const basesize = 50;
   const gap = 10;
 
   const getprops = (i: number) => {
@@ -209,10 +210,9 @@ const Dock = () => {
           display: 'flex',
           justifyContent: 'center',
           flexDirection: 'row',
-          gap: `${gap}px`,
         }}
       >
-        <div className="flex items-center">
+        <div className="flex items-center" style={{ gap: `${gap}px` }}>
           {dockItems.map((app, i) => {
             const { size: iconsize, y: icony } = getprops(i);
             const ishover = hoverapp === app.appname;
@@ -223,10 +223,10 @@ const Dock = () => {
             return (
               <motion.div
                 key={app.id || i}
-                className="relative flex flex-col items-center cursor-pointer"
+                className="relative  flex flex-col items-center cursor-pointer"
                 onClick={() => {
                   if (islaunchpad) setlaunch(!launchpad);
-                  else if (isTrash) onclick('trash-folder', 'Finder');
+                  else if (isTrash) onclick('trash-folder', 'Explorer');
                   else onclick(app.id, app.appname);
                 }}
                 onMouseEnter={() => sethoverapp(app.appname)}
@@ -262,13 +262,12 @@ const Dock = () => {
                   </motion.div>
                 )}
 
-                <Image
-                  src={app.icon}
-                  alt={app.appname}
-                  fill
-                  sizes="80px"
-                  className="rounded-xl transition-all duration-200 object-cover"
-                  draggable={false}
+                <TintedAppIcon
+                  appId={app.id}
+                  appName={app.appname}
+                  originalIcon={app.icon}
+                  size={iconsize}
+                  useFill={true}
                 />
 
                 {haswin && !islaunchpad && !isTrash && (

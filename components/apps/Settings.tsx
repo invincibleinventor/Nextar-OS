@@ -254,7 +254,7 @@ export default function Settings({ initialPage }: { initialPage?: string }) {
                                     onClick={() => { setactivetab('users'); setshowsidebar(false); }}
                                 >
                                     <div className="w-14 h-14 rounded-full overflow-hidden shrink-0 border border-black/5">
-                                        <Image src={user?.avatar || '/pfp.png'} alt="Profile" width={56} height={56} className="w-full h-full object-cover" />
+                                        <Image src={user?.avatar || '/me.png'} alt="Profile" width={56} height={56} className="w-full h-full object-cover" />
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="text-[18px] font-semibold truncate">{user?.name || 'Guest'}</div>
@@ -325,11 +325,11 @@ export default function Settings({ initialPage }: { initialPage?: string }) {
                         onClick={() => setactivetab('users')}
                     >
                         <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-black/5">
-                            <Image src="/pfp.png" alt="Profile" width={40} height={40} className="w-full h-full object-cover" />
+                            <Image src={user?.avatar || '/me.png'} alt="Profile" width={40} height={40} className="w-full h-full object-cover" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <div className="text-[13px] font-semibold truncate leading-tight">{personal.personal.name}</div>
-                            <div className="text-[11px] text-gray-500 truncate">Apple ID, iCloud, Media & Purchases</div>
+                            <div className="text-[13px] font-semibold truncate leading-tight">{user?.name || 'Guest'}</div>
+                            <div className="text-[11px] text-gray-500 truncate">{user?.role === 'admin' ? 'Administrator' : 'Standard User'}</div>
                         </div>
                     </div>
                 </div>

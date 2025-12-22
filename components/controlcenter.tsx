@@ -50,7 +50,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
             }}
             className={`${ismobile
               ? `fixed inset-0 w-full h-full rounded-none flex items-center justify-center pt-10`
-              : `${reducetransparency ? 'bg-[#e5e5e5] dark:bg-[#1a1a1a] border-opacity-50' : 'backdrop-blur-lg bg-white/10 dark:bg-black/10'} w-[320px] fixed top-14 right-4 rounded-2xl border border-white/20 block`} 
+              : `${reducetransparency ? 'bg-[#e5e5e5] dark:bg-[#1a1a1a] border-opacity-50' : 'backdrop-blur-lg bg-white/40 dark:bg-black/40'} w-[320px] fixed top-14 right-4 rounded-xl border border-white/20 block`} 
                    font-sans origin-top-right  overflow-y-auto z-[9999]` }
             onClick={(e: React.MouseEvent) => {
               e.stopPropagation();
@@ -116,8 +116,8 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
                     </div>
                     <div className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-3xl p-3 h-full flex items-center justify-center border border-neutral-300 dark:border-neutral-700">
                       <div className='flex flex-col items-center gap-1 text-neutral-800 dark:text-white'>
-                        <FiCast size={20} />
-                        <span className='text-[10px]'>Screen Mirroring</span>
+                        <BsFillGridFill size={20} />
+                        <span className='text-[10px]'>Full Screen</span>
                       </div>
                     </div>
                   </div>

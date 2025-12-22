@@ -309,7 +309,7 @@ export default function FileViewer({ content: initialContent, title: initialTitl
                                         `}
                                     >
                                         <div className="w-5 h-5 mr-3 shrink-0 relative">
-                                            {getFileIcon(item.mimetype, item.name, item.icon)}
+                                            {getFileIcon(item.mimetype, item.name, item.icon, item.id)}
                                         </div>
                                         <span className="flex-1 truncate font-medium">{item.name}</span>
                                         <span className={`w-24 text-right truncate ${selectedFile === item.name ? 'text-white/80' : 'text-gray-500'}`}>{item.date}</span>

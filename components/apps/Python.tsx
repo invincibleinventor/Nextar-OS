@@ -225,11 +225,11 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
         addToast(`Deleted ${file.name}`, 'success');
     }, [deleteItem, closeFile, addToast]);
 
-    const showInFinder = useCallback((file: filesystemitem) => {
+    const showInExplorer = useCallback((file: filesystemitem) => {
         addwindow({
-            componentname: 'apps/Finder',
-            appname: 'Finder',
-            icon: '/finder.png',
+            componentname: 'apps/Explorer',
+            appname: 'Explorer',
+            icon: '/explorer.png',
             additionaldata: { path: file.parent, highlight: file.id }
         });
     }, [addwindow]);
@@ -784,10 +784,10 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
                     </button>
                     <div className="h-px bg-[#454545] my-1" />
                     <button
-                        onClick={() => { showInFinder(selectedfileforcontext); setcontextmenupos(null); }}
+                        onClick={() => { showInExplorer(selectedfileforcontext); setcontextmenupos(null); }}
                         className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-[#cccccc] hover:bg-[#094771] text-left"
                     >
-                        <VscGoToFile size={14} /> Show in Finder
+                        <VscGoToFile size={14} /> Show in Explorer
                     </button>
                 </div>
             )}

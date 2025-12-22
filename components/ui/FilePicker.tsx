@@ -140,7 +140,7 @@ export default function FilePicker({ mode, initialPath, onSelect, onCancel, acce
                                             `}
                                         >
                                             <div className="w-5 h-5 mr-3 shrink-0 flex items-center justify-center text-lg">
-                                                {getFileIcon(file.mimetype, file.name, file.icon)}
+                                                {getFileIcon(file.mimetype, file.name, file.icon, file.id)}
                                             </div>
                                             <span className="flex-1 truncate font-medium">{file.name}</span>
                                             <span className={`w-24 text-right truncate ${isSelected ? 'text-white/80' : 'text-gray-500'}`}>{file.date}</span>

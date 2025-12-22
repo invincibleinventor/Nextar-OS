@@ -1,6 +1,6 @@
 'use client';
-import Safari from './Safari';
+import Browser from './Browser';
 
 export default function BalaDev(props: any) {
-    return <Safari initialurl="https://baladev.vercel.app" />;
+    return <Browser initialurl="https://baladev.vercel.app" />;
 }

@@ -1,6 +1,5 @@
 'use client';
 import React, { useState, useMemo } from 'react';
-import Image from 'next/image';
 import { apps, openSystemItem, appdata } from './data';
 import { useWindows } from './WindowContext';
 import { useDevice } from './DeviceContext';
@@ -8,6 +7,7 @@ import { useFileSystem } from './FileSystemContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { IoSearch, IoClose } from 'react-icons/io5';
 import { useExternalApps } from './ExternalAppsContext';
+import TintedAppIcon from './ui/TintedAppIcon';
 
 const AppLibrary = () => {
     const { addwindow, windows, setactivewindow, updatewindow } = useWindows();
@@ -99,18 +99,17 @@ const AppLibrary = () => {
                                             }}
                                             className={`relative w-full h-full flex items-center justify-center ${!hasoverflow ? 'cursor-pointer active:scale-90' : ''} transition-transform`}
                                         >
-                                            <Image
-                                                src={app.icon}
-                                                alt={app.appname}
-                                                className="object-cover rounded-xl"
-                                                width={100}
-                                                height={100}
-                                                draggable={false}
+                                            <TintedAppIcon
+                                                appId={app.id}
+                                                appName={app.appname}
+                                                originalIcon={app.icon}
+                                                size={64}
+                                                useFill={false}
                                             />
                                         </div>
                                     ))}
                                     {hasoverflow && (
-                                        <div className="relative w-full h-full flex items-center justify-center bg-white/20 dark:bg-white/10 rounded-xl">
+                                        <div className="relative w-full h-full flex items-center justify-center bg-white/20 dark:bg-white/10 rounded-full">
                                             <span className="text-white font-bold text-lg drop-shadow-md">+{overflowcount}</span>
                                         </div>
                                     )}
@@ -130,7 +129,7 @@ const AppLibrary = () => {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-md"
                         onClick={() => setopenfolder(null)}
                     >
                         <motion.div
@@ -138,7 +137,7 @@ const AppLibrary = () => {
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.8, opacity: 0 }}
                             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                            className="bg-white/90 dark:bg-[#2c2c2e]/90 backdrop-blur-xl rounded-3xl p-6 w-[90%] max-w-sm max-h-[70vh] overflow-y-auto shadow-2xl"
+                            className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-md rounded-3xl p-6 w-[90%] max-w-sm max-h-[70vh] overflow-y-auto shadow-2xl"
                             onClick={(e) => e.stopPropagation()}
                         >
                             <div className="flex items-center justify-between mb-4">
@@ -157,14 +156,13 @@ const AppLibrary = () => {
                                         onClick={() => openapp(app)}
                                         className="flex flex-col items-center gap-2 cursor-pointer active:scale-90 transition-transform"
                                     >
-                                        <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-lg">
-                                            <Image
-                                                src={app.icon}
-                                                alt={app.appname}
-                                                width={64}
-                                                height={64}
-                                                className="object-cover w-full h-full"
-                                                draggable={false}
+                                        <div className="w-16 h-16 rounded-full shadow-lg">
+                                            <TintedAppIcon
+                                                appId={app.id}
+                                                appName={app.appname}
+                                                originalIcon={app.icon}
+                                                size={64}
+                                                useFill={false}
                                             />
                                         </div>
                                         <span className="text-xs text-center text-black dark:text-white font-medium truncate w-full">

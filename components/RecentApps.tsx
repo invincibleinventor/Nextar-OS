@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect, memo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Image from 'next/image';
 import { useWindows } from './WindowContext';
 import { apps } from './data';
 import { useDevice } from './DeviceContext';
 import { useSettings } from './SettingsContext';
+import TintedAppIcon from './ui/TintedAppIcon';
 
 
 
@@ -14,7 +14,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
     const { windows, removewindow, setactivewindow, updatewindow } = useWindows();
     const containerref = useRef<HTMLDivElement>(null);
     const ignoreclickref = useRef(false);
-  const { wallpaperurl } = useSettings();
+    const { wallpaperurl } = useSettings();
 
     useEffect(() => {
         if (isopen) {
@@ -56,7 +56,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                     <motion.div
                         className={`absolute backdrop-blur-sm inset-0  bg-center  bg-cover bg-no-repeat`}
                         onClick={onclose}
-                         style={{ backgroundImage: `url('${wallpaperurl}')` }}
+                        style={{ backgroundImage: `url('${wallpaperurl}')` }}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -83,13 +83,12 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                             <AnimatePresence mode='popLayout'>
                                 {[...windows].sort((a, b) => (b.lastInteraction || 0) - (a.lastInteraction || 0)).map((win: any) => {
                                     const appdata = apps.find(a => a.appname === win.appname);
-                                    const icon = appdata?.icon || '';
 
                                     return (
                                         <AppCard
                                             key={win.id}
                                             win={win}
-                                            icon={icon}
+                                            appdata={appdata}
                                             onclose={onclose}
                                             onkill={() => {
                                                 ignoreclickref.current = true;
@@ -114,7 +113,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
 });
 
 
-const AppCard = ({ win, icon, onkill, onopen }: any) => {
+const AppCard = ({ win, appdata, onkill, onopen }: any) => {
     const isdragging = useRef(false);
 
     return (
@@ -159,7 +158,17 @@ const AppCard = ({ win, icon, onkill, onopen }: any) => {
             layout
         >
             <div className="flex items-center gap-2 mb-3 px-1 pointer-events-none">
-                {icon && <Image src={icon} width={32} height={32} className="w-8 h-8 drop-shadow-md" alt={win.title} />}
+                {appdata && (
+                    <div className="w-8 h-8">
+                        <TintedAppIcon
+                            appId={appdata.id}
+                            appName={appdata.appname}
+                            originalIcon={appdata.icon}
+                            size={32}
+                            useFill={false}
+                        />
+                    </div>
+                )}
                 <span className="text-white font-semibold text-sm tracking-wide drop-shadow-md">{win.title}</span>
             </div>
 

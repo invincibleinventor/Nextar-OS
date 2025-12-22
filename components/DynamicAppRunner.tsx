@@ -289,7 +289,7 @@ export default function DynamicAppRunner({ code, appname, appicon, fileid }: Dyn
         return (
             <div className="h-full w-full flex items-center justify-center bg-red-50 dark:bg-red-900/20 p-6">
                 <div className="max-w-md text-center">
-                    <div className="w-14 h-14 rounded-2xl bg-red-100 dark:bg-red-900/50 flex items-center justify-center mx-auto mb-4">
+                    <div className="w-14 h-14 rounded-xl bg-red-100 dark:bg-red-900/50 flex items-center justify-center mx-auto mb-4">
                         <span className="text-3xl">❌</span>
                     </div>
                     <h2 className="text-lg font-bold text-red-600 dark:text-red-400 mb-2">Compilation Error</h2>
@@ -349,7 +349,7 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode; appname
             return (
                 <div className="h-full w-full flex items-center justify-center bg-red-50 dark:bg-red-900/20 p-6">
                     <div className="max-w-md text-center">
-                        <div className="w-14 h-14 rounded-2xl bg-red-100 dark:bg-red-900/50 flex items-center justify-center mx-auto mb-4">
+                        <div className="w-14 h-14 rounded-xl bg-red-100 dark:bg-red-900/50 flex items-center justify-center mx-auto mb-4">
                             <span className="text-3xl">💥</span>
                         </div>
                         <h2 className="text-lg font-bold text-red-600 dark:text-red-400 mb-2">Runtime Error</h2>

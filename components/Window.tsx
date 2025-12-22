@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect, useRef, memo } from 'react';
+import React, { useState, useEffect, useRef, memo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { useWindows } from './WindowContext';
@@ -7,8 +7,10 @@ import { apps, componentmap } from './data';
 import { motion } from 'framer-motion';
 import { useDevice } from './DeviceContext';
 import { useSettings } from './SettingsContext';
+import { useProcess } from './ProcessContext';
+import AppErrorBoundary from './AppErrorBoundary';
 
-const panelheight = 35;
+const panelheight =54;
 const dockheight = 70;
 
 const MemoizedDynamicComponent = memo(
@@ -44,7 +46,36 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
   const { removewindow, updatewindow, activewindow, setactivewindow, windows } = useWindows();
   const { ismobile } = useDevice();
   const { reducemotion, reducetransparency } = useSettings();
+  const { spawn, suspend, resume, kill, crash, getByWindow } = useProcess();
   const app = apps.find((app) => app.appname === appname);
+  const processref = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!processref.current) {
+      const pid = spawn(app?.id || appname, id);
+      processref.current = pid;
+    }
+    return () => {
+      if (processref.current) {
+        kill(processref.current);
+      }
+    };
+  }, [app?.id, appname, id, spawn, kill]);
+
+  useEffect(() => {
+    if (!processref.current) return;
+    if (isminimized) {
+      suspend(processref.current);
+    } else {
+      resume(processref.current);
+    }
+  }, [isminimized, suspend, resume]);
+
+  const handleCrash = useCallback((error: string) => {
+    if (processref.current) {
+      crash(processref.current, error);
+    }
+  }, [crash]);
 
 
 
@@ -448,7 +479,9 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
       <div
         className={`w-full h-full flex-1 overflow-hidden ${ismaximized || ismobile ? '' : ''} ${(isminimized || issystemgestureactive || shouldblur || isRecentAppView) ? 'pointer-events-none' : 'pointer-events-auto'}`}
       >
-        <MemoizedDynamicComponent appname={app ? app.appname : ''} icon={app ? app.icon : ''} component={app?.componentname ? app.componentname : component} appprops={{ ...props, windowId: id }} isFocused={activewindow === id && !shouldblur} isExternal={app?.isExternal} externalUrl={app?.externalUrl} />
+        <AppErrorBoundary appId={app?.id || appname} windowId={id} onCrash={handleCrash}>
+          <MemoizedDynamicComponent appname={app ? app.appname : ''} icon={app ? app.icon : ''} component={app?.componentname ? app.componentname : component} appprops={{ ...props, windowId: id }} isFocused={activewindow === id && !shouldblur} isExternal={app?.isExternal} externalUrl={app?.externalUrl} />
+        </AppErrorBoundary>
 
         {((ismobile && shouldblur && !isRecentAppView) || issystemgestureactive) && (
           <div className="absolute inset-0 z-[9999] bg-transparent w-full h-full pointer-events-auto" />

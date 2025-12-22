@@ -656,7 +656,7 @@ Opens an app or file.
 ```typescript
 import { openSystemItem } from '@/components/data';
 
-openSystemItem('finder', windowContext);
+openSystemItem('explorer', windowContext);
 openSystemItem('settings', windowContext, { initialPage: 'wallpaper' });
 ```
 

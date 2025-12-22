@@ -88,7 +88,7 @@ export default function AppSwitcher({ isOpen, onClose }: { isOpen: boolean; onCl
                                     setactivewindow(win.id);
                                     onClose();
                                 }}
-                                className={`flex flex-col items-center gap-2 p-3 rounded-2xl cursor-pointer transition-all duration-150 ${isSelected ? 'bg-white/20 scale-110' : 'opacity-60 hover:opacity-100'
+                                className={`flex flex-col items-center gap-2 p-3 rounded-xl cursor-pointer transition-all duration-150 ${isSelected ? 'bg-white/20 scale-110' : 'opacity-60 hover:opacity-100'
                                     }`}
                             >
                                 <div className={`w-16 h-16 rounded-xl overflow-hidden shadow-lg ${win.isminimized ? 'opacity-50' : ''}`}>

@@ -1,9 +1,10 @@
 import { filesystemitem } from '../components/data';
 
 const DB_NAME = 'MacOSSystem';
-const DB_VERSION = 5;
+const DB_VERSION = 6;
 const STORE_NAME = 'files';
 const USERS_STORE_NAME = 'users';
+const PERMISSIONS_STORE_NAME = 'permissions';
 
 export interface User {
     username: string;
@@ -16,42 +17,82 @@ export interface User {
 
 const openDB = (): Promise<IDBDatabase> => {
     return new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        if (typeof indexedDB === 'undefined') {
+            reject("IndexedDB not available");
+            return;
+        }
 
-        request.onerror = (event) => {
-            console.error("IndexedDB error:", event);
-            reject("Error opening database");
-        };
+        try {
+            const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-        request.onupgradeneeded = (event) => {
-            const db = (event.target as IDBOpenDBRequest).result;
+            request.onerror = () => {
+                const error = request.error;
+                console.error("IndexedDB error:", error?.message || error?.name || "Unknown error");
+                reject("Error opening database");
+            };
 
-            if (event.oldVersion < 5) {
-                if (db.objectStoreNames.contains(STORE_NAME)) {
-                    db.deleteObjectStore(STORE_NAME);
+            request.onupgradeneeded = (event) => {
+                const db = (event.target as IDBOpenDBRequest).result;
+
+                if (event.oldVersion < 6) {
+                    if (event.oldVersion < 5) {
+                        if (db.objectStoreNames.contains(STORE_NAME)) {
+                            db.deleteObjectStore(STORE_NAME);
+                        }
+                        if (db.objectStoreNames.contains(USERS_STORE_NAME)) {
+                            db.deleteObjectStore(USERS_STORE_NAME);
+                        }
+                    }
                 }
-                if (db.objectStoreNames.contains(USERS_STORE_NAME)) {
-                    db.deleteObjectStore(USERS_STORE_NAME);
+
+                if (!db.objectStoreNames.contains(STORE_NAME)) {
+                    db.createObjectStore(STORE_NAME, { keyPath: 'id' });
                 }
-            }
 
-            if (!db.objectStoreNames.contains(STORE_NAME)) {
-                db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-            }
+                if (!db.objectStoreNames.contains(USERS_STORE_NAME)) {
+                    db.createObjectStore(USERS_STORE_NAME, { keyPath: 'username' });
+                }
 
-            if (!db.objectStoreNames.contains(USERS_STORE_NAME)) {
-                db.createObjectStore(USERS_STORE_NAME, { keyPath: 'username' });
-            }
+                if (!db.objectStoreNames.contains(PERMISSIONS_STORE_NAME)) {
+                    const store = db.createObjectStore(PERMISSIONS_STORE_NAME, { keyPath: ['appId', 'userId', 'permission'] });
+                    store.createIndex('byApp', 'appId');
+                    store.createIndex('byUser', 'userId');
+                }
+            };
+
+            request.onsuccess = (event) => {
+                resolve((event.target as IDBOpenDBRequest).result);
+            };
+        } catch (e) {
+            console.error("IndexedDB initialization error:", e);
+            reject("Failed to initialize IndexedDB");
+        }
+    });
+};
+
+export const resetDB = (): Promise<void> => {
+    return new Promise((resolve, reject) => {
+        if (typeof indexedDB === 'undefined') {
+            reject("IndexedDB not available");
+            return;
+        }
+        const request = indexedDB.deleteDatabase(DB_NAME);
+        request.onsuccess = () => {
+            console.log("Database reset successfully");
+            resolve();
         };
-
-        request.onsuccess = (event) => {
-            resolve((event.target as IDBOpenDBRequest).result);
+        request.onerror = () => {
+            console.error("Failed to reset database");
+            reject("Failed to reset database");
         };
     });
 };
 
 export const initDB = (): Promise<void> => {
-    return openDB().then(() => { });
+    return openDB().then(() => { }).catch((e) => {
+        console.warn("initDB failed, attempting reset:", e);
+        return resetDB().then(() => openDB()).then(() => { });
+    });
 };
 
 export const getAllFiles = (): Promise<filesystemitem[]> => {
@@ -137,7 +178,7 @@ export const getUser = (username: string): Promise<User | undefined> => {
     return openDB().then(db => {
         return new Promise((resolve, reject) => {
             const transaction = db.transaction([USERS_STORE_NAME], 'readonly');
-           
+
             const store = transaction.objectStore(USERS_STORE_NAME);
             const getRequest = store.get(username);
 

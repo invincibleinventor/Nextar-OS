@@ -2,13 +2,22 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { useDevice } from './DeviceContext';
 import { apps, filesystemitem, openSystemItem, getFileIcon } from './data';
+
+const extractAppId = (fileId: string): string => {
+    if (fileId.includes('desktop-app-')) {
+        return fileId.split('desktop-app-').pop() || '';
+    } else if (fileId.includes('-app-')) {
+        return fileId.split('-app-').pop() || '';
+    }
+    return fileId;
+};
 import { useSettings } from './SettingsContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import Image from 'next/image';
 import AppLibrary from './AppLibrary';
 import { useWindows } from './WindowContext';
 import { useFileSystem } from './FileSystemContext';
 import ContextMenu from './ui/ContextMenu';
+import TintedAppIcon from './ui/TintedAppIcon';
 
 export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayopen?: boolean }) {
     const { addwindow, windows, setactivewindow, updatewindow } = useWindows();
@@ -32,11 +41,11 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
         }
     }, []);
 
-    const dockAppIds = ['finder', 'safari', 'mail', 'settings'];
+    const dockAppIds = ['explorer', 'browser', 'mail', 'settings'];
 
     const isDockItem = (item: filesystemitem) => {
         if (item.mimetype !== 'application/x-executable') return false;
-        const appId = item.id.replace('desktop-app-', '');
+        const appId = extractAppId(item.id);
         return dockAppIds.includes(appId);
     };
 
@@ -70,7 +79,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
     };
 
     const dockapps = apps.filter(a =>
-        a.id === 'finder' || a.id === 'safari' || a.id === 'mail' || a.id === 'settings'
+        a.id === 'explorer' || a.id === 'browser' || a.id === 'mail' || a.id === 'settings'
     ).slice(0, 4);
 
     const handlelongpressstart = (item: filesystemitem | null, e: React.TouchEvent | React.MouseEvent) => {
@@ -131,7 +140,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
             ];
 
             if (item.mimetype === 'application/x-executable') {
-                const appid = item.id.replace('desktop-app-', '');
+                const appid = extractAppId(item.id);
                 const app = apps.find(a => a.id === appid);
                 if (app?.multiwindow) {
                     items.push({
@@ -151,8 +160,8 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
             });
 
             items.push({
-                label: 'Show in Finder',
-                action: () => openSystemItem('finder', { addwindow, windows, setactivewindow, updatewindow, ismobile, files }, undefined, { openPath: item.parent || currentUserDesktopId, selectItem: item.id })
+                label: 'Show in Explorer',
+                action: () => openSystemItem('explorer', { addwindow, windows, setactivewindow, updatewindow, ismobile, files }, undefined, { openPath: item.parent || currentUserDesktopId, selectItem: item.id })
             });
 
             if (!item.isReadOnly && !item.isSystem) {
@@ -352,10 +361,28 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                                                 </svg>
                                             </button>
                                         )}
-                                        <div className="w-[60px] h-[60px] rounded-[14px] overflow-hidden dark:bg-black/10 bg-white/10 shadow-sm ring-1 ring-white/5 relative">
-                                            <div className="w-full my-auto h-full flex flex-col">
-                                                {getFileIcon(item.mimetype, item.name, item.icon)}
-                                            </div>
+                                        <div className="w-[60px] h-[60px] rounded-full overflow-hidden  shadow-sm  relative">
+                                            {item.mimetype === 'application/x-executable' ? (() => {
+                                                const appId = extractAppId(item.id);
+                                                const appData = apps.find(a => a.id === appId);
+                                                return appData ? (
+                                                    <TintedAppIcon
+                                                        appId={appData.id}
+                                                        appName={appData.appname}
+                                                        originalIcon={appData.icon}
+                                                        size={60}
+                                                        useFill={false}
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full flex flex-col">
+                                                        {getFileIcon(item.mimetype, item.name, item.icon, item.id)}
+                                                    </div>
+                                                );
+                                            })() : (
+                                                <div className="w-full h-full flex flex-col">
+                                                    {getFileIcon(item.mimetype, item.name, item.icon, item.id)}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                     <span className="text-[11px] font-medium text-white/90 text-center leading-tight drop-shadow-md truncate w-full tracking-tight">
@@ -390,13 +417,12 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                                 whileTap={{ scale: 0.85 }}
                                 className="w-[65px] h-[65px] aspect-square rounded-[18px] overflow-hidden relative"
                             >
-                                <Image
-                                    src={app.icon}
-                                    alt={app.appname}
-                                    fill
-                                    sizes="65px"
-                                    className="object-cover"
-                                    draggable={false}
+                                <TintedAppIcon
+                                    appId={app.id}
+                                    appName={app.appname}
+                                    originalIcon={app.icon}
+                                    size={65}
+                                    useFill={false}
                                 />
                             </motion.button>
                         ))}

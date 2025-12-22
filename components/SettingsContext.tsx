@@ -22,8 +22,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [reducemotion, setreducemotion] = useState(false);
     const [reducetransparency, setreducetransparency] = useState(false);
     const [soundeffects, setsoundeffects] = useState(false);
-    const [wallpaperurl, setwallpaperurl] = useState('/wallpaper-1.jpg');
-    const [accentcolor, setaccentcolor] = useState('#007AFF');
+    const [wallpaperurl, setwallpaperurl] = useState('/bg-dark.jpg');
+    const [accentcolor, setaccentcolor] = useState('#00C7BE');
 
     const { isGuest } = useAuth();
 

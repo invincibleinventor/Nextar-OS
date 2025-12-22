@@ -1,4 +1,3 @@
-
 export const hashPassword = async (password: string): Promise<string> => {
     const encoder = new TextEncoder();
     const data = encoder.encode(password);
@@ -6,4 +5,18 @@ export const hashPassword = async (password: string): Promise<string> => {
     return Array.from(new Uint8Array(hash))
         .map(b => b.toString(16).padStart(2, '0'))
         .join('');
+};
+
+export const hashCode = async (code: string): Promise<string> => {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(code);
+    const hash = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(hash))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
+};
+
+export const verifyHash = async (code: string, expectedHash: string): Promise<boolean> => {
+    const actualHash = await hashCode(code);
+    return actualHash === expectedHash;
 };

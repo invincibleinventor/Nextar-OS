@@ -21,7 +21,7 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
     const { setosstate } = useDevice();
 
     const activeappname =
-        windows.find((window: any) => window.id === activewindow)?.appname || 'Finder';
+        windows.find((window: any) => window.id === activewindow)?.appname || 'Explorer';
 
     const activeapp = apps.find(a => a.appname === activeappname);
     const apptitlemenu = activeapp?.titlemenu || [
@@ -123,13 +123,35 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
         { title: `Log Out ${user?.name || 'User'}...`, actionId: 'logout' }
     ];
 
-    const handledynamicmainmenu = (action: string) => {
+    const handledynamicmainmenu = (item: any) => {
+        if (!item || item.disabled) return;
+        const action = item.actionId || item.title;
         switch (action) {
             case 'about':
                 window.dispatchEvent(new CustomEvent('show-about-mac'));
                 break;
             case 'forcequit':
                 window.dispatchEvent(new CustomEvent('show-force-quit'));
+                break;
+            case 'settings':
+                addwindow({
+                    id: `settings-${Date.now()}`,
+                    appname: 'Settings',
+                    component: 'apps/Settings',
+                    props: {},
+                    isminimized: false,
+                    ismaximized: false
+                });
+                break;
+            case 'appstore':
+                addwindow({
+                    id: `appstore-${Date.now()}`,
+                    appname: 'App Store',
+                    component: 'apps/AppStore',
+                    props: {},
+                    isminimized: false,
+                    ismaximized: false
+                });
                 break;
             case 'sleep':
                 setosstate('locked');
@@ -168,17 +190,17 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
                 removewindow(activewindow);
             }
         } else if (actionId === 'new-window') {
-            const finderApp = apps.find(a => a.id === 'finder');
-            if (finderApp) {
+            const explorerApp = apps.find(a => a.id === 'explorer');
+            if (explorerApp) {
                 addwindow({
-                    id: `finder-${Date.now()}`,
-                    appname: finderApp.appname,
-                    component: finderApp.componentname,
+                    id: `explorer-${Date.now()}`,
+                    appname: explorerApp.appname,
+                    component: explorerApp.componentname,
                     props: {},
                     isminimized: false,
                     ismaximized: false,
                     position: { top: 80, left: 80 },
-                    size: finderApp.defaultsize || { width: 900, height: 600 }
+                    size: explorerApp.defaultsize || { width: 900, height: 600 }
                 });
             }
         } else if (actionId.startsWith('About ')) {
@@ -201,7 +223,7 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
 
         const event = new CustomEvent('menu-action', {
             detail: {
-                appId: activeapp?.id || 'finder',
+                appId: activeapp?.id || 'explorer',
                 actionId: actionId,
                 title: item.title
             }
@@ -216,7 +238,7 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
             <div
                 style={{ zIndex: 99999 }}
                 data-tour="menubar"
-                className="fixed h-[35px] z-[99999] before:absolute before:inset-0 before:bg-transparent before:content-[''] before:backdrop-blur-[12px] before:webkit-backdrop-blur-[12px] before:z-[-1] top-0 w-screen py-[6px] flex px-4 justify-between items-center content-center bg-white bg-opacity-30 dark:bg-black dark:bg-opacity-10 transition-colors duration-500"
+                className="fixed h-[35px] z-[99999] before:absolute before:inset-0 before:bg-transparent before:content-[''] before:backdrop-blur-[250px] before:webkit-backdrop-blur-[250px] before:z-[-1] top-0 w-screen py-[6px] flex px-4 justify-between items-center content-center bg-white bg-opacity-30 dark:bg-black dark:bg-opacity-10 transition-colors duration-500"
             >
                 <div className="relative flex flex-row items-center content-center space-x-0">
                     <div className="flex items-center justify-center h-full mr-2" data-tour="dynamic-main-menu">
@@ -242,7 +264,7 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
                     />
                     <div className='hidden md:inline-flex'>
                         {Object.entries(appmenus).map(([menukey, menuitems]) => {
-                            if (menukey === 'windowMenu' && activeappname !== 'Finder') return null;
+                            if (menukey === 'windowMenu' && activeappname !== 'Explorer') return null;
 
                             return (
                                 <Menu
@@ -262,9 +284,9 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
                 <div className='flex space-x-3 flex-row items-center content-center'>
                     <div className='hidden md:flex flex-row space-x-4 items-center pl-2'>
                         <button
-                            onClick={() => window.dispatchEvent(new CustomEvent('toggle-spotlight'))}
+                            onClick={() => window.dispatchEvent(new CustomEvent('toggle-next'))}
                             className=" rounded hover:bg-white/10 transition-colors"
-                            title="Spotlight (⌘K)"
+                            title="Next (⌘K)"
                         >
                             <svg className="w-4 h-4 dark:text-white text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />

@@ -240,7 +240,7 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
                     response = 'React • Next.js • TypeScript • Tailwind CSS • Node.js • Python • AI/ML';
                     break;
                 case 'projects':
-                    response = 'Visit the Finder app to browse my projects.';
+                    response = 'Visit the Explorer app to browse my projects.';
                     break;
                 case 'contact':
                     response = 'Email: invincibleinventor@gmail.com';

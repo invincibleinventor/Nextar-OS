@@ -219,7 +219,7 @@ export default function TourGuide({ isOpen, onClose }: TourGuideProps) {
                 {
                     popover: {
                         title: '⌨️ Keyboard Shortcuts',
-                        description: `${modKey}+K: Spotlight Search\n${modKey}+\`: Switch Apps\n${modKey}+W: Close Window\n${modKey}+Shift+T: This Tour`,
+                        description: `${modKey}+K: Next Search\n${modKey}+\`: Switch Apps\n${modKey}+W: Close Window\n${modKey}+Shift+T: This Tour`,
                         side: 'bottom'
                     }
                 },
@@ -233,7 +233,7 @@ export default function TourGuide({ isOpen, onClose }: TourGuideProps) {
                 {
                     popover: {
                         title: '🎉 Enjoy NextarOS!',
-                        description: 'Explore Finder, Safari, Settings, Music, and more.\nBuilt with Next.js, React, and IndexedDB.',
+                        description: 'Explore Explorer, Browser, Settings, Music, and more.\nBuilt with Next.js, React, and IndexedDB.',
                         side: 'bottom'
                     }
                 }
