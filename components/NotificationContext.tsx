@@ -65,7 +65,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         else playSound('notification');
 
         addnotification({
-            id: Math.random().toString(36).substr(2, 9),
+            id: Math.random().toString(36).substring(2, 11),
             title: type === 'error' ? 'Error' : type === 'success' ? 'Success' : 'Notification',
             description: message,
             time: 'Now',

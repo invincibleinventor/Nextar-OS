@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useCallback, useEffect } fr
 import { Permission, PermissionGrant, AppPermissions } from '../types/permissions';
 import { useAuth } from './AuthContext';
 
-const DB_NAME = 'MacOSSystem';
+const DB_NAME = 'NextarOSSystem';
 const PERMISSIONS_STORE = 'permissions';
 
 interface PermissionsContextType {
@@ -33,8 +33,6 @@ const openPermissionsDB = (): Promise<IDBDatabase> => {
             const request = indexedDB.open(DB_NAME, 6);
 
             request.onerror = () => {
-                const error = request.error;
-                console.warn('Permissions DB error:', error?.message || 'Unknown error');
                 reject('Error opening permissions database');
             };
 
@@ -50,8 +48,7 @@ const openPermissionsDB = (): Promise<IDBDatabase> => {
             request.onsuccess = (event) => {
                 resolve((event.target as IDBOpenDBRequest).result);
             };
-        } catch (e) {
-            console.warn('Permissions DB initialization error:', e);
+        } catch {
             reject('Failed to initialize permissions database');
         }
     });
@@ -91,8 +88,7 @@ export const PermissionsProvider: React.FC<{ children: React.ReactNode }> = ({ c
             const transaction = db.transaction([PERMISSIONS_STORE], 'readwrite');
             const store = transaction.objectStore(PERMISSIONS_STORE);
             store.put(grant);
-        } catch (e) {
-            console.error('Failed to save permission grant:', e);
+        } catch {
         }
     };
 
@@ -102,8 +98,7 @@ export const PermissionsProvider: React.FC<{ children: React.ReactNode }> = ({ c
             const transaction = db.transaction([PERMISSIONS_STORE], 'readwrite');
             const store = transaction.objectStore(PERMISSIONS_STORE);
             store.delete([appId, userId, permission]);
-        } catch (e) {
-            console.error('Failed to delete permission grant:', e);
+        } catch {
         }
     };
 

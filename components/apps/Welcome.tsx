@@ -108,8 +108,7 @@ export default function Welcome(props: any) {
             alert(`Account created! You are now logged in as ${name} (${role}).`);
             setView('welcome');
 
-        } catch (err) {
-            console.error(err);
+        } catch {
             setCreateError('Failed to create account');
         } finally {
             setIsCreating(false);
@@ -303,8 +302,8 @@ export default function Welcome(props: any) {
                         </button>
                         <button onClick={() => openSystemItem('finder', context)}
                             className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 dark:bg-white/10 rounded-lg text-sm font-medium hover:bg-gray-200 dark:hover:bg-white/20 transition-colors">
-                            <Image src="/finder.png" alt="" width={20} height={20} className="w-5 h-5" />
-                            Open Finder
+                            <Image src="/explorer.png" alt="" width={20} height={20} className="w-5 h-5" />
+                            Open Explorer
                         </button>
                     </div>
                     <a

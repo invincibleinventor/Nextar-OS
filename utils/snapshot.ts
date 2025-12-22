@@ -17,7 +17,7 @@ export interface OSSnapshot {
 
 const getPermissionsFromDB = async (): Promise<PermissionGrant[]> => {
     return new Promise((resolve) => {
-        const request = indexedDB.open('MacOSSystem', 6);
+        const request = indexedDB.open('NextarOSSystem', 6);
 
         request.onerror = () => resolve([]);
 
@@ -105,7 +105,7 @@ export function validateSnapshot(data: any): { valid: boolean; error?: string } 
 
 const restoreFilesystemToDB = async (files: filesystemitem[]): Promise<void> => {
     return new Promise((resolve, reject) => {
-        const request = indexedDB.open('MacOSSystem', 6);
+        const request = indexedDB.open('NextarOSSystem', 6);
 
         request.onerror = () => reject('Failed to open database');
 
@@ -128,7 +128,7 @@ const restoreFilesystemToDB = async (files: filesystemitem[]): Promise<void> => 
 
 const restoreUsersToDB = async (users: User[]): Promise<void> => {
     return new Promise((resolve, reject) => {
-        const request = indexedDB.open('MacOSSystem', 6);
+        const request = indexedDB.open('NextarOSSystem', 6);
 
         request.onerror = () => reject('Failed to open database');
 
@@ -151,7 +151,7 @@ const restoreUsersToDB = async (users: User[]): Promise<void> => {
 
 const restorePermissionsToDB = async (permissions: PermissionGrant[]): Promise<void> => {
     return new Promise((resolve, reject) => {
-        const request = indexedDB.open('MacOSSystem', 6);
+        const request = indexedDB.open('NextarOSSystem', 6);
 
         request.onerror = () => reject('Failed to open database');
 

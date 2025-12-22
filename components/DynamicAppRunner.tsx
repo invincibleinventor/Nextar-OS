@@ -9,12 +9,14 @@ import { useDevice } from './DeviceContext';
 import { useAuth } from './AuthContext';
 import { useExternalApps } from './ExternalAppsContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { verifyHash } from '../utils/crypto';
 
 interface DynamicAppProps {
     code: string;
     appname: string;
     appicon?: string;
     fileid?: string;
+    codeHash?: string;
 }
 
 interface AppError {
@@ -30,11 +32,12 @@ declare global {
     }
 }
 
-export default function DynamicAppRunner({ code, appname, appicon, fileid }: DynamicAppProps) {
+export default function DynamicAppRunner({ code, appname, appicon, fileid, codeHash }: DynamicAppProps) {
     const [error, seterror] = useState<AppError | null>(null);
     const [UserComponent, setUserComponent] = useState<React.ComponentType<any> | null>(null);
     const [babelloaded, setbabelloaded] = useState(false);
     const [isbuilding, setisbuilding] = useState(true);
+    const [hashVerified, setHashVerified] = useState<boolean | null>(null);
 
     const windowsctx = useWindows();
     const notifctx = useNotifications();
@@ -74,204 +77,235 @@ export default function DynamicAppRunner({ code, appname, appicon, fileid }: Dyn
             return;
         }
 
-        setisbuilding(true);
-        seterror(null);
+        const runBuild = async () => {
+            setisbuilding(true);
+            seterror(null);
 
-        try {
-            const babel = window.Babel;
-            if (!babel) {
-                throw new Error('Babel not loaded');
+            if (codeHash) {
+                const isValid = await verifyHash(code, codeHash);
+                setHashVerified(isValid);
+                if (!isValid) {
+                    seterror({ message: 'Code integrity check failed. The app may have been tampered with.' });
+                    setisbuilding(false);
+                    return;
+                }
+            } else {
+                setHashVerified(null);
             }
 
-            const result = babel.transform(code, {
-                presets: ['react'],
-                filename: 'app.jsx'
-            });
+            try {
+                const babel = window.Babel;
+                if (!babel) {
+                    throw new Error('Babel not loaded');
+                }
 
-            const transpiledcode = result.code;
+                const result = babel.transform(code, {
+                    presets: ['react'],
+                    filename: 'app.jsx'
+                });
 
-            const getScope = () => {
-                const ctx = contextsRef.current;
-                return {
-                    React,
-                    useState,
-                    useEffect,
-                    useMemo,
-                    useCallback,
-                    useRef,
-                    useReducer,
-                    useContext,
-                    useLayoutEffect,
-                    useImperativeHandle,
-                    useDebugValue,
-                    useDeferredValue,
-                    useTransition,
-                    useId,
-                    useSyncExternalStore,
-                    useInsertionEffect,
-                    Fragment,
-                    createContext,
-                    forwardRef,
-                    memo,
-                    lazy,
-                    Suspense,
-                    createElement,
-                    cloneElement,
-                    createRef,
-                    isValidElement,
-                    Children,
+                const transpiledcode = result.code;
 
-                    useWindows: () => ctx.windowsctx,
-                    addwindow: ctx.windowsctx.addwindow,
-                    removewindow: ctx.windowsctx.removewindow,
-                    updatewindow: ctx.windowsctx.updatewindow,
-                    setactivewindow: ctx.windowsctx.setactivewindow,
-                    windows: ctx.windowsctx.windows,
-                    activewindow: ctx.windowsctx.activewindow,
+                const getScope = () => {
+                    const ctx = contextsRef.current;
+                    return {
+                        React,
+                        useState,
+                        useEffect,
+                        useMemo,
+                        useCallback,
+                        useRef,
+                        useReducer,
+                        useContext,
+                        useLayoutEffect,
+                        useImperativeHandle,
+                        useDebugValue,
+                        useDeferredValue,
+                        useTransition,
+                        useId,
+                        useSyncExternalStore,
+                        useInsertionEffect,
+                        Fragment,
+                        createContext,
+                        forwardRef,
+                        memo,
+                        lazy,
+                        Suspense,
+                        createElement,
+                        cloneElement,
+                        createRef,
+                        isValidElement,
+                        Children,
 
-                    useNotifications: () => ctx.notifctx,
-                    addToast: ctx.notifctx.addToast,
-                    addnotification: ctx.notifctx.addnotification,
-                    clearnotification: ctx.notifctx.clearnotification,
-                    notifications: ctx.notifctx.notifications,
+                        useWindows: () => ctx.windowsctx,
+                        addwindow: ctx.windowsctx.addwindow,
+                        removewindow: ctx.windowsctx.removewindow,
+                        updatewindow: ctx.windowsctx.updatewindow,
+                        setactivewindow: ctx.windowsctx.setactivewindow,
+                        windows: ctx.windowsctx.windows,
+                        activewindow: ctx.windowsctx.activewindow,
 
-                    useFileSystem: () => ctx.fsctx,
-                    files: ctx.fsctx.files,
-                    createFile: ctx.fsctx.createFile,
-                    createFolder: ctx.fsctx.createFolder,
-                    updateFileContent: ctx.fsctx.updateFileContent,
-                    renameItem: ctx.fsctx.renameItem,
-                    deleteItem: ctx.fsctx.deleteItem,
-                    moveToTrash: ctx.fsctx.moveToTrash,
+                        useNotifications: () => ctx.notifctx,
+                        addToast: ctx.notifctx.addToast,
+                        addnotification: ctx.notifctx.addnotification,
+                        clearnotification: ctx.notifctx.clearnotification,
+                        notifications: ctx.notifctx.notifications,
 
-                    useSettings: () => ctx.settingsctx,
-                    wallpaperurl: ctx.settingsctx.wallpaperurl,
-                    setwallpaperurl: ctx.settingsctx.setwallpaperurl,
-                    accentcolor: ctx.settingsctx.accentcolor,
-                    setaccentcolor: ctx.settingsctx.setaccentcolor,
-                    reducemotion: ctx.settingsctx.reducemotion,
-                    soundeffects: ctx.settingsctx.soundeffects,
+                        useFileSystem: () => ({
+                            files: ctx.fsctx.files.filter((f: any) => !f.isSystem),
+                            getFile: (id: string) => ctx.fsctx.files.find((f: any) => f.id === id),
+                        }),
+                        files: ctx.fsctx.files.filter((f: any) => !f.isSystem),
 
-                    useTheme: () => ctx.themectx,
-                    theme: ctx.themectx.theme,
-                    toggletheme: ctx.themectx.toggletheme,
-                    setTheme: ctx.themectx.toggletheme,
+                        useSettings: () => ({
+                            wallpaperurl: ctx.settingsctx.wallpaperurl,
+                            accentcolor: ctx.settingsctx.accentcolor,
+                            reducemotion: ctx.settingsctx.reducemotion,
+                            soundeffects: ctx.settingsctx.soundeffects,
+                        }),
+                        wallpaperurl: ctx.settingsctx.wallpaperurl,
+                        accentcolor: ctx.settingsctx.accentcolor,
+                        reducemotion: ctx.settingsctx.reducemotion,
+                        soundeffects: ctx.settingsctx.soundeffects,
 
-                    useDevice: () => ctx.devicectx,
-                    ismobile: ctx.devicectx.ismobile,
-                    isdesktop: !ctx.devicectx.ismobile,
-                    osstate: ctx.devicectx.osstate,
+                        useTheme: () => ctx.themectx,
+                        theme: ctx.themectx.theme,
+                        toggletheme: ctx.themectx.toggletheme,
+                        setTheme: ctx.themectx.toggletheme,
 
-                    useAuth: () => ctx.authctx,
-                    user: ctx.authctx.user,
-                    isGuest: ctx.authctx.isGuest,
+                        useDevice: () => ctx.devicectx,
+                        ismobile: ctx.devicectx.ismobile,
+                        isdesktop: !ctx.devicectx.ismobile,
+                        osstate: ctx.devicectx.osstate,
 
-                    useExternalApps: () => ctx.externalctx,
-                    apps: ctx.externalctx.apps,
-                    installApp: ctx.externalctx.installApp,
-                    uninstallApp: ctx.externalctx.uninstallApp,
-                    launchApp: ctx.externalctx.launchApp,
-                    addRepository: ctx.externalctx.addRepository,
+                        useAuth: () => ({
+                            user: ctx.authctx.user ? { username: ctx.authctx.user.username, name: ctx.authctx.user.name } : null,
+                            isGuest: ctx.authctx.isGuest,
+                        }),
+                        user: ctx.authctx.user ? { username: ctx.authctx.user.username, name: ctx.authctx.user.name } : null,
+                        isGuest: ctx.authctx.isGuest,
 
-                    motion,
-                    AnimatePresence,
+                        useExternalApps: () => ({
+                            apps: ctx.externalctx.apps,
+                        }),
+                        apps: ctx.externalctx.apps,
 
-                    console: {
-                        log: (...args: any[]) => console.log('[UserApp]', ...args),
-                        error: (...args: any[]) => console.error('[UserApp]', ...args),
-                        warn: (...args: any[]) => console.warn('[UserApp]', ...args),
-                        info: (...args: any[]) => console.info('[UserApp]', ...args),
-                    },
+                        motion,
+                        AnimatePresence,
 
-                    fetch: window.fetch.bind(window),
-                    setTimeout: window.setTimeout.bind(window),
-                    setInterval: window.setInterval.bind(window),
-                    clearTimeout: window.clearTimeout.bind(window),
-                    clearInterval: window.clearInterval.bind(window),
-                    requestAnimationFrame: window.requestAnimationFrame.bind(window),
-                    cancelAnimationFrame: window.cancelAnimationFrame.bind(window),
-                    localStorage: window.localStorage,
-                    sessionStorage: window.sessionStorage,
-                    Date,
-                    Math,
-                    JSON,
-                    Array,
-                    Object,
-                    String,
-                    Number,
-                    Boolean,
-                    Promise,
-                    Map,
-                    Set,
-                    WeakMap,
-                    WeakSet,
-                    Symbol,
-                    RegExp,
-                    Error,
-                    parseInt,
-                    parseFloat,
-                    isNaN,
-                    isFinite,
-                    encodeURI,
-                    decodeURI,
-                    encodeURIComponent,
-                    decodeURIComponent,
-                    atob,
-                    btoa,
+                        console: {
+                            log: (...args: any[]) => console.log('[UserApp]', ...args),
+                            error: (...args: any[]) => console.error('[UserApp]', ...args),
+                            warn: (...args: any[]) => console.warn('[UserApp]', ...args),
+                            info: (...args: any[]) => console.info('[UserApp]', ...args),
+                        },
+
+                        fetch: (url: string, options?: RequestInit) => {
+                            const parsed = new URL(url, window.location.origin);
+                            if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+                                throw new Error('Only HTTP/HTTPS requests allowed');
+                            }
+                            return window.fetch(url, options);
+                        },
+                        setTimeout: window.setTimeout.bind(window),
+                        setInterval: window.setInterval.bind(window),
+                        clearTimeout: window.clearTimeout.bind(window),
+                        clearInterval: window.clearInterval.bind(window),
+                        requestAnimationFrame: window.requestAnimationFrame.bind(window),
+                        cancelAnimationFrame: window.cancelAnimationFrame.bind(window),
+                        localStorage: {
+                            getItem: (key: string) => window.localStorage.getItem(`userapp_${appname}_${key}`),
+                            setItem: (key: string, value: string) => window.localStorage.setItem(`userapp_${appname}_${key}`, value),
+                            removeItem: (key: string) => window.localStorage.removeItem(`userapp_${appname}_${key}`),
+                            clear: () => {
+                                const prefix = `userapp_${appname}_`;
+                                Object.keys(window.localStorage)
+                                    .filter(k => k.startsWith(prefix))
+                                    .forEach(k => window.localStorage.removeItem(k));
+                            }
+                        },
+                        Date,
+                        Math,
+                        JSON,
+                        Array,
+                        Object,
+                        String,
+                        Number,
+                        Boolean,
+                        Promise,
+                        Map,
+                        Set,
+                        WeakMap,
+                        WeakSet,
+                        Symbol,
+                        RegExp,
+                        Error,
+                        parseInt,
+                        parseFloat,
+                        isNaN,
+                        isFinite,
+                        encodeURI,
+                        decodeURI,
+                        encodeURIComponent,
+                        decodeURIComponent,
+                        atob,
+                        btoa,
+                    };
                 };
-            };
 
-            const funcmatches = code.matchAll(/function\s+([A-Z][a-zA-Z0-9_]*)\s*\(/g);
-            const arrowmatches = code.matchAll(/(?:const|let|var)\s+([A-Z][a-zA-Z0-9_]*)\s*=\s*(?:\([^)]*\)|[a-zA-Z_][a-zA-Z0-9_]*)\s*=>/g);
+                const funcmatches = code.matchAll(/function\s+([A-Z][a-zA-Z0-9_]*)\s*\(/g);
+                const arrowmatches = code.matchAll(/(?:const|let|var)\s+([A-Z][a-zA-Z0-9_]*)\s*=\s*(?:\([^)]*\)|[a-zA-Z_][a-zA-Z0-9_]*)\s*=>/g);
 
-            const allfuncs: string[] = [];
-            for (const match of funcmatches) {
-                allfuncs.push(match[1]);
-            }
-            for (const match of arrowmatches) {
-                allfuncs.push(match[1]);
-            }
+                const allfuncs: string[] = [];
+                for (const match of funcmatches) {
+                    allfuncs.push(match[1]);
+                }
+                for (const match of arrowmatches) {
+                    allfuncs.push(match[1]);
+                }
 
-            if (allfuncs.length === 0) {
-                throw new Error('No component found. Create a function starting with uppercase like: function MyApp() {...}');
-            }
+                if (allfuncs.length === 0) {
+                    throw new Error('No component found. Create a function starting with uppercase like: function MyApp() {...}');
+                }
 
-            const lastfunc = allfuncs[allfuncs.length - 1];
+                const lastfunc = allfuncs[allfuncs.length - 1];
 
-            const ComponentFactory = () => {
-                const scope = getScope();
-                const scopekeys = Object.keys(scope);
-                const scopevalues = Object.values(scope);
+                const ComponentFactory = () => {
+                    const scope = getScope();
+                    const scopekeys = Object.keys(scope);
+                    const scopevalues = Object.values(scope);
 
-                const wrappedcode = `
+                    const wrappedcode = `
                     ${transpiledcode}
                     return ${lastfunc};
                 `;
 
-                const factory = new Function(...scopekeys, wrappedcode);
-                return factory(...scopevalues);
-            };
+                    const factory = new Function(...scopekeys, wrappedcode);
+                    return factory(...scopevalues);
+                };
 
-            const BuiltComponent = ComponentFactory();
+                const BuiltComponent = ComponentFactory();
 
-            if (!BuiltComponent || typeof BuiltComponent !== 'function') {
-                throw new Error('No valid component found.');
+                if (!BuiltComponent || typeof BuiltComponent !== 'function') {
+                    throw new Error('No valid component found.');
+                }
+
+                setUserComponent(() => BuiltComponent);
+                seterror(null);
+                setisbuilding(false);
+
+            } catch (err: any) {
+                seterror({
+                    message: err.message || 'Unknown error',
+                    stack: err.stack
+                });
+                setUserComponent(null);
+                setisbuilding(false);
             }
+        };
 
-            setUserComponent(() => BuiltComponent);
-            seterror(null);
-            setisbuilding(false);
-
-        } catch (err: any) {
-            console.error('App compilation error:', err);
-            seterror({
-                message: err.message || 'Unknown error',
-                stack: err.stack
-            });
-            setUserComponent(null);
-            setisbuilding(false);
-        }
-    }, [code, babelloaded]);
+        runBuild();
+    }, [code, babelloaded, codeHash]);
 
     if (!babelloaded || isbuilding) {
         return (
@@ -340,8 +374,7 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode; appname
         return { haserror: true, error };
     }
 
-    componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-        console.error('User app runtime error:', error, errorInfo);
+    componentDidCatch() {
     }
 
     render() {

@@ -111,7 +111,7 @@ export default function Settings({ initialPage }: { initialPage?: string }) {
                             <div className="space-y-4">
                                 <div className="text-[11px] uppercase font-semibold text-gray-400 pl-3">About</div>
                                 <SettingsGroup>
-                                    <SettingsRow label="Name" value="MacBook Pro" onClick={() => { }} />
+                                    <SettingsRow label="Name" value="Nextar PC" onClick={() => { }} />
                                     <SettingsRow label="Software Update" value="Up to date" onClick={() => { }} />
                                     <SettingsRow label="Storage" value="256 GB" onClick={() => { }} last />
                                 </SettingsGroup>

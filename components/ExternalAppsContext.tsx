@@ -6,6 +6,7 @@ import { useWindows } from './WindowContext';
 import { useNotifications } from './NotificationContext';
 import { useFileSystem } from './FileSystemContext';
 import { playSound } from './SoundEffects';
+import { hashCode } from '../utils/crypto';
 
 export interface ExternalApp {
     id: string;
@@ -27,6 +28,7 @@ export interface ExternalApp {
     updatedAt?: string;
     minVersion?: string;
     code?: string;
+    codeHash?: string;
 }
 
 interface RepoStatus {
@@ -249,7 +251,8 @@ export function ExternalAppsProvider({ children }: { children: React.ReactNode }
                 code = await codeResponse.text();
             }
 
-            const installedApp = { ...app, installed: true, code };
+            const codeH = await hashCode(code);
+            const installedApp = { ...app, installed: true, code, codeHash: codeH };
             const newInstalledApps = [...installedApps, installedApp];
             setInstalledApps(newInstalledApps);
             setApps(prev => prev.map(a => a.id === appId ? { ...a, installed: true } : a));
@@ -262,6 +265,7 @@ export function ExternalAppsProvider({ children }: { children: React.ReactNode }
                 version: app.version,
                 author: app.author,
                 code: code,
+                codeHash: codeH,
                 isInstalledApp: true
             }), app.iconUrl || app.icon || '/python.png');
 
@@ -386,7 +390,8 @@ export function ExternalAppsProvider({ children }: { children: React.ReactNode }
                 code: app.code,
                 appname: app.name,
                 appicon: app.icon || '📦',
-                fileid: app.id
+                fileid: app.id,
+                codeHash: app.codeHash
             },
             isminimized: false,
             ismaximized: false,

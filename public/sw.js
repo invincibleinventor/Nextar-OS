@@ -69,10 +69,13 @@ self.addEventListener('fetch', (event) => {
         event.respondWith(
             fetch(event.request)
                 .then((response) => {
-                    return caches.open(CACHE_NAME).then((cache) => {
-                        cache.put(event.request, response.clone());
-                        return response;
-                    });
+                    if (response.status === 200 && response.type === 'basic') {
+                        return caches.open(CACHE_NAME).then((cache) => {
+                            cache.put(event.request, response.clone());
+                            return response;
+                        });
+                    }
+                    return response;
                 })
                 .catch(() => {
                     return caches.match(event.request).then((response) => {

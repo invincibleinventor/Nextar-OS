@@ -51,8 +51,7 @@ export default function UserManagement() {
                 const refreshed = u.find(user => user.username === selectedUsername);
                 if (refreshed) setSelectedUser(refreshed);
             }
-        } catch (e) {
-            console.error('Failed to load users', e);
+        } catch {
         }
     }, []);
 

@@ -9,9 +9,10 @@ import { useDevice } from './DeviceContext';
 import { useSettings } from './SettingsContext';
 import { useProcess } from './ProcessContext';
 import AppErrorBoundary from './AppErrorBoundary';
+import { ui } from '../utils/constants';
 
-const panelheight =54;
-const dockheight = 70;
+const panelheight = ui.panelHeight;
+const dockheight = ui.dockHeight;
 
 const MemoizedDynamicComponent = memo(
   ({ icon, component, appname, appprops, isFocused, isExternal, externalUrl }: { icon: string, component: string; appname: string, appprops: any; isFocused: boolean, isExternal?: boolean, externalUrl?: string }) => {
@@ -183,8 +184,16 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
     }
 
     let animationFrameId: number;
+    let lastUpdate = 0;
+    const throttleMs = 60;
 
-    const trackLayout = () => {
+    const trackLayout = (timestamp: number) => {
+      if (timestamp - lastUpdate < throttleMs) {
+        animationFrameId = requestAnimationFrame(trackLayout);
+        return;
+      }
+      lastUpdate = timestamp;
+
       const slotId = `recent-app-slot-${id}`;
       const slotElement = document.getElementById(slotId);
       const windowElement = windowref.current as HTMLElement | null;
@@ -203,7 +212,7 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
       animationFrameId = requestAnimationFrame(trackLayout);
     };
 
-    trackLayout();
+    animationFrameId = requestAnimationFrame(trackLayout);
 
     return () => {
       cancelAnimationFrame(animationFrameId);

@@ -86,8 +86,7 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 }
 
                 setFiles(visibleFiles);
-            } catch (error) {
-                console.error("Failed to initialize filesystem:", error);
+            } catch {
                 setFiles(generateGuestFilesystem());
             } finally {
                 setIsLoading(false);
@@ -234,7 +233,7 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         const sizeStr = sizeKB < 1 ? '< 1 KB' : `${sizeKB} KB`;
 
         const newFile: filesystemitem = {
-            id: `file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            id: `file-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
             name: finalName,
             parent: parentId,
             mimetype: file.type || getMimeTypeFromExtension(finalName),
@@ -438,7 +437,7 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                     }
                 }
 
-                const newId = `file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+                const newId = `file-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
                 const iconToUse = typeof sourceItem.icon === 'string' ? sourceItem.icon : undefined;
 
                 const newItem: filesystemitem = {
@@ -520,8 +519,7 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             }
 
             setFiles(visibleFiles);
-        } catch (e) {
-            console.error("Refresh failed", e);
+        } catch {
         }
     }, [isGuest, isAdmin, username]);
 

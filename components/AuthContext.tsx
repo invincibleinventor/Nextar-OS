@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, getUser, createUser, getUsers } from '../utils/db';
-import { hashPassword } from '../utils/crypto';
+import { verifyPassword } from '../utils/crypto';
 import { personal } from './data';
 import { useDevice } from './DeviceContext';
 
@@ -29,22 +29,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 const users = await getUsers();
 
                 if (users.length === 0) {
-                   console.log("No users found. Auto-login as Guest.");
                     const guestUser: User = {
                         username: 'guest',
                         passwordHash: '',
                         name: 'Guest User',
                         bio: 'Ephemeral Session',
-                        role: 'user', 
+                        role: 'user',
                         avatar: '/me.png'
                     };
                     setUser(guestUser);
                     setosstate('unlocked');
-                } else {
-                   
                 }
-            } catch (error) {
-                console.error("Auth initialization failed:", error);
+            } catch {
             } finally {
                 setIsLoading(false);
             }
@@ -58,16 +54,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const users = await getUsers();
             if (users.length === 0) return false;
 
-            const hashedPassword = await hashPassword(password);
-            const foundUser = users.find(u => u.passwordHash === hashedPassword);
-
-            if (foundUser) {
-                setUser(foundUser);
-                setosstate('unlocked');
-                return true;
+            for (const u of users) {
+                const isMatch = await verifyPassword(password, u.passwordHash);
+                if (isMatch) {
+                    setUser(u);
+                    setosstate('unlocked');
+                    return true;
+                }
             }
-        } catch (e) {
-            console.error(e);
+        } catch {
         }
         return false;
     };

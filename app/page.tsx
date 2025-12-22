@@ -63,13 +63,11 @@ const Desktop = () => {
   useEffect(() => {
     const handleGlobalMenu = (e: CustomEvent) => {
       const { appId, actionId, title } = e.detail;
-      console.log('[Page] Received menu-action:', e.detail);
       const effectiveActionId = actionId || title;
 
       if (appId === 'explorer' && effectiveActionId === 'new-window') {
         const lastWindow = windows[windows.length - 1];
         if (lastWindow && lastWindow.appname === 'Explorer' && (Date.now() - (lastWindow.lastInteraction || 0) < 500)) {
-          console.log('[Page] Ignoring duplicate new-window request');
           return;
         }
 

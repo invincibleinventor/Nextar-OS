@@ -28,7 +28,7 @@ export default function AboutDevice({ isopen, onclose }: AboutDeviceProps) {
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        className="fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] w-[300px] bg-[#f5f5f5] dark:bg-[#2a2a2a] rounded-xl shadow-2xl z-[99999] font-sf overflow-hidden"
+                        className="fixed left-0 top-0 bottom-0 right-0 h-max my-auto mx-auto w-[300px] bg-[#f5f5f5] dark:bg-[#2a2a2a] rounded-xl shadow-2xl z-[99999] font-sf overflow-hidden"
                     >
                         <div className="p-6 flex flex-col items-center text-center">
                             <div className="w-20 h-20 mb-4">

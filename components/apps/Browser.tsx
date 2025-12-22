@@ -27,8 +27,20 @@ export default function Browser({ initialurl = 'https://baladev.vercel.app', app
 
 
 
+    const isUnsafeUrl = (urlStr: string): boolean => {
+        const lower = urlStr.trim().toLowerCase();
+        return lower.startsWith('javascript:') ||
+            lower.startsWith('data:') ||
+            lower.startsWith('vbscript:');
+    };
+
     const navigateTo = useCallback((newUrl: string) => {
-        let target = newUrl;
+        let target = newUrl.trim();
+
+        if (isUnsafeUrl(target)) {
+            return;
+        }
+
         if (!target.startsWith('http')) {
             target = 'https://' + target;
         }
@@ -289,7 +301,7 @@ export default function Browser({ initialurl = 'https://baladev.vercel.app', app
                                 src={url}
                                 className="w-full h-full border-none"
                                 title="Browser Browser"
-                                sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
+                                sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"
                                 onLoad={() => setisloading(false)}
                             />
                         )

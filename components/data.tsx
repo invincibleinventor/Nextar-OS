@@ -581,7 +581,7 @@ export const titlemenu = [
 ];
 
 export const mainmenu = [
-    { title: "About This Mac", disabled: false },
+    { title: "About Nextzr", disabled: false },
     { separator: true },
     { title: "System Settings...", disabled: false },
     { title: "App Store...", disabled: true },
@@ -1321,7 +1321,6 @@ const resolveFolderPath = (file: filesystemitem): string[] => {
 
 const resolveTarget = (itemOrId: string | filesystemitem, currentFiles?: filesystemitem[], depth = 0): { appId?: string; props: any; title?: string } | null => {
     if (depth > 5) {
-        console.warn("Shortcut recursion depth exceeded.");
         return null;
     }
 
@@ -1340,7 +1339,6 @@ const resolveTarget = (itemOrId: string | filesystemitem, currentFiles?: filesys
             return { appId: 'explorer', props: { initialpath: ['System', 'Users', 'Bala', 'Projects', projectName] }, title: projectName };
         }
 
-        console.warn(`System logic: Item '${itemOrId}' not found.`);
         return null;
     }
 
@@ -1406,7 +1404,6 @@ export const openSystemItem = (
     forceAppId?: string,
     additionalProps?: Record<string, unknown>
 ) => {
-    console.log('[Debug] openSystemItem called for:', itemOrId);
     const { addwindow, windows, updatewindow, setactivewindow, ismobile, files } = context;
 
     const resolved = resolveTarget(itemOrId, files);

@@ -34,7 +34,7 @@ const globalmenus: MenuConfig = {
     Help: [
         { title: "Search", actionId: "help-search", disabled: true },
         { separator: true },
-        { title: "About This Mac", actionId: "help-about" }
+        { title: "About Nextar", actionId: "help-about" }
     ]
 };
 

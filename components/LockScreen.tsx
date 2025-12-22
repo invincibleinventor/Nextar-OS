@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useAuth } from './AuthContext';
 import { getUsers, User } from '../utils/db';
-import { hashPassword } from '../utils/crypto';
+import { verifyPassword } from '../utils/crypto';
 import { useDevice } from './DeviceContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { IoArrowForward, IoLockClosed, IoPerson, IoInformationCircleOutline } from 'react-icons/io5';
@@ -20,6 +20,8 @@ export default function LockScreen() {
     const [users, setUsers] = useState<User[]>([]);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [loadingUsers, setLoadingUsers] = useState(true);
+    const [loginAttempts, setLoginAttempts] = useState(0);
+    const [lockoutUntil, setLockoutUntil] = useState<number | null>(null);
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -33,8 +35,7 @@ export default function LockScreen() {
                 } else if (fetchedUsers.length > 0) {
                     setSelectedUser(fetchedUsers[0]);
                 }
-            } catch (err) {
-                console.error("Failed to fetch users", err);
+            } catch {
             } finally {
                 setLoadingUsers(false);
             }
@@ -48,23 +49,41 @@ export default function LockScreen() {
         return () => clearInterval(timer);
     }, []);
 
+    const maxAttempts = 5;
+    const lockoutDuration = 30000;
+
     const handleLogin = async (e?: React.FormEvent) => {
         if (e) e.preventDefault();
         if (isSubmitting || !selectedUser) return;
+
+        if (lockoutUntil && Date.now() < lockoutUntil) {
+            const remaining = Math.ceil((lockoutUntil - Date.now()) / 1000);
+            setError(true);
+            setTimeout(() => setError(false), 500);
+            return;
+        }
 
         setIsSubmitting(true);
         setError(false);
 
         setTimeout(async () => {
-             const hashedInput = await hashPassword(password);
-            const isValid = selectedUser.passwordHash === hashedInput;
+            const isValid = await verifyPassword(password, selectedUser.passwordHash);
 
             if (!isValid) {
+                const newAttempts = loginAttempts + 1;
+                setLoginAttempts(newAttempts);
                 setError(true);
                 setIsSubmitting(false);
+
+                if (newAttempts >= maxAttempts) {
+                    setLockoutUntil(Date.now() + lockoutDuration);
+                    setLoginAttempts(0);
+                }
+
                 setTimeout(() => setError(false), 500);
             } else {
-              
+                setLoginAttempts(0);
+                setLockoutUntil(null);
                 const success = await login(password);
                 if (!success) {
                     setError(true);
@@ -257,7 +276,7 @@ export default function LockScreen() {
                         </div>
                         <span className="text-[10px] font-medium opacity-60">Sleep</span>
                     </div>
-                    <div onClick={()=>window.location.reload()} className="flex flex-col items-center gap-1 cursor-pointer group">
+                    <div onClick={() => window.location.reload()} className="flex flex-col items-center gap-1 cursor-pointer group">
                         <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur flex items-center justify-center group-hover:bg-white/20 transition-colors">
                             <IoInformationCircleOutline size={20} />
                         </div>

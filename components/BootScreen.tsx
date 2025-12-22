@@ -44,7 +44,7 @@ export default function BootScreen() {
                     </motion.div>
 
                     <button
-                        onClick={() => document.documentElement.requestFullscreen().catch((e) => console.log(e))}
+                        onClick={() => document.documentElement.requestFullscreen().catch(() => { })}
                         className="absolute bottom-10 p-2 text-white/30 hover:text-white transition-colors text-xs uppercase tracking-widest z-[10001]"
                     >
                         Go Full Screen

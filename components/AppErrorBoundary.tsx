@@ -24,8 +24,7 @@ class AppErrorBoundary extends Component<Props, State> {
         return { hasError: true, error };
     }
 
-    componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-        console.error(`App crash [${this.props.appId}]:`, error, errorInfo);
+    componentDidCatch(error: Error) {
         this.props.onCrash(error.message || 'Unknown error');
     }
 

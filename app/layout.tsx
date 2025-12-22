@@ -117,12 +117,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             dangerouslySetInnerHTML={{
               __html: `
                 if ('serviceWorker' in navigator && '${process.env.NODE_ENV}' !== 'development') {
-                  navigator.serviceWorker.register('/sw.js').then(function(registration) {
-                    console.log('SW registered: ', registration);
-                  }, function(registrationError) {
-                    console.log('SW registration failed: ', registrationError);
-                  });
+                  navigator.serviceWorker.register('/sw.js').catch(function() {});
                 }
+                window.addEventListener('unhandledrejection', function(e) {
+                  e.preventDefault();
+                });
               `,
             }}
           />

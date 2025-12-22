@@ -5,7 +5,7 @@ import Menu from './menu';
 import { useWindows } from './WindowContext';
 import { apps, mainmenu, openSystemItem } from './data';
 import Control from './controlcenter';
-import Logo from './applelogo';
+import Logo from './mainlogo';
 import { useAppMenus } from './AppMenuContext';
 
 import { IoWifi, IoBatteryFull, IoToggle, IoSettingsOutline } from 'react-icons/io5';
@@ -109,7 +109,7 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
     }, [isGuest, addToast]);
 
     const dynamicmainmenu = [
-        { title: `About This Mac`, actionId: 'about' },
+        { title: `About Nextar`, actionId: 'about' },
         { separator: true },
         { title: 'System Settings...', actionId: 'settings' },
         { title: 'App Store...', actionId: 'appstore' },

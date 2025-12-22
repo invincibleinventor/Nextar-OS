@@ -1,6 +1,6 @@
 import { filesystemitem } from '../components/data';
 
-const DB_NAME = 'MacOSSystem';
+const DB_NAME = 'NextarOSSystem';
 const DB_VERSION = 6;
 const STORE_NAME = 'files';
 const USERS_STORE_NAME = 'users';
@@ -78,19 +78,16 @@ export const resetDB = (): Promise<void> => {
         }
         const request = indexedDB.deleteDatabase(DB_NAME);
         request.onsuccess = () => {
-            console.log("Database reset successfully");
             resolve();
         };
         request.onerror = () => {
-            console.error("Failed to reset database");
             reject("Failed to reset database");
         };
     });
 };
 
 export const initDB = (): Promise<void> => {
-    return openDB().then(() => { }).catch((e) => {
-        console.warn("initDB failed, attempting reset:", e);
+    return openDB().then(() => { }).catch(() => {
         return resetDB().then(() => openDB()).then(() => { });
     });
 };
@@ -152,7 +149,7 @@ export const createUser = (user: User): Promise<void> => {
     }
 
     return openDB().then(db => {
-        return new Promise(async (resolve, reject) => {
+        return new Promise((resolve, reject) => {
             const transaction = db.transaction([USERS_STORE_NAME], 'readwrite');
             const store = transaction.objectStore(USERS_STORE_NAME);
 

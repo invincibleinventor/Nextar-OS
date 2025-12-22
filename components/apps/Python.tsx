@@ -14,6 +14,7 @@ import { useFileSystem } from '../FileSystemContext';
 import { useWindows } from '../WindowContext';
 import { filesystemitem } from '../data';
 import { useNotifications } from '../NotificationContext';
+import { api } from '../../utils/constants';
 
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false });
 
@@ -341,7 +342,7 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
         setoutput('Running...\n');
 
         try {
-            const response = await fetch('https://emkc.org/api/v2/piston/execute', {
+            const response = await fetch(api.pistonExecuteUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
