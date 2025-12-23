@@ -29,7 +29,7 @@ const sidebaritems = [
 export default function Settings({ initialPage }: { initialPage?: string }) {
     const [activetab, setactivetab] = useState(initialPage || "general");
     const [showsidebar, setshowsidebar] = useState(true);
-    const { reducemotion, setreducemotion, reducetransparency, setreducetransparency, soundeffects, setsoundeffects, wallpaperurl, setwallpaperurl, accentcolor, setaccentcolor } = useSettings();
+    const { reducemotion, setreducemotion, reducetransparency, setreducetransparency, soundeffects, setsoundeffects, wallpaperurl, setwallpaperurl, accentcolor, setaccentcolor, inverselabelcolor, setinverselabelcolor } = useSettings();
     const { theme, toggletheme } = useTheme();
     const { addwindow, windows, updatewindow, setactivewindow } = useWindows();
     const { ismobile } = useDevice();
@@ -116,9 +116,208 @@ export default function Settings({ initialPage }: { initialPage?: string }) {
                                     <SettingsRow label="Storage" value="256 GB" onClick={() => { }} last />
                                 </SettingsGroup>
 
+                                {user?.role === 'admin' && (
+                                    <>
+                                        <div className="text-[11px] uppercase font-semibold text-gray-400 pl-3">Snapshots (Admin)</div>
+                                        <SettingsGroup>
+                                            <SettingsRow
+                                                label="Create Snapshot"
+                                                onClick={async () => {
+                                                    try {
+                                                        const { getAllFiles, getUsers } = await import('../../utils/db');
+                                                        const files = await getAllFiles();
+                                                        const users = await getUsers();
+                                                        const data = {
+                                                            files,
+                                                            users,
+                                                            settings: {
+                                                                theme: localStorage.getItem('theme'),
+                                                                reduceMotion: localStorage.getItem('reduceMotion'),
+                                                                reduceTransparency: localStorage.getItem('reduceTransparency'),
+                                                                soundEffects: localStorage.getItem('soundEffects'),
+                                                                wallpaperUrl: localStorage.getItem('wallpaperUrl'),
+                                                                accentColor: localStorage.getItem('accentColor'),
+                                                            },
+                                                            timestamp: new Date().toISOString()
+                                                        };
+                                                        const snapshots = JSON.parse(localStorage.getItem('nextaros-snapshots') || '[]');
+                                                        snapshots.push(data);
+                                                        localStorage.setItem('nextaros-snapshots', JSON.stringify(snapshots));
+                                                        alert(`Snapshot created! ${files.length} files, ${users.length} users saved.`);
+                                                    } catch (e) {
+                                                        alert('Error creating snapshot: ' + e);
+                                                    }
+                                                }}
+                                            />
+                                            <SettingsRow
+                                                label="Restore Last Snapshot"
+                                                onClick={async () => {
+                                                    const snapshots = JSON.parse(localStorage.getItem('nextaros-snapshots') || '[]');
+                                                    if (snapshots.length === 0) {
+                                                        alert('No snapshots available');
+                                                        return;
+                                                    }
+                                                    if (confirm('Restore last snapshot? This will overwrite ALL current data.')) {
+                                                        try {
+                                                            const { resetDB, initDB, saveAllFiles, createUser } = await import('../../utils/db');
+                                                            const last = snapshots[snapshots.length - 1];
+
+                                                            await resetDB();
+                                                            await new Promise(r => setTimeout(r, 100));
+                                                            await initDB();
+
+                                                            if (last.files?.length > 0) {
+                                                                await saveAllFiles(last.files);
+                                                            }
+
+                                                            if (last.users?.length > 0) {
+                                                                for (const u of last.users) {
+                                                                    try { await createUser(u); } catch { }
+                                                                }
+                                                            }
+
+                                                            if (last.settings) {
+                                                                Object.entries(last.settings).forEach(([key, value]) => {
+                                                                    if (value !== null) localStorage.setItem(key, value as string);
+                                                                });
+                                                            }
+
+                                                            alert('Snapshot restored! Reloading...');
+                                                            window.location.reload();
+                                                        } catch (e) {
+                                                            alert('Error restoring: ' + e);
+                                                        }
+                                                    }
+                                                }}
+                                            />
+                                            <SettingsRow
+                                                label="Export Snapshot"
+                                                onClick={async () => {
+                                                    try {
+                                                        const { getAllFiles, getUsers } = await import('../../utils/db');
+                                                        const files = await getAllFiles();
+                                                        const users = await getUsers();
+                                                        const data = {
+                                                            files,
+                                                            users,
+                                                            settings: {
+                                                                theme: localStorage.getItem('theme'),
+                                                                reduceMotion: localStorage.getItem('reduceMotion'),
+                                                                reduceTransparency: localStorage.getItem('reduceTransparency'),
+                                                                soundEffects: localStorage.getItem('soundEffects'),
+                                                                wallpaperUrl: localStorage.getItem('wallpaperUrl'),
+                                                                accentColor: localStorage.getItem('accentColor'),
+                                                            },
+                                                            timestamp: new Date().toISOString()
+                                                        };
+                                                        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                                                        const url = URL.createObjectURL(blob);
+                                                        const a = document.createElement('a');
+                                                        a.href = url;
+                                                        a.download = `nextaros-snapshot-${new Date().toISOString().split('T')[0]}.json`;
+                                                        a.click();
+                                                        URL.revokeObjectURL(url);
+                                                    } catch (e) {
+                                                        alert('Error exporting: ' + e);
+                                                    }
+                                                }}
+                                            />
+                                            <SettingsRow
+                                                label="Import from File"
+                                                onClick={() => {
+                                                    const input = document.createElement('input');
+                                                    input.type = 'file';
+                                                    input.accept = '.json';
+                                                    input.onchange = async (e) => {
+                                                        const file = (e.target as HTMLInputElement).files?.[0];
+                                                        if (!file) return;
+
+                                                        try {
+                                                            const text = await file.text();
+                                                            const data = JSON.parse(text);
+
+                                                            if (!data.files || !Array.isArray(data.files)) {
+                                                                alert('Invalid snapshot file');
+                                                                return;
+                                                            }
+
+                                                            if (confirm(`Import snapshot?\n\nFiles: ${data.files.length}\nUsers: ${data.users?.length || 0}\n\nThis will REPLACE all current data.`)) {
+                                                                const { resetDB, initDB, saveAllFiles, createUser } = await import('../../utils/db');
+
+                                                                await resetDB();
+                                                                await new Promise(r => setTimeout(r, 100));
+                                                                await initDB();
+
+                                                                if (data.files.length > 0) {
+                                                                    await saveAllFiles(data.files);
+                                                                }
+
+                                                                if (data.users?.length > 0) {
+                                                                    for (const u of data.users) {
+                                                                        try { await createUser(u); } catch { }
+                                                                    }
+                                                                }
+
+                                                                if (data.settings) {
+                                                                    Object.entries(data.settings).forEach(([key, value]) => {
+                                                                        if (value !== null) localStorage.setItem(key, value as string);
+                                                                    });
+                                                                }
+
+                                                                alert('Snapshot imported! Reloading...');
+                                                                window.location.reload();
+                                                            }
+                                                        } catch (err) {
+                                                            alert('Error reading file: ' + err);
+                                                        }
+                                                    };
+                                                    input.click();
+                                                }}
+                                            />
+                                            <SettingsRow
+                                                label="View Snapshots"
+                                                onClick={() => {
+                                                    const snapshots = JSON.parse(localStorage.getItem('nextaros-snapshots') || '[]');
+                                                    const snapshotDetails = snapshots.map((s: any, i: number) =>
+                                                        `${i + 1}. ${new Date(s.timestamp).toLocaleString()}\n   Files: ${s.files?.length || 0}, Users: ${s.users?.length || 0}`
+                                                    ).join('\n\n');
+                                                    alert(snapshots.length === 0
+                                                        ? 'No snapshots saved'
+                                                        : `${snapshots.length} snapshot(s):\n\n${snapshotDetails}`);
+                                                }}
+                                            />
+                                            <SettingsRow
+                                                label="Clear All Snapshots"
+                                                onClick={() => {
+                                                    if (confirm('Delete all snapshots?')) {
+                                                        localStorage.removeItem('nextaros-snapshots');
+                                                        alert('All snapshots deleted');
+                                                    }
+                                                }}
+                                                last
+                                            />
+                                        </SettingsGroup>
+                                    </>
+                                )}
+
                                 <div className="text-[11px] uppercase font-semibold text-gray-400 pl-3">Reset</div>
                                 <SettingsGroup>
-                                    <SettingsRow label="Reset Notifications" onClick={() => { localStorage.removeItem('clearedNotifications'); window.location.reload(); }} last />
+                                    <SettingsRow label="Reset Notifications" onClick={() => { localStorage.removeItem('clearedNotifications'); window.location.reload(); }} />
+                                    <SettingsRow
+                                        label="Reset System"
+                                        onClick={async () => {
+                                            if (confirm('This will delete ALL data including files, users, and settings. Are you sure?')) {
+                                                if (confirm('This cannot be undone. Proceed with reset?')) {
+                                                    const { resetDB } = await import('../../utils/db');
+                                                    await resetDB();
+                                                    localStorage.clear();
+                                                    sessionStorage.clear();
+                                                    window.location.reload();
+                                                }
+                                            }
+                                        }}
+                                        last
+                                    />
                                 </SettingsGroup>
                             </div>
                         </>
@@ -156,7 +355,8 @@ export default function Settings({ initialPage }: { initialPage?: string }) {
                             <SettingsGroup>
                                 <SettingsRow label="Reduce Transparency" toggle toggleValue={reducetransparency} onToggle={setreducetransparency} />
                                 <SettingsRow label="Reduce Motion" toggle toggleValue={reducemotion} onToggle={setreducemotion} />
-                                <SettingsRow label="Sound Effects" toggle toggleValue={soundeffects} onToggle={setsoundeffects} last />
+                                <SettingsRow label="Sound Effects" toggle toggleValue={soundeffects} onToggle={setsoundeffects} />
+                                <SettingsRow label="Inverse Label Color" toggle toggleValue={inverselabelcolor} onToggle={setinverselabelcolor} last />
                             </SettingsGroup>
                         </>
                     )}

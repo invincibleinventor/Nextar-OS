@@ -6,7 +6,7 @@ export const ui = {
     defaultWindowWidth: 900,
     defaultWindowHeight: 600,
     mobileBreakpoint: 768,
-    animationThrottleMs: 60,
+    animationThrottleMs: 16,
     maxLoginAttempts: 5,
     loginLockoutDuration: 30000,
 };

@@ -154,36 +154,37 @@ export default function AppStore({ appId = 'appstore', id }: { appId?: string, i
                                                 {appsearch ? `No apps found for "${appsearch}"` : 'No apps available'}
                                             </div>
                                         ) : (
-                                            filteredExternalApps.map(app => (
-                                                <div
-                                                    key={app.id}
-                                                    className="bg-white dark:bg-[#2c2c2e] rounded-2xl p-4 active:scale-[0.98] transition-transform"
-                                                    onClick={() => setselectedexternalapp(app)}
-                                                >
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-accent/20 to-purple-500/20 flex items-center justify-center text-2xl shrink-0">
-                                                            {app.icon || '📦'}
-                                                        </div>
-                                                        <div className="flex-1 min-w-0">
-                                                            <div className="flex items-center gap-2 mb-0.5">
-                                                                <h3 className="text-[16px] font-semibold truncate">{app.name}</h3>
-                                                                {app.installed && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-500/10 text-green-500">Installed</span>}
+                                            <>
+                                                {filteredExternalApps.map(app => (
+                                                    <div
+                                                        key={app.id}
+                                                        className="bg-white dark:bg-[#2c2c2e] rounded-2xl p-4 active:scale-[0.98] transition-transform shadow-sm"
+                                                        onClick={() => setselectedexternalapp(app)}
+                                                    >
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-14 h-14 rounded-[14px] bg-gradient-to-br from-accent/20 to-purple-500/20 flex items-center justify-center text-2xl shrink-0 shadow-sm">
+                                                                {app.icon || '📦'}
                                                             </div>
-                                                            <p className="text-[13px] text-gray-500 line-clamp-1">{app.description}</p>
-                                                            <div className="flex items-center gap-2 mt-1">
-                                                                <span className="text-[11px] text-gray-400">{app.author}</span>
-                                                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-accent/10 text-accent">{app.category}</span>
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className="flex items-center gap-2 mb-0.5">
+                                                                    <h3 className="text-[16px] font-semibold truncate">{app.name}</h3>
+                                                                    {app.installed && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-green-500/10 text-green-500 font-semibold">✓</span>}
+                                                                </div>
+                                                                <p className="text-[13px] text-gray-500 line-clamp-1">{app.description}</p>
+                                                                <div className="flex items-center gap-2 mt-1">
+                                                                    <span className="text-[10px] text-gray-400">{app.author}</span>
+                                                                </div>
                                                             </div>
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); if (app.installed) { launchApp(app.id); } else { installApp(app.id); } }}
+                                                                className={`px-4 py-2 rounded-full text-[12px] font-bold shrink-0 ${app.installed ? 'bg-gray-100 dark:bg-white/10 text-accent' : 'bg-accent text-white'}`}
+                                                            >
+                                                                {app.installed ? 'Open' : 'Get'}
+                                                            </button>
                                                         </div>
-                                                        <button
-                                                            onClick={(e) => { e.stopPropagation(); if (app.installed) { launchApp(app.id); } else { installApp(app.id); } }}
-                                                            className={`px-4 py-2 rounded-full text-[13px] font-semibold ${app.installed ? 'bg-gray-100 dark:bg-white/10 text-accent' : 'bg-accent text-white'}`}
-                                                        >
-                                                            {app.installed ? 'Open' : 'Get'}
-                                                        </button>
                                                     </div>
-                                                </div>
-                                            ))
+                                                ))}
+                                            </>
                                         )}
                                     </div>
                                 </>
@@ -451,14 +452,32 @@ export default function AppStore({ appId = 'appstore', id }: { appId?: string, i
                         <div className="p-6 md:p-10 pt-6 max-w-7xl mx-auto w-full">
                             {activetab === 'apps' && !selectedexternalapp && (
                                 <>
-                                    <div className="flex items-center justify-between mb-6">
+                                    {filteredExternalApps.length > 0 && !appsearch && appcategory === 'All' && (
+                                        <div className="mb-8">
+                                            <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 p-8 h-[200px] flex items-end cursor-pointer group" onClick={() => setselectedexternalapp(filteredExternalApps[0])}>
+                                                <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors" />
+                                                <div className="relative flex items-end justify-between w-full">
+                                                    <div>
+                                                        <div className="text-white/70 text-xs uppercase font-semibold mb-1">Featured App</div>
+                                                        <h2 className="text-white text-3xl font-bold mb-1">{filteredExternalApps[0].name}</h2>
+                                                        <p className="text-white/80 text-sm line-clamp-1">{filteredExternalApps[0].description}</p>
+                                                    </div>
+                                                    <div className="w-20 h-20 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-4xl shadow-lg">
+                                                        {filteredExternalApps[0].icon || '📦'}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="flex items-center justify-between mb-5">
                                         <div className="flex items-center gap-3">
-                                            <h3 className="text-2xl font-bold">{appcategory !== 'All' ? appcategory : 'External Apps'}</h3>
-                                            <button onClick={refreshApps} className="p-2 rounded-lg bg-black/5 dark:bg-white/10 hover:bg-accent/20 transition-colors">
+                                            <h3 className="text-2xl font-bold">{appcategory !== 'All' ? appcategory : appsearch ? `Results for "${appsearch}"` : 'Discover'}</h3>
+                                            <button onClick={refreshApps} className="p-2 rounded-full bg-black/5 dark:bg-white/10 hover:bg-accent/20 transition-colors">
                                                 <IoRefresh size={16} className={isLoading ? 'animate-spin' : ''} />
                                             </button>
                                         </div>
-                                        <span className="text-accent text-sm font-semibold">{filteredExternalApps.length} available</span>
+                                        <span className="text-gray-500 text-sm">{filteredExternalApps.length} apps</span>
                                     </div>
                                     {isLoading ? (
                                         <div className="text-center text-gray-500 py-10">
@@ -470,23 +489,25 @@ export default function AppStore({ appId = 'appstore', id }: { appId?: string, i
                                             {appsearch ? `No apps found for "${appsearch}"` : 'No external apps found. Add a repository or check your connection.'}
                                         </div>
                                     ) : (
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                            {filteredExternalApps.map((app) => (
-                                                <div key={app.id} className="bg-white dark:bg-[#2c2c2e] rounded-2xl p-5 shadow-sm hover:shadow-md transition-all border border-neutral-100 dark:border-white/5 cursor-pointer group" onClick={() => setselectedexternalapp(app)}>
-                                                    <div className="flex items-start justify-between mb-3">
-                                                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent/20 to-purple-500/20 flex items-center justify-center text-2xl">
-                                                            {app.iconUrl ? <img src={app.iconUrl} alt={app.name} className="w-10 h-10 rounded-lg object-cover" /> : (app.icon || '📦')}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                                            {filteredExternalApps.slice(appcategory === 'All' && !appsearch ? 1 : 0).map((app) => (
+                                                <div key={app.id} className="bg-white dark:bg-[#2c2c2e] rounded-2xl p-5 shadow-sm hover:shadow-xl transition-all border border-neutral-100 dark:border-white/5 cursor-pointer group hover:-translate-y-1" onClick={() => setselectedexternalapp(app)}>
+                                                    <div className="flex items-start justify-between mb-4">
+                                                        <div className="w-14 h-14 rounded-[16px] bg-gradient-to-br from-accent/20 to-purple-500/20 flex items-center justify-center text-2xl shadow-sm">
+                                                            {app.iconUrl ? <img src={app.iconUrl} alt={app.name} className="w-12 h-12 rounded-[12px] object-cover" /> : (app.icon || '📦')}
                                                         </div>
-                                                        <div className="flex items-center gap-1">
-                                                            {app.installed && <span className="text-[10px] px-1.5 py-0.5 rounded-full font-semibold bg-green-500/10 text-green-500">Installed</span>}
-                                                            <span className="text-[10px] px-1.5 py-0.5 rounded-full font-semibold bg-gray-100 dark:bg-white/10 text-gray-500">v{app.version}</span>
-                                                        </div>
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); if (app.installed) { launchApp(app.id); } else { installApp(app.id); } }}
+                                                            className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${app.installed ? 'bg-gray-100 dark:bg-white/10 text-accent hover:bg-accent hover:text-white' : 'bg-accent text-white hover:opacity-90'}`}
+                                                        >
+                                                            {app.installed ? 'OPEN' : 'GET'}
+                                                        </button>
                                                     </div>
-                                                    <h4 className="text-[17px] font-semibold mb-1">{app.name}</h4>
-                                                    <p className="text-[12px] text-gray-500 dark:text-gray-400 line-clamp-2 mb-2">{app.description}</p>
+                                                    <h4 className="text-[16px] font-semibold mb-1 group-hover:text-accent transition-colors">{app.name}</h4>
+                                                    <p className="text-[12px] text-gray-500 dark:text-gray-400 line-clamp-2 mb-3 leading-relaxed">{app.description}</p>
                                                     <div className="flex items-center justify-between">
-                                                        <span className="text-[11px] text-gray-400">by {app.author}</span>
-                                                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent/10 text-accent">{app.category}</span>
+                                                        <span className="text-[11px] text-gray-400">{app.author}</span>
+                                                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent/10 text-accent font-medium">{app.category}</span>
                                                     </div>
                                                 </div>
                                             ))}

@@ -8,13 +8,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { IoSearch, IoClose } from 'react-icons/io5';
 import { useExternalApps } from './ExternalAppsContext';
 import TintedAppIcon from './ui/TintedAppIcon';
+import { useSettings } from './SettingsContext';
 
 const AppLibrary = () => {
     const { addwindow, windows, setactivewindow, updatewindow } = useWindows();
     const { ismobile } = useDevice();
     const { files } = useFileSystem();
     const { launchApp } = useExternalApps();
+    const { islightbackground, inverselabelcolor } = useSettings();
     const [openfolder, setopenfolder] = useState<string | null>(null);
+    const [searchquery, setsearchquery] = useState('');
 
     const allApps = useMemo(() => {
         const installedAppFiles = files.filter(f => f.parent === 'root-apps' && f.name.endsWith('.app'));
@@ -67,61 +70,112 @@ const AppLibrary = () => {
             <div className="relative w-full text-center mb-6">
                 <div className="relative w-full mx-auto bg-neutral-200/30 dark:bg-neutral-800/30 backdrop-blur-xl rounded-xl h-10 flex items-center px-3">
                     <IoSearch className="text-neutral-800 dark:text-neutral-300" size={20} />
-                    <span className="ml-2 text-neutral-800 dark:text-neutral-300 text-lg">App Library</span>
+                    <input
+                        type="text"
+                        value={searchquery}
+                        onChange={(e) => setsearchquery(e.target.value)}
+                        placeholder="Search apps..."
+                        className="ml-2 flex-1 bg-transparent text-black dark:text-white text-lg outline-none dark:placeholder-neutral-100 placeholder-neutral-500"
+                    />
+                    {searchquery && (
+                        <button onClick={() => setsearchquery('')} className="p-1">
+                            <IoClose className="text-neutral-500" size={18} />
+                        </button>
+                    )}
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 3xs:grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-6 w-full mx-auto pb-10">
-                {allcategories.map((category) => {
-                    const categoryapps = getcategoryapps(category);
-                    if (categoryapps.length === 0) return null;
-
-                    const hasoverflow = categoryapps.length > 4;
-                    const displayapps = hasoverflow ? categoryapps.slice(0, 3) : categoryapps.slice(0, 4);
-                    const overflowcount = categoryapps.length - 3;
-
-                    return (
-                        <div key={category} className="flex flex-col gap-2 relative">
+            {searchquery.trim() ? (
+                <div className="space-y-2 pb-10 min-h-[50vh]" onClick={(e) => { if (e.target === e.currentTarget) setsearchquery(''); }}>
+                    {allApps
+                        .filter(app => app.appname.toLowerCase().includes(searchquery.toLowerCase()))
+                        .map(app => (
                             <div
-                                className={`bg-white/30 dark:bg-neutral-800/30 backdrop-blur-xl rounded-3xl p-4 w-auto aspect-square shrink-0 h-auto ${hasoverflow ? 'cursor-pointer active:scale-95 transition-transform' : ''}`}
-                                style={{ aspectRatio: '1/1' }}
-                                onClick={() => hasoverflow && setopenfolder(category)}
+                                key={app.id}
+                                onClick={() => openapp(app)}
+                                className="flex items-center gap-4 p-3 bg-white/30 dark:bg-neutral-800/30 backdrop-blur-xl rounded-2xl cursor-pointer active:scale-[0.98] transition-transform"
                             >
-                                <div className="grid grid-cols-2 grid-rows-2 gap-3 w-auto h-auto">
-                                    {displayapps.map((app) => (
-                                        <div
-                                            key={app.id}
-                                            onClick={(e) => {
-                                                if (!hasoverflow) {
-                                                    e.stopPropagation();
-                                                    openapp(app);
-                                                }
-                                            }}
-                                            className={`relative w-full h-full flex items-center justify-center ${!hasoverflow ? 'cursor-pointer active:scale-90' : ''} transition-transform`}
-                                        >
-                                            <TintedAppIcon
-                                                appId={app.id}
-                                                appName={app.appname}
-                                                originalIcon={app.icon}
-                                                size={64}
-                                                useFill={false}
-                                            />
-                                        </div>
-                                    ))}
-                                    {hasoverflow && (
-                                        <div className="relative w-full h-full flex items-center justify-center bg-white/20 dark:bg-white/10 rounded-full">
-                                            <span className="text-white font-bold text-lg drop-shadow-md">+{overflowcount}</span>
-                                        </div>
-                                    )}
+                                <div className="w-12 h-12 shrink-0">
+                                    <TintedAppIcon
+                                        appId={app.id}
+                                        appName={app.appname}
+                                        originalIcon={app.icon}
+                                        size={48}
+                                        useFill={false}
+                                    />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="dark:text-white text-neutral-800 font-semibold text-base truncate">{app.appname}</div>
+                                    <div className="text-neutral-600 dark:text-neutral-200 text-sm">{app.category || 'App'}</div>
                                 </div>
                             </div>
-                            <span className="text-center mt-1 text-neutral-200 text-[13px] font-semibold leading-none px-1 truncate">
-                                {category}
-                            </span>
+                        ))}
+                    {allApps.filter(app => app.appname.toLowerCase().includes(searchquery.toLowerCase())).length === 0 && (
+                        <div className="text-center text-neutral-400 py-10">
+                            <div className="text-2xl mb-2">🔍</div>
+                            <div>No apps found</div>
                         </div>
-                    );
-                })}
-            </div>
+                    )}
+                </div>
+            ) : (
+                <div className="grid grid-cols-2 3xs:grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-6 w-full mx-auto pb-10">
+                    {allcategories.map((category) => {
+                        const categoryapps = getcategoryapps(category);
+                        if (categoryapps.length === 0) return null;
+
+                        const hasoverflow = categoryapps.length > 4;
+                        const displayapps = hasoverflow ? categoryapps.slice(0, 3) : categoryapps.slice(0, 4);
+                        const overflowcount = categoryapps.length - 3;
+
+                        return (
+                            <div key={category} className="flex flex-col gap-2 relative">
+                                <div
+                                    className={`bg-white/30 dark:bg-neutral-800/30 backdrop-blur-xl rounded-3xl p-4 w-auto aspect-square shrink-0 h-auto ${hasoverflow ? 'cursor-pointer active:scale-95 transition-transform' : ''}`}
+                                    style={{ aspectRatio: '1/1' }}
+                                    onClick={() => hasoverflow && setopenfolder(category)}
+                                >
+                                    <div className="grid grid-cols-2 grid-rows-2 gap-3 w-auto h-auto">
+                                        {displayapps.map((app) => (
+                                            <div
+                                                key={app.id}
+                                                onClick={(e) => {
+                                                    if (!hasoverflow) {
+                                                        e.stopPropagation();
+                                                        openapp(app);
+                                                    }
+                                                }}
+                                                className={`relative w-full h-full flex items-center justify-center ${!hasoverflow ? 'cursor-pointer active:scale-90' : ''} transition-transform`}
+                                            >
+                                                <TintedAppIcon
+                                                    appId={app.id}
+                                                    appName={app.appname}
+                                                    originalIcon={app.icon}
+                                                    size={64}
+                                                    useFill={false}
+                                                />
+                                            </div>
+                                        ))}
+                                        {hasoverflow && (
+                                            <div className="relative w-full h-full flex items-center justify-center bg-white/20 dark:bg-white/10 rounded-full">
+                                                <span
+                                                    className={`font-bold text-lg ${inverselabelcolor && islightbackground ? 'text-black' : 'text-white'}`}
+                                                    style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
+                                                >+{overflowcount}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                <span
+                                    className={`text-center mt-1 text-[13px] font-semibold leading-none px-1 truncate ${inverselabelcolor && islightbackground ? 'text-neutral-700' : 'text-neutral-200'}`}
+                                    style={{ textShadow: '0 1px 3px rgba(0,0,0,0.4), 0 2px 6px rgba(0,0,0,0.2)' }}
+                                >
+                                    {category}
+                                </span>
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
 
             <AnimatePresence>
                 {openfolder && (

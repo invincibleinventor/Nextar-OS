@@ -1,13 +1,14 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { FaWifi, FaMoon, FaSun, FaBluetoothB, FaPlane } from 'react-icons/fa'
 import { BsFillVolumeUpFill, BsSunFill, BsFillGridFill } from 'react-icons/bs'
 import { FiBatteryCharging, FiCast } from 'react-icons/fi'
-import { IoPlay, IoFlashlight, IoCamera, IoCalculator, IoStopwatch } from 'react-icons/io5'
+import { IoPlay, IoPause, IoPlaySkipForward, IoPlaySkipBack, IoFlashlight, IoCamera, IoCalculator, IoStopwatch, IoExpand, IoContract } from 'react-icons/io5'
 import { BiSignal5 } from "react-icons/bi";
 import { FaTowerBroadcast } from 'react-icons/fa6'
 import { useSettings } from './SettingsContext'
 import { useTheme } from './ThemeContext'
 import { useAuth } from './AuthContext'
+import { useMusic } from './MusicContext'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 
@@ -16,9 +17,29 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
   const [volume, setvolume] = useState(100)
   const [focusmode, setfocusmode] = useState(false)
   const [flashlight, setflashlight] = useState(false)
+  const [isfullscreen, setisfullscreen] = useState(false)
   const { theme, toggletheme } = useTheme()
   const { reducemotion, reducetransparency } = useSettings()
   const { user, logout } = useAuth()
+  const { currenttrack, isplaying, toggle, next, prev } = useMusic()
+
+  useEffect(() => {
+    const handlefullscreenchange = () => {
+      setisfullscreen(!!document.fullscreenElement)
+    }
+    document.addEventListener('fullscreenchange', handlefullscreenchange)
+    return () => document.removeEventListener('fullscreenchange', handlefullscreenchange)
+  }, [])
+
+  const togglefullscreen = async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen()
+      } else {
+        await document.exitFullscreen()
+      }
+    } catch { }
+  }
 
   return (
     <AnimatePresence>
@@ -89,13 +110,15 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
 
                     <div className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-3xl p-3 flex flex-col justify-between aspect-square border border-neutral-300 dark:border-neutral-700">
                       <div className='flex items-center justify-center flex-1'>
-                        <div className='text-center'>
-                          <p className="text-neutral-800 dark:text-white text-sm font-medium">Not Playing</p>
-                          <p className="text-neutral-700 dark:text-neutral-400 text-[10px]">Music</p>
+                        <div className='text-center w-full px-2 overflow-hidden'>
+                          <p className="text-neutral-800 dark:text-white text-sm font-medium truncate">{isplaying ? currenttrack.title : 'Not Playing'}</p>
+                          <p className="text-neutral-700 dark:text-neutral-400 text-[10px] truncate">{isplaying ? currenttrack.artist : 'Music'}</p>
                         </div>
                       </div>
-                      <div className="flex justify-center items-center gap-6 text-neutral-800 dark:text-neutral-200 pb-1">
-                        <IoPlay className="opacity-50" size={24} />
+                      <div className="flex justify-center items-center gap-4 text-neutral-800 dark:text-neutral-200 pb-1">
+                        <button onClick={prev} className="opacity-60 active:opacity-100"><IoPlaySkipBack size={18} /></button>
+                        <button onClick={toggle} className="opacity-80 active:opacity-100">{isplaying ? <IoPause size={24} /> : <IoPlay size={24} />}</button>
+                        <button onClick={next} className="opacity-60 active:opacity-100"><IoPlaySkipForward size={18} /></button>
                       </div>
                     </div>
                   </div>
@@ -114,10 +137,13 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
                         </div>
                       </div>
                     </div>
-                    <div className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-3xl p-3 h-full flex items-center justify-center border border-neutral-300 dark:border-neutral-700">
+                    <div
+                      onClick={togglefullscreen}
+                      className={`dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-3xl p-3 h-full flex items-center justify-center border border-neutral-300 dark:border-neutral-700 cursor-pointer active:scale-95 transition-all ${isfullscreen ? 'ring-2 ring-green-500' : ''}`}
+                    >
                       <div className='flex flex-col items-center gap-1 text-neutral-800 dark:text-white'>
-                        <BsFillGridFill size={20} />
-                        <span className='text-[10px]'>Full Screen</span>
+                        {isfullscreen ? <IoContract size={20} /> : <IoExpand size={20} />}
+                        <span className='text-[10px]'>{isfullscreen ? 'Exit' : 'Full Screen'}</span>
                       </div>
                     </div>
                   </div>
@@ -193,13 +219,12 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
                           <p className="text-[12px] text-black/60 dark:text-white/60 truncate">Off</p>
                         </div>
                       </div>
-                      <div className="p-3 bg-white/40 dark:bg-neutral-800/40 backdrop-blur-xl border border-white/20 dark:border-white/5 rounded-full flex space-x-2 items-center shadow-sm">
-                        <div className='p-[10px] rounded-full bg-white/50 dark:bg-white/10'>
-                          <FaTowerBroadcast className="text-black dark:text-white" size={16} />
+                      <div onClick={togglefullscreen} className={`p-3 bg-white/40 dark:bg-neutral-800/40 backdrop-blur-xl border border-white/20 dark:border-white/5 rounded-full flex space-x-2 items-center shadow-sm cursor-pointer active:scale-95 transition-all ${isfullscreen ? 'ring-2 ring-green-500' : ''}`}>
+                        <div className={`p-[10px] rounded-full ${isfullscreen ? 'bg-green-500' : 'bg-white/50 dark:bg-white/10'}`}>
+                          {isfullscreen ? <IoContract className="text-white" size={16} /> : <IoExpand className="text-black dark:text-white" size={16} />}
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-black dark:text-white">AirDrop</p>
-                          <p className="text-[12px] text-black/60 dark:text-white/60 truncate">Off</p>
+                          <p className="text-sm font-semibold text-black dark:text-white">Full Screen</p>
                         </div>
                       </div>
                     </div>
@@ -207,13 +232,15 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
                       <div className="flex flex-col justify-between bg-white/40 dark:bg-neutral-800/40 backdrop-blur-xl border border-white/20 dark:border-white/5 rounded-3xl p-3 px-0 shadow-sm h-full">
                         <div className="flex flex-col px-4">
                           <div className="w-10 h-10 mr-auto bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-xl shadow-lg ring-1 ring-white/10 mb-2"></div>
-                          <div>
-                            <p className="text-sm font-semibold text-black dark:text-white">Not Playing</p>
-                            <p className="text-[11px] text-black/60 dark:text-white/60">Music</p>
+                          <div className="overflow-hidden">
+                            <p className="text-sm font-semibold text-black dark:text-white truncate">{isplaying ? currenttrack.title : 'Not Playing'}</p>
+                            <p className="text-[11px] text-black/60 dark:text-white/60 truncate">{isplaying ? currenttrack.artist : 'Music'}</p>
                           </div>
                         </div>
-                        <div className="flex px-4 items-center space-x-4 justify-end mt-1">
-                          <IoPlay size={24} className="text-black dark:text-white opacity-80" />
+                        <div className="flex px-4 items-center space-x-3 justify-end mt-1">
+                          <button onClick={prev} className="text-black dark:text-white opacity-60 hover:opacity-100"><IoPlaySkipBack size={18} /></button>
+                          <button onClick={toggle} className="text-black dark:text-white opacity-80 hover:opacity-100">{isplaying ? <IoPause size={24} /> : <IoPlay size={24} />}</button>
+                          <button onClick={next} className="text-black dark:text-white opacity-60 hover:opacity-100"><IoPlaySkipForward size={18} /></button>
                         </div>
                       </div>
                       <div onClick={() => toggletheme()} className="p-3 bg-white/40 dark:bg-neutral-800/40 backdrop-blur-xl border border-white/20 dark:border-white/5 rounded-full flex space-x-2 items-center cursor-pointer shadow-sm h-min self-end">

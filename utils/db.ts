@@ -136,6 +136,74 @@ export const deleteFile = (id: string): Promise<void> => {
     });
 };
 
+export const saveAllFiles = (files: filesystemitem[]): Promise<void> => {
+    return openDB().then(db => {
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction([STORE_NAME], 'readwrite');
+            const store = transaction.objectStore(STORE_NAME);
+
+            let completed = 0;
+            let hasError = false;
+
+            if (files.length === 0) {
+                resolve();
+                return;
+            }
+
+            files.forEach(file => {
+                const fileToStore = {
+                    ...file,
+                    icon: typeof file.icon === 'string' ? file.icon : undefined
+                };
+
+                const putRequest = store.put(fileToStore);
+                putRequest.onsuccess = () => {
+                    completed++;
+                    if (completed === files.length && !hasError) {
+                        resolve();
+                    }
+                };
+                putRequest.onerror = () => {
+                    if (!hasError) {
+                        hasError = true;
+                        reject("Error saving files");
+                    }
+                };
+            });
+        });
+    });
+};
+
+export const clearAllFiles = (): Promise<void> => {
+    return openDB().then(db => {
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction([STORE_NAME], 'readwrite');
+            const store = transaction.objectStore(STORE_NAME);
+            const clearRequest = store.clear();
+
+            clearRequest.onsuccess = () => resolve();
+            clearRequest.onerror = () => reject("Error clearing files");
+        });
+    });
+};
+
+export const isFilesystemInstalled = (): Promise<boolean> => {
+    return openDB().then(db => {
+        return new Promise((resolve) => {
+            const transaction = db.transaction([STORE_NAME], 'readonly');
+            const store = transaction.objectStore(STORE_NAME);
+            const countRequest = store.count();
+
+            countRequest.onsuccess = () => {
+                resolve(countRequest.result > 0);
+            };
+            countRequest.onerror = () => {
+                resolve(false);
+            };
+        });
+    });
+};
+
 
 export const createUser = (user: User): Promise<void> => {
     if (!user.username || user.username.length < 3) {

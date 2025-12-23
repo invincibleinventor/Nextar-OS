@@ -5,37 +5,47 @@ interface SelectionAreaProps {
     onSelectionEnd?: (rect: DOMRect | null) => void;
     containerRef: React.RefObject<HTMLElement>;
     enabled?: boolean;
+    zIndex?: number;
 }
 
-export const SelectionArea: React.FC<SelectionAreaProps> = ({ onSelectionChange, onSelectionEnd, containerRef, enabled = true }) => {
+export const SelectionArea: React.FC<SelectionAreaProps> = ({ onSelectionChange, onSelectionEnd, containerRef, enabled = true, zIndex = 50 }) => {
     const [startPoint, setStartPoint] = useState<{ x: number, y: number } | null>(null);
     const [currentPoint, setCurrentPoint] = useState<{ x: number, y: number } | null>(null);
     const isSelectingRef = useRef(false);
     const startPointRef = useRef<{ x: number, y: number } | null>(null);
+    const containerRectRef = useRef<DOMRect | null>(null);
 
     const handleMouseDown = useCallback((e: MouseEvent) => {
         if (!enabled || !containerRef.current) return;
+        if (e.button !== 0) return;
 
         const target = e.target as HTMLElement;
-        if (
-            target.closest('button') ||
-            target.closest('.clickable-item') ||
-            target.closest('.explorer-item') ||
-            target.closest('.desktop-item') ||
-            target.closest('[data-no-selection]') ||
-            target.closest('.toolbar') ||
-            target.closest('.sidebar') ||
-            target.closest('.window') ||
-            target.closest('.draggable-area') ||
-            target.closest('[data-window-id]')
-        ) return;
-
         const container = containerRef.current;
+
         if (!container.contains(target)) return;
 
+        const targetWindow = target.closest('.window');
+        const containerWindow = container.closest('.window');
+
+        if (targetWindow && targetWindow !== containerWindow) {
+            return;
+        }
+
+        if (targetWindow && !containerWindow) {
+            return;
+        }
+
+        if (target !== container && target.closest('[data-no-selection], button, .toolbar, .sidebar, .draggable-area, .window-button, .window-controls, input, textarea, select, a, [contenteditable]')) {
+            return;
+        }
+
+        e.preventDefault();
+
         const containerRect = container.getBoundingClientRect();
-        const relX = e.clientX - containerRect.left + container.scrollLeft;
-        const relY = e.clientY - containerRect.top + container.scrollTop;
+        containerRectRef.current = containerRect;
+
+        const relX = e.clientX - containerRect.left;
+        const relY = e.clientY - containerRect.top;
 
         startPointRef.current = { x: relX, y: relY };
         setStartPoint({ x: relX, y: relY });
@@ -48,33 +58,49 @@ export const SelectionArea: React.FC<SelectionAreaProps> = ({ onSelectionChange,
 
         const container = containerRef.current;
         const containerRect = container.getBoundingClientRect();
-        const relX = e.clientX - containerRect.left + container.scrollLeft;
-        const relY = e.clientY - containerRect.top + container.scrollTop;
+
+        const relX = Math.max(0, Math.min(containerRect.width, e.clientX - containerRect.left));
+        const relY = Math.max(0, Math.min(containerRect.height, e.clientY - containerRect.top));
 
         setCurrentPoint({ x: relX, y: relY });
 
-        const rect = calculateRect(startPointRef.current, { x: relX, y: relY });
-        onSelectionChange?.(rect);
+        const localRect = calculateRect(startPointRef.current, { x: relX, y: relY });
+
+        const screenRect = new DOMRect(
+            containerRect.left + localRect.x,
+            containerRect.top + localRect.y,
+            localRect.width,
+            localRect.height
+        );
+
+        onSelectionChange?.(screenRect);
     }, [containerRef, onSelectionChange]);
 
-    const handleMouseUp = useCallback((e: MouseEvent) => {
-        if (!isSelectingRef.current || !containerRef.current || !startPointRef.current) return;
+    const handleMouseUp = useCallback(() => {
+        if (!isSelectingRef.current || !startPointRef.current) return;
 
         isSelectingRef.current = false;
 
-        const container = containerRef.current;
-        const containerRect = container.getBoundingClientRect();
-        const relX = e.clientX - containerRect.left + container.scrollLeft;
-        const relY = e.clientY - containerRect.top + container.scrollTop;
+        if (startPointRef.current && currentPoint && containerRectRef.current) {
+            const localRect = calculateRect(startPointRef.current, currentPoint);
+            const containerRect = containerRectRef.current;
 
-        const rect = calculateRect(startPointRef.current, { x: relX, y: relY });
-        onSelectionEnd?.(rect);
+            const screenRect = new DOMRect(
+                containerRect.left + localRect.x,
+                containerRect.top + localRect.y,
+                localRect.width,
+                localRect.height
+            );
+
+            onSelectionEnd?.(screenRect);
+        }
 
         startPointRef.current = null;
+        containerRectRef.current = null;
         setStartPoint(null);
         setCurrentPoint(null);
         onSelectionChange?.(null);
-    }, [containerRef, onSelectionChange, onSelectionEnd]);
+    }, [onSelectionChange, onSelectionEnd, currentPoint]);
 
     useEffect(() => {
         if (!enabled) return;
@@ -98,12 +124,13 @@ export const SelectionArea: React.FC<SelectionAreaProps> = ({ onSelectionChange,
 
     return (
         <div
-            className="absolute z-[50] bg-blue-500/20 border border-blue-500/50 pointer-events-none"
+            className="absolute bg-blue-500/20 border border-blue-500/50 pointer-events-none"
             style={{
                 top: rect.y,
                 left: rect.x,
                 width: rect.width,
                 height: rect.height,
+                zIndex: zIndex,
             }}
         />
     );

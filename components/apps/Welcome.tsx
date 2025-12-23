@@ -4,10 +4,10 @@ import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWindows } from '../WindowContext';
 import { useDevice } from '../DeviceContext';
-import { personal, openSystemItem } from '../data';
-import { IoArrowForward, IoCheckmarkCircle, IoSparkles, IoAppsOutline, IoDesktopOutline, IoPhonePortraitOutline, IoLogoGithub, IoFolderOpenOutline, IoTerminalOutline, IoDocumentTextOutline, IoLogoLinkedin, IoPersonAdd, IoMail } from "react-icons/io5";
+import { personal, openSystemItem, generateFullFilesystemForUser, generateUserFilesystem } from '../data';
+import { IoArrowForward, IoCheckmarkCircle, IoSparkles, IoAppsOutline, IoDesktopOutline, IoPhonePortraitOutline, IoLogoGithub, IoFolderOpenOutline, IoTerminalOutline, IoDocumentTextOutline, IoLogoLinkedin, IoPersonAdd, IoMail, IoCloudDownloadOutline } from "react-icons/io5";
 import { useAuth } from '../AuthContext';
-import { createUser, getUsers, User } from '../../utils/db';
+import { createUser, getUsers, User, saveAllFiles, isFilesystemInstalled, resetDB, initDB } from '../../utils/db';
 import { hashPassword } from '../../utils/crypto';
 
 export default function Welcome(props: any) {
@@ -39,7 +39,7 @@ export default function Welcome(props: any) {
         }
     }, [user, props.windowId, removewindow]);
 
-    const [view, setView] = useState<'welcome' | 'create-account'>('welcome');
+    const [view, setView] = useState<'welcome' | 'create-account' | 'restore-snapshot'>('welcome');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -89,7 +89,7 @@ export default function Welcome(props: any) {
                 return;
             }
             const role = users.length === 0 ? 'admin' : 'user';
-
+            const isFirstUser = users.length === 0;
 
             const hashedPassword = await hashPassword(password);
 
@@ -103,6 +103,18 @@ export default function Welcome(props: any) {
             };
 
             await createUser(newUser);
+
+            if (isFirstUser) {
+                const fsInstalled = await isFilesystemInstalled();
+                if (!fsInstalled) {
+                    const fullFs = generateFullFilesystemForUser(username);
+                    await saveAllFiles(fullFs);
+                }
+            } else {
+                const userFs = generateUserFilesystem(username);
+                await saveAllFiles(userFs);
+            }
+
             await login(password);
 
             alert(`Account created! You are now logged in as ${name} (${role}).`);
@@ -195,6 +207,81 @@ export default function Welcome(props: any) {
                                 </div>
                             </form>
                         </div>
+                    ) : view === 'restore-snapshot' ? (
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2 mb-6">
+                                <button
+                                    onClick={() => setView('welcome')}
+                                    className="p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                                >
+                                    <IoArrowForward className="rotate-180 text-xl text-gray-500" />
+                                </button>
+                                <div className="text-xl font-bold tracking-tight">Restore Snapshot</div>
+                            </div>
+
+                            <div className="text-center space-y-4">
+                                <div className="w-16 h-16 mx-auto bg-green-500/10 rounded-full flex items-center justify-center">
+                                    <IoCloudDownloadOutline size={32} className="text-green-500" />
+                                </div>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    Restore your system from a previously exported snapshot file.
+                                </p>
+
+                                <input
+                                    type="file"
+                                    accept=".json"
+                                    id="snapshot-file"
+                                    className="hidden"
+                                    onChange={async (e) => {
+                                        const file = e.target.files?.[0];
+                                        if (!file) return;
+
+                                        try {
+                                            const text = await file.text();
+                                            const data = JSON.parse(text);
+
+                                            if (!data.files || !Array.isArray(data.files)) {
+                                                alert('Invalid snapshot file');
+                                                return;
+                                            }
+
+                                            if (confirm(`Restore snapshot from ${new Date(data.timestamp).toLocaleString()}?\n\nFiles: ${data.files.length}\nUsers: ${data.users?.length || 0}`)) {
+                                                await resetDB();
+                                                await new Promise(r => setTimeout(r, 100));
+                                                await initDB();
+
+                                                if (data.files.length > 0) {
+                                                    await saveAllFiles(data.files);
+                                                }
+
+                                                if (data.users?.length > 0) {
+                                                    for (const u of data.users) {
+                                                        try { await createUser(u); } catch { }
+                                                    }
+                                                }
+
+                                                if (data.settings) {
+                                                    Object.entries(data.settings).forEach(([key, value]) => {
+                                                        if (value !== null) localStorage.setItem(key, value as string);
+                                                    });
+                                                }
+
+                                                alert('Snapshot restored! Reloading...');
+                                                window.location.reload();
+                                            }
+                                        } catch (err) {
+                                            alert('Error reading snapshot: ' + err);
+                                        }
+                                    }}
+                                />
+                                <label
+                                    htmlFor="snapshot-file"
+                                    className="inline-block w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold text-[15px] shadow-sm transition-all cursor-pointer active:scale-[0.98]"
+                                >
+                                    Select Snapshot File
+                                </label>
+                            </div>
+                        </div>
                     ) : (
                         <div className="text-center space-y-6">
                             <div className="relative w-20 h-20 mx-auto">
@@ -217,22 +304,42 @@ export default function Welcome(props: any) {
                             {user?.username === 'guest' ? (
                                 <div className="space-y-3">
                                     {!hasUsers ? (
-                                        <div className="p-4 bg-blue-50 dark:bg-blue-500/10 rounded-xl border border-blue-100 dark:border-blue-500/20">
-                                            <div className="flex items-center gap-3 mb-3">
-                                                <div className="p-2 bg-blue-500 text-white rounded-lg">
-                                                    <IoPersonAdd size={18} />
+                                        <div className="space-y-3">
+                                            <div className="p-4 bg-blue-50 dark:bg-blue-500/10 rounded-xl border border-blue-100 dark:border-blue-500/20">
+                                                <div className="flex items-center gap-3 mb-3">
+                                                    <div className="p-2 bg-blue-500 text-white rounded-lg">
+                                                        <IoPersonAdd size={18} />
+                                                    </div>
+                                                    <div className="text-left">
+                                                        <div className="font-semibold text-sm">Create Admin Account</div>
+                                                        <div className="text-xs text-gray-500 dark:text-gray-400">First time setup</div>
+                                                    </div>
                                                 </div>
-                                                <div className="text-left">
-                                                    <div className="font-semibold text-sm">Create Admin Account</div>
-                                                    <div className="text-xs text-gray-500 dark:text-gray-400">First time setup</div>
-                                                </div>
+                                                <button
+                                                    onClick={() => setView('create-account')}
+                                                    className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
+                                                >
+                                                    Set up System
+                                                </button>
                                             </div>
-                                            <button
-                                                onClick={() => setView('create-account')}
-                                                className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
-                                            >
-                                                Set up System
-                                            </button>
+
+                                            <div className="p-4 bg-green-50 dark:bg-green-500/10 rounded-xl border border-green-100 dark:border-green-500/20">
+                                                <div className="flex items-center gap-3 mb-3">
+                                                    <div className="p-2 bg-green-500 text-white rounded-lg">
+                                                        <IoCloudDownloadOutline size={18} />
+                                                    </div>
+                                                    <div className="text-left">
+                                                        <div className="font-semibold text-sm">Restore from Snapshot</div>
+                                                        <div className="text-xs text-gray-500 dark:text-gray-400">Import previous setup</div>
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    onClick={() => setView('restore-snapshot')}
+                                                    className="w-full py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors"
+                                                >
+                                                    Restore Snapshot
+                                                </button>
+                                            </div>
                                         </div>
                                     ) : (
                                         <div className="p-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-black/5 dark:border-white/5">

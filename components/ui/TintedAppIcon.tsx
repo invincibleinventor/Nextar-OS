@@ -105,7 +105,7 @@ export default function TintedAppIcon({ appId, appName, originalIcon, size = 40,
         return (
             <div className={`absolute inset-0 rounded-full overflow-hidden ${className}`}>
                 <div
-                    className="absolute dark:darkiconbg lighticonbg inset-0 rounded-full"
+                    className="absolute dark:brightness-50 filter dark:darkiconbg lighticonbg inset-0 rounded-full"
                 />
                 <div className="absolute inset-0 flex items-center justify-center">
                     <Icon className="text-white drop-shadow-lg w-[50%] h-[50%]" />
@@ -115,15 +115,20 @@ export default function TintedAppIcon({ appId, appName, originalIcon, size = 40,
     }
 
     return (
+        <div style={{
+                width: size,
+                height: size, }} className='relative flex items-center justify-center  overflow=hidden'>
         <div
-            className={`rounded-full dark:darkiconbg lighticonbg  overflow-hidden flex items-center justify-center ${className}`}
+            className={`rounded-full  absolute dark:brightness-50  filter dark:darkiconbg lighticonbg  ${className}`}
             style={{
                 width: size,
                 height: size,
                 background: ''
             }}
         >
+        </div>
             <Icon className="text-white drop-shadow-lg w-[50%] h-[50%]" />
+
         </div>
     );
 }

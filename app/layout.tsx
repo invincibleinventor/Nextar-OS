@@ -102,6 +102,7 @@ export const viewport: Viewport = {
 import { NotificationProvider } from '@/components/NotificationContext';
 import { AuthProvider } from '@/components/AuthContext';
 import { ExternalAppsProvider } from '@/components/ExternalAppsContext';
+import { MusicProvider } from '@/components/MusicContext';
 import PermissionDialog from '@/components/PermissionDialog';
 import Script from 'next/script';
 
@@ -138,8 +139,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                             <AppPreferencesProvider>
                               <AppMenuProvider>
                                 <ExternalAppsProvider>
-                                  {children}
-                                  <PermissionDialog />
+                                  <MusicProvider>
+                                    {children}
+                                    <PermissionDialog />
+                                  </MusicProvider>
                                 </ExternalAppsProvider>
                               </AppMenuProvider>
                             </AppPreferencesProvider>

@@ -21,7 +21,7 @@ import TintedAppIcon from './ui/TintedAppIcon';
 
 export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayopen?: boolean }) {
     const { addwindow, windows, setactivewindow, updatewindow } = useWindows();
-    const { reducemotion } = useSettings();
+    const { reducemotion, islightbackground, inverselabelcolor } = useSettings();
     const { ismobile } = useDevice();
     const { files, moveToTrash, createFolder, createFile, currentUserDesktopId } = useFileSystem();
     const [page, setpage] = useState(0);
@@ -325,15 +325,12 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                                     }}
                                     onClick={() => !editmode && handleItemClick(item)}
                                     onTouchStart={(e) => {
-                                        e.stopPropagation();
                                         if (!editmode) handlelongpressstart(item, e);
                                     }}
-                                    onTouchEnd={(e) => {
-                                        e.stopPropagation();
+                                    onTouchEnd={() => {
                                         handlelongpressend();
                                     }}
-                                    onTouchCancel={(e) => {
-                                        e.stopPropagation();
+                                    onTouchCancel={() => {
                                         handlelongpressend();
                                     }}
                                     onContextMenu={(e) => {
@@ -385,7 +382,10 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                                             )}
                                         </div>
                                     </div>
-                                    <span className="text-[11px] font-medium text-white/90 text-center leading-tight drop-shadow-md truncate w-full tracking-tight">
+                                    <span
+                                        className={`text-[11px] font-medium text-center leading-tight truncate w-full tracking-tight ${inverselabelcolor && islightbackground ? 'text-black/90' : 'text-white/90'}`}
+                                        style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
+                                    >
                                         {item.name}
                                     </span>
                                 </motion.div>

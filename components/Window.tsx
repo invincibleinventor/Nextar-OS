@@ -185,7 +185,7 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
 
     let animationFrameId: number;
     let lastUpdate = 0;
-    const throttleMs = 60;
+    const throttleMs = 16;
 
     const trackLayout = (timestamp: number) => {
       if (timestamp - lastUpdate < throttleMs) {
@@ -452,7 +452,7 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
       {!ismobile && (
         <div id="buttons" className="absolute top-[18px] left-4 z-50 flex flex-row items-center content-center space-x-[8px] group">
           <button
-            className={`w-[12px] h-[12px] rounded-full ${activewindow == id ? 'bg-[#FF5F56] border-[#E0443E] border' : 'bg-neutral-400/50 border-neutral-500/50 border'} window-button flex items-center justify-center`}
+            className={`w-[12px] h-[12px] rounded-full ${activewindow == id ? 'bg-accent shadow-lg' : 'bg-neutral-400/50 border-neutral-500/50 border'} window-button flex items-center justify-center`}
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -463,7 +463,7 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
           </button>
 
           <button
-            className={`w-[12px] h-[12px] rounded-full ${activewindow == id ? 'bg-[#FFBD2E] border-[#DEA123] border' : 'bg-neutral-400/50 border-neutral-500/50 border'} window-button flex items-center justify-center`}
+            className={`w-[12px] h-[12px] rounded-full ${activewindow == id ? 'bg-accent shadow-lg' : 'bg-neutral-400/50 border-neutral-500/50 border'} window-button flex items-center justify-center`}
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -473,7 +473,7 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
             <span className="opacity-0 group-hover:opacity-100 text-[8px] font-bold text-black/50">−</span>
           </button>
           <button
-            className={`w-[12px] h-[12px] rounded-full ${activewindow == id ? 'bg-[#27C93F] border-[#1AAB29] border' : 'bg-neutral-400/50 border-neutral-500/50 border'} window-button flex items-center justify-center`}
+            className={`w-[12px] h-[12px] rounded-full ${activewindow == id ? 'bg-accent shadow-lg' : 'bg-neutral-400/50 border-neutral-500/50 border'} window-button flex items-center justify-center`}
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();

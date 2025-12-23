@@ -33,7 +33,7 @@ import { useMenuRegistration } from '@/components/AppMenuContext';
 const Desktop = () => {
   const { windows, addwindow, setwindows, updatewindow, setactivewindow, activewindow } = useWindows();
   const { osstate, ismobile } = useDevice();
-  const { wallpaperurl } = useSettings();
+  const { wallpaperurl, islightbackground, inverselabelcolor } = useSettings();
   const [showcontrolcenter, setshowcontrolcenter] = useState(false);
   const [shownotificationcenter, setshownotificationcenter] = useState(false);
   const [showrecentapps, setshowrecentapps] = useState(false);
@@ -398,6 +398,7 @@ const Desktop = () => {
               <div data-tour="desktop" className='p-4 pt-10 gap-4 flex flex-col flex-wrap-reverse content-start h-full w-full' ref={containerRef}>
                 <SelectionArea
                   containerRef={containerRef as React.RefObject<HTMLElement>}
+                  zIndex={10}
                   onSelectionChange={(rect) => {
                     if (rect) {
                       const newSelectedIds: string[] = [];
@@ -476,7 +477,10 @@ const Desktop = () => {
                           {getFileIcon(item.mimetype, item.name, item.icon, item.id)}
                         </div>
                       </div>
-                      <span className={`text-[11px] w-full font-semibold text-white drop-shadow-md text-center break-words leading-tight line-clamp-2 px-1 rounded-sm ${isSelected ? 'bg-accent' : ''} group-hover:text-white`}>{item.name}</span>
+                      <span
+                        className={`text-[11px] w-full font-semibold text-center break-words leading-tight line-clamp-2 px-1 rounded-sm ${isSelected ? 'bg-accent' : ''} ${inverselabelcolor && islightbackground ? 'text-black' : 'text-white'}`}
+                        style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
+                      >{item.name}</span>
                     </div>
                   )
                 })}

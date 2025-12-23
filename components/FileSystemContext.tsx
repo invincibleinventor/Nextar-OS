@@ -1,9 +1,9 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { filesystemitem, generateGuestFilesystem, generateUserFilesystem, generateSystemFilesystem, getMimeTypeFromExtension } from './data';
+import { filesystemitem, generateGuestFilesystem, generateUserFilesystem, generateUserFolders, generateSystemFilesystem, getMimeTypeFromExtension } from './data';
 import { useNotifications } from './NotificationContext';
-import { initDB, getAllFiles, saveFile, deleteFile, getUsers } from '../utils/db';
+import { initDB, getAllFiles, saveFile, deleteFile, getUsers, isFilesystemInstalled } from '../utils/db';
 import { useAuth } from './AuthContext';
 import { playSound } from './SoundEffects';
 
@@ -63,29 +63,46 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
             try {
                 await initDB();
-                const systemFiles = generateSystemFilesystem();
-                const dbFiles = await getAllFiles();
+                const fsInstalled = await isFilesystemInstalled();
 
-                let visibleFiles: filesystemitem[] = [...systemFiles];
+                if (fsInstalled) {
+                    const dbFiles = await getAllFiles();
 
-                if (isAdmin) {
-                    const allUsers = await getUsers();
-                    for (const u of allUsers) {
-                        const userBaseFs = generateUserFilesystem(u.username);
-                        const userDbFiles = dbFiles.filter(f => f.owner === u.username);
+                    if (isAdmin) {
+                        setFiles(dbFiles);
+                    } else {
+                        const visibleFiles = dbFiles.filter(f =>
+                            f.owner === username ||
+                            f.owner === 'system' ||
+                            !f.owner
+                        );
+                        setFiles(visibleFiles);
+                    }
+                } else {
+                    const systemFiles = generateSystemFilesystem();
+                    const dbFiles = await getAllFiles();
+
+                    let visibleFiles: filesystemitem[] = [...systemFiles];
+
+                    if (isAdmin) {
+                        const allUsers = await getUsers();
+                        for (const u of allUsers) {
+                            const userBaseFs = generateUserFilesystem(u.username);
+                            const userDbFiles = dbFiles.filter(f => f.owner === u.username);
+                            const uniqueUserDb = userDbFiles.filter(dbf => !userBaseFs.some(sf => sf.id === dbf.id));
+                            visibleFiles = [...visibleFiles, ...userBaseFs, ...uniqueUserDb];
+                        }
+                        const guestFs = generateGuestFilesystem().filter(f => f.owner === 'guest');
+                        visibleFiles = [...visibleFiles, ...guestFs];
+                    } else {
+                        const userBaseFs = generateUserFilesystem(username);
+                        const userDbFiles = dbFiles.filter(f => f.owner === username);
                         const uniqueUserDb = userDbFiles.filter(dbf => !userBaseFs.some(sf => sf.id === dbf.id));
                         visibleFiles = [...visibleFiles, ...userBaseFs, ...uniqueUserDb];
                     }
-                    const guestFs = generateGuestFilesystem().filter(f => f.owner === 'guest');
-                    visibleFiles = [...visibleFiles, ...guestFs];
-                } else {
-                    const userBaseFs = generateUserFilesystem(username);
-                    const userDbFiles = dbFiles.filter(f => f.owner === username);
-                    const uniqueUserDb = userDbFiles.filter(dbf => !userBaseFs.some(sf => sf.id === dbf.id));
-                    visibleFiles = [...visibleFiles, ...userBaseFs, ...uniqueUserDb];
-                }
 
-                setFiles(visibleFiles);
+                    setFiles(visibleFiles);
+                }
             } catch {
                 setFiles(generateGuestFilesystem());
             } finally {
@@ -502,18 +519,18 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             if (isAdmin) {
                 const allUsers = await getUsers();
                 for (const u of allUsers) {
-                    const userBaseFs = generateUserFilesystem(u.username);
+                    const userFolders = generateUserFolders(u.username);
                     const userDbFiles = dbFiles.filter((f: filesystemitem) => f.owner === u.username);
-                    const uniqueUserDb = userDbFiles.filter((dbf: filesystemitem) => !userBaseFs.some((sf: filesystemitem) => sf.id === dbf.id));
-                    visibleFiles = [...visibleFiles, ...userBaseFs, ...uniqueUserDb];
+                    const uniqueUserDb = userDbFiles.filter((dbf: filesystemitem) => !userFolders.some((sf: filesystemitem) => sf.id === dbf.id));
+                    visibleFiles = [...visibleFiles, ...userFolders, ...uniqueUserDb];
                 }
                 const guestFs = generateGuestFilesystem().filter((f: filesystemitem) => f.owner === 'guest');
                 visibleFiles = [...visibleFiles, ...guestFs];
             } else if (!isGuest) {
-                const userBaseFs = generateUserFilesystem(username);
+                const userFolders = generateUserFolders(username);
                 const userDbFiles = dbFiles.filter((f: filesystemitem) => f.owner === username);
-                const uniqueUserDb = userDbFiles.filter((dbf: filesystemitem) => !userBaseFs.some((sf: filesystemitem) => sf.id === dbf.id));
-                visibleFiles = [...visibleFiles, ...userBaseFs, ...uniqueUserDb];
+                const uniqueUserDb = userDbFiles.filter((dbf: filesystemitem) => !userFolders.some((sf: filesystemitem) => sf.id === dbf.id));
+                visibleFiles = [...visibleFiles, ...userFolders, ...uniqueUserDb];
             } else {
                 visibleFiles = generateGuestFilesystem();
             }

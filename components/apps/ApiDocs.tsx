@@ -152,7 +152,7 @@ export default function ApiDocs() {
     };
 
     const sidebarContent = (
-        <div className={`${ismobile ? 'w-full' : 'w-72'} border-r border-black/5 dark:border-white/5 bg-white dark:bg-[#2c2c2e] overflow-y-auto shrink-0 flex flex-col`}>
+        <div className={`${ismobile ? 'w-full' : 'w-72'} border-r border-black/5 dark:border-white/5 bg-white/80 dark:bg-[#2c2c2e]/80 backdrop-blur-xl overflow-y-auto shrink-0 flex flex-col`}>
             <div className="p-3">
                 <div className="relative mb-4">
                     <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
@@ -238,7 +238,7 @@ export default function ApiDocs() {
                                 This example works in the Code Editor. Save as <code className="bg-black/5 dark:bg-white/10 px-1 rounded">.js</code> and click Run:
                             </p>
                             <div className="relative">
-                                <pre className="bg-black/5 dark:bg-black/30 rounded-xl p-4 text-sm overflow-x-auto select-text">{`function greet(name) {
+                                <pre className="bg-black/5 dark:bg-black/30 dark:text-gray-200 rounded-xl p-4 text-sm overflow-x-auto select-text">{`function greet(name) {
   console.log('Hello, ' + name + '!');
   console.log('Welcome to NextarOS');
   return 'Greeting sent';
@@ -265,7 +265,7 @@ console.log('2 + 2 = ' + result);`}</pre>
                             <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
                                 For external apps, create an apps.json in your GitHub repo:
                             </p>
-                            <pre className="bg-black/5 dark:bg-black/30 rounded-xl p-4 text-sm overflow-x-auto select-text">{`{
+                            <pre className="bg-black/5 dark:bg-black/30 dark:text-gray-200 rounded-xl p-4 text-sm overflow-x-auto select-text">{`{
   "apps": [{
     "id": "my-app",
     "name": "My App",
@@ -298,7 +298,7 @@ console.log('2 + 2 = ' + result);`}</pre>
                             <span className="text-xs font-semibold uppercase text-gray-400">Usage Example</span>
                         </div>
                         <div className="relative">
-                            <pre className="bg-black/5 dark:bg-black/30 rounded-xl p-4 text-sm overflow-x-auto select-text whitespace-pre-wrap">{selectedapi.usage}</pre>
+                            <pre className="bg-black/5 dark:bg-black/30 dark:text-gray-200 rounded-xl p-4 text-sm overflow-x-auto select-text whitespace-pre-wrap">{selectedapi.usage}</pre>
                             <button
                                 onClick={() => copytoClipboard(selectedapi.usage)}
                                 className="absolute top-2 right-2 p-2 rounded-lg bg-white/10 hover:bg-white/20"

@@ -1028,6 +1028,80 @@ export const generateGuestFilesystem = (): filesystemitem[] => {
     return fs;
 };
 
+export const generateUserFolders = (username: string): filesystemitem[] => {
+    const fs: filesystemitem[] = [];
+    const uid = `user-${username}`;
+
+    fs.push({
+        id: uid,
+        name: username.charAt(0).toUpperCase() + username.slice(1),
+        parent: 'root-users',
+        mimetype: 'inode/directory',
+        date: 'Today',
+        size: '--',
+        isSystem: true,
+        owner: username
+    });
+
+    fs.push({
+        id: `${uid}-desktop`,
+        name: 'Desktop',
+        parent: uid,
+        mimetype: 'inode/directory',
+        date: 'Today',
+        size: '--',
+        isSystem: true,
+        owner: username
+    });
+
+    fs.push({
+        id: `${uid}-docs`,
+        name: 'Documents',
+        parent: uid,
+        mimetype: 'inode/directory',
+        date: 'Today',
+        size: '--',
+        isSystem: true,
+        owner: username
+    });
+
+    fs.push({
+        id: `${uid}-downloads`,
+        name: 'Downloads',
+        parent: uid,
+        mimetype: 'inode/directory',
+        date: 'Today',
+        size: '--',
+        isSystem: true,
+        owner: username
+    });
+
+    fs.push({
+        id: `${uid}-icloud`,
+        name: 'iCloud Drive',
+        parent: 'root',
+        mimetype: 'inode/directory',
+        date: 'Today',
+        size: '--',
+        isSystem: true,
+        owner: username
+    });
+
+    fs.push({
+        id: `${uid}-trash`,
+        name: 'Trash',
+        parent: 'root',
+        mimetype: 'inode/directory',
+        date: 'Today',
+        size: '--',
+        isSystem: true,
+        isTrash: true,
+        owner: username
+    });
+
+    return fs;
+};
+
 export const generateUserFilesystem = (username: string): filesystemitem[] => {
     const fs: filesystemitem[] = [];
     const uid = `user-${username}`;
@@ -1123,6 +1197,42 @@ export const generateUserFilesystem = (username: string): filesystemitem[] => {
     });
 
     return fs;
+};
+
+export const generateFullFilesystemForUser = (username: string): filesystemitem[] => {
+    const guestFs = generateGuestFilesystem();
+    const uid = `user-${username}`;
+    const displayName = username.charAt(0).toUpperCase() + username.slice(1);
+
+    return guestFs.map(item => {
+        const newItem = { ...item };
+
+        if (newItem.id.startsWith('guest-') || newItem.id.startsWith('user-guest')) {
+            newItem.id = newItem.id.replace(/^guest-/, `${uid}-`).replace(/^user-guest/, uid);
+        }
+
+        if (newItem.parent === 'user-guest') {
+            newItem.parent = uid;
+        } else if (newItem.parent?.startsWith('guest-')) {
+            newItem.parent = newItem.parent.replace(/^guest-/, `${uid}-`);
+        }
+
+        if (newItem.name === 'Guest' && newItem.parent === 'root-users') {
+            newItem.name = displayName;
+        }
+
+        if (newItem.owner === 'guest') {
+            newItem.owner = username;
+        }
+
+        if (newItem.linkPath?.startsWith('guest-')) {
+            newItem.linkPath = newItem.linkPath.replace(/^guest-/, `${uid}-`);
+        }
+
+        delete newItem.isReadOnly;
+
+        return newItem;
+    });
 };
 
 export const generatefilesystem = (): filesystemitem[] => {
