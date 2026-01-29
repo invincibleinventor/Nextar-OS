@@ -464,6 +464,13 @@ const ContactSection = ({ onBoot, scroller }: { onBoot: () => void; scroller: Re
     );
 };
 
+const scrollbarStyles = `
+    .portfolio-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+    .portfolio-scroll::-webkit-scrollbar-track { background: transparent; }
+    .portfolio-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+    .portfolio-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+`;
+
 export default function Portfolio() {
     const { setappmode, setosstate } = useDevice();
     const [booting, setbooting] = useState(false);
@@ -474,9 +481,10 @@ export default function Portfolio() {
 
     return (
         <>
+            <style>{scrollbarStyles}</style>
             <AnimatePresence>{booting && <BootSequence onComplete={handlecomplete} />}</AnimatePresence>
 
-            <div ref={containerref} className="fixed inset-0 bg-black text-white overflow-y-auto overflow-x-hidden" style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' }}>
+            <div ref={containerref} className="portfolio-scroll fixed inset-0 bg-black text-white overflow-y-auto overflow-x-hidden" style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' }}>
                 <FloatingCTA onBoot={handleboot} />
                 <HeroSection onBoot={handleboot} />
                 <ProjectsSection scroller={containerref} />
