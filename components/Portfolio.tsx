@@ -286,7 +286,7 @@ const AboutSection = ({ scroller }: { scroller: React.RefObject<HTMLDivElement |
     }, { scope: sectionref, dependencies: [scroller] });
 
     const experiences = [
-        { role: 'Software Engineering Intern', company: 'For Real', url: 'https://www.linkedin.com/company/forreal', period: 'Jan 2025 - Present', color: NEON, current: true },
+        { role: 'Software Engineering Intern', company: 'For Real', url: 'https://www.linkedin.com/company/forreal', period: 'Jan 2026 - Present', color: NEON, current: true },
         { role: 'Technical Lead', company: 'The TVS School', url: 'https://www.tvsschool.com', period: 'Aug 2022 - May 2024', color: CYAN, current: false },
     ];
 
