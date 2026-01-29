@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 type osState = 'booting' | 'locked' | 'unlocked';
 type deviceType = 'desktop' | 'mobile' | 'tablet';
+type appMode = 'portfolio' | 'os';
 
 interface DeviceContextType {
     osstate: osState;
@@ -13,6 +14,8 @@ interface DeviceContextType {
     setbrightness: (val: number) => void;
     volume: number;
     setvolume: (val: number) => void;
+    appmode: appMode;
+    setappmode: (mode: appMode) => void;
 }
 
 const DeviceContext = createContext<DeviceContextType | null>(null);
@@ -30,6 +33,21 @@ export const DeviceProvider = ({ children }: { children: React.ReactNode }) => {
     const [devicetype, setdevicetype] = useState<deviceType>('desktop');
     const [brightness, setbrightness] = useState(100);
     const [volume, setvolume] = useState(50);
+    const [appmode, setappmodestate] = useState<appMode>('portfolio');
+
+    const setappmode = (mode: appMode) => {
+        setappmodestate(mode);
+    };
+
+    useEffect(() => {
+        const iselectron = typeof window !== 'undefined' && !!(window as any).electronAPI;
+        if (iselectron) {
+            setappmodestate('os');
+        }
+        if (typeof window !== 'undefined') {
+            localStorage.removeItem('nextaros-appmode');
+        }
+    }, []);
 
     useEffect(() => {
         const handleresize = () => {
@@ -58,6 +76,8 @@ export const DeviceProvider = ({ children }: { children: React.ReactNode }) => {
                 setbrightness,
                 volume,
                 setvolume,
+                appmode,
+                setappmode,
             }}
         >
             {children}

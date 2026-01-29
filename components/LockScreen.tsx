@@ -8,6 +8,7 @@ import { verifyPassword } from '../utils/crypto';
 import { useDevice } from './DeviceContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { IoArrowForward, IoLockClosed, IoPerson, IoInformationCircleOutline } from 'react-icons/io5';
+import { iselectron, power } from '@/utils/platform';
 
 export default function LockScreen() {
     const { login, user, isLoading: authLoading, guestLogin } = useAuth();
@@ -270,13 +271,13 @@ export default function LockScreen() {
 
             <div className="absolute bottom-12 flex flex-col items-center gap-4">
                 <div className="flex gap-6">
-                    <div className="flex flex-col items-center gap-1 cursor-pointer group">
+                    <div onClick={async () => { if (iselectron) await power.sleep(); }} className="flex flex-col items-center gap-1 cursor-pointer group">
                         <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur flex items-center justify-center group-hover:bg-white/20 transition-colors">
                             <IoLockClosed size={18} />
                         </div>
                         <span className="text-[10px] font-medium opacity-60">Sleep</span>
                     </div>
-                    <div onClick={() => window.location.reload()} className="flex flex-col items-center gap-1 cursor-pointer group">
+                    <div onClick={async () => { if (iselectron) await power.restart(); else window.location.reload(); }} className="flex flex-col items-center gap-1 cursor-pointer group">
                         <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur flex items-center justify-center group-hover:bg-white/20 transition-colors">
                             <IoInformationCircleOutline size={20} />
                         </div>

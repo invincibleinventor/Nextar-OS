@@ -1,16 +1,17 @@
 'use client';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
-import { IoChevronForward, IoChevronBack, IoColorPaletteOutline, IoNotificationsOutline, IoSettingsOutline, IoWifi, IoBluetooth, IoGlobeOutline, IoMoon, IoAccessibilityOutline, IoSearch, IoImageOutline } from 'react-icons/io5';
+import { IoChevronForward, IoChevronBack, IoColorPaletteOutline, IoNotificationsOutline, IoSettingsOutline, IoWifi, IoBluetooth, IoGlobeOutline, IoMoon, IoAccessibilityOutline, IoSearch, IoImageOutline, IoVolumeHigh, IoCheckmark, IoRefresh } from 'react-icons/io5';
 import { useSettings } from '../SettingsContext';
 import { useTheme } from '../ThemeContext';
 import { useWindows } from '../WindowContext';
 import { useDevice } from '../DeviceContext';
 import { useAuth } from '../AuthContext';
 import { personal, openSystemItem } from '../data';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion'
 import UserManagement from './Settings/UserManagement';
 import { IoPeopleOutline } from 'react-icons/io5';
+import { iselectron, wifi as wifiapi, bluetooth as bluetoothapi, audio as audioapi } from '@/utils/platform';
 
 const sidebaritems = [
     { id: 'wifi', label: 'Wi-Fi', icon: IoWifi, color: 'var(--accent-color)' },
@@ -18,6 +19,7 @@ const sidebaritems = [
     { id: 'network', label: 'Network', icon: IoGlobeOutline, color: 'var(--accent-color)' },
     { type: 'spacer' },
     { id: 'notifications', label: 'Notifications', icon: IoNotificationsOutline, color: '#FF3B30' },
+    { id: 'sound', label: 'Sound', icon: IoVolumeHigh, color: '#FF2D55' },
     { id: 'focus', label: 'Focus', icon: IoMoon, color: '#5856D6' },
     { type: 'spacer' },
     { id: 'general', label: 'General', icon: IoSettingsOutline, color: '#8E8E93' },
@@ -36,6 +38,72 @@ export default function Settings({ initialPage }: { initialPage?: string }) {
     const { user } = useAuth();
     const containerref = useRef<HTMLDivElement>(null);
     const [isnarrow, setisnarrow] = useState(false);
+
+    const [wifienabled, setwifienabled] = useState(false);
+    const [wificonnected, setwificonnected] = useState(false);
+    const [wifissid, setwifissid] = useState<string | null>(null);
+    const [wifinetworks, setwifinetworks] = useState<any[]>([]);
+    const [wifiloading, setwifiloading] = useState(false);
+
+    const [btenabled, setbtenabled] = useState(false);
+    const [btdevices, setbtdevices] = useState<any[]>([]);
+    const [btloading, setbtloading] = useState(false);
+
+    const [volume, setvolume] = useState(50);
+    const [muted, setmuted] = useState(false);
+
+    const fetchwifistatus = useCallback(async () => {
+        if (!iselectron) return;
+        const status = await wifiapi.getstatus();
+        setwifienabled(status.enabled || false);
+        setwificonnected(status.connected || false);
+        setwifissid(status.ssid || null);
+    }, []);
+
+    const fetchwifinetworks = useCallback(async () => {
+        if (!iselectron) return;
+        setwifiloading(true);
+        const result = await wifiapi.getnetworks();
+        if (result.success && result.networks) {
+            setwifinetworks(result.networks);
+        }
+        setwifiloading(false);
+    }, []);
+
+    const fetchbtstatus = useCallback(async () => {
+        if (!iselectron) return;
+        const status = await bluetoothapi.getstatus();
+        setbtenabled(status.enabled || false);
+    }, []);
+
+    const fetchbtdevices = useCallback(async () => {
+        if (!iselectron) return;
+        setbtloading(true);
+        const result = await bluetoothapi.getdevices();
+        if (result.success && result.devices) {
+            setbtdevices(result.devices);
+        }
+        setbtloading(false);
+    }, []);
+
+    const fetchaudiostatus = useCallback(async () => {
+        if (!iselectron) return;
+        const status = await audioapi.getvolume();
+        setvolume(status.volume || 50);
+        setmuted(status.muted || false);
+    }, []);
+
+    useEffect(() => {
+        if (activetab === 'wifi') {
+            fetchwifistatus();
+            fetchwifinetworks();
+        } else if (activetab === 'bluetooth') {
+            fetchbtstatus();
+            fetchbtdevices();
+        } else if (activetab === 'sound') {
+            fetchaudiostatus();
+        }
+    }, [activetab, fetchwifistatus, fetchwifinetworks, fetchbtstatus, fetchbtdevices, fetchaudiostatus]);
 
     useEffect(() => {
         if (!containerref.current) return;
@@ -414,7 +482,171 @@ export default function Settings({ initialPage }: { initialPage?: string }) {
                         </>
                     )}
 
-                    {activetab !== 'general' && activetab !== 'appearance' && activetab !== 'users' && activetab !== 'wallpaper' && (
+                    {activetab === 'wifi' && (
+                        <>
+                            <div className="text-[11px] uppercase font-semibold text-gray-400 pl-3 mb-2">Wi-Fi</div>
+                            <SettingsGroup>
+                                <SettingsRow
+                                    label="Wi-Fi"
+                                    toggle
+                                    toggleValue={wifienabled}
+                                    onToggle={async (v: boolean) => {
+                                        setwifienabled(v);
+                                        if (iselectron) await wifiapi.setenabled(v);
+                                    }}
+                                />
+                                {wificonnected && wifissid && (
+                                    <SettingsRow label="Connected to" value={wifissid} last />
+                                )}
+                            </SettingsGroup>
+
+                            {wifienabled && (
+                                <>
+                                    <div className="flex items-center justify-between text-[11px] uppercase font-semibold text-gray-400 pl-3 mb-2 mt-4">
+                                        <span>Available Networks</span>
+                                        <button onClick={fetchwifinetworks} className="p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded">
+                                            <IoRefresh className={wifiloading ? 'animate-spin' : ''} size={14} />
+                                        </button>
+                                    </div>
+                                    <SettingsGroup>
+                                        {wifiloading ? (
+                                            <div className="p-4 text-center text-gray-500 text-sm">Scanning...</div>
+                                        ) : wifinetworks.length === 0 ? (
+                                            <div className="p-4 text-center text-gray-500 text-sm">No networks found</div>
+                                        ) : (
+                                            wifinetworks.map((net, i) => (
+                                                <SettingsRow
+                                                    key={net.ssid || i}
+                                                    label={net.ssid || 'Hidden Network'}
+                                                    value={net.signal ? `${net.signal}%` : ''}
+                                                    onClick={async () => {
+                                                        if (net.ssid === wifissid) return;
+                                                        const pass = net.security !== 'open' ? prompt(`Enter password for ${net.ssid}`) : undefined;
+                                                        if (net.security !== 'open' && !pass) return;
+                                                        await wifiapi.connect(net.ssid, pass || undefined);
+                                                        fetchwifistatus();
+                                                    }}
+                                                    last={i === wifinetworks.length - 1}
+                                                />
+                                            ))
+                                        )}
+                                    </SettingsGroup>
+                                </>
+                            )}
+
+                            {!iselectron && (
+                                <div className="mt-4 p-4 bg-yellow-100 dark:bg-yellow-900/30 rounded-xl text-sm text-yellow-800 dark:text-yellow-200">
+                                    Wi-Fi controls require native mode (Electron)
+                                </div>
+                            )}
+                        </>
+                    )}
+
+                    {activetab === 'bluetooth' && (
+                        <>
+                            <div className="text-[11px] uppercase font-semibold text-gray-400 pl-3 mb-2">Bluetooth</div>
+                            <SettingsGroup>
+                                <SettingsRow
+                                    label="Bluetooth"
+                                    toggle
+                                    toggleValue={btenabled}
+                                    onToggle={async (v: boolean) => {
+                                        setbtenabled(v);
+                                        if (iselectron) await bluetoothapi.setenabled(v);
+                                    }}
+                                    last
+                                />
+                            </SettingsGroup>
+
+                            {btenabled && (
+                                <>
+                                    <div className="flex items-center justify-between text-[11px] uppercase font-semibold text-gray-400 pl-3 mb-2 mt-4">
+                                        <span>Devices</span>
+                                        <button onClick={fetchbtdevices} className="p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded">
+                                            <IoRefresh className={btloading ? 'animate-spin' : ''} size={14} />
+                                        </button>
+                                    </div>
+                                    <SettingsGroup>
+                                        {btloading ? (
+                                            <div className="p-4 text-center text-gray-500 text-sm">Scanning...</div>
+                                        ) : btdevices.length === 0 ? (
+                                            <div className="p-4 text-center text-gray-500 text-sm">No devices found</div>
+                                        ) : (
+                                            btdevices.map((dev, i) => (
+                                                <SettingsRow
+                                                    key={dev.mac || i}
+                                                    label={dev.name || dev.mac || 'Unknown Device'}
+                                                    value={dev.connected ? 'Connected' : ''}
+                                                    last={i === btdevices.length - 1}
+                                                />
+                                            ))
+                                        )}
+                                    </SettingsGroup>
+                                </>
+                            )}
+
+                            {!iselectron && (
+                                <div className="mt-4 p-4 bg-yellow-100 dark:bg-yellow-900/30 rounded-xl text-sm text-yellow-800 dark:text-yellow-200">
+                                    Bluetooth controls require native mode (Electron)
+                                </div>
+                            )}
+                        </>
+                    )}
+
+                    {activetab === 'sound' && (
+                        <>
+                            <div className="text-[11px] uppercase font-semibold text-gray-400 pl-3 mb-2">Output</div>
+                            <SettingsGroup>
+                                <div className="p-4">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <span className="text-sm font-medium">Volume</span>
+                                        <span className="text-sm text-gray-500">{volume}%</span>
+                                    </div>
+                                    <input
+                                        type="range"
+                                        min="0"
+                                        max="100"
+                                        value={volume}
+                                        onChange={async (e) => {
+                                            const v = parseInt(e.target.value);
+                                            setvolume(v);
+                                            if (iselectron) await audioapi.setvolume(v);
+                                        }}
+                                        className="w-full h-2 bg-gray-200 dark:bg-white/10 rounded-full appearance-none cursor-pointer accent-accent"
+                                    />
+                                </div>
+                                <SettingsRow
+                                    label="Mute"
+                                    toggle
+                                    toggleValue={muted}
+                                    onToggle={async (v: boolean) => {
+                                        setmuted(v);
+                                        if (iselectron) await audioapi.setmuted(v);
+                                    }}
+                                    last
+                                />
+                            </SettingsGroup>
+
+                            <div className="text-[11px] uppercase font-semibold text-gray-400 pl-3 mb-2 mt-4">Sound Effects</div>
+                            <SettingsGroup>
+                                <SettingsRow
+                                    label="UI Sound Effects"
+                                    toggle
+                                    toggleValue={soundeffects}
+                                    onToggle={setsoundeffects}
+                                    last
+                                />
+                            </SettingsGroup>
+
+                            {!iselectron && (
+                                <div className="mt-4 p-4 bg-yellow-100 dark:bg-yellow-900/30 rounded-xl text-sm text-yellow-800 dark:text-yellow-200">
+                                    System volume controls require native mode (Electron)
+                                </div>
+                            )}
+                        </>
+                    )}
+
+                    {activetab !== 'general' && activetab !== 'appearance' && activetab !== 'users' && activetab !== 'wallpaper' && activetab !== 'wifi' && activetab !== 'bluetooth' && activetab !== 'sound' && (
                         <div className="flex flex-col items-center justify-center py-20 text-center opacity-50">
                             <IoSettingsOutline size={48} className="mb-4" />
                             <h3 className="text-lg font-semibold">Settings for {sidebaritems.find(i => i.id === activetab)?.label}</h3>

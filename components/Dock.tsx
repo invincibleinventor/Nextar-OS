@@ -4,12 +4,13 @@ import Image from 'next/image';
 
 import { useWindows } from './WindowContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { apps, openSystemItem } from './data';
+import { apps, openSystemItem, getfilteredapps } from './data';
 import Launchpad from './apps/Launchpad';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useDevice } from './DeviceContext';
 import ContextMenu from './ui/ContextMenu';
 import TintedAppIcon from './ui/TintedAppIcon';
+import { iselectron } from '@/utils/platform';
 
 const Dock = () => {
   const { windows, addwindow, setactivewindow, focusortogglewindow, updatewindow, removewindow } = useWindows();
@@ -20,15 +21,19 @@ const Dock = () => {
   const [pinnedAppIds, setPinnedAppIds] = useState<string[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
 
+  const filteredapps = useMemo(() => getfilteredapps(iselectron), []);
+
   useEffect(() => {
     const saved = localStorage.getItem('nextaros-dock-pinned');
     if (saved) {
-      setPinnedAppIds(JSON.parse(saved));
+      const savedIds = JSON.parse(saved);
+      const validIds = savedIds.filter((id: string) => filteredapps.some(a => a.id === id));
+      setPinnedAppIds(validIds);
     } else {
-      setPinnedAppIds(apps.filter(a => a.pinned).map(a => a.id));
+      setPinnedAppIds(filteredapps.filter(a => a.pinned).map(a => a.id));
     }
     setIsInitialized(true);
-  }, []);
+  }, [filteredapps]);
 
   const savePinnedApps = (ids: string[]) => {
     setPinnedAppIds(ids);
@@ -78,9 +83,9 @@ const Dock = () => {
     }
   }
 
-  const pinnedAppsList = pinnedAppIds.map(id => apps.find(a => a.id === id)).filter(Boolean) as typeof apps;
+  const pinnedAppsList = pinnedAppIds.map(id => filteredapps.find(a => a.id === id)).filter(Boolean) as typeof apps;
   const openUnpinnedApps = windows
-    .map((win: any) => apps.find((app) => app.appname === win.appname))
+    .map((win: any) => filteredapps.find((app) => app.appname === win.appname))
     .filter((app: any) => app && !pinnedAppIds.includes(app.id));
 
   const uniqueOpenUnpinned = openUnpinnedApps.filter((value: any, index: number, self: any[]) =>

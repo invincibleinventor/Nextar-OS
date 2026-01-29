@@ -1,20 +1,23 @@
-import React, { useState, useRef, useEffect } from 'react'
+'use client';
+
+import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { FaWifi, FaMoon, FaSun, FaBluetoothB, FaPlane } from 'react-icons/fa'
-import { BsFillVolumeUpFill, BsSunFill, BsFillGridFill } from 'react-icons/bs'
-import { FiBatteryCharging, FiCast } from 'react-icons/fi'
-import { IoPlay, IoPause, IoPlaySkipForward, IoPlaySkipBack, IoFlashlight, IoCamera, IoCalculator, IoStopwatch, IoExpand, IoContract } from 'react-icons/io5'
+import { BsFillVolumeUpFill, BsSunFill, BsFillGridFill, BsVolumeMuteFill } from 'react-icons/bs'
+import { FiBatteryCharging, FiBattery } from 'react-icons/fi'
+import { IoPlay, IoPause, IoPlaySkipForward, IoPlaySkipBack, IoFlashlight, IoCamera, IoCalculator, IoStopwatch, IoExpand, IoContract, IoPower, IoRefresh } from 'react-icons/io5'
 import { BiSignal5 } from "react-icons/bi";
-import { FaTowerBroadcast } from 'react-icons/fa6'
 import { useSettings } from './SettingsContext'
 import { useTheme } from './ThemeContext'
 import { useAuth } from './AuthContext'
 import { useMusic } from './MusicContext'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
+import { iselectron, wifi, bluetooth, audio, brightness as brightnessapi, battery, power } from '@/utils/platform'
 
 export default function ControlCenter({ onclose, ismobile = false, isopen = true }: { onclose?: () => void, ismobile?: boolean, isopen?: boolean }) {
-  const [brightness, setbrightness] = useState(100)
-  const [volume, setvolume] = useState(100)
+  const [brightnessval, setbrightnessval] = useState(100)
+  const [volumeval, setvolumeval] = useState(100)
+  const [ismuted, setismuted] = useState(false)
   const [focusmode, setfocusmode] = useState(false)
   const [flashlight, setflashlight] = useState(false)
   const [isfullscreen, setisfullscreen] = useState(false)
@@ -22,6 +25,44 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
   const { reducemotion, reducetransparency } = useSettings()
   const { user, logout } = useAuth()
   const { currenttrack, isplaying, toggle, next, prev } = useMusic()
+
+  const [wifistatus, setwifistatus] = useState({ enabled: false, connected: false, ssid: null as string | null })
+  const [bluetoothstatus, setbluetoothstatus] = useState({ enabled: false, available: false })
+  const [batterystatus, setbatterystatus] = useState({ percentage: 100, charging: false, available: false })
+  const [brightnessavailable, setbrightnessavailable] = useState(false)
+
+  const fetchsystemstatus = useCallback(async () => {
+    if (!iselectron) return;
+
+    try {
+      const wifidata = await wifi.getstatus();
+      setwifistatus(wifidata);
+
+      const btdata = await bluetooth.getstatus();
+      setbluetoothstatus(btdata);
+
+      const audiodata = await audio.getvolume();
+      setvolumeval(audiodata.volume);
+      setismuted(audiodata.muted);
+
+      const brightnessdata = await brightnessapi.get();
+      if (brightnessdata.available) {
+        setbrightnessval(brightnessdata.brightness);
+        setbrightnessavailable(true);
+      }
+
+      const batterydata = await battery.getstatus();
+      setbatterystatus(batterydata);
+    } catch (e) { }
+  }, []);
+
+  useEffect(() => {
+    if (isopen) {
+      fetchsystemstatus();
+      const interval = setInterval(fetchsystemstatus, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [isopen, fetchsystemstatus]);
 
   useEffect(() => {
     const handlefullscreenchange = () => {
@@ -40,6 +81,52 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
       }
     } catch { }
   }
+
+  const togglewifi = async () => {
+    if (!iselectron) return;
+    const newstate = !wifistatus.enabled;
+    setwifistatus(prev => ({ ...prev, enabled: newstate }));
+    await wifi.setenabled(newstate);
+    setTimeout(fetchsystemstatus, 1000);
+  };
+
+  const togglebluetooth = async () => {
+    if (!iselectron) return;
+    const newstate = !bluetoothstatus.enabled;
+    setbluetoothstatus(prev => ({ ...prev, enabled: newstate }));
+    await bluetooth.setenabled(newstate);
+    setTimeout(fetchsystemstatus, 1000);
+  };
+
+  const handlevolume = async (val: number) => {
+    setvolumeval(val);
+    if (iselectron) {
+      await audio.setvolume(val);
+    }
+  };
+
+  const togglemute = async () => {
+    const newmuted = !ismuted;
+    setismuted(newmuted);
+    if (iselectron) {
+      await audio.setmuted(newmuted);
+    }
+  };
+
+  const handlebrightness = async (val: number) => {
+    setbrightnessval(val);
+    if (iselectron && brightnessavailable) {
+      await brightnessapi.set(val);
+    }
+  };
+
+  const handlelockscreen = async () => {
+    if (iselectron) {
+      await power.lock();
+    }
+    logout();
+    if (onclose) onclose();
+  };
 
   return (
     <AnimatePresence>
@@ -91,7 +178,6 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
 
                   <div className="grid grid-cols-2 gap-3">
 
-
                     <div className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-3xl p-3 grid grid-cols-2 grid-rows-2 gap-2 aspect-square border border-neutral-300 dark:border-neutral-700">
                       <div className="flex items-center justify-center bg-accent rounded-full aspect-square">
                         <FaPlane className="text-white" size={18} />
@@ -99,14 +185,19 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
                       <div className="flex items-center justify-center bg-green-500 rounded-full aspect-square">
                         <BiSignal5 className="text-white" size={18} />
                       </div>
-                      <div className="flex items-center justify-center bg-accent rounded-full aspect-square">
+                      <div
+                        onClick={togglewifi}
+                        className={`flex items-center justify-center rounded-full aspect-square cursor-pointer active:scale-95 transition-all ${wifistatus.enabled ? 'bg-accent' : 'bg-neutral-500'}`}
+                      >
                         <FaWifi className="text-white" size={18} />
                       </div>
-                      <div className="flex items-center justify-center bg-accent rounded-full aspect-square">
+                      <div
+                        onClick={togglebluetooth}
+                        className={`flex items-center justify-center rounded-full aspect-square cursor-pointer active:scale-95 transition-all ${bluetoothstatus.enabled ? 'bg-accent' : 'bg-neutral-500'}`}
+                      >
                         <FaBluetoothB className="text-white" size={18} />
                       </div>
                     </div>
-
 
                     <div className="dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-3xl p-3 flex flex-col justify-between aspect-square border border-neutral-300 dark:border-neutral-700">
                       <div className='flex items-center justify-center flex-1'>
@@ -122,7 +213,6 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
                       </div>
                     </div>
                   </div>
-
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="grid grid-cols-2 gap-3">
@@ -148,14 +238,12 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
                     </div>
                   </div>
 
-
                   <div className="grid grid-cols-2 gap-3">
 
                     <div className="grid grid-cols-2 gap-3 h-36" onPointerDown={(e) => e.stopPropagation()}>
-                      <CCSlider value={brightness} onchange={setbrightness} icon={BsSunFill} />
-                      <CCSlider value={volume} onchange={setvolume} icon={BsFillVolumeUpFill} />
+                      <CCSlider value={brightnessval} onchange={handlebrightness} icon={BsSunFill} />
+                      <CCSlider value={volumeval} onchange={handlevolume} icon={ismuted ? BsVolumeMuteFill : BsFillVolumeUpFill} onIconClick={togglemute} />
                     </div>
-
 
                     <div className="grid grid-cols-2 grid-rows-2 gap-3 h-36">
                       <div onClick={() => setflashlight(!flashlight)} className={`dark:bg-neutral-800/20 bg-neutral-400/20 backdrop-blur-md rounded-3xl flex items-center justify-center border border-neutral-300 dark:border-neutral-700 active:scale-95 transition-all cursor-pointer ${flashlight ? 'bg-yellow-400/20 ring-2 ring-yellow-400' : 'active:bg-white/20'}`}>
@@ -187,7 +275,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
                       <div className="text-neutral-500 dark:text-neutral-400 text-xs">@{user?.username || 'guest'}</div>
                     </div>
                     <button
-                      onClick={(e) => { e.stopPropagation(); logout(); if (onclose) onclose(); }}
+                      onClick={(e) => { e.stopPropagation(); handlelockscreen(); }}
                       className="px-4 py-2 bg-red-500/20 text-red-500 rounded-full text-sm font-medium active:bg-red-500/30"
                     >
                       Lock
@@ -201,22 +289,32 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className='grid h-max grid-rows-3 gap-2' onPointerDown={(e) => e.stopPropagation()}>
-                      <div className="p-3 bg-white/40 dark:bg-neutral-800/40 backdrop-blur-xl border border-white/20 dark:border-white/5 rounded-full flex space-x-2 items-center shadow-sm">
-                        <div className='p-[10px] rounded-full bg-white/50 dark:bg-white/10'>
-                          <FaWifi className="text-black dark:text-white" size={16} />
+                      <div
+                        onClick={togglewifi}
+                        className={`p-3 ${wifistatus.enabled ? 'bg-accent/40' : 'bg-white/40 dark:bg-neutral-800/40'} backdrop-blur-xl border border-white/20 dark:border-white/5 rounded-full flex space-x-2 items-center shadow-sm cursor-pointer active:scale-95 transition-all`}
+                      >
+                        <div className={`p-[10px] rounded-full ${wifistatus.enabled ? 'bg-accent' : 'bg-white/50 dark:bg-white/10'}`}>
+                          <FaWifi className={wifistatus.enabled ? 'text-white' : 'text-black dark:text-white'} size={16} />
                         </div>
                         <div>
                           <p className="text-sm font-semibold text-black dark:text-white">Wi-Fi</p>
-                          <p className="text-[12px] text-black/60 dark:text-white/60 truncate">Connect</p>
+                          <p className="text-[12px] text-black/60 dark:text-white/60 truncate">
+                            {wifistatus.enabled ? (wifistatus.ssid || 'On') : 'Off'}
+                          </p>
                         </div>
                       </div>
-                      <div className="p-3 bg-white/40 dark:bg-neutral-800/40 backdrop-blur-xl border border-white/20 dark:border-white/5 rounded-full flex space-x-2 items-center shadow-sm">
-                        <div className='p-[10px] rounded-full bg-white/50 dark:bg-white/10'>
-                          <FaBluetoothB className="text-black dark:text-white" size={16} />
+                      <div
+                        onClick={togglebluetooth}
+                        className={`p-3 ${bluetoothstatus.enabled ? 'bg-accent/40' : 'bg-white/40 dark:bg-neutral-800/40'} backdrop-blur-xl border border-white/20 dark:border-white/5 rounded-full flex space-x-2 items-center shadow-sm cursor-pointer active:scale-95 transition-all`}
+                      >
+                        <div className={`p-[10px] rounded-full ${bluetoothstatus.enabled ? 'bg-accent' : 'bg-white/50 dark:bg-white/10'}`}>
+                          <FaBluetoothB className={bluetoothstatus.enabled ? 'text-white' : 'text-black dark:text-white'} size={16} />
                         </div>
                         <div>
                           <p className="text-sm font-semibold text-black dark:text-white">Bluetooth</p>
-                          <p className="text-[12px] text-black/60 dark:text-white/60 truncate">Off</p>
+                          <p className="text-[12px] text-black/60 dark:text-white/60 truncate">
+                            {bluetoothstatus.enabled ? 'On' : 'Off'}
+                          </p>
                         </div>
                       </div>
                       <div onClick={togglefullscreen} className={`p-3 bg-white/40 dark:bg-neutral-800/40 backdrop-blur-xl border border-white/20 dark:border-white/5 rounded-full flex space-x-2 items-center shadow-sm cursor-pointer active:scale-95 transition-all ${isfullscreen ? 'ring-2 ring-green-500' : ''}`}>
@@ -264,8 +362,8 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
                           type="range"
                           min="0"
                           max="100"
-                          value={brightness}
-                          onChange={(e) => (setbrightness(Number(e.target.value)))}
+                          value={brightnessval}
+                          onChange={(e) => handlebrightness(Number(e.target.value))}
                           className={`
           w-full ml-10 mr-5 h-1 appearance-none rounded-full 
           [&::-webkit-slider-runnable-track]:w-full [&::-webkit-slider-runnable-track]:h-1 [&::-webkit-slider-runnable-track]:-mt-[6px]
@@ -275,24 +373,32 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
           ${theme === 'light' ? '[&::-webkit-slider-thumb]:bg-neutral-800' : '[&::-webkit-slider-thumb]:bg-white'}
         `}
                           style={{
-                            background: `linear-gradient(to right, ${theme === 'light' ? '#262626' : 'white'} ${brightness}%, ${theme === 'light' ? 'rgba(38,38,38,0.2)' : 'rgba(255,255,255,0.2)'} ${brightness}%)`,
+                            background: `linear-gradient(to right, ${theme === 'light' ? '#262626' : 'white'} ${brightnessval}%, ${theme === 'light' ? 'rgba(38,38,38,0.2)' : 'rgba(255,255,255,0.2)'} ${brightnessval}%)`,
                           }}
                         />
                       </div>
                     </div>
                     <div className='px-5 py-4 backdrop-blur-xl rounded-[22px] border border-white/20 dark:border-white/5 bg-white/40 dark:bg-neutral-800/40 shadow-sm' onPointerDown={(e) => e.stopPropagation()}>
                       <div>
-                        <p className="text-xs font-semibold text-black dark:text-white mb-2">Sound</p>
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-xs font-semibold text-black dark:text-white">Sound</p>
+                          <button
+                            onClick={togglemute}
+                            className="text-xs text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white"
+                          >
+                            {ismuted ? 'Unmute' : 'Mute'}
+                          </button>
+                        </div>
                         <div className="relative rounded-full flex items-center h-7">
                           <div className="absolute left-0 w-6 h-6 flex items-center justify-center rounded-full ">
-                            <BsFillVolumeUpFill size={16} className="text-black dark:text-white" />
+                            {ismuted ? <BsVolumeMuteFill size={16} className="text-red-500" /> : <BsFillVolumeUpFill size={16} className="text-black dark:text-white" />}
                           </div>
                           <input
                             type="range"
                             min="0"
                             max="100"
-                            value={volume}
-                            onChange={(e) => (setvolume(Number(e.target.value)))}
+                            value={volumeval}
+                            onChange={(e) => handlevolume(Number(e.target.value))}
                             className={`
         w-full ml-10 mr-5 h-1 appearance-none rounded-full 
           [&::-webkit-slider-runnable-track]:w-full [&::-webkit-slider-runnable-track]:h-1 [&::-webkit-slider-runnable-track]:-mt-[6px]
@@ -302,7 +408,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
           ${theme === 'light' ? '[&::-webkit-slider-thumb]:bg-neutral-800' : '[&::-webkit-slider-thumb]:bg-white'}
         `}
                             style={{
-                              background: `linear-gradient(to right, ${theme === 'light' ? '#262626' : 'white'} ${volume}%, ${theme === 'light' ? 'rgba(38,38,38,0.2)' : 'rgba(255,255,255,0.2)'} ${volume}%)`,
+                              background: `linear-gradient(to right, ${theme === 'light' ? '#262626' : 'white'} ${volumeval}%, ${theme === 'light' ? 'rgba(38,38,38,0.2)' : 'rgba(255,255,255,0.2)'} ${volumeval}%)`,
                             }}
                           />
                         </div>
@@ -313,12 +419,13 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
 
                   <div className="flex justify-between items-center bg-white/40 dark:bg-neutral-800/40 border border-white/20 dark:border-white/5 w-max rounded-full px-5 py-3 filter backdrop-blur-xl shadow-sm">
                     <div className="flex items-center space-x-2">
-                      <FiBatteryCharging size={20} className="text-black dark:text-white" />
+                      {batterystatus.charging ? <FiBatteryCharging size={20} className="text-green-500" /> : <FiBattery size={20} className="text-black dark:text-white" />}
                       <div className='flex flex-col'>
-
                         <p className="text-[11px] font-normal text-black dark:text-white/80">Battery</p>
-                        <p className="text-[12px] font-semibold text-black dark:text-white">74%</p>
-
+                        <p className="text-[12px] font-semibold text-black dark:text-white">
+                          {batterystatus.available ? `${batterystatus.percentage}%` : 'N/A'}
+                          {batterystatus.charging && <span className="text-green-500 ml-1">⚡</span>}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -334,7 +441,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
   )
 }
 
-const CCSlider = ({ value, onchange, icon: Icon }: any) => {
+const CCSlider = ({ value, onchange, icon: Icon, onIconClick }: any) => {
   const ref = useRef<HTMLDivElement>(null);
   const [isdragging, setisdragging] = useState(false);
 
@@ -380,7 +487,12 @@ const CCSlider = ({ value, onchange, icon: Icon }: any) => {
       <div className={`absolute bottom-0 w-full bg-white transition-all duration-75 ease-out`} style={{ height: `${value}%` }} />
       <div className="absolute inset-0 flex flex-col items-center justify-between py-4 z-10 pointer-events-none">
         <div />
-        <Icon size={24} className={`transition-colors ${value > 50 ? 'text-neutral-800' : 'text-white'}`} />
+        <div
+          className="pointer-events-auto cursor-pointer"
+          onClick={(e) => { e.stopPropagation(); if (onIconClick) onIconClick(); }}
+        >
+          <Icon size={24} className={`transition-colors ${value > 50 ? 'text-neutral-800' : 'text-white'}`} />
+        </div>
       </div>
     </div>
   );

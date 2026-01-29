@@ -29,6 +29,7 @@ import ForceQuit from '@/components/ForceQuit';
 import AboutDevice from '@/components/AboutDevice';
 import { useSettings } from '@/components/SettingsContext';
 import { useMenuRegistration } from '@/components/AppMenuContext';
+import Portfolio from '@/components/Portfolio';
 
 const Desktop = () => {
   const { windows, addwindow, setwindows, updatewindow, setactivewindow, activewindow } = useWindows();
@@ -602,6 +603,12 @@ const Desktop = () => {
 }
 
 const Page = () => {
+  const { appmode } = useDevice();
+
+  if (appmode === 'portfolio') {
+    return <Portfolio />;
+  }
+
   return (
     <>
       <BootScreen />

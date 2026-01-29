@@ -37,6 +37,8 @@ export interface appdata {
     menus?: Record<string, { title?: string; disabled?: boolean; separator?: boolean; actionId?: string }[]>;
     isExternal?: boolean;
     externalUrl?: string;
+    nativeOnly?: boolean;
+    webOnly?: boolean;
     manifest?: {
         permissions: {
             fs?: string[];
@@ -93,6 +95,9 @@ export const componentmap: { [key: string]: any } = {
     'apps/ExternalAppLoader': dynamic(() => import('./apps/ExternalAppLoader')),
     'apps/ApiDocs': dynamic(() => import('./apps/ApiDocs')),
     'apps/SystemMonitor': dynamic(() => import('./apps/SystemMonitor')),
+    'apps/NativeFileBrowser': dynamic(() => import('./apps/NativeFileBrowser')),
+    'apps/AppLauncher': dynamic(() => import('./apps/AppLauncher')),
+    'apps/AboutNextarOS': dynamic(() => import('./apps/AboutNextarOS')),
     'DynamicAppRunner': dynamic(() => import('./DynamicAppRunner')),
 };
 
@@ -123,100 +128,70 @@ export const personal = {
     ],
     projects: [
         {
-            title: "Falar",
-            type: "Open Source",
-            date: 2022,
-            desc: "Built and deployed a full-stack social platform with authentication, content posting, and media uploads using Next.js and PostgreSQL. Integrated Google OAuth and Amazon S3. Designed relational schemas and end-to-end features.",
-            stack: ["Next.js", "Supabase", "TailwindCSS", "Amazon S3"],
-            link: "https://falarapp.vercel.app",
-            github: "https://github.com/invincibleinventor/falar",
-            icon: <SiNextdotjs className="text-black dark:text-white" />
-        },
-        {
             title: "NextarOS",
-            date: 2023,
+            date: 2025,
             type: "Open Source",
-            desc: "Built an interactive simulated operating system with window management on desktop and a responsive convergent mobile UI. Implemented custom animations and responsive transitions using Framer Motion and GSAP.",
-            stack: ["Next.js", "TailwindCSS"],
+            desc: "A local-first Web Operating System with multi-user support, offline execution, virtual filesystem, and a permissioned app ecosystem - built entirely frontend-only using Next.js 15 and React 19.",
+            stack: ["Next.js", "React", "TailwindCSS", "Framer Motion"],
             link: "https://baladev.in",
             github: "https://github.com/invincibleinventor/nextar-os",
             icon: <FaReact className="text-blue-500" />
         },
         {
-            title: "VSCode Portfolio",
-            date: 2022,
-            type: "Open Source",
-            desc: "A portfolio website themed like Visual Studio Code.",
-            stack: ["Next.js", "TailwindCSS", "TypeScript"],
-            link: "https://baladev.vercel.app",
-            github: "https://github.com/invincibleinventor/vscode-portfolio",
-            icon: <SiTypescript className="text-blue-600" />
-        },
-        {
-            title: "W11Web",
-            date: 2021,
-            type: "Open Source",
-            desc: "Windows 11 desktop simulation using Vanilla CSS.",
-            stack: ["TypeScript", "CSS", "Webpack"],
-            link: "https://w11web.vercel.app",
-            github: "https://github.com/invincibleinventor/w11web",
-            icon: <FaCss3Alt className="text-blue-500" />
-        },
-        {
-            title: "Filmhood Journal",
-            date: 2022,
-            type: "Closed Source",
-            desc: "A wordpress blog for an aspiring filmmaker.",
-            stack: ["Wordpress", "Analytics"],
-            link: "https://filmhoodjournal.com",
-            github: "#",
-            icon: <SiWordpress className="text-blue-900" />
-        },
-        {
-            title: "Calistnx",
-            date: 2023,
-            type: "Closed Source",
-            desc: "E-commerce platform for fitness courses.",
-            stack: ["Wordpress", "WooCommerce", "Stripe"],
-            link: "https://calistnx.com",
-            github: "#",
-            icon: <SiWordpress className="text-blue-900" />
-        },
-        {
-            title: "TTS Internal Tools",
-            date: 2022,
-            type: "Closed Source",
-            desc: "Management system for Golden Jubilee fests.",
-            stack: ["Qwik JS", "Supabase", "TailwindCSS"],
-            link: "https://ttsgold.vercel.app",
-            github: "https://github.com/invincibleinventor/gold",
-            icon: <SiSupabase className="text-green-500" />
-        },
-        {
-            title: "SquadSearch",
-            date: 2025,
-            type: "Open Source",
-            desc: "Developed an anonymous-first hiring platform generating candidate summaries using AI from resumes and GitHub data to reduce bias. Built swipe-based shortlisting and a secure invite-only contact reveal workflow.",
-            stack: ["Next.js", "Supabase", "GSAP", "TailwindCSS", "LLMs", "FastAPI", "SMTP", "Python"],
-            link: "https://squadsearch.vercel.app",
-            github: "https://github.com/invincibleinventor/squadsearch",
-            icon: <SiNextdotjs className="text-black dark:text-white" />
-        },
-        {
-            title: "Sastracker",
+            title: "SASTracker",
             date: 2025,
             type: "Open Source",
             desc: "Built a system used by 500+ students to convert question paper PDFs into a structured, searchable database, handling multi-page and inconsistent formats. Implemented LLM-assisted extraction with fallbacks, fast search, AI-assisted solving, and community-contributed answers.",
             stack: ["Next.js", "Supabase", "LLMs", "TailwindCSS", "FastAPI"],
             link: "https://sastracker.vercel.app",
             github: "https://github.com/invincibleinventor/sastracker",
-            icon: <FaReact className="text-blue-500" />
+            icon: <SiNextdotjs className="text-black dark:text-white" />
+        },
+        {
+            title: "SquadSearch",
+            date: 2025,
+            type: "Open Source",
+            desc: "Anonymous-first hiring platform generating candidate summaries using AI from resumes and GitHub data to reduce bias. Built swipe-based shortlisting and a secure invite-only contact reveal workflow.",
+            stack: ["Next.js", "Supabase", "GSAP", "TailwindCSS", "LLMs", "FastAPI", "Python"],
+            link: "https://squadsearch.vercel.app",
+            github: "https://github.com/invincibleinventor/squadsearch",
+            icon: <SiNextdotjs className="text-black dark:text-white" />
+        },
+        {
+            title: "Falar",
+            type: "Open Source",
+            date: 2024,
+            desc: "A social media platform with posts, stories, real-time messaging, and content discovery. Built with Next.js and Supabase.",
+            stack: ["Next.js", "Supabase", "TailwindCSS", "Amazon S3"],
+            link: "https://falarapp.vercel.app",
+            github: "https://github.com/invincibleinventor/falarapp",
+            icon: <SiNextdotjs className="text-black dark:text-white" />
+        },
+        {
+            title: "CleanMyLinkedIn",
+            date: 2025,
+            type: "Open Source",
+            desc: "A Chrome extension that helps clean up your LinkedIn feed by scoring and filtering posts using AI-powered analysis.",
+            stack: ["JavaScript", "Chrome Extension", "Gemini API"],
+            link: "https://github.com/invincibleinventor/cleanmylinkedin",
+            github: "https://github.com/invincibleinventor/cleanmylinkedin",
+            icon: <FaLinkedin className="text-blue-600" />
+        },
+        {
+            title: "AIButton",
+            date: 2025,
+            type: "Open Source",
+            desc: "A Chrome extension that adds AI-powered voting buttons to LinkedIn posts for community-driven content moderation.",
+            stack: ["JavaScript", "Chrome Extension", "Supabase"],
+            link: "https://github.com/invincibleinventor/aibutton",
+            github: "https://github.com/invincibleinventor/aibutton",
+            icon: <FaLinkedin className="text-blue-600" />
         },
         {
             title: "EzyPing",
             date: 2025,
             type: "Open Source",
-            desc: "A lightweight uptime monitor for tracking website status and to quicky notify subscribed users of website changes through SMTP.",
+            desc: "A lightweight uptime monitor for tracking website status and to quickly notify subscribed users of website changes through SMTP.",
             stack: ["Next.js", "TypeScript", "Node.js", "CRON"],
             link: "https://ezyping.vercel.app",
             github: "https://github.com/invincibleinventor/ezyping",
@@ -294,7 +269,8 @@ export const apps: appdata[] = [
         multiwindow: true,
         titlebarblurred: false,
         pinned: true,
-        category: 'Social'
+        category: 'Social',
+        webOnly: true
     },
     {
         id: 'calendar',
@@ -484,7 +460,8 @@ export const apps: appdata[] = [
         titlebarblurred: true,
         pinned: true,
         defaultsize: { width: 400, height: 550 },
-        category: 'Utilities'
+        category: 'Utilities',
+        webOnly: true
     },
     {
         id: 'systemmonitor',
@@ -504,8 +481,70 @@ export const apps: appdata[] = [
                 user: ['user.current']
             }
         }
+    },
+    {
+        id: 'nativefilebrowser',
+        appname: 'Files',
+        icon: '/explorer.png',
+        maximizeable: true,
+        componentname: 'apps/NativeFileBrowser',
+        additionaldata: {},
+        multiwindow: true,
+        titlebarblurred: false,
+        pinned: true,
+        defaultsize: { width: 900, height: 600 },
+        category: 'Utilities',
+        nativeOnly: true,
+        manifest: {
+            permissions: {
+                fs: ['fs.native', 'fs.read', 'fs.write'],
+                system: ['system.host']
+            }
+        }
+    },
+    {
+        id: 'applauncher',
+        appname: 'Applications',
+        icon: '/appstore.png',
+        maximizeable: true,
+        componentname: 'apps/AppLauncher',
+        additionaldata: {},
+        multiwindow: false,
+        titlebarblurred: false,
+        pinned: true,
+        defaultsize: { width: 900, height: 600 },
+        category: 'Utilities',
+        nativeOnly: true,
+        manifest: {
+            permissions: {
+                system: ['system.apps']
+            }
+        }
+    },
+    {
+        id: 'aboutnextaros',
+        appname: 'About NextarOS',
+        icon: '/logo.svg',
+        maximizeable: false,
+        componentname: 'apps/AboutNextarOS',
+        additionaldata: {},
+        multiwindow: false,
+        titlebarblurred: false,
+        pinned: false,
+        defaultsize: { width: 300, height: 400 },
+        category: 'Utilities'
     }
 ];
+
+export function getfilteredapps(iselectron: boolean): appdata[] {
+    return apps.filter(app => {
+        if (iselectron) {
+            return !app.webOnly;
+        } else {
+            return !app.nativeOnly;
+        }
+    });
+}
 
 export const menus = [
     {
@@ -967,7 +1006,7 @@ export const generateGuestFilesystem = (): filesystemitem[] => {
     fs.push({ ...resumeBase, id: 'guest-resume', parent: 'guest-docs' } as filesystemitem);
 
     apps.forEach(a => {
-        if (a.id !== 'explorer' && a.id !== 'launchpad') {
+        if (a.id !== 'explorer' && a.id !== 'launchpad' && !a.nativeOnly) {
             fs.push({
                 id: `guest-desktop-app-${a.id}`,
                 name: a.appname,

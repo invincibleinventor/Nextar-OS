@@ -11,13 +11,14 @@ import { useAppMenus } from './AppMenuContext';
 import { IoWifi, IoBatteryFull, IoToggle, IoSettingsOutline } from 'react-icons/io5';
 import { BsToggles2 } from "react-icons/bs";
 import { useDevice } from './DeviceContext';
-import { IoIosBatteryFull, IoIosSettings, IoIosWifi } from 'react-icons/io';
+import { IoIosBatteryFull } from 'react-icons/io';
 import { useAuth } from './AuthContext';
 import { useNotifications } from './NotificationContext';
+import { iselectron, power, battery, wifi } from '@/utils/platform';
 
 export default function Panel({ ontogglenotifications }: { ontogglenotifications?: () => void }) {
     const { activewindow, windows, updatewindow, removewindow, setactivewindow, addwindow } = useWindows();
-    const { ismobile } = useDevice();
+    const { ismobile, setappmode } = useDevice();
     const { setosstate } = useDevice();
 
     const activeappname =
@@ -37,7 +38,27 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
     const [currentdate, setcurrentdate] = useState<string>('');
     const [currenttime, setcurrenttime] = useState<string>('');
     const [showcontrolcenter, setshowcontrolcenter] = useState(false);
+    const [batterystatus, setbatterystatus] = useState({ percentage: 100, charging: false, available: false });
+    const [wifistatus, setwifistatus] = useState({ connected: false, ssid: null as string | null, available: false });
 
+    useEffect(() => {
+        if (!iselectron) return;
+        const fetchstatus = async () => {
+            try {
+                const batresult = await battery.getstatus();
+                if (batresult.percentage !== undefined) {
+                    setbatterystatus({ percentage: batresult.percentage, charging: batresult.charging || false, available: true });
+                }
+                const wifiresult = await wifi.getstatus();
+                if (wifiresult.connected !== undefined) {
+                    setwifistatus({ connected: wifiresult.connected, ssid: wifiresult.ssid, available: true });
+                }
+            } catch { }
+        };
+        fetchstatus();
+        const interval = setInterval(fetchstatus, 30000);
+        return () => clearInterval(interval);
+    }, []);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -123,12 +144,19 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
         { title: `Log Out ${user?.name || 'User'}...`, actionId: 'logout' }
     ];
 
-    const handledynamicmainmenu = (item: any) => {
+    const handledynamicmainmenu = async (item: any) => {
         if (!item || item.disabled) return;
         const action = item.actionId || item.title;
         switch (action) {
             case 'about':
-                window.dispatchEvent(new CustomEvent('show-about-mac'));
+                addwindow({
+                    id: `aboutnextaros-${Date.now()}`,
+                    appname: 'About NextarOS',
+                    component: 'apps/AboutNextarOS',
+                    props: {},
+                    isminimized: false,
+                    ismaximized: false
+                });
                 break;
             case 'forcequit':
                 window.dispatchEvent(new CustomEvent('show-force-quit'));
@@ -154,14 +182,31 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
                 });
                 break;
             case 'sleep':
-                setosstate('locked');
+                if (iselectron) {
+                    await power.sleep();
+                } else {
+                    setosstate('locked');
+                }
                 break;
             case 'logout':
+                if (iselectron) {
+                    await power.logout();
+                }
                 logout();
                 break;
             case 'restart':
+                if (iselectron) {
+                    await power.restart();
+                } else {
+                    setosstate('booting');
+                }
+                break;
             case 'shutdown':
-                setosstate('booting');
+                if (iselectron) {
+                    await power.shutdown();
+                } else {
+                    setosstate('booting');
+                }
                 break;
             default:
                 break;
@@ -283,6 +328,14 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
                 </div>
                 <div className='flex space-x-3 flex-row items-center content-center'>
                     <div className='hidden md:flex flex-row space-x-4 items-center pl-2'>
+                        {!iselectron && (
+                            <button
+                                onClick={() => setappmode('portfolio')}
+                                className="px-2 py-1 text-xs font-medium bg-white/10 hover:bg-white/20 rounded-md transition-colors dark:text-white text-black"
+                            >
+                                Exit NextarOS
+                            </button>
+                        )}
                         <button
                             onClick={() => window.dispatchEvent(new CustomEvent('toggle-next'))}
                             className=" rounded hover:bg-white/10 transition-colors"
@@ -292,9 +345,12 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                         </button>
-                        <IoIosWifi className="text-black dark:text-white w-[20px] h-[20px]" />
-                        <div className='flex items-center space-x-2'>
-                            <IoIosBatteryFull className="text-black dark:text-white w-[24px] h-[24px]" />
+                        <IoWifi className={`w-[18px] h-[18px] ${wifistatus.connected ? 'text-black dark:text-white' : 'text-neutral-400 dark:text-neutral-500'}`} />
+                        <div className='flex items-center space-x-1'>
+                            {batterystatus.available && (
+                                <span className="text-[11px] font-medium text-black dark:text-white">{batterystatus.percentage}%</span>
+                            )}
+                            <IoIosBatteryFull className={`w-[24px] h-[24px] ${batterystatus.charging ? 'text-green-500' : 'text-black dark:text-white'}`} />
                         </div>
                     </div>
                     <div className="relative">

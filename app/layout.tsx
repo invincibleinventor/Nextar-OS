@@ -9,6 +9,7 @@ import { AppPreferencesProvider } from '@/components/AppPreferencesContext';
 import { AppMenuProvider } from '@/components/AppMenuContext';
 import { ProcessProvider } from '@/components/ProcessContext';
 import { PermissionsProvider } from '@/components/PermissionsContext';
+import { ElectronProvider } from '@/components/ElectronContext';
 
 import { personal as portfoliodata } from '@/components/data';
 
@@ -129,30 +130,32 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <WindowProvider>
             <div className="fixed inset-0 bg-black h-[100dvh] w-screen overflow-hidden transition-colors duration-500">
 
-              <DeviceProvider>
-                <AuthProvider>
-                  <ProcessProvider>
-                    <SettingsProvider>
-                      <NotificationProvider>
-                        <PermissionsProvider>
-                          <FileSystemProvider>
-                            <AppPreferencesProvider>
-                              <AppMenuProvider>
-                                <ExternalAppsProvider>
-                                  <MusicProvider>
-                                    {children}
-                                    <PermissionDialog />
-                                  </MusicProvider>
-                                </ExternalAppsProvider>
-                              </AppMenuProvider>
-                            </AppPreferencesProvider>
-                          </FileSystemProvider>
-                        </PermissionsProvider>
-                      </NotificationProvider>
-                    </SettingsProvider>
-                  </ProcessProvider>
-                </AuthProvider>
-              </DeviceProvider>
+              <ElectronProvider>
+                <DeviceProvider>
+                  <AuthProvider>
+                    <ProcessProvider>
+                      <SettingsProvider>
+                        <NotificationProvider>
+                          <PermissionsProvider>
+                            <FileSystemProvider>
+                              <AppPreferencesProvider>
+                                <AppMenuProvider>
+                                  <ExternalAppsProvider>
+                                    <MusicProvider>
+                                      {children}
+                                      <PermissionDialog />
+                                    </MusicProvider>
+                                  </ExternalAppsProvider>
+                                </AppMenuProvider>
+                              </AppPreferencesProvider>
+                            </FileSystemProvider>
+                          </PermissionsProvider>
+                        </NotificationProvider>
+                      </SettingsProvider>
+                    </ProcessProvider>
+                  </AuthProvider>
+                </DeviceProvider>
+              </ElectronProvider>
             </div>
             <script
               type="application/ld+json"

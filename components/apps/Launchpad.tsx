@@ -1,17 +1,25 @@
 'use client';
 import Image from 'next/image';
 
-import { apps, openSystemItem } from '../data';
+import { apps, openSystemItem, getfilteredapps } from '../data';
 import { useWindows } from '../WindowContext';
 import { useDevice } from '../DeviceContext';
 import { useFileSystem } from '../FileSystemContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { IoSearch } from 'react-icons/io5';
 import { useExternalApps } from '../ExternalAppsContext';
 import TintedAppIcon from '../ui/TintedAppIcon';
+import { iselectron, apps as nativeapps } from '@/utils/platform';
 
 const appsperpage = 35;
+
+interface LinuxApp {
+    name: string;
+    exec: string;
+    icon: string | null;
+    path: string;
+}
 
 export default function Launchpad({ onclose }: { onclose: () => void }) {
     const { addwindow, removewindow, windows, setactivewindow, updatewindow } = useWindows();
@@ -20,9 +28,26 @@ export default function Launchpad({ onclose }: { onclose: () => void }) {
     const { launchApp } = useExternalApps();
     const [searchterm, setsearchterm] = useState('');
     const [page, setpage] = useState(0);
+    const [linuxapps, setlinuxapps] = useState<LinuxApp[]>([]);
+
+    useEffect(() => {
+        if (iselectron) {
+            nativeapps.getinstalled().then((result: any) => {
+                if (result.success && result.apps) {
+                    setlinuxapps(result.apps);
+                }
+            }).catch(() => { });
+        }
+    }, []);
 
     const handleappclick = (app: any) => {
         if (app.id === 'launchpad') return;
+
+        if (app.isLinuxApp) {
+            nativeapps.launch(app.exec);
+            onclose();
+            return;
+        }
 
         if (app.isInstalledApp) {
             launchApp(app.id);
@@ -37,6 +62,8 @@ export default function Launchpad({ onclose }: { onclose: () => void }) {
     };
 
     const allApps = useMemo(() => {
+        const platformApps = getfilteredapps(iselectron);
+
         const installedAppFiles = files.filter(f => f.parent === 'root-apps' && f.name.endsWith('.app'));
         const installedApps = installedAppFiles.map(f => {
             try {
@@ -52,8 +79,18 @@ export default function Launchpad({ onclose }: { onclose: () => void }) {
                 return null;
             }
         }).filter((a): a is NonNullable<typeof a> => a !== null);
-        return [...apps, ...installedApps];
-    }, [files]);
+
+        const linuxAppsFormatted = linuxapps.map(app => ({
+            id: `linux-${app.exec.replace(/[^a-zA-Z0-9]/g, '-')}`,
+            appname: app.name,
+            icon: app.icon || '/appstore.png',
+            exec: app.exec,
+            isLinuxApp: true,
+            category: 'Linux'
+        }));
+
+        return [...platformApps, ...installedApps, ...linuxAppsFormatted];
+    }, [files, linuxapps]);
 
     const filteredapps = allApps.filter(a =>
         a.id !== 'launchpad' &&
@@ -127,12 +164,21 @@ export default function Launchpad({ onclose }: { onclose: () => void }) {
                                 onClick={() => handleappclick(app)}
                             >
                                 <div className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 relative">
-                                    <TintedAppIcon
-                                        appId={app.id}
-                                        appName={app.appname}
-                                        originalIcon={app.icon}
-                                        size={96}
-                                    />
+                                    {'isLinuxApp' in app && app.isLinuxApp && app.icon?.startsWith('/') ? (
+                                        <img
+                                            src={`file://${app.icon}`}
+                                            alt={app.appname}
+                                            className="w-full h-full object-contain rounded-xl"
+                                            onError={(e) => { (e.target as HTMLImageElement).src = '/appstore.png'; }}
+                                        />
+                                    ) : (
+                                        <TintedAppIcon
+                                            appId={app.id}
+                                            appName={app.appname}
+                                            originalIcon={app.icon}
+                                            size={96}
+                                        />
+                                    )}
                                 </div>
                                 <span className="text-white text-[13px] font-medium text-center leading-tight drop-shadow-md truncate max-w-[90px]">
                                     {app.appname}

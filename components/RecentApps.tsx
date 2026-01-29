@@ -166,14 +166,13 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
 
                     <motion.div
                         ref={containerref}
-                        layoutScroll
                         className={`${searchquery == '' ? '' : 'hidden'} relative w-full h-full flex items-center overflow-x-auto scrollbar-hide px-[10vw] py-8 z-[9991]`}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: (searchquery == '' ? 0.2 : 0), ease: "easeOut" }}
                         onClick={(e) => { if (!ignoreclickref.current && e.target === e.currentTarget) onclose(); }}
-                        style={{ willChange: 'opacity' }}
+                        style={{ willChange: 'opacity', transform: 'translateZ(0)' }}
                     >
                         <div className="flex flex-row gap-6 md:gap-10 h-[65vh] items-center">
                             <AnimatePresence mode='popLayout'>
@@ -215,17 +214,19 @@ const AppCard = ({ win, appdata, onkill, onopen }: any) => {
     return (
         <motion.div
             className="relative flex-shrink-0 w-[75vw] md:w-[45vw] lg:w-[350px] h-full flex flex-col"
-            initial={{ opacity: 0, scale: 0.9, y: 50 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
+            initial={{ opacity: 0, scale: 0.95, x: 100 }}
+            animate={{ opacity: 1, scale: 1, x: 0 }}
             exit={{
                 opacity: 0,
-                scale: 0.5,
-                transition: { duration: 0.2 }
+                scale: 0.8,
+                y: -200,
+                transition: { duration: 0.25, ease: "easeOut" }
             }}
             drag="y"
             dragConstraints={{ top: 0, bottom: 0 }}
-            dragElastic={0.1}
+            dragElastic={0.05}
             dragDirectionLock={true}
+            dragMomentum={false}
             onDragStart={() => { isdragging.current = true; }}
             onDragEnd={(_, info) => {
                 setTimeout(() => { isdragging.current = false; }, 100);
@@ -233,10 +234,9 @@ const AppCard = ({ win, appdata, onkill, onopen }: any) => {
                 const swipedistance = info.offset.y;
                 const swipevelocity = info.velocity.y;
 
-
-                if (swipedistance < -150 || swipevelocity < -600) {
+                if (swipedistance < -100 || swipevelocity < -400) {
                     onkill();
-                } else if (swipedistance > 150 || swipevelocity > 600) {
+                } else if (swipedistance > 100 || swipevelocity > 400) {
                     onopen();
                 }
             }}
@@ -245,13 +245,17 @@ const AppCard = ({ win, appdata, onkill, onopen }: any) => {
                 e.stopPropagation();
                 onopen();
             }}
-            style={{ touchAction: 'pan-x', willChange: 'transform' }}
+            style={{
+                touchAction: 'pan-x',
+                willChange: 'transform, opacity',
+                transform: 'translateZ(0)'
+            }}
             transition={{
                 type: "spring",
-                stiffness: 350,
-                damping: 30
+                stiffness: 120,
+                damping: 22,
+                mass: 0.5
             }}
-            layout
         >
             <div className="flex items-center gap-2 mb-3 px-1 pointer-events-none">
                 {appdata && (

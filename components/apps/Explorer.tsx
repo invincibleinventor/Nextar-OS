@@ -87,6 +87,9 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
     const containerref = useRef<HTMLDivElement>(null);
     const fileViewRef = useRef<HTMLDivElement>(null);
     const [isTrashView, setIsTrashView] = useState(istrash || false);
+    const [sortby, setsortby] = useState<'name' | 'date' | 'size' | 'type'>('name');
+    const [sortasc, setsortasc] = useState(true);
+    const [showhidden, setshowhidden] = useState(false);
 
     const trashHasItems = useMemo(() => {
         return files.some(f => f.parent === currentUserTrashId);
@@ -153,26 +156,57 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
     };
 
     const getcurrentfiles = (): filesystemitem[] => {
+        let result: filesystemitem[] = [];
+
         if (isTrashView) {
-            return files.filter(f => f.parent === currentUserTrashId && f.id !== currentUserTrashId);
-        }
+            result = files.filter(f => f.parent === currentUserTrashId && f.id !== currentUserTrashId);
+        } else {
+            let currentparentid = 'root';
 
-        let currentparentid = 'root';
+            for (const foldername of currentpath) {
+                const folder = files.find(i => i.name.trim() === foldername.trim() && i.parent === currentparentid && !i.isTrash);
+                if (folder) {
+                    currentparentid = folder.id;
+                }
+            }
 
-        for (const foldername of currentpath) {
-            const folder = files.find(i => i.name.trim() === foldername.trim() && i.parent === currentparentid && !i.isTrash);
-            if (folder) {
-                currentparentid = folder.id;
+            result = files.filter(i => i.parent === currentparentid && !i.isTrash);
+
+            if (searchquery) {
+                result = files.filter(f => f.name.toLowerCase().includes(searchquery.toLowerCase()) && !f.isTrash);
             }
         }
 
-        let currentFiles = files.filter(i => i.parent === currentparentid && !i.isTrash);
-
-        if (searchquery) {
-            currentFiles = files.filter(f => f.name.toLowerCase().includes(searchquery.toLowerCase()) && !f.isTrash);
+        if (!showhidden) {
+            result = result.filter(f => !f.name.startsWith('.'));
         }
 
-        return currentFiles;
+        const isfolder = (f: filesystemitem) => f.mimetype === 'folder' || f.mimetype?.startsWith('inode/directory');
+        const folders = result.filter(f => isfolder(f));
+        const filesonly = result.filter(f => !isfolder(f));
+
+        const sortfn = (a: filesystemitem, b: filesystemitem) => {
+            let cmp = 0;
+            switch (sortby) {
+                case 'name':
+                    cmp = a.name.localeCompare(b.name);
+                    break;
+                case 'date':
+                    cmp = (a.date || '').localeCompare(b.date || '');
+                    break;
+                case 'size':
+                    const sizea = parseInt(a.size || '0', 10) || 0;
+                    const sizeb = parseInt(b.size || '0', 10) || 0;
+                    cmp = sizea - sizeb;
+                    break;
+                case 'type':
+                    cmp = (a.mimetype || '').localeCompare(b.mimetype || '');
+                    break;
+            }
+            return sortasc ? cmp : -cmp;
+        };
+
+        return [...folders.sort(sortfn), ...filesonly.sort(sortfn)];
     };
 
 
@@ -446,7 +480,18 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                             openSystemItem(currentFolderItem, { addwindow, windows, updatewindow, setactivewindow, ismobile }, 'getinfo');
                         }
                     }
-                }
+                },
+                { separator: true, label: '' },
+                {
+                    label: `Sort by: ${sortby.charAt(0).toUpperCase() + sortby.slice(1)}`,
+                    children: [
+                        { label: `Name ${sortby === 'name' ? (sortasc ? '↑' : '↓') : ''}`, action: () => { if (sortby === 'name') setsortasc(!sortasc); else { setsortby('name'); setsortasc(true); } } },
+                        { label: `Date ${sortby === 'date' ? (sortasc ? '↑' : '↓') : ''}`, action: () => { if (sortby === 'date') setsortasc(!sortasc); else { setsortby('date'); setsortasc(true); } } },
+                        { label: `Size ${sortby === 'size' ? (sortasc ? '↑' : '↓') : ''}`, action: () => { if (sortby === 'size') setsortasc(!sortasc); else { setsortby('size'); setsortasc(true); } } },
+                        { label: `Type ${sortby === 'type' ? (sortasc ? '↑' : '↓') : ''}`, action: () => { if (sortby === 'type') setsortasc(!sortasc); else { setsortby('type'); setsortasc(true); } } },
+                    ]
+                },
+                { label: showhidden ? '✓ Show Hidden Files' : 'Show Hidden Files', action: () => setshowhidden(!showhidden) }
             ];
         }
     };
