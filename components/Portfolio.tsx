@@ -2,211 +2,540 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { useGSAP } from '@gsap/react';
 import { personal } from './data';
 import { useDevice } from './DeviceContext';
-import { IoLogoGithub, IoLogoLinkedin, IoMail, IoDownload, IoPlay, IoChevronDown, IoFlash, IoLaptop, IoLocation, IoSchool, IoGlobe, IoBriefcase, IoCalendar, IoCheckmark, IoArrowForward } from 'react-icons/io5';
+import { IoLogoGithub, IoLogoLinkedin, IoMail, IoDownload, IoPlay, IoGlobe, IoBriefcase, IoCalendar, IoArrowForward } from 'react-icons/io5';
 
-if (typeof window !== 'undefined') gsap.registerPlugin(ScrollTrigger);
+const BG = '#e8e4df';
+const INK = '#1a1a1e';
+const RED = '#d4594a';
+const GRAY = '#6b6b6b';
+const LIGHTGRAY = '#c4c0bb';
 
-const NEON = '#F535AA';
-const CYAN = '#00F0FF';
-const YELLOW = '#FFE600';
-const LIME = '#B2FF00';
-const PURPLE = '#A855F7';
 
-const PROJECTS = [
-    { name: 'NextarOS', desc: 'Browser-based macOS/iOS simulation with window management, virtual file system, dock, and multiple apps', url: 'https://github.com/invincibleinventor/nextar-os', live: 'https://baladev.in', color: NEON },
-    { name: 'SASTracker', desc: 'Question paper archive for SASTRA students with AI solutions and resume sharing', url: 'https://github.com/invincibleinventor/sastracker', live: 'https://sastracker.vercel.app', color: CYAN },
-    { name: 'SquadSearch', desc: 'Anonymous hiring platform that verifies skills through GitHub analysis', url: 'https://github.com/invincibleinventor/squadsearch', live: 'https://squadsearch.vercel.app', color: YELLOW },
-    { name: 'Falar', desc: 'Social media platform with posts, messaging, and content discovery', url: 'https://github.com/invincibleinventor/falarapp', live: 'https://falarapp.vercel.app', color: LIME },
-    { name: 'CleanMyLinkedIn', desc: 'Chrome extension that scores LinkedIn posts and filters engagement bait', url: 'https://github.com/invincibleinventor/cleanmylinkedin', live: null, color: PURPLE },
-    { name: 'AIButton', desc: 'Crowdsourced AI content detection for LinkedIn posts', url: 'https://github.com/invincibleinventor/aibutton', live: null, color: NEON },
-    { name: 'EzyPing', desc: 'Website change monitoring tool', url: 'https://github.com/invincibleinventor/ezyping', live: 'https://ezyping.vercel.app', color: CYAN },
-];
 
-const AnimatedGrid = () => {
-    const [cells, setcells] = useState<number[]>([]);
-    useEffect(() => {
-        const interval = setInterval(() => {
-            const newcells = [];
-            for (let i = 0; i < 8; i++) newcells.push(Math.floor(Math.random() * 100));
-            setcells(newcells);
-        }, 2000);
-        return () => clearInterval(interval);
-    }, []);
+const TranslatableName = () => {
+    const [hovered, sethovered] = useState(false);
+
     return (
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <div className="absolute inset-0 opacity-30" style={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gridTemplateRows: 'repeat(10, 1fr)' }}>
-                {[...Array(100)].map((_, i) => (
-                    <motion.div key={i} style={{ aspectRatio: '1/1', border: '1px solid #222' }} animate={{ background: cells.includes(i) ? [NEON, CYAN, YELLOW, LIME][Math.floor(Math.random() * 4)] + '40' : 'transparent', boxShadow: cells.includes(i) ? `0 0 20px ${[NEON, CYAN, YELLOW, LIME][Math.floor(Math.random() * 4)]}40` : 'none' }} transition={{ duration: 0.5 }} />
-                ))}
-            </div>
-        </div>
-    );
-};
-
-const GlowOrbs = () => (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <motion.div className="absolute w-[300px] md:w-[800px] h-[300px] md:h-[800px] rounded-full blur-[150px] md:blur-[200px] opacity-[0.15]" style={{ background: NEON, top: '-20%', left: '-10%' }} animate={{ x: [0, 100, 0], y: [0, 100, 0] }} transition={{ duration: 40, repeat: Infinity }} />
-        <motion.div className="absolute w-[300px] md:w-[700px] h-[300px] md:h-[700px] rounded-full blur-[120px] md:blur-[180px] opacity-[0.12]" style={{ background: CYAN, bottom: '0%', left: '60%' }} animate={{ x: [0, -80, 0], y: [0, -60, 0] }} transition={{ duration: 35, repeat: Infinity }} />
-        <motion.div className="absolute w-[200px] md:w-[500px] h-[200px] md:h-[500px] rounded-full blur-[100px] md:blur-[150px] opacity-[0.10]" style={{ background: PURPLE, top: '30%', left: '20%' }} animate={{ scale: [1, 1.4, 1] }} transition={{ duration: 20, repeat: Infinity }} />
-    </div>
-);
-
-const BootSequence = ({ onComplete }: { onComplete: () => void }) => {
-    const [phase, setphase] = useState(0);
-    const msgs = ['Loading kernel...', 'Mounting filesystem...', 'Starting UI...', 'Boot complete'];
-    useEffect(() => {
-        const phases = msgs.map((_, i) => setTimeout(() => setphase(i), i * 80));
-        const complete = setTimeout(onComplete, msgs.length * 80 + 60);
-        return () => { phases.forEach(clearTimeout); clearTimeout(complete); };
-    }, [onComplete]);
-    return (
-        <motion.div className="fixed inset-0 z-[100] bg-black flex items-center justify-center font-mono" exit={{ opacity: 0 }}>
-            <div className="text-center">
-                <div className="text-2xl font-black mb-4" style={{ color: NEON }}>NEXTAROS</div>
-                <div className="text-xs" style={{ color: CYAN }}>{msgs[phase]}</div>
-            </div>
+        <motion.div
+            className="relative cursor-pointer"
+            onMouseEnter={() => sethovered(true)}
+            onMouseLeave={() => sethovered(false)}
+        >
+            <AnimatePresence mode="wait">
+                {hovered ? (
+                    <motion.span
+                        key="english"
+                        className="font-black text-lg leading-tight block"
+                        style={{ color: INK }}
+                        initial={{ opacity: 0, y: 10, rotateX: -90 }}
+                        animate={{ opacity: 1, y: 0, rotateX: 0 }}
+                        exit={{ opacity: 0, y: -10, rotateX: 90 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        BALA
+                    </motion.span>
+                ) : (
+                    <motion.span
+                        key="japanese"
+                        className="font-black text-lg leading-tight block"
+                        style={{ color: INK }}
+                        initial={{ opacity: 0, y: 10, rotateX: -90 }}
+                        animate={{ opacity: 1, y: 0, rotateX: 0 }}
+                        exit={{ opacity: 0, y: -10, rotateX: 90 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        バラ
+                    </motion.span>
+                )}
+            </AnimatePresence>
         </motion.div>
     );
 };
 
-const FloatingCTA = ({ onBoot }: { onBoot: () => void }) => {
-    const [show, setshow] = useState(false);
-    useEffect(() => { const t = setTimeout(() => setshow(true), 6000); return () => clearTimeout(t); }, []);
+const TranslatableText = ({ japanese, english, className = '', style = {} }: { japanese: string; english: string; className?: string; style?: React.CSSProperties }) => {
+    const [hovered, sethovered] = useState(false);
+
     return (
-        <AnimatePresence>
-            {show && (
-                <motion.button onClick={onBoot} className="fixed bottom-4 right-4 z-50 flex items-center gap-2 px-4 py-2 text-black text-xs font-bold uppercase tracking-wider" style={{ background: `linear-gradient(135deg, ${NEON}, ${CYAN})` }} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} whileHover={{ scale: 1.05 }}>
-                    <IoLaptop className="w-3 h-3" /> Try NextarOS
-                </motion.button>
-            )}
-        </AnimatePresence>
+        <motion.div
+            className={`relative cursor-pointer inline-block ${className}`}
+            onMouseEnter={() => sethovered(true)}
+            onMouseLeave={() => sethovered(false)}
+            style={style}
+        >
+            <AnimatePresence mode="wait">
+                {hovered ? (
+                    <motion.span
+                        key="english"
+                        className="block"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.25 }}
+                    >
+                        {english}
+                    </motion.span>
+                ) : (
+                    <motion.span
+                        key="japanese"
+                        className="block"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.25 }}
+                    >
+                        {japanese}
+                    </motion.span>
+                )}
+            </AnimatePresence>
+        </motion.div>
+    );
+};
+
+const PROJECTS = [
+    { name: 'NextarOS', desc: 'Browser-based macOS/iOS simulation with window management and installable apps', url: 'https://github.com/invincibleinventor/nextar-os', live: 'https://baladev.in', tags: ['Next.js', 'React'] },
+    { name: 'SASTracker', desc: 'Question paper archive for SASTRA students with AI solutions', url: 'https://github.com/invincibleinventor/sastracker', live: 'https://sastracker.vercel.app', tags: ['React', 'Supabase'] },
+    { name: 'SquadSearch', desc: 'Anonymous hiring platform verifying skills via GitHub', url: 'https://github.com/invincibleinventor/squadsearch', live: 'https://squadsearch.vercel.app', tags: ['Next.js'] },
+    { name: 'Falar', desc: 'Social media platform with posts and messaging', url: 'https://github.com/invincibleinventor/falarapp', live: 'https://falarapp.vercel.app', tags: ['React'] },
+       { name: 'AIButton', desc: 'Crowdsourced AI content detection for LinkedIn posts', url: 'https://github.com/invincibleinventor/aibutton', live: null, tags: ['Chrome'] },
+
+    { name: 'CleanMyLinkedIn', desc: 'Chrome extension filtering LinkedIn engagement bait', url: 'https://github.com/invincibleinventor/cleanmylinkedin', live: null, tags: ['Chrome'] },
+    { name: 'EzyPing', desc: 'Website change monitoring tool', url: 'https://github.com/invincibleinventor/ezyping', live: 'https://ezyping.vercel.app', tags: ['Python'] },
+];
+
+const seededrandom = (seed: number) => {
+    const x = Math.sin(seed * 9999) * 10000;
+    return x - Math.floor(x);
+};
+
+const RainEffect = () => (
+    <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-30">
+        {[...Array(80)].map((_, i) => {
+            const r1 = seededrandom(i);
+            const r2 = seededrandom(i + 100);
+            const r3 = seededrandom(i + 200);
+            const r4 = seededrandom(i + 300);
+            return (
+                <motion.div
+                    key={i}
+                    className="absolute w-px"
+                    style={{
+                        left: `${r1 * 100}%`,
+                        height: 40 + r2 * 80,
+                        top: -100,
+                        background: `linear-gradient(180deg, transparent, ${GRAY}60, transparent)`
+                    }}
+                    animate={{ y: ['0vh', '120vh'] }}
+                    transition={{ duration: 0.5 + r3 * 0.3, repeat: Infinity, delay: r4 * 1.5, ease: 'linear' }}
+                />
+            );
+        })}
+    </div>
+);
+
+const FloatingEmbers = () => (
+    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {[...Array(15)].map((_, i) => {
+            const r1 = seededrandom(i + 500);
+            const r2 = seededrandom(i + 600);
+            const r3 = seededrandom(i + 700);
+            const r4 = seededrandom(i + 800);
+            const r5 = seededrandom(i + 900);
+            const r6 = seededrandom(i + 1000);
+            return (
+                <motion.div
+                    key={i}
+                    className="absolute w-1 h-1 rounded-full"
+                    style={{
+                        left: `${20 + r1 * 60}%`,
+                        bottom: `${r2 * 30}%`,
+                        background: RED,
+                        boxShadow: `0 0 10px ${RED}, 0 0 20px ${RED}50`
+                    }}
+                    animate={{
+                        y: [0, -200 - r3 * 300],
+                        x: [0, (r4 - 0.5) * 100],
+                        opacity: [0, 1, 0],
+                        scale: [0.5, 1, 0.3]
+                    }}
+                    transition={{ duration: 4 + r5 * 3, repeat: Infinity, delay: r6 * 5, ease: 'easeOut' }}
+                />
+            );
+        })}
+    </div>
+);
+
+const InkSplatter = ({ className = '' }: { className?: string }) => (
+    <motion.div
+        className={`absolute pointer-events-none ${className}`}
+        initial={{ scale: 0, opacity: 0 }}
+        whileInView={{ scale: 1, opacity: 0.03 }}
+        transition={{ duration: 0.5 }}
+    >
+        <svg viewBox="0 0 200 200" className="w-full h-full">
+            <circle cx="100" cy="100" r="60" fill={INK} />
+            <ellipse cx="160" cy="90" rx="30" ry="20" fill={INK} />
+            <ellipse cx="50" cy="120" rx="25" ry="15" fill={INK} />
+            <circle cx="80" cy="40" r="20" fill={INK} />
+            <circle cx="140" cy="150" r="15" fill={INK} />
+        </svg>
+    </motion.div>
+);
+
+const TextureOverlay = () => (
+    <div className="fixed inset-0 pointer-events-none z-[9999] opacity-[0.04]" style={{
+        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+    }} />
+);
+
+const RedSun = ({ size = 200, className = '' }: { size?: number; className?: string }) => (
+    <motion.div
+        className={`rounded-full ${className}`}
+        style={{ width: size, height: size, background: RED }}
+        animate={{ scale: [1, 1.02, 1] }}
+        transition={{ duration: 4, repeat: Infinity }}
+    />
+);
+
+const GrassLine = () => (
+    <div className="absolute bottom-0 left-0 right-0 h-20 overflow-hidden z-0">
+        <svg viewBox="0 0 1200 80" className="w-full h-full" preserveAspectRatio="none">
+            <defs>
+                <linearGradient id="grassgrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={INK} stopOpacity="0.9" />
+                    <stop offset="100%" stopColor={INK} />
+                </linearGradient>
+            </defs>
+            {[...Array(60)].map((_, i) => {
+                const r1 = seededrandom(i + 1100);
+                const r2 = seededrandom(i + 1200);
+                const r3 = seededrandom(i + 1300);
+                const r4 = seededrandom(i + 1400);
+                const x = i * 20 + r1 * 10;
+                const h = 20 + r2 * 40;
+                const w = 2 + r3 * 3;
+                const bend = (r4 - 0.5) * 15;
+                return <path key={i} d={`M${x},80 Q${x + bend},${80 - h / 2} ${x + bend * 0.5},${80 - h}`} stroke="url(#grassgrad)" strokeWidth={w} fill="none" />;
+            })}
+            <rect x="0" y="70" width="1200" height="10" fill={INK} />
+        </svg>
+    </div>
+);
+
+const SamuraiSilhouette = () => (
+    <motion.div
+        className="absolute bottom-0 right-[5%] md:right-[12%] h-[55%] md:h-[70%] flex items-end z-10"
+        initial={{ opacity: 0, x: 50 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.3, duration: 0.8 }}
+    >
+        <Image
+            src="/vecteezy_samurai-silhouette-vector_11395758-Photoroom.png"
+            alt="Samurai"
+            width={400}
+            height={500}
+            className="h-full w-auto object-contain"
+            style={{ filter: 'drop-shadow(0 0 30px rgba(0,0,0,0.2))' }}
+            priority
+        />
+    </motion.div>
+);
+
+const JpButton = ({ children, primary = false, onClick, href }: { children: React.ReactNode; primary?: boolean; onClick?: () => void; href?: string }) => {
+    const Component = href ? motion.a : motion.button;
+    return (
+        <Component
+            onClick={onClick}
+            href={href}
+            target={href ? '_blank' : undefined}
+            className="px-8 py-3 font-bold text-sm uppercase tracking-wider"
+            style={{
+                background: primary ? INK : 'transparent',
+                color: primary ? BG : INK,
+                border: `2px solid ${INK}`
+            }}
+            whileHover={{ scale: 1.02, background: primary ? '#2a2a2e' : `${INK}10` }}
+            whileTap={{ scale: 0.98 }}
+        >
+            {children}
+        </Component>
+    );
+};
+
+const BootSequence = ({ onComplete }: { onComplete: () => void }) => {
+    const [progress, setprogress] = useState(0);
+    useEffect(() => {
+        const interval = setInterval(() => setprogress(p => p < 100 ? p + 10 : p), 50);
+        const complete = setTimeout(onComplete, 600);
+        return () => { clearInterval(interval); clearTimeout(complete); };
+    }, [onComplete]);
+    return (
+        <motion.div className="fixed inset-0 z-[100] flex items-center justify-center" style={{ background: BG }} exit={{ opacity: 0 }}>
+            <div className="text-center">
+                <motion.div className="text-4xl font-black mb-6" style={{ color: INK }} animate={{ opacity: [0.5, 1, 0.5] }} transition={{ duration: 1, repeat: Infinity }}>
+                    起動中
+                </motion.div>
+                <div className="w-48 h-1" style={{ background: LIGHTGRAY }}>
+                    <motion.div className="h-full" style={{ background: RED, width: `${progress}%` }} />
+                </div>
+            </div>
+        </motion.div>
     );
 };
 
 const HeroSection = ({ onBoot }: { onBoot: () => void }) => {
     const { scrollY } = useScroll();
     const opacity = useTransform(scrollY, [0, 400], [1, 0]);
-    const y = useTransform(scrollY, [0, 400], [0, 80]);
+    const y = useTransform(scrollY, [0, 400], [0, 100]);
+    const sunscale = useTransform(scrollY, [0, 300], [1, 1.3]);
+    const samuraix = useTransform(scrollY, [0, 300], [0, 50]);
+
 
     return (
-        <motion.section className="min-h-screen flex items-center justify-center px-4 md:px-12 py-16 md:py-20 relative overflow-hidden" style={{ opacity, y }}>
-            <AnimatedGrid />
-            <GlowOrbs />
-            <div className="max-w-6xl w-full relative z-10">
-                <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
-                    <motion.div className="order-2 md:order-1" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }}>
-                        <motion.div className="inline-block px-3 py-1 mb-3 text-xs md:text-sm font-bold uppercase tracking-widest border-2" style={{ borderColor: NEON, color: NEON }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>Full Stack Developer</motion.div>
-                        <motion.h1 className="text-4xl md:text-7xl font-black uppercase tracking-tighter mb-3" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-                            <span style={{ color: NEON }}>Bala</span>
-                            <span className="text-white">subramanian</span>
-                        </motion.h1>
-                        <motion.p className="text-sm md:text-lg text-gray-400 mb-4 md:mb-6 max-w-lg leading-relaxed" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-                            Second-year CS student building production-ready web applications with Next.js, React &amp; TypeScript.
-                        </motion.p>
-                        <motion.div className="flex flex-wrap gap-3 text-xs text-gray-500 mb-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
-                            <span className="flex items-center gap-2"><IoLocation style={{ color: CYAN }} /> {personal.personal.location}</span>
-                            <span className="flex items-center gap-2"><IoSchool style={{ color: YELLOW }} /> SASTRA University</span>
-                        </motion.div>
-                        <motion.div className="flex flex-wrap gap-2" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
-                            <motion.button onClick={onBoot} className="group flex items-center gap-2 px-4 md:px-6 py-2 md:py-3 text-black text-xs font-bold uppercase tracking-wider relative overflow-hidden" style={{ background: NEON }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                                <motion.div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: `linear-gradient(90deg, ${NEON}, ${CYAN})` }} />
-                                <span className="relative flex items-center gap-2"><IoPlay className="w-3 h-3" /> Boot NextarOS</span>
-                            </motion.button>
-                            <motion.a href={personal.personal.socials.github} target="_blank" className="flex items-center gap-2 px-4 md:px-6 py-2 md:py-3 border-2 border-[#333] text-gray-300 text-xs uppercase tracking-wider hover:border-white hover:text-white transition-colors" whileHover={{ scale: 1.02 }}><IoLogoGithub className="w-3 h-3" /> Github</motion.a>
-                            <motion.a href="/Balasubramanian TBR.pdf" target="_blank" className="flex items-center gap-2 px-4 md:px-6 py-2 md:py-3 border-2 border-[#333] text-gray-300 text-xs uppercase tracking-wider hover:border-white hover:text-white transition-colors" whileHover={{ scale: 1.02 }}><IoDownload className="w-3 h-3" /> Resume</motion.a>
-                        </motion.div>
-                    </motion.div>
-                    <motion.div className="order-1 md:order-2 flex justify-center overflow-hidden" initial={{ opacity: 0, scale: 0.8, rotate: 5 }} animate={{ opacity: 1, scale: 1, rotate: 0 }} transition={{ duration: 0.6, type: 'spring' }}>
-                        <div className="relative p-8 md:p-10">
-                            <div className="w-36 h-36 md:w-64 md:h-64 relative overflow-hidden">
-                                <Image src="/bala.jpeg" alt="Bala" fill className="object-cover" style={{ filter: 'grayscale(100%) contrast(1.2)' }} />
-                                <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${NEON}50, ${CYAN}30)`, mixBlendMode: 'color' }} />
-                                <div className="absolute inset-0" style={{ background: 'repeating-linear-gradient(0deg, transparent 0px, transparent 3px, rgba(0,0,0,0.2) 3px, rgba(0,0,0,0.2) 6px)' }} />
-                            </div>
-                            <motion.div className="absolute inset-6 md:inset-4 border-2 border-dashed" style={{ borderColor: NEON }} animate={{ rotate: 360 }} transition={{ duration: 40, repeat: Infinity, ease: 'linear' }} />
-                            <motion.div className="absolute inset-2 md:inset-0 border border-dashed opacity-50" style={{ borderColor: CYAN }} animate={{ rotate: -360 }} transition={{ duration: 50, repeat: Infinity, ease: 'linear' }} />
-                            <motion.div className="absolute bottom-6 right-6 md:bottom-8 md:right-8 px-3 py-1 text-[10px] font-bold uppercase" style={{ background: YELLOW, color: 'black' }}>7+ Projects</motion.div>
+        <motion.section className="h-screen relative overflow-hidden flex items-center" style={{ background: BG, opacity }}>
+            <RainEffect />
+            <FloatingEmbers />
+
+            <motion.div className="absolute right-[15%] md:right-[22%] top-[40%] -translate-y-1/2 z-0" style={{ scale: sunscale }}>
+                <RedSun size={320} />
+                <motion.div
+                    className="absolute inset-0 rounded-full"
+                    style={{ background: `radial-gradient(circle, ${RED}40 0%, transparent 70%)` }}
+                    animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0.2, 0.5] }}
+                    transition={{ duration: 3, repeat: Infinity }}
+                />
+            </motion.div>
+
+            <motion.div style={{ x: samuraix }}>
+                <SamuraiSilhouette />
+            </motion.div>
+            <GrassLine />
+
+            <motion.div
+                className="absolute right-[2%] top-[20%] text-[12rem] md:text-[18rem] font-black leading-none select-none pointer-events-none"
+                style={{ color: `${LIGHTGRAY}25`, writingMode: 'vertical-rl' }}
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.8, duration: 1 }}
+            >
+                開発
+            </motion.div>
+
+            <motion.div className="relative z-20 max-w-4xl mx-auto px-8 py-20" style={{ y }}>
+                <nav className="fixed top-0 left-0 right-0 z-50 px-8 py-5 flex items-center justify-between backdrop-blur-sm" style={{ background: `${BG}dd` }}>
+                    <motion.div className="flex items-center gap-3" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
+                        <div className="w-10 h-10 rounded-sm flex items-center justify-center font-black text-lg" style={{ background: RED, color: BG }}>B</div>
+                        <div className="flex flex-col">
+                            <TranslatableName />
+                            <span className="text-[10px] tracking-widest" style={{ color: GRAY }}>DEVELOPER</span>
                         </div>
                     </motion.div>
+                    <div className="hidden md:flex items-center gap-8 text-sm font-medium" style={{ color: GRAY }}>
+                        <motion.a href="#projects" className="hover:text-black transition-colors relative group" whileHover={{ y: -2 }}>
+                            PROJECTS
+                            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-red-500 group-hover:w-full transition-all" style={{ background: RED }} />
+                        </motion.a>
+                        <motion.a href="#skills" className="hover:text-black transition-colors relative group" whileHover={{ y: -2 }}>
+                            SKILLS
+                            <span className="absolute -bottom-1 left-0 w-0 h-0.5 group-hover:w-full transition-all" style={{ background: RED }} />
+                        </motion.a>
+                        <motion.a href="#about" className="hover:text-black transition-colors relative group" whileHover={{ y: -2 }}>
+                            ABOUT
+                            <span className="absolute -bottom-1 left-0 w-0 h-0.5 group-hover:w-full transition-all" style={{ background: RED }} />
+                        </motion.a>
+                        <JpButton primary onClick={onBoot}>NEXTAR OS</JpButton>
+                    </div>
+                </nav>
+
+                <div className="mt-24 md:mt-20">
+                    <TranslatableText
+                        japanese="自分自身の戦いを戦う開発者"
+                        english="A Dev Fighting His Own Wars"
+                        className="text-5xl md:text-7xl lg:text-8xl font-black leading-[1.05] mb-6"
+                        style={{ color: INK }}
+                    />
+
+                    <motion.div
+                        className="flex items-center gap-3 mb-6"
+                        initial={{ opacity: 0, x: -30 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.8 }}
+                    >
+                        <div className="h-px flex-1 max-w-[60px]" style={{ background: RED }} />
+                        <span className="text-xs font-bold tracking-[0.3em]" style={{ color: RED }}>FULL STACK DEVELOPER</span>
+                    </motion.div>
+
+                    <motion.p
+                        className="text-base md:text-lg max-w-md mb-10 leading-relaxed"
+                        style={{ color: GRAY }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.9 }}
+                    >
+                        Engineering student from {personal.personal.location} crafting production-ready web applications. 4+ years shipping real products.
+                    </motion.p>
+
+                    <motion.div
+                        className="flex flex-wrap gap-4 mb-12"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 1 }}
+                    >
+                        <JpButton primary onClick={onBoot}>LAUNCH OS</JpButton>
+                        <JpButton href={personal.personal.socials.github}>GITHUB</JpButton>
+                        <JpButton href="/Balasubramanian TBR.pdf">RESUME</JpButton>
+                    </motion.div>
+
+                    <motion.div
+                        className="flex gap-8"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 1.2 }}
+                    >
+                        {[{ n: '7+', l: 'Projects' }, { n: '4+', l: 'Years' }, { n: '15+', l: 'Technologies' }].map((stat, i) => (
+                            <motion.div
+                                key={i}
+                                className="text-center"
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                transition={{ delay: 1.3 + i * 0.1, type: 'spring' }}
+                            >
+                                <div className="text-2xl md:text-3xl font-black" style={{ color: INK }}>{stat.n}</div>
+                                <div className="text-[10px] uppercase tracking-widest" style={{ color: GRAY }}>{stat.l}</div>
+                            </motion.div>
+                        ))}
+                    </motion.div>
                 </div>
-                <motion.div className="mt-10 md:mt-16 grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }}>
-                    {[{ n: '7+', l: 'Projects', c: NEON }, { n: '500+', l: 'Commits', c: CYAN }, { n: '15+', l: 'Technologies', c: YELLOW }, { n: '2+', l: 'Years', c: LIME }].map((s, i) => (
-                        <motion.div key={i} className="relative border-2 border-[#222] p-3 text-center bg-black/50 backdrop-blur-sm group overflow-hidden" whileHover={{ borderColor: s.c, y: -4 }}>
-                            <motion.div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: `radial-gradient(circle at center, ${s.c}15, transparent 70%)` }} />
-                            <div className="relative z-10">
-                                <div className="text-xl md:text-3xl font-black" style={{ color: s.c }}>{s.n}</div>
-                                <div className="text-[9px] md:text-xs text-gray-500 uppercase tracking-widest mt-1">{s.l}</div>
-                            </div>
-                        </motion.div>
-                    ))}
-                </motion.div>
-            </div>
-            <motion.div className="absolute bottom-6 left-1/2 -translate-x-1/2" animate={{ y: [0, 8, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
-                <IoChevronDown className="w-5 h-5" style={{ color: NEON }} />
             </motion.div>
         </motion.section>
     );
 };
 
-const ProjectsSection = ({ scroller }: { scroller: React.RefObject<HTMLDivElement | null> }) => {
-    const sectionref = useRef<HTMLDivElement>(null);
-    const [hovered, sethovered] = useState<number | null>(null);
-
-    useGSAP(() => {
-        if (!sectionref.current || !scroller.current) return;
-        gsap.fromTo('.project-row', { x: -60, opacity: 0 }, {
-            x: 0, opacity: 1, duration: 0.5, stagger: 0.08, ease: 'power3.out',
-            scrollTrigger: { trigger: sectionref.current, start: 'top 70%', scroller: scroller.current }
-        });
-    }, { scope: sectionref, dependencies: [scroller] });
+const ProjectsSection = () => {
+    const [hoveredidx, sethoveredidx] = useState<number | null>(null);
 
     return (
-        <section ref={sectionref} className="py-16 md:py-24 px-4 md:px-12 bg-black overflow-hidden">
-            <div className="max-w-4xl mx-auto">
-                <div className="flex items-center gap-3 md:gap-4 mb-8 md:mb-12">
-                    <div className="w-12 h-12 md:w-14 md:h-14 border-2 flex items-center justify-center" style={{ borderColor: PURPLE }}>
-                        <span className="text-xl md:text-2xl font-black" style={{ color: PURPLE }}>P</span>
-                    </div>
-                    <div>
-                        <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tight">Projects</h2>
-                        <div className="h-0.5 w-14 md:w-20 mt-1" style={{ background: `linear-gradient(90deg, ${PURPLE}, transparent)` }} />
-                    </div>
-                </div>
+        <section id="projects" className="py-32 px-8 relative overflow-hidden" style={{ background: `linear-gradient(180deg, ${BG} 0%, #d8d4cf 50%, ${BG} 100%)` }}>
+            <RainEffect />
+            <FloatingEmbers />
 
-                <div className="space-y-3">
+            <InkSplatter className="w-[600px] h-[600px] -right-[200px] -top-[100px]" />
+            <InkSplatter className="w-[400px] h-[400px] -left-[100px] bottom-[10%]" />
+
+            <motion.div
+                className="absolute left-[5%] top-20 text-[8rem] md:text-[12rem] font-black leading-none select-none pointer-events-none"
+                style={{ color: `${LIGHTGRAY}15`, writingMode: 'vertical-rl' }}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+            >
+                作品集
+            </motion.div>
+
+            <div className="max-w-6xl mx-auto relative z-10">
+                <motion.div className="flex items-center gap-6 mb-20" initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}>
+                    <div className="flex items-center gap-3">
+                        <motion.div className="w-16 h-16 rounded-sm flex items-center justify-center" style={{ background: RED }} whileHover={{ rotate: 5 }}>
+                            <span className="text-3xl font-black" style={{ color: BG }}>壱</span>
+                        </motion.div>
+                        <div>
+                            <h2 className="text-4xl md:text-5xl font-black" style={{ color: INK }}>PROJECTS</h2>
+                            <div className="flex items-center gap-2 mt-1">
+                                <div className="h-px w-12" style={{ background: RED }} />
+                                <span className="text-xs tracking-[0.3em]" style={{ color: GRAY }}>FEATURED WORK</span>
+                            </div>
+                        </div>
+                    </div>
+                </motion.div>
+
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {PROJECTS.map((p, i) => (
-                        <motion.div key={i} className="project-row" onMouseEnter={() => sethovered(i)} onMouseLeave={() => sethovered(null)}>
-                            <div className="border-2 p-4 md:p-5 transition-all duration-300 relative overflow-hidden" style={{ borderColor: hovered === i ? p.color : '#222', background: hovered === i ? `${p.color}08` : 'transparent' }}>
-                                <div className="absolute left-0 top-0 w-1 h-full transition-all duration-300" style={{ background: hovered === i ? p.color : 'transparent' }} />
+                        <motion.div
+                            key={i}
+                            className="group relative"
+                            initial={{ opacity: 0, y: 50, rotate: i % 2 === 0 ? -1 : 1 }}
+                            whileInView={{ opacity: 1, y: 0, rotate: 0 }}
+                            transition={{ delay: i * 0.08, type: 'spring', stiffness: 100 }}
+                            onHoverStart={() => sethoveredidx(i)}
+                            onHoverEnd={() => sethoveredidx(null)}
+                        >
+                            <motion.div
+                                className="absolute inset-0 -z-10"
+                                style={{ background: RED }}
+                                initial={{ x: 0, y: 0 }}
+                                animate={{ x: hoveredidx === i ? 8 : 0, y: hoveredidx === i ? 8 : 0 }}
+                            />
 
-                                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-3 mb-2">
-                                            <h3 className="text-base md:text-lg font-black uppercase tracking-tight" style={{ color: hovered === i ? p.color : 'white' }}>{p.name}</h3>
-                                            <motion.div animate={{ x: hovered === i ? 6 : 0 }} transition={{ duration: 0.2 }}>
-                                                <IoArrowForward className="w-4 h-4 md:w-5 md:h-5" style={{ color: p.color, opacity: hovered === i ? 1 : 0.3 }} />
-                                            </motion.div>
-                                        </div>
-                                        <p className="text-sm md:text-base text-gray-400 leading-relaxed">{p.desc}</p>
-                                    </div>
+                            <motion.div
+                                className="relative p-6 overflow-hidden"
+                                style={{
+                                    background: BG,
+                                    border: `2px solid ${INK}`,
+                                    boxShadow: hoveredidx === i ? '0 20px 40px rgba(0,0,0,0.15)' : 'none'
+                                }}
+                                whileHover={{ x: -4, y: -4 }}
+                            >
+                                <div className="absolute top-0 right-0 w-24 h-24 -z-10 opacity-5" style={{
+                                    background: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='40' fill='none' stroke='%231a1a1e' stroke-width='2'/%3E%3C/svg%3E")`
+                                }} />
 
-                                    <div className="flex gap-2 flex-shrink-0">
-                                        <motion.a href={p.url} target="_blank" className="flex items-center gap-1.5 px-4 py-2 border-2 text-xs md:text-sm font-bold uppercase" style={{ borderColor: p.color, color: p.color }} whileHover={{ background: p.color, color: 'black' }}>
-                                            <IoLogoGithub className="w-4 h-4" /> Code
-                                        </motion.a>
+                                <div className="flex items-start justify-between mb-4">
+                                    <motion.span
+                                        className="text-5xl font-black"
+                                        style={{ color: `${LIGHTGRAY}30` }}
+                                        animate={{ color: hoveredidx === i ? `${RED}40` : `${LIGHTGRAY}30` }}
+                                    >
+                                        {String(i + 1).padStart(2, '0')}
+                                    </motion.span>
+                                    <div className="flex gap-2">
                                         {p.live && (
-                                            <motion.a href={p.live} target="_blank" className="flex items-center gap-1.5 px-4 py-2 text-xs md:text-sm font-bold uppercase text-black" style={{ background: p.color }} whileHover={{ filter: 'brightness(1.1)' }}>
-                                                <IoGlobe className="w-4 h-4" /> Live
+                                            <motion.a
+                                                href={p.live}
+                                                target="_blank"
+                                                className="w-8 h-8 rounded-full flex items-center justify-center"
+                                                style={{ background: RED, color: BG }}
+                                                whileHover={{ scale: 1.1 }}
+                                            >
+                                                <IoPlay className="w-3 h-3" />
                                             </motion.a>
                                         )}
+                                        <motion.a
+                                            href={p.url}
+                                            target="_blank"
+                                            className="w-8 h-8 rounded-full flex items-center justify-center"
+                                            style={{ background: INK, color: BG }}
+                                            whileHover={{ scale: 1.1 }}
+                                        >
+                                            <IoLogoGithub className="w-4 h-4" />
+                                        </motion.a>
                                     </div>
                                 </div>
-                            </div>
+
+                                <h3 className="text-xl font-black mb-2" style={{ color: INK }}>{p.name}</h3>
+                                <p className="text-sm leading-relaxed mb-4" style={{ color: GRAY }}>{p.desc}</p>
+
+                                <div className="flex flex-wrap gap-1">
+                                    {p.tags.map((tag, ti) => (
+                                        <motion.span
+                                            key={tag}
+                                            className="text-[10px] px-2 py-1 uppercase tracking-wider font-bold"
+                                            style={{ background: `${INK}08`, color: INK, border: `1px solid ${INK}15` }}
+                                            initial={{ opacity: 0, scale: 0 }}
+                                            whileInView={{ opacity: 1, scale: 1 }}
+                                            transition={{ delay: i * 0.08 + ti * 0.05 }}
+                                        >
+                                            {tag}
+                                        </motion.span>
+                                    ))}
+                                </div>
+
+                                <motion.div
+                                    className="absolute bottom-0 left-0 h-1 w-full origin-left"
+                                    style={{ background: RED }}
+                                    initial={{ scaleX: 0 }}
+                                    animate={{ scaleX: hoveredidx === i ? 1 : 0 }}
+                                />
+                            </motion.div>
                         </motion.div>
                     ))}
                 </div>
@@ -215,248 +544,256 @@ const ProjectsSection = ({ scroller }: { scroller: React.RefObject<HTMLDivElemen
     );
 };
 
-const SkillsSection = ({ scroller }: { scroller: React.RefObject<HTMLDivElement | null> }) => {
-    const sectionref = useRef<HTMLDivElement>(null);
-
+const SkillsSection = () => {
+    const [activecat, setactivecat] = useState(0);
     const categories = [
-        { name: 'Frontend', skills: ['React', 'Next.js', 'TypeScript', 'TailwindCSS', 'Framer Motion'], color: NEON },
-        { name: 'Backend', skills: ['Node.js', 'Python', 'PostgreSQL', 'Supabase', 'REST APIs'], color: CYAN },
-        { name: 'Tools', skills: ['Git', 'Docker', 'Figma', 'Linux', 'VS Code'], color: YELLOW },
-        { name: 'Other', skills: ['Electron', 'WebSockets', 'Chrome Extensions', 'OAuth', 'GSAP'], color: LIME }
+        { jp: '前端', en: 'FRONTEND', icon: '⚡', skills: ['React', 'Next.js', 'TypeScript', 'TailwindCSS', 'Framer Motion', 'GSAP'] },
+        { jp: '後端', en: 'BACKEND', icon: '⚙️', skills: ['Node.js', 'Python', 'Express', 'Django', 'FastAPI'] },
+        { jp: 'データ', en: 'DATA', icon: '💾', skills: ['PostgreSQL', 'MongoDB', 'Supabase', 'Redis'] },
+        { jp: 'ツール', en: 'TOOLS', icon: '🔧', skills: ['Docker', 'Git', 'Linux', 'GCP', 'Selenium'] },
     ];
 
-    useGSAP(() => {
-        if (!sectionref.current || !scroller.current) return;
-        gsap.fromTo('.skill-block', { y: 40, opacity: 0 }, {
-            y: 0, opacity: 1, duration: 0.5, stagger: 0.1, ease: 'power3.out',
-            scrollTrigger: { trigger: sectionref.current, start: 'top 70%', scroller: scroller.current }
-        });
-    }, { scope: sectionref, dependencies: [scroller] });
-
     return (
-        <section ref={sectionref} className="py-16 md:py-24 px-4 md:px-12 bg-black overflow-hidden">
-            <div className="max-w-4xl mx-auto">
-                <div className="flex items-center gap-3 md:gap-4 mb-8 md:mb-12">
-                    <div className="w-12 h-12 md:w-14 md:h-14 border-2 flex items-center justify-center" style={{ borderColor: CYAN }}>
-                        <span className="text-xl md:text-2xl font-black" style={{ color: CYAN }}>S</span>
-                    </div>
+        <section id="skills" className="py-32 px-8 relative overflow-hidden" style={{ background: INK }}>
+            <div className="absolute inset-0 overflow-hidden">
+                {[...Array(30)].map((_, i) => {
+                    const r1 = seededrandom(i + 2000);
+                    const r2 = seededrandom(i + 2100);
+                    const r3 = seededrandom(i + 2200);
+                    const r4 = seededrandom(i + 2300);
+                    return (
+                        <motion.div
+                            key={i}
+                            className="absolute w-1 h-1 rounded-full"
+                            style={{
+                                background: BG,
+                                left: `${r1 * 100}%`,
+                                top: `${r2 * 100}%`,
+                                opacity: 0.1
+                            }}
+                            animate={{
+                                scale: [0.5, 1.5, 0.5],
+                                opacity: [0.05, 0.2, 0.05]
+                            }}
+                            transition={{ duration: 3 + r3 * 3, repeat: Infinity, delay: r4 * 3 }}
+                        />
+                    );
+                })}
+            </div>
+
+            <motion.div
+                className="absolute right-[5%] top-1/2 -translate-y-1/2 text-[15rem] font-black leading-none select-none pointer-events-none opacity-5"
+                style={{ color: BG, writingMode: 'vertical-rl' }}
+            >
+                技術
+            </motion.div>
+
+            <div className="absolute right-[15%] top-1/3">
+                <RedSun size={150} className="opacity-30" />
+                <motion.div
+                    className="absolute inset-0 rounded-full"
+                    style={{ background: `radial-gradient(circle, ${RED}30 0%, transparent 70%)` }}
+                    animate={{ scale: [1, 2, 1], opacity: [0.3, 0.1, 0.3] }}
+                    transition={{ duration: 4, repeat: Infinity }}
+                />
+            </div>
+
+            <div className="max-w-5xl mx-auto relative z-10">
+                <motion.div className="flex items-center gap-6 mb-16" initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}>
+                    <motion.div className="w-16 h-16 rounded-sm flex items-center justify-center" style={{ background: RED }} whileHover={{ rotate: -5 }}>
+                        <span className="text-3xl font-black" style={{ color: BG }}>弐</span>
+                    </motion.div>
                     <div>
-                        <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tight">Skills</h2>
-                        <div className="h-0.5 w-14 md:w-20 mt-1" style={{ background: `linear-gradient(90deg, ${CYAN}, transparent)` }} />
+                        <h2 className="text-4xl md:text-5xl font-black" style={{ color: BG }}>SKILLS</h2>
+                        <div className="flex items-center gap-2 mt-1">
+                            <div className="h-px w-12" style={{ background: RED }} />
+                            <span className="text-xs tracking-[0.3em]" style={{ color: GRAY }}>TECH STACK</span>
+                        </div>
                     </div>
-                </div>
+                </motion.div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-                    {categories.map((cat) => (
-                        <motion.div key={cat.name} className="skill-block border-2 border-[#222] p-4 md:p-5 relative group overflow-hidden" whileHover={{ borderColor: cat.color }}>
-                            <div className="absolute top-0 left-0 w-full h-0.5" style={{ background: cat.color }} />
-
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="w-10 h-10 md:w-11 md:h-11 border-2 flex items-center justify-center" style={{ borderColor: cat.color }}>
-                                    <span className="text-base md:text-lg font-black" style={{ color: cat.color }}>{cat.name.charAt(0)}</span>
-                                </div>
-                                <h3 className="text-base md:text-lg font-black uppercase tracking-wider" style={{ color: cat.color }}>{cat.name}</h3>
-                            </div>
-
-                            <div className="flex flex-wrap gap-2">
-                                {cat.skills.map((skill) => (
-                                    <motion.div key={skill} className="px-3 py-2 border border-[#333] text-xs md:text-sm font-bold uppercase tracking-wider text-gray-400" whileHover={{ borderColor: cat.color, color: 'white', x: 2 }}>
-                                        {skill}
-                                    </motion.div>
-                                ))}
-                            </div>
-                        </motion.div>
+                <div className="flex flex-wrap gap-3 mb-12">
+                    {categories.map((cat, i) => (
+                        <motion.button
+                            key={cat.jp}
+                            className="px-6 py-3 font-bold text-sm uppercase tracking-wider relative overflow-hidden"
+                            style={{
+                                background: activecat === i ? RED : 'transparent',
+                                color: activecat === i ? BG : LIGHTGRAY,
+                                border: `2px solid ${activecat === i ? RED : LIGHTGRAY}40`
+                            }}
+                            onClick={() => setactivecat(i)}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                        >
+                            <span className="mr-2">{cat.icon}</span>
+                            {cat.en}
+                            <span className="ml-3 text-xs opacity-60">{cat.jp}</span>
+                        </motion.button>
                     ))}
                 </div>
-            </div>
-        </section>
-    );
-};
 
-const AboutSection = ({ scroller }: { scroller: React.RefObject<HTMLDivElement | null> }) => {
-    const sectionref = useRef<HTMLDivElement>(null);
-    const [tab, settab] = useState<'about' | 'experience'>('about');
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={activecat}
+                        className="grid grid-cols-2 md:grid-cols-3 gap-4"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                    >
+                        {categories[activecat].skills.map((skill, i) => (
+                            <motion.div
+                                key={skill}
+                                className="group relative p-6 overflow-hidden"
+                                style={{ background: `${BG}08`, border: `1px solid ${BG}15` }}
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: i * 0.05 }}
+                                whileHover={{ scale: 1.02, background: `${BG}15` }}
+                            >
+                                <motion.div
+                                    className="absolute top-2 right-2 text-4xl opacity-10"
+                                    animate={{ rotate: [0, 10, 0] }}
+                                    transition={{ duration: 3, repeat: Infinity }}
+                                >
+                                    {categories[activecat].icon}
+                                </motion.div>
 
-    useGSAP(() => {
-        if (!sectionref.current || !scroller.current) return;
-        gsap.fromTo('.about-content', { y: 40, opacity: 0 }, {
-            y: 0, opacity: 1, duration: 0.5, ease: 'power3.out',
-            scrollTrigger: { trigger: sectionref.current, start: 'top 70%', scroller: scroller.current }
-        });
-    }, { scope: sectionref, dependencies: [scroller] });
-
-    const experiences = [
-        { role: 'Software Engineering Intern', company: 'For Real', url: 'https://www.linkedin.com/company/forreal', period: 'Jan 2026 - Present', color: NEON, current: true },
-        { role: 'Technical Lead', company: 'The TVS School', url: 'https://www.tvsschool.com', period: 'Aug 2022 - May 2024', color: CYAN, current: false },
-    ];
-
-    const highlights = [
-        '4+ years building with MERN + Next.js stack',
-        'Frontend: React, Tailwind, shadcn/ui, Framer Motion, GSAP',
-        'Backend: Node.js, Express, Django, FastAPI',
-        'Databases: PostgreSQL, MongoDB, Firebase, Supabase',
-        'DevOps: Docker, GCP, automation with Selenium',
-        'Built multiple production apps used by real students',
-        'Passionate about shipping end-to-end products',
-        'Open source enthusiast, Linux & FOSS advocate',
-    ];
-
-    return (
-        <section ref={sectionref} className="py-16 md:py-24 px-4 md:px-12 bg-black overflow-hidden">
-            <div className="max-w-4xl mx-auto">
-                <div className="about-content">
-                    <div className="flex items-center gap-3 md:gap-4 mb-6">
-                        <div className="w-12 h-12 md:w-14 md:h-14 border-2 flex items-center justify-center" style={{ borderColor: LIME }}>
-                            <span className="text-xl md:text-2xl font-black" style={{ color: LIME }}>A</span>
-                        </div>
-                        <div>
-                            <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tight">About</h2>
-                            <div className="h-0.5 w-14 md:w-20 mt-1" style={{ background: `linear-gradient(90deg, ${LIME}, transparent)` }} />
-                        </div>
-                    </div>
-
-                    <div className="flex gap-2 mb-5">
-                        {(['about', 'experience'] as const).map((t) => (
-                            <motion.button key={t} onClick={() => settab(t)} className={`px-4 md:px-5 py-2 text-xs md:text-sm font-bold uppercase tracking-wider border-2 transition-all ${tab === t ? 'text-black' : 'text-gray-500'}`} style={{ borderColor: tab === t ? LIME : '#333', background: tab === t ? LIME : 'transparent' }} whileHover={{ scale: 1.02 }}>
-                                {t === 'about' ? 'About Me' : 'Experience'}
-                            </motion.button>
+                                <div className="text-lg font-black" style={{ color: BG }}>{skill}</div>
+                                <motion.div
+                                    className="h-0.5 mt-3 origin-left"
+                                    style={{ background: RED }}
+                                    initial={{ scaleX: 0 }}
+                                    whileInView={{ scaleX: 1 }}
+                                    transition={{ delay: i * 0.1, duration: 0.5 }}
+                                />
+                            </motion.div>
                         ))}
-                    </div>
-
-                    <AnimatePresence mode="wait">
-                        {tab === 'about' ? (
-                            <motion.div key="about" className="border-2 border-[#333] p-4 md:p-6" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
-                                <div className="grid md:grid-cols-[auto_1fr] gap-4 md:gap-6 items-start">
-                                    <div className="relative hidden md:block">
-                                        <div className="w-24 h-24 relative overflow-hidden">
-                                            <Image src="/bala.jpeg" alt="Bala" fill className="object-cover" style={{ filter: 'grayscale(100%)' }} />
-                                            <motion.div className="absolute inset-0" style={{ background: `linear-gradient(45deg, ${LIME}80, transparent)`, mixBlendMode: 'color' }} animate={{ opacity: [0.5, 0.8, 0.5] }} transition={{ duration: 2, repeat: Infinity }} />
-                                        </div>
-                                        <motion.div className="absolute -inset-2 border-2" style={{ borderColor: LIME }} animate={{ opacity: [1, 0.5, 1] }} transition={{ duration: 1, repeat: Infinity }} />
-                                    </div>
-
-                                    <div>
-                                        <p className="text-sm md:text-base text-gray-400 leading-relaxed mb-4">
-                                            Passionate engineering undergrad looking for software engineering internships to build real products and learn fast. Started web development in 9th grade, and for 4+ years I&apos;ve been shipping production-grade apps used by real people.
-                                        </p>
-
-                                        <div className="space-y-2">
-                                            {highlights.map((h, i) => (
-                                                <motion.div key={i} className="flex items-start gap-2" initial={{ x: -10, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} transition={{ delay: i * 0.03 }}>
-                                                    <IoCheckmark className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: [NEON, CYAN, YELLOW, LIME][i % 4] }} />
-                                                    <span className="text-xs md:text-sm text-gray-500">{h}</span>
-                                                </motion.div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        ) : (
-                            <motion.div key="experience" className="space-y-3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                                {experiences.map((exp, i) => (
-                                    <motion.a key={i} href={exp.url} target="_blank" className="block border-2 p-4 md:p-5 relative overflow-hidden group" style={{ borderColor: exp.color + '40' }} whileHover={{ borderColor: exp.color }}>
-                                        <motion.div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity" style={{ background: exp.color }} />
-                                        <div className="absolute top-0 left-0 w-1 h-full" style={{ background: exp.color }} />
-
-                                        <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 md:w-11 md:h-11 border-2 flex items-center justify-center" style={{ borderColor: exp.color }}>
-                                                    <IoBriefcase className="w-4 h-4 md:w-5 md:h-5" style={{ color: exp.color }} />
-                                                </div>
-                                                <div>
-                                                    <h3 className="text-sm md:text-base font-bold uppercase">{exp.role}</h3>
-                                                    <p className="text-xs md:text-sm text-gray-500">{exp.company}</p>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <IoCalendar className="w-3 h-3 md:w-4 md:h-4 text-gray-600" />
-                                                <span className="text-[10px] md:text-xs text-gray-500 uppercase tracking-wider">{exp.period}</span>
-                                                {exp.current && <span className="px-2 py-1 text-[9px] md:text-[10px] font-bold uppercase" style={{ background: exp.color, color: 'black' }}>Current</span>}
-                                            </div>
-                                        </div>
-                                    </motion.a>
-                                ))}
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </div>
+                    </motion.div>
+                </AnimatePresence>
             </div>
         </section>
     );
 };
 
-const NextarShowcase = ({ onBoot, scroller }: { onBoot: () => void; scroller: React.RefObject<HTMLDivElement | null> }) => {
-    const sectionref = useRef<HTMLDivElement>(null);
-
-    useGSAP(() => {
-        if (!sectionref.current || !scroller.current) return;
-        gsap.fromTo('.nextar-box', { scale: 0.95, opacity: 0 }, {
-            scale: 1, opacity: 1, duration: 0.5, ease: 'power3.out',
-            scrollTrigger: { trigger: sectionref.current, start: 'top 70%', scroller: scroller.current }
-        });
-    }, { scope: sectionref, dependencies: [scroller] });
+const AboutSection = () => {
+    const experiences = [
+        { role: 'Software Engineering Intern', company: 'For Real', period: 'Jan 2026 - Present', current: true },
+        { role: 'Technical Lead', company: 'The TVS School', period: 'Aug 2022 - May 2024', current: false },
+    ];
 
     return (
-        <section ref={sectionref} className="py-16 md:py-24 px-4 md:px-12 bg-black overflow-hidden">
-            <div className="max-w-3xl mx-auto">
-                <div className="nextar-box border-2 border-[#333] p-6 md:p-10 text-center relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-full h-0.5" style={{ background: `linear-gradient(90deg, ${NEON}, ${CYAN})` }} />
+        <section id="about" className="py-32 px-8 relative overflow-hidden" style={{ background: BG }}>
+            <RainEffect />
+            <FloatingEmbers />
 
-                    <motion.div className="inline-block px-3 py-1 mb-4 text-[10px] md:text-xs font-black uppercase tracking-widest border-2" style={{ borderColor: NEON, color: NEON }} animate={{ borderColor: [NEON, CYAN, NEON] }} transition={{ duration: 2, repeat: Infinity }}>Featured</motion.div>
+            <InkSplatter className="w-[500px] h-[500px] -left-[150px] top-[20%]" />
+            <InkSplatter className="w-[300px] h-[300px] right-[5%] bottom-[10%]" />
 
-                    <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-3">
-                        <motion.span style={{ color: NEON }} animate={{ textShadow: [`0 0 0px ${NEON}`, `0 0 10px ${NEON}`, `0 0 0px ${NEON}`] }} transition={{ duration: 1.5, repeat: Infinity }}>Nextar</motion.span>
-                        <span className="text-white">OS</span>
-                    </h2>
+            <motion.div
+                className="absolute right-[3%] top-20 text-[10rem] font-black leading-none select-none pointer-events-none"
+                style={{ color: `${LIGHTGRAY}10`, writingMode: 'vertical-rl' }}
+            >
+                私について
+            </motion.div>
 
-                    <p className="text-sm md:text-base text-gray-400 max-w-md mx-auto mb-6 leading-relaxed">A complete macOS/iOS simulation in your browser with window management, virtual filesystem, and installable apps.</p>
-
-                    <div className="flex flex-wrap gap-2 md:gap-3 justify-center">
-                        <motion.button onClick={onBoot} className="flex items-center gap-2 px-5 md:px-6 py-2.5 text-xs md:text-sm uppercase font-black text-black" style={{ background: `linear-gradient(90deg, ${NEON}, ${CYAN})` }} whileHover={{ scale: 1.02 }}>
-                            <IoPlay className="w-4 h-4" /> Launch
-                        </motion.button>
-                        <motion.a href="https://github.com/invincibleinventor/Nextar-OS" target="_blank" className="flex items-center gap-2 px-5 md:px-6 py-2.5 border-2 border-[#333] text-xs md:text-sm uppercase font-black text-gray-300 hover:border-white hover:text-white" whileHover={{ scale: 1.02 }}>
-                            <IoLogoGithub className="w-4 h-4" /> Source
-                        </motion.a>
-                    </div>
-                </div>
-            </div>
-        </section>
-    );
-};
-
-const ContactSection = ({ onBoot, scroller }: { onBoot: () => void; scroller: React.RefObject<HTMLDivElement | null> }) => {
-    const sectionref = useRef<HTMLDivElement>(null);
-
-    useGSAP(() => {
-        if (!sectionref.current || !scroller.current) return;
-        gsap.fromTo('.contact-box', { y: 30, opacity: 0 }, {
-            y: 0, opacity: 1, duration: 0.5, ease: 'power3.out',
-            scrollTrigger: { trigger: sectionref.current, start: 'top 80%', scroller: scroller.current }
-        });
-    }, { scope: sectionref, dependencies: [scroller] });
-
-    return (
-        <section ref={sectionref} className="py-16 md:py-24 px-4 md:px-12 bg-black overflow-hidden">
-            <div className="max-w-md mx-auto">
-                <div className="contact-box border-2 border-[#333] p-6 md:p-8 text-center relative overflow-hidden">
-                    <motion.div className="absolute inset-0" style={{ background: `conic-gradient(from 0deg at 50% 50%, ${NEON}10, ${CYAN}10, ${YELLOW}10, ${LIME}10, ${PURPLE}10, ${NEON}10)` }} animate={{ rotate: 360 }} transition={{ duration: 20, repeat: Infinity, ease: 'linear' }} />
-                    <div className="absolute inset-2 bg-black" />
-
-                    <div className="relative z-10">
-                        <motion.div className="w-12 h-12 md:w-14 md:h-14 mx-auto mb-4 border-2 flex items-center justify-center" style={{ borderColor: NEON }} animate={{ boxShadow: [`0 0 0px ${NEON}`, `0 0 15px ${NEON}40`, `0 0 0px ${NEON}`] }} transition={{ duration: 2, repeat: Infinity }}>
-                            <IoFlash className="w-5 h-5 md:w-6 md:h-6" style={{ color: NEON }} />
-                        </motion.div>
-
-                        <h2 className="text-xl md:text-2xl font-black uppercase mb-2">Let&apos;s Connect</h2>
-                        <p className="text-xs md:text-sm text-gray-500 mb-5">Open to internships and collaborations</p>
-
-                        <div className="flex flex-wrap gap-2 justify-center mb-4">
-                            <motion.a href={`mailto:${personal.personal.email}`} className="flex items-center gap-2 px-4 py-2 text-xs md:text-sm font-black uppercase text-black" style={{ background: NEON }} whileHover={{ scale: 1.02 }}><IoMail className="w-4 h-4" /> Email</motion.a>
-                            <motion.a href={personal.personal.socials.linkedin} target="_blank" className="flex items-center gap-2 px-4 py-2 border-2 border-[#333] text-xs md:text-sm uppercase font-black text-gray-300 hover:border-white hover:text-white" whileHover={{ scale: 1.02 }}><IoLogoLinkedin className="w-4 h-4" /> LinkedIn</motion.a>
+            <div className="max-w-5xl mx-auto relative z-10">
+                <motion.div className="flex items-center gap-6 mb-16" initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}>
+                    <motion.div className="w-16 h-16 rounded-sm flex items-center justify-center" style={{ background: RED }} whileHover={{ rotate: 5 }}>
+                        <span className="text-3xl font-black" style={{ color: BG }}>参</span>
+                    </motion.div>
+                    <div>
+                        <h2 className="text-4xl md:text-5xl font-black" style={{ color: INK }}>ABOUT</h2>
+                        <div className="flex items-center gap-2 mt-1">
+                            <div className="h-px w-12" style={{ background: RED }} />
+                            <span className="text-xs tracking-[0.3em]" style={{ color: GRAY }}>THE DEVELOPER</span>
                         </div>
+                    </div>
+                </motion.div>
 
-                        <motion.button onClick={onBoot} className="text-xs md:text-sm text-gray-600 hover:text-white transition-colors font-bold uppercase tracking-wider" whileHover={{ x: 5 }}>Or explore NextarOS →</motion.button>
+                <div className="grid md:grid-cols-[auto_1fr] gap-12 items-start">
+                    <motion.div
+                        className="relative group"
+                        initial={{ opacity: 0, x: -50 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                    >
+                        <motion.div
+                            className="absolute inset-0 -z-10"
+                            style={{ background: RED }}
+                            initial={{ x: 0, y: 0 }}
+                            whileHover={{ x: 12, y: 12 }}
+                        />
+                        <div className="w-56 h-72 relative overflow-hidden" style={{ border: `3px solid ${INK}` }}>
+                            <Image src="/bala.jpeg" alt="Bala" fill className="object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
+                        <motion.div
+                            className="absolute -bottom-4 -right-4 px-4 py-2 font-black text-sm"
+                            style={{ background: INK, color: BG }}
+                        >
+                            侍開発者
+                        </motion.div>
+                    </motion.div>
+
+                    <div>
+                        <motion.p
+                            className="text-xl md:text-2xl font-bold leading-relaxed mb-8"
+                            style={{ color: INK }}
+                            initial={{ opacity: 0 }}
+                            whileInView={{ opacity: 1 }}
+                        >
+                            Engineering undergrad with a passion for building. Started coding in 9th grade, never stopped shipping.
+                        </motion.p>
+
+                        <motion.p
+                            className="text-base leading-relaxed mb-10"
+                            style={{ color: GRAY }}
+                            initial={{ opacity: 0 }}
+                            whileInView={{ opacity: 1 }}
+                            transition={{ delay: 0.1 }}
+                        >
+                            4+ years of full-stack development experience. Currently seeking software engineering internships where I can contribute to meaningful products and grow as a developer.
+                        </motion.p>
+
+                        <div className="space-y-4">
+                            <div className="text-xs font-bold tracking-[0.3em] mb-4" style={{ color: RED }}>EXPERIENCE</div>
+                            {experiences.map((exp, i) => (
+                                <motion.div
+                                    key={i}
+                                    className="relative p-5 overflow-hidden group"
+                                    style={{ background: exp.current ? `${RED}08` : `${INK}05`, border: `2px solid ${exp.current ? RED : INK}20` }}
+                                    initial={{ opacity: 0, x: 30 }}
+                                    whileInView={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: i * 0.1 }}
+                                    whileHover={{ x: 5 }}
+                                >
+                                    <motion.div
+                                        className="absolute left-0 top-0 bottom-0 w-1"
+                                        style={{ background: exp.current ? RED : LIGHTGRAY }}
+                                    />
+
+                                    <div className="flex items-start justify-between">
+                                        <div>
+                                            <div className="font-black text-lg" style={{ color: INK }}>{exp.role}</div>
+                                            <div className="text-sm font-medium" style={{ color: exp.current ? RED : GRAY }}>{exp.company}</div>
+                                            <div className="text-xs mt-2 flex items-center gap-2" style={{ color: LIGHTGRAY }}>
+                                                <IoCalendar className="w-3 h-3" /> {exp.period}
+                                            </div>
+                                        </div>
+                                        {exp.current && (
+                                            <motion.span
+                                                className="px-3 py-1 text-xs font-black"
+                                                style={{ background: RED, color: BG }}
+                                                animate={{ scale: [1, 1.05, 1] }}
+                                                transition={{ duration: 2, repeat: Infinity }}
+                                            >
+                                                NOW
+                                            </motion.span>
+                                        )}
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -464,11 +801,161 @@ const ContactSection = ({ onBoot, scroller }: { onBoot: () => void; scroller: Re
     );
 };
 
-const scrollbarStyles = `
-    .portfolio-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
-    .portfolio-scroll::-webkit-scrollbar-track { background: transparent; }
-    .portfolio-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
-    .portfolio-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+const ContactSection = ({ onBoot }: { onBoot: () => void }) => {
+    return (
+        <section className="py-32 px-8 relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${INK} 0%, #2a2a30 100%)` }}>
+            <div className="absolute inset-0 overflow-hidden">
+                {[...Array(40)].map((_, i) => {
+                    const r1 = seededrandom(i + 3000);
+                    const r2 = seededrandom(i + 3100);
+                    const r3 = seededrandom(i + 3200);
+                    const r4 = seededrandom(i + 3300);
+                    const r5 = seededrandom(i + 3400);
+                    const r6 = seededrandom(i + 3500);
+                    return (
+                        <motion.div
+                            key={i}
+                            className="absolute"
+                            style={{
+                                width: 2 + r1 * 3,
+                                height: 2 + r2 * 3,
+                                borderRadius: '50%',
+                                background: i % 3 === 0 ? RED : BG,
+                                left: `${r3 * 100}%`,
+                                top: `${r4 * 100}%`,
+                                opacity: 0.1
+                            }}
+                            animate={{
+                                y: [0, -30, 0],
+                                opacity: [0.05, 0.15, 0.05]
+                            }}
+                            transition={{ duration: 4 + r5 * 4, repeat: Infinity, delay: r6 * 4 }}
+                        />
+                    );
+                })}
+            </div>
+
+            <div className="absolute right-[10%] top-1/2 -translate-y-1/2">
+                <RedSun size={250} className="opacity-50" />
+                <motion.div
+                    className="absolute inset-0 rounded-full"
+                    style={{ background: `radial-gradient(circle, ${RED}50 0%, transparent 60%)` }}
+                    animate={{ scale: [1, 1.8, 1], opacity: [0.4, 0.1, 0.4] }}
+                    transition={{ duration: 4, repeat: Infinity }}
+                />
+            </div>
+
+            <motion.div
+                className="absolute left-[5%] top-1/2 -translate-y-1/2 text-[12rem] font-black leading-none select-none pointer-events-none opacity-5"
+                style={{ color: BG, writingMode: 'vertical-rl' }}
+            >
+                連絡
+            </motion.div>
+
+            <div className="max-w-4xl mx-auto relative z-10">
+                <motion.div className="flex items-center gap-6 mb-12" initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}>
+                    <motion.div className="w-16 h-16 rounded-sm flex items-center justify-center" style={{ background: RED }} whileHover={{ rotate: -5 }}>
+                        <span className="text-3xl font-black" style={{ color: BG }}>四</span>
+                    </motion.div>
+                    <div>
+                        <h2 className="text-4xl md:text-5xl font-black" style={{ color: BG }}>CONTACT</h2>
+                        <div className="flex items-center gap-2 mt-1">
+                            <div className="h-px w-12" style={{ background: RED }} />
+                            <span className="text-xs tracking-[0.3em]" style={{ color: GRAY }}>GET IN TOUCH</span>
+                        </div>
+                    </div>
+                </motion.div>
+
+                <motion.p
+                    className="text-xl md:text-2xl font-bold mb-4 max-w-lg"
+                    style={{ color: BG }}
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                >
+                    Ready to build something amazing together?
+                </motion.p>
+
+                <motion.p
+                    className="text-base mb-10 max-w-lg"
+                    style={{ color: LIGHTGRAY }}
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    transition={{ delay: 0.1 }}
+                >
+                    Open to internship opportunities and exciting projects. Let's connect and create something extraordinary.
+                </motion.p>
+
+                <motion.div
+                    className="flex flex-wrap gap-4"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                >
+                    <motion.a
+                        href={`mailto:${personal.personal.email}`}
+                        className="group relative px-8 py-4 font-black text-sm uppercase tracking-wider flex items-center gap-3 overflow-hidden"
+                        style={{ background: RED, color: BG }}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                    >
+                        <IoMail className="w-5 h-5" />
+                        <span>SEND EMAIL</span>
+                        <motion.div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-full transition-transform duration-500" />
+                    </motion.a>
+
+                    <motion.a
+                        href={personal.personal.socials.linkedin}
+                        target="_blank"
+                        className="px-8 py-4 font-black text-sm uppercase tracking-wider flex items-center gap-3"
+                        style={{ background: 'transparent', color: BG, border: `2px solid ${BG}40` }}
+                        whileHover={{ borderColor: BG, scale: 1.02 }}
+                    >
+                        <IoLogoLinkedin className="w-5 h-5" />
+                        <span>LINKEDIN</span>
+                    </motion.a>
+
+                    <motion.a
+                        href={personal.personal.socials.github}
+                        target="_blank"
+                        className="px-8 py-4 font-black text-sm uppercase tracking-wider flex items-center gap-3"
+                        style={{ background: 'transparent', color: BG, border: `2px solid ${BG}40` }}
+                        whileHover={{ borderColor: BG, scale: 1.02 }}
+                    >
+                        <IoLogoGithub className="w-5 h-5" />
+                        <span>GITHUB</span>
+                    </motion.a>
+                </motion.div>
+
+                <motion.div
+                    className="mt-16 pt-8 flex items-center gap-6"
+                    style={{ borderTop: `1px solid ${BG}15` }}
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    transition={{ delay: 0.3 }}
+                >
+                    <span className="text-xs tracking-widest" style={{ color: GRAY }}>OR EXPLORE</span>
+                    <motion.button
+                        onClick={onBoot}
+                        className="px-6 py-3 font-black text-sm uppercase tracking-wider flex items-center gap-2"
+                        style={{ background: `${BG}10`, color: BG, border: `1px solid ${BG}30` }}
+                        whileHover={{ background: `${BG}20` }}
+                    >
+                        <IoPlay className="w-4 h-4" />
+                        LAUNCH NEXTAR OS
+                    </motion.button>
+                </motion.div>
+            </div>
+        </section>
+    );
+};
+
+const scrollstyles = `
+.portfolio-scroll::-webkit-scrollbar { width: 6px; }
+.portfolio-scroll::-webkit-scrollbar-track { background: ${BG}; }
+.portfolio-scroll::-webkit-scrollbar-thumb { background: ${LIGHTGRAY}; }
+.portfolio-scroll::-webkit-scrollbar-thumb:hover { background: ${RED}; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap');
 `;
 
 export default function Portfolio() {
@@ -481,26 +968,23 @@ export default function Portfolio() {
 
     return (
         <>
-            <style>{scrollbarStyles}</style>
+            <style>{scrollstyles}</style>
+            <TextureOverlay />
             <AnimatePresence>{booting && <BootSequence onComplete={handlecomplete} />}</AnimatePresence>
 
-            <div ref={containerref} className="portfolio-scroll fixed inset-0 bg-black text-white overflow-y-auto overflow-x-hidden" style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' }}>
-                <FloatingCTA onBoot={handleboot} />
+            <div ref={containerref} className="portfolio-scroll fixed inset-0 overflow-y-auto overflow-x-hidden" style={{ fontFamily: '"Zen Kaku Gothic New", -apple-system, BlinkMacSystemFont, sans-serif' }}>
                 <HeroSection onBoot={handleboot} />
-                <ProjectsSection scroller={containerref} />
-                <SkillsSection scroller={containerref} />
-                <AboutSection scroller={containerref} />
-                <NextarShowcase onBoot={handleboot} scroller={containerref} />
-                <ContactSection onBoot={handleboot} scroller={containerref} />
+                <ProjectsSection />
+                <SkillsSection />
+                <AboutSection />
+                <ContactSection onBoot={handleboot} />
 
-                <footer className="border-t border-[#222] py-5 px-4 bg-black">
-                    <div className="max-w-4xl mx-auto flex items-center justify-between">
-                        <span className="text-xs md:text-sm text-gray-600">© {new Date().getFullYear()} {personal.personal.name}</span>
-                        <div className="flex gap-3">
-                            <a href={personal.personal.socials.github} target="_blank" className="text-gray-500 hover:text-white"><IoLogoGithub className="w-4 h-4 md:w-5 md:h-5" /></a>
-                            <a href={personal.personal.socials.linkedin} target="_blank" className="text-gray-500 hover:text-white"><IoLogoLinkedin className="w-4 h-4 md:w-5 md:h-5" /></a>
-                            <a href={`mailto:${personal.personal.email}`} className="text-gray-500 hover:text-white"><IoMail className="w-4 h-4 md:w-5 md:h-5" /></a>
-                        </div>
+                <footer className="py-6 px-8 flex items-center justify-between text-xs" style={{ background: INK, color: LIGHTGRAY }}>
+                    <div>© {new Date().getFullYear()} {personal.personal.name}</div>
+                    <div className="flex gap-4">
+                        <motion.a href={personal.personal.socials.github} target="_blank" whileHover={{ color: BG }}><IoLogoGithub className="w-4 h-4" /></motion.a>
+                        <motion.a href={personal.personal.socials.linkedin} target="_blank" whileHover={{ color: BG }}><IoLogoLinkedin className="w-4 h-4" /></motion.a>
+                        <motion.a href={`mailto:${personal.personal.email}`} whileHover={{ color: BG }}><IoMail className="w-4 h-4" /></motion.a>
                     </div>
                 </footer>
             </div>

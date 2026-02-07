@@ -175,7 +175,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                         style={{ willChange: 'opacity', transform: 'translateZ(0)' }}
                     >
                         <div className="flex flex-row gap-6 md:gap-10 h-[65vh] items-center">
-                            <AnimatePresence mode='popLayout'>
+                            <AnimatePresence>
                                 {[...windows].sort((a, b) => (b.lastInteraction || 0) - (a.lastInteraction || 0)).map((win: any) => {
                                     const appdata = apps.find(a => a.appname === win.appname);
 
@@ -224,9 +224,9 @@ const AppCard = ({ win, appdata, onkill, onopen }: any) => {
             }}
             drag="y"
             dragConstraints={{ top: 0, bottom: 0 }}
-            dragElastic={0.05}
+            dragElastic={0.1}
             dragDirectionLock={true}
-            dragMomentum={false}
+            dragMomentum={true}
             onDragStart={() => { isdragging.current = true; }}
             onDragEnd={(_, info) => {
                 setTimeout(() => { isdragging.current = false; }, 100);
@@ -252,9 +252,8 @@ const AppCard = ({ win, appdata, onkill, onopen }: any) => {
             }}
             transition={{
                 type: "spring",
-                stiffness: 120,
-                damping: 22,
-                mass: 0.5
+                stiffness: 400,
+                damping: 35
             }}
         >
             <div className="flex items-center gap-2 mb-3 px-1 pointer-events-none">
