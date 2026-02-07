@@ -191,7 +191,7 @@ const TextureOverlay = () => (
 
 const RedSun = ({ size = 200, className = '' }: { size?: number; className?: string }) => (
     <motion.div
-        className={`rounded-full ${className}`}
+        className={`absolute lg:static bottom-5 -left-24  rounded-full ${className}`}
         style={{ width: size, height: size, background: RED }}
         animate={{ scale: [1, 1.02, 1] }}
         transition={{ duration: 4, repeat: Infinity }}
@@ -225,7 +225,7 @@ const GrassLine = () => (
 
 const SamuraiSilhouette = () => (
     <motion.div
-        className="absolute bottom-0 right-[5%] md:right-[12%] h-[55%] md:h-[70%] flex items-end z-10"
+        className="absolute  md:block top-[8%] md:bottom-0 md:top-auto left-4 md:-right-48 lg:right-[12%] h-[20%] lg:top-auto md:left-auto  md:h-[70%] flex items-end z-10"
         initial={{ opacity: 0, x: 50 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.3, duration: 0.8 }}
@@ -332,15 +332,15 @@ const HeroSection = ({ onBoot }: { onBoot: () => void }) => {
                         </div>
                     </motion.div>
                     <div className="hidden md:flex items-center gap-8 text-sm font-medium" style={{ color: GRAY }}>
-                        <motion.a href="#projects" className="hover:text-black transition-colors relative group" whileHover={{ y: -2 }}>
+                        <motion.a href="#projects" className="hover:text-anime-text transition-colors relative group" whileHover={{ y: -2 }}>
                             PROJECTS
                             <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-red-500 group-hover:w-full transition-all" style={{ background: RED }} />
                         </motion.a>
-                        <motion.a href="#skills" className="hover:text-black transition-colors relative group" whileHover={{ y: -2 }}>
+                        <motion.a href="#skills" className="hover:text-anime-text transition-colors relative group" whileHover={{ y: -2 }}>
                             SKILLS
                             <span className="absolute -bottom-1 left-0 w-0 h-0.5 group-hover:w-full transition-all" style={{ background: RED }} />
                         </motion.a>
-                        <motion.a href="#about" className="hover:text-black transition-colors relative group" whileHover={{ y: -2 }}>
+                        <motion.a href="#about" className="hover:text-anime-text transition-colors relative group" whileHover={{ y: -2 }}>
                             ABOUT
                             <span className="absolute -bottom-1 left-0 w-0 h-0.5 group-hover:w-full transition-all" style={{ background: RED }} />
                         </motion.a>
