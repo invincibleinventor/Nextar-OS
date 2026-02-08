@@ -202,7 +202,7 @@ const TextureOverlay = () => (
 const PastelSun = ({ size = 200, className = '' }: { size?: number; className?: string }) => (
     <motion.div
         className={`absolute lg:static bottom-5 -left-24  rounded-full ${className}`}
-        style={{ width: size, height: size, background: RED }}
+        style={{ width: size, height: size, background: PINK }}
         animate={{ scale: [1, 1.02, 1] }}
         transition={{ duration: 4, repeat: Infinity }}
     />
