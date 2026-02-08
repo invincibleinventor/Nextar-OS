@@ -72,7 +72,7 @@ export default function AppSwitcher({ isOpen, onClose }: { isOpen: boolean; onCl
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9 }}
-                    className="bg-black/70 backdrop-blur-2xl rounded-3xl p-6 flex items-center gap-3 pointer-events-auto shadow-2xl border border-white/10"
+                    className="bg-surface p-6 flex items-center gap-3 pointer-events-auto border border-[--border-color]"
                 >
                     {allwindows.map((win, idx) => {
                         const appData = apps.find(a => a.appname === win.appname);
@@ -88,10 +88,10 @@ export default function AppSwitcher({ isOpen, onClose }: { isOpen: boolean; onCl
                                     setactivewindow(win.id);
                                     onClose();
                                 }}
-                                className={`flex flex-col items-center gap-2 p-3 rounded-xl cursor-pointer transition-all duration-150 ${isSelected ? 'bg-white/20 scale-110' : 'opacity-60 hover:opacity-100'
+                                className={`flex flex-col items-center gap-2 p-3 cursor-pointer transition-all duration-150 ${isSelected ? 'bg-overlay scale-110' : 'opacity-60 hover:opacity-100'
                                     }`}
                             >
-                                <div className={`w-16 h-16 rounded-xl overflow-hidden shadow-lg ${win.isminimized ? 'opacity-50' : ''}`}>
+                                <div className={`w-16 h-16 overflow-hidden ${win.isminimized ? 'opacity-50' : ''}`}>
                                     <Image
                                         src={appData?.icon || '/app-default.png'}
                                         alt={win.appname}
@@ -100,7 +100,7 @@ export default function AppSwitcher({ isOpen, onClose }: { isOpen: boolean; onCl
                                         className="object-cover"
                                     />
                                 </div>
-                                <span className="text-white text-xs font-medium text-center max-w-[80px] truncate">
+                                <span className="text-[--text-color] text-xs font-medium text-center max-w-[80px] truncate">
                                     {win.appname}
                                 </span>
                             </div>
@@ -108,7 +108,7 @@ export default function AppSwitcher({ isOpen, onClose }: { isOpen: boolean; onCl
                     })}
                 </motion.div>
 
-                <div className="absolute bottom-8 text-white/60 text-sm">
+                <div className="absolute bottom-8 text-[--text-muted] text-sm">
                     Hold ⌘ and press ` to switch • Release ⌘ to select
                 </div>
             </motion.div>

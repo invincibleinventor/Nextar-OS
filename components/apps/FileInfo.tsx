@@ -35,8 +35,8 @@ export default function FileInfo({ fileId, item }: FileInfoProps) {
     if (!localItem && !showPicker) {
         return (
             <div className="flex flex-col items-center justify-center h-full gap-4">
-                <span className="text-gray-500">No file selected.</span>
-                <button onClick={() => setShowPicker(true)} className="px-4 py-2 bg-blue-500 text-white rounded-md text-xs">Select File</button>
+                <span className="text-[--text-muted]">No file selected.</span>
+                <button onClick={() => setShowPicker(true)} className="px-4 py-2 bg-accent text-[--text-color] text-xs">Select File</button>
             </div>
         );
     }
@@ -51,15 +51,15 @@ export default function FileInfo({ fileId, item }: FileInfoProps) {
     };
 
     return (
-        <div className="flex flex-col w-full h-full bg-[#f6f6f6] dark:bg-[#252526] text-black dark:text-white font-sf text-xs">
-            <div className="flex flex-col items-center p-6 border-b border-gray-200 dark:border-white/10 bg-white dark:bg-[#1e1e1e]">
+        <div className="flex flex-col w-full h-full bg-[--bg-base] text-[--text-color] font-mono text-xs">
+            <div className="flex flex-col items-center p-6 border-b border-[--border-color] bg-surface">
                 <div className="w-16 h-16 relative mb-4">
                     {localItem ? getFileIcon(mimetype, name, icon, id) : null}
                 </div>
 
                 {isRenaming ? (
                     <input
-                        className="text-center font-bold text-sm bg-white dark:bg-black border border-blue-500 rounded px-1 outline-none w-3/4"
+                        className="text-center font-bold text-sm bg-surface border border-accent px-1 outline-none w-3/4"
                         value={newName}
                         onChange={(e) => setNewName(e.target.value)}
                         onBlur={handleRename}
@@ -79,22 +79,22 @@ export default function FileInfo({ fileId, item }: FileInfoProps) {
                         {name || 'Unknown'} {name && mimetype ? displayExtension(name, mimetype) : ''}
                     </h1>
                 )}
-                <span className="text-[10px] text-gray-500 mt-1">{date}</span>
+                <span className="text-[10px] text-[--text-muted] mt-1">{date}</span>
             </div>
 
             <div className="flex flex-col p-4 gap-2">
-                <h2 className="font-bold text-gray-500 text-[11px] mb-1">General:</h2>
+                <h2 className="font-bold text-[--text-muted] text-[11px] mb-1">General:</h2>
                 <div className="grid grid-cols-[60px_1fr] gap-y-1">
-                    <span className="text-gray-500 text-right pr-2">Kind:</span>
+                    <span className="text-[--text-muted] text-right pr-2">Kind:</span>
                     <span>{mimetype ? humanizeMime(mimetype) : 'Unknown'}</span>
 
-                    <span className="text-gray-500 text-right pr-2">Size:</span>
+                    <span className="text-[--text-muted] text-right pr-2">Size:</span>
                     <span>{size || '--'}</span>
 
-                    <span className="text-gray-500 text-right pr-2">Where:</span>
+                    <span className="text-[--text-muted] text-right pr-2">Where:</span>
                     <span className="truncate">{parent} (ID)</span>
 
-                    <span className="text-gray-500 text-right pr-2">Original:</span>
+                    <span className="text-[--text-muted] text-right pr-2">Original:</span>
                     <span className="truncate select-all">{localItem?.link || 'Local'}</span>
                 </div>
             </div>

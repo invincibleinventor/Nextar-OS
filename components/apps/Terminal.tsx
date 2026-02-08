@@ -313,7 +313,7 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
                 const isDir = item.endsWith('/');
                 return (
                     <span key={idx}>
-                        {isDir ? <span className="text-blue-400 font-bold">{item}</span> : <span>{item}</span>}
+                        {isDir ? <span className="text-pastel-blue font-bold">{item}</span> : <span>{item}</span>}
                         {idx < line.split('  ').length - 1 && '  '}
                     </span>
                 );
@@ -329,7 +329,7 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
     return (
         <div
             ref={containerref}
-            className={`h-full ${ismobile ? '' : 'pt-[50px]'} w-full bg-[#1e1e1e] text-[#cccccc] p-4 overflow-y-auto cursor-text`}
+            className={`h-full w-full bg-[--bg-base] text-[--text-color] p-4 overflow-y-auto cursor-text`}
             onClick={() => {
                 if (ismobile) setcanedit(true);
                 inputref.current?.focus();
@@ -340,15 +340,15 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
                     <div key={i} className="min-h-[20px] whitespace-pre-wrap break-all">
                         {line.includes(`@${hostname}`) && line.includes('$') ? (
                             <span>
-                                <span className="text-[#50fa7b]">{line.split('@')[0]}</span>
-                                <span className="text-white">@</span>
-                                <span className="text-[#8be9fd]">{hostname}</span>
-                                <span className="text-white"> {line.split(`@${hostname} `)[1]?.split(' $')[0] || ''} </span>
-                                <span className="text-white">$ </span>
-                                <span className="text-white">{line.split('$')[1] || ''}</span>
+                                <span className="text-pastel-green">{line.split('@')[0]}</span>
+                                <span className="text-[--text-color]">@</span>
+                                <span className="text-pastel-blue">{hostname}</span>
+                                <span className="text-[--text-color]"> {line.split(`@${hostname} `)[1]?.split(' $')[0] || ''} </span>
+                                <span className="text-[--text-color]">$ </span>
+                                <span className="text-[--text-color]">{line.split('$')[1] || ''}</span>
                             </span>
                         ) : (
-                            <span className="text-[#f8f8f2]">
+                            <span className="text-[--text-color]">
                                 {line.startsWith('LS_OUTPUT:')
                                     ? renderLine(line.replace('LS_OUTPUT:', ''), true)
                                     : renderLine(line)}
@@ -357,14 +357,14 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
                     </div>
                 ))}
                 <div className="flex items-center">
-                    <span className="text-[#50fa7b]">{username}</span>
-                    <span className="text-white">@</span>
-                    <span className="text-[#8be9fd]">{hostname}</span>
-                    <span className="text-white"> {promptPath} </span>
-                    <span className="text-white">$ </span>
+                    <span className="text-pastel-green">{username}</span>
+                    <span className="text-[--text-color]">@</span>
+                    <span className="text-pastel-blue">{hostname}</span>
+                    <span className="text-[--text-color]"> {promptPath} </span>
+                    <span className="text-[--text-color]">$ </span>
                     <input
                         ref={inputref}
-                        className="flex-1 bg-transparent outline-none text-[#f8f8f2] font-mono ml-2"
+                        className="flex-1 bg-transparent outline-none text-[--text-color] font-mono ml-2"
                         value={currline}
                         onChange={(e) => setcurrline(e.target.value)}
                         onKeyDown={handlekey}
@@ -373,7 +373,7 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
                         autoComplete="off"
                         disabled={isrunning}
                     />
-                    {isrunning && <span className="text-yellow-500 animate-pulse ml-2">⏳</span>}
+                    {isrunning && <span className="text-pastel-yellow animate-pulse ml-2">⏳</span>}
                 </div>
                 <div ref={endref} />
             </div>

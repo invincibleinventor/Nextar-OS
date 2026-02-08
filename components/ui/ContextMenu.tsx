@@ -80,7 +80,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose, classNa
             <AnimatePresence>
                 <motion.div
                     key="context-backdrop"
-                    className="fixed inset-0 z-[99998] bg-black/40 backdrop-blur-sm"
+                    className="fixed inset-0 z-[99998] bg-[--bg-base]/70"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -89,14 +89,14 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose, classNa
                 <motion.div
                     key="context-sheet"
                     ref={menuRef}
-                    className={`fixed bottom-0 left-0 right-0 z-[99999] bg-white/90 dark:bg-[#2c2c2e]/95 backdrop-blur-xl rounded-t-[20px] shadow-[0_-10px_40px_rgba(0,0,0,0.3)] p-2 pb-8 font-sf ${className}`}
+                    className={`fixed bottom-0 left-0 right-0 z-[99999] bg-surface border-t-2 border-[--border-color] p-2 pb-8 font-mono ${className}`}
                     initial={{ y: '100%' }}
                     animate={{ y: 0 }}
                     exit={{ y: '100%' }}
                     transition={{ type: 'tween', ease: 'easeOut', duration: 0.2 }}
                     onClick={(e) => e.stopPropagation()}
                 >
-                    <div className="w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full mx-auto mb-3" />
+                    <div className="w-10 h-1 bg-[--border-color] mx-auto mb-3" />
                     <div className="space-y-0.5 max-h-[60vh] overflow-y-auto">
                         {items.map((item, index) => {
                             if (item.separator) {
@@ -114,12 +114,12 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose, classNa
                                     }}
                                     disabled={item.disabled}
                                     className={`
-                                        w-full text-left px-4 py-3 rounded-xl text-[17px] font-medium transition-colors
+                                        w-full text-left px-4 py-3 text-[17px] font-medium transition-colors
                                         ${item.disabled
-                                            ? 'opacity-40 text-gray-400'
+                                            ? 'opacity-40 text-[--text-muted]'
                                             : item.danger
-                                                ? 'text-red-500 active:bg-red-500/10'
-                                                : 'text-black dark:text-white active:bg-black/5 dark:active:bg-white/10'
+                                                ? 'text-pastel-red active:bg-pastel-red/10'
+                                                : 'text-[--text-color] active:bg-overlay'
                                         }
                                     `}
                                 >
@@ -130,7 +130,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose, classNa
                     </div>
                     <button
                         onClick={onClose}
-                        className="w-full mt-2 py-3.5 rounded-xl bg-white dark:bg-[#3a3a3c] text-[17px] font-semibold text-accent active:bg-gray-100 dark:active:bg-white/10 transition-colors"
+                        className="w-full mt-2 py-3.5 bg-overlay border border-[--border-color] text-[17px] font-semibold text-accent active:bg-[--border-color] transition-colors"
                     >
                         Cancel
                     </button>
@@ -148,14 +148,14 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose, classNa
     return createPortal(
         <div
             ref={menuRef}
-            className={`fixed z-[99999] min-w-[200px] bg-white/70 dark:bg-[#1e1e1e]/70 backdrop-blur-xl border border-black/5 dark:border-white/10 rounded-[10px] shadow-[0_10px_40px_rgba(0,0,0,0.2)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.6)] p-[5px] flex flex-col animate-in fade-in zoom-in-95 duration-100 font-sf ${className}`}
+            className={`fixed z-[99999] min-w-[200px] bg-overlay border border-[--border-color] p-[5px] flex flex-col animate-in fade-in zoom-in-95 duration-100 font-mono anime-glow-sm ${className}`}
             style={style}
             onClick={(e) => e.stopPropagation()}
             onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); }}
         >
             {items.map((item, index) => {
                 if (item.separator) {
-                    return <div key={`sep-${index}`} className="h-[1px] bg-black/10 dark:bg-white/10 my-1 mx-2" />;
+                    return <div key={`sep-${index}`} className="h-[1px] bg-[--border-color] my-1 mx-2" />;
                 }
 
                 return (
@@ -169,12 +169,12 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose, classNa
                         }}
                         disabled={item.disabled}
                         className={`
-                            w-full text-left px-3 py-1 rounded-[5px] text-[13px] font-medium transition-colors
+                            w-full text-left px-3 py-1 text-[13px] font-medium transition-colors
                             ${item.disabled
-                                ? 'opacity-50 cursor-not-allowed text-gray-400'
+                                ? 'opacity-50 cursor-not-allowed text-[--text-muted]'
                                 : item.danger
-                                    ? 'text-black dark:text-white hover:bg-red-500 hover:text-white'
-                                    : 'text-black dark:text-white hover:bg-accent hover:text-white'
+                                    ? 'text-[--text-color] hover:bg-pastel-red hover:text-[--bg-base]'
+                                    : 'text-[--text-color] hover:bg-accent hover:text-[--bg-base]'
                             }
                         `}
                     >

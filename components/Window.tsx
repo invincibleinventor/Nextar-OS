@@ -28,9 +28,9 @@ const MemoizedDynamicComponent = memo(
     if (!DynamicComponent) {
       return (
         <div className="flex flex-row h-full w-full items-center content-center">
-          <div className="flex flex-col space-y-5 font-sf mx-auto items-center content-center">
+          <div className="flex flex-col space-y-5 font-mono mx-auto items-center content-center">
             <Image className="w-24 h-24" src={icon} width={96} height={96} alt={appname} />
-            <div className="text-sm dark:text-white">{appname} is coming soon</div>
+            <div className="text-sm text-[--text-color]">{appname} is coming soon</div>
           </div>
         </div>
       );
@@ -205,7 +205,7 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
         windowElement.style.left = `${rect.left}px`;
         windowElement.style.width = `${rect.width}px`;
         windowElement.style.height = `${rect.height}px`;
-        windowElement.style.borderRadius = '24px';
+        windowElement.style.borderRadius = '0px';
         windowElement.style.transform = 'none';
       }
 
@@ -417,10 +417,10 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
         damping: 30,
         mass: 1,
       }}
-      className={`window border dark:border-neutral-700/50 border-neutral-300/50 overflow-hidden flex flex-col 
-      ${app?.titlebarblurred ? 'backdrop-blur-xl' : 'backdrop-blur-sm'} 
-      ${ismaximized || ismobile ? '' : 'rounded-2xl shadow-2xl'} ${isdragging ? 'cursor-grabbing' : 'cursor-default'} ${(isminimized || shouldblur || isRecentAppView) ? 'pointer-events-none' : 'pointer-events-auto'}
-        ${(ismobile && isRecentAppView) ? 'absolute inset-0 w-full h-full rounded-[24px]' : 'absolute'}`}
+      className={`window overflow-hidden flex flex-col bg-surface
+      ${activewindow === id ? 'border border-[--border-color] shadow-[0_8px_32px_-6px_rgba(0,0,0,0.25),0_0_0_1px_rgba(237,135,150,0.4),0_2px_8px_-2px_rgba(237,135,150,0.1)] anime-glow' : 'border border-[--border-color] shadow-[0_4px_16px_-4px_rgba(0,0,0,0.15),0_0_0_1px_var(--border-color)]'}
+      ${isdragging ? 'cursor-grabbing' : 'cursor-default'} ${(isminimized || shouldblur || isRecentAppView) ? 'pointer-events-none' : 'pointer-events-auto'}
+        ${(ismobile && isRecentAppView) ? 'absolute inset-0 w-full h-full' : 'absolute'}`}
       data-window-id={id}
       style={{
         top: (ismobile && isRecentAppView) ? 0 : (ismobile ? 44 : (ismaximized ? 35 : (position?.top || 0))),
@@ -450,38 +450,41 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
     >
 
       {!ismobile && (
-        <div id="buttons" className="absolute top-[18px] left-4 z-50 flex flex-row items-center content-center space-x-[8px] group">
-          <button
-            className={`w-[12px] h-[12px] rounded-full ${activewindow == id ? 'bg-accent shadow-lg' : 'bg-neutral-400/50 border-neutral-500/50 border'} window-button flex items-center justify-center`}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              removewindow(id);
-            }}
-          >
-            <span className="opacity-0 group-hover:opacity-100 text-[8px] font-bold text-black/50">×</span>
-          </button>
+        <div className={`w-full h-[48px] shrink-0 flex items-center border-b border-[--border-color] bg-[--bg-overlay] px-4 z-50 anime-gradient-top ${isdragging ? 'cursor-grabbing' : 'cursor-grab'}`}>
+          <div id="buttons" className="flex flex-row items-center space-x-[8px] group shrink-0">
+            <button
+              className={`w-[12px] h-[12px]  ${activewindow == id ? 'bg-pastel-red' : 'bg-[--border-color]'} window-button flex items-center justify-center`}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                removewindow(id);
+              }}
+            >
+              <span className="opacity-0 group-hover:opacity-100 text-[8px] font-bold text-[--bg-base]">×</span>
+            </button>
 
-          <button
-            className={`w-[12px] h-[12px] rounded-full ${activewindow == id ? 'bg-accent shadow-lg' : 'bg-neutral-400/50 border-neutral-500/50 border'} window-button flex items-center justify-center`}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              updatewindow(id, { isminimized: true });
-            }}
-          >
-            <span className="opacity-0 group-hover:opacity-100 text-[8px] font-bold text-black/50">−</span>
-          </button>
-          <button
-            className={`w-[12px] h-[12px] rounded-full ${activewindow == id ? 'bg-accent shadow-lg' : 'bg-neutral-400/50 border-neutral-500/50 border'} window-button flex items-center justify-center`}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handlemaximize();
-            }}
-          >
-            <span className="opacity-0 group-hover:opacity-100 text-[6px] font-bold text-black/50">↗</span>
-          </button>
+            <button
+              className={`w-[12px] h-[12px]  ${activewindow == id ? 'bg-pastel-yellow' : 'bg-[--border-color]'} window-button flex items-center justify-center`}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                updatewindow(id, { isminimized: true });
+              }}
+            >
+              <span className="opacity-0 group-hover:opacity-100 text-[8px] font-bold text-[--bg-base]">−</span>
+            </button>
+            <button
+              className={`w-[12px] h-[12px]  ${activewindow == id ? 'bg-pastel-teal' : 'bg-[--border-color]'} window-button flex items-center justify-center`}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handlemaximize();
+              }}
+            >
+              <span className="opacity-0 group-hover:opacity-100 text-[6px] font-bold text-[--bg-base]">↗</span>
+            </button>
+          </div>
+          <span className="ml-4 text-[13px] text-[--text-muted] truncate select-none">{title || appname}</span>
         </div>
       )}
 

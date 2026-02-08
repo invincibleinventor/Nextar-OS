@@ -14,18 +14,18 @@ import { IoPeopleOutline } from 'react-icons/io5';
 import { iselectron, wifi as wifiapi, bluetooth as bluetoothapi, audio as audioapi } from '@/utils/platform';
 
 const sidebaritems = [
-    { id: 'wifi', label: 'Wi-Fi', icon: IoWifi, color: 'var(--accent-color)' },
-    { id: 'bluetooth', label: 'Bluetooth', icon: IoBluetooth, color: 'var(--accent-color)' },
-    { id: 'network', label: 'Network', icon: IoGlobeOutline, color: 'var(--accent-color)' },
+    { id: 'wifi', label: 'Wi-Fi', icon: IoWifi, color: '#8aadf4' },
+    { id: 'bluetooth', label: 'Bluetooth', icon: IoBluetooth, color: '#8aadf4' },
+    { id: 'network', label: 'Network', icon: IoGlobeOutline, color: '#8aadf4' },
     { type: 'spacer' },
-    { id: 'notifications', label: 'Notifications', icon: IoNotificationsOutline, color: '#FF3B30' },
-    { id: 'sound', label: 'Sound', icon: IoVolumeHigh, color: '#FF2D55' },
-    { id: 'focus', label: 'Focus', icon: IoMoon, color: '#5856D6' },
+    { id: 'notifications', label: 'Notifications', icon: IoNotificationsOutline, color: '#ed8796' },
+    { id: 'sound', label: 'Sound', icon: IoVolumeHigh, color: '#f5bde6' },
+    { id: 'focus', label: 'Focus', icon: IoMoon, color: '#c6a0f6' },
     { type: 'spacer' },
-    { id: 'general', label: 'General', icon: IoSettingsOutline, color: '#8E8E93' },
-    { id: 'appearance', label: 'Appearance', icon: IoColorPaletteOutline, color: '#FF9500' },
-    { id: 'accessibility', label: 'Accessibility', icon: IoAccessibilityOutline, color: 'var(--accent-color)' },
-    { id: 'wallpaper', label: 'Wallpaper', icon: IoImageOutline, color: '#32ADE6' },
+    { id: 'general', label: 'General', icon: IoSettingsOutline, color: '#6e738d' },
+    { id: 'appearance', label: 'Appearance', icon: IoColorPaletteOutline, color: '#f5a97f' },
+    { id: 'accessibility', label: 'Accessibility', icon: IoAccessibilityOutline, color: '#8bd5ca' },
+    { id: 'wallpaper', label: 'Wallpaper', icon: IoImageOutline, color: '#8aadf4' },
 ];
 
 export default function Settings({ initialPage }: { initialPage?: string }) {
@@ -120,38 +120,38 @@ export default function Settings({ initialPage }: { initialPage?: string }) {
     const Toggle = ({ value, onChange }: { value: boolean, onChange: (v: boolean) => void }) => (
         <button
             onClick={() => onChange(!value)}
-            className={`w-[51px] h-[31px] rounded-full p-[2px] transition-colors ${value ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`}
+            className={`w-[51px] h-[31px] p-[2px] transition-colors ${value ? 'bg-pastel-green' : 'bg-[--border-color]'}`}
         >
-            <div className={`w-[27px] h-[27px] rounded-full bg-white shadow transition-transform ${value ? 'translate-x-5' : 'translate-x-0'}`} />
+            <div className={`w-[27px] h-[27px]  bg-[--bg-base] transition-transform ${value ? 'translate-x-5' : 'translate-x-0'}`} />
         </button>
     );
 
     const SettingsGroup = ({ children }: { children: React.ReactNode }) => (
-        <div className="bg-white dark:bg-[#1c1c1e] rounded-xl overflow-hidden mb-6">
+        <div className="bg-overlay border border-[--border-color] overflow-hidden mb-6">
             {children}
         </div>
     );
 
     const SettingsRow = ({ label, value, onClick, toggle, toggleValue, onToggle, last }: any) => (
         <div
-            className={`flex items-center justify-between px-4 ${ismobile ? 'py-3.5' : 'py-2.5'} ${!last ? 'border-b border-black/5 dark:border-white/5' : ''} ${onClick ? 'active:bg-black/5 dark:active:bg-white/5' : ''}`}
+            className={`flex items-center justify-between px-4 ${ismobile ? 'py-3.5' : 'py-2.5'} ${!last ? 'border-b border-[--border-color]' : ''} ${onClick ? 'active:bg-overlay' : ''}`}
             onClick={onClick}
         >
-            <span className={`${ismobile ? 'text-[16px]' : 'text-[13px] font-medium'}`}>{label}</span>
+            <span className={`text-[--text-color] ${ismobile ? 'text-[16px]' : 'text-[13px] font-medium'}`}>{label}</span>
             <div className="flex items-center gap-2">
-                {value && <span className={`${ismobile ? 'text-[16px]' : 'text-[13px]'} text-gray-500`}>{value}</span>}
+                {value && <span className={`${ismobile ? 'text-[16px]' : 'text-[13px]'} text-[--text-muted]`}>{value}</span>}
                 {toggle && <Toggle value={toggleValue} onChange={onToggle} />}
-                {onClick && <IoChevronForward className="text-gray-400" size={ismobile ? 20 : 14} />}
+                {onClick && <IoChevronForward className="text-[--text-muted]" size={ismobile ? 20 : 14} />}
             </div>
         </div>
     );
 
     const ContentView = () => (
-        <div className={`flex-1 h-full overflow-y-auto bg-white dark:bg-[#1c1c1e] ${ismobile ? '' : 'p-0 md:p-8 md:pt-10'}`}>
+        <div className={`flex-1 h-full overflow-y-auto bg-[--bg-base] ${ismobile ? '' : 'p-0 md:p-8 md:pt-10'}`}>
             <div className={`max-w-[640px] mx-auto ${ismobile ? '' : 'md:px-4'}`}>
                 {!ismobile && (
                     <div className="flex items-center gap-3 mb-5 px-4 md:px-0">
-                        <div className="w-7 h-7 rounded-md flex items-center justify-center text-white shadow-sm" style={{ backgroundColor: sidebaritems.find(i => i.id === activetab)?.color || '#8E8E93' }}>
+                        <div className="w-7 h-7 flex items-center justify-center text-[--bg-base]" style={{ backgroundColor: sidebaritems.find(i => i.id === activetab)?.color || '#6e738d' }}>
                             {(() => {
                                 const item = sidebaritems.find(i => i.id === activetab);
                                 if (item && 'icon' in item && item.icon) {
@@ -161,23 +161,23 @@ export default function Settings({ initialPage }: { initialPage?: string }) {
                                 return <IoSettingsOutline size={16} />;
                             })()}
                         </div>
-                        <h1 className="text-[20px] font-bold">{sidebaritems.find(i => i.id === activetab)?.label || 'Settings'}</h1>
+                        <h1 className="text-[20px] font-bold text-[--text-color]">{sidebaritems.find(i => i.id === activetab)?.label || 'Settings'}</h1>
                     </div>
                 )}
 
                 <div className={`${ismobile ? 'p-4' : ''}`}>
                     {activetab === 'general' && (
                         <>
-                            <div className="flex flex-col items-center mb-6 bg-gray-50 dark:bg-white/5 p-5 rounded-xl border border-black/5 dark:border-white/5">
-                                <div className="w-14 h-14 bg-gradient-to-br from-accent to-[#5856D6] rounded-xl mb-3 shadow-md flex items-center justify-center text-white">
+                            <div className="flex flex-col items-center mb-6 bg-overlay p-5 border border-[--border-color]">
+                                <div className="w-14 h-14 bg-accent mb-3 flex items-center justify-center text-[--bg-base]">
                                     <IoSettingsOutline size={28} />
                                 </div>
-                                <h2 className="text-lg font-bold">NextarOS</h2>
-                                <p className="text-[12px] text-gray-500 mt-0.5">Version 14.5 (23A5212a)</p>
+                                <h2 className="text-lg font-bold text-[--text-color]">NextarOS</h2>
+                                <p className="text-[12px] text-[--text-muted] mt-0.5">Version 14.5 (23A5212a)</p>
                             </div>
 
                             <div className="space-y-4">
-                                <div className="text-[11px] uppercase font-semibold text-gray-400 pl-3">About</div>
+                                <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3">About</div>
                                 <SettingsGroup>
                                     <SettingsRow label="Name" value="Nextar PC" onClick={() => { }} />
                                     <SettingsRow label="Software Update" value="Up to date" onClick={() => { }} />
@@ -186,7 +186,7 @@ export default function Settings({ initialPage }: { initialPage?: string }) {
 
                                 {user?.role === 'admin' && (
                                     <>
-                                        <div className="text-[11px] uppercase font-semibold text-gray-400 pl-3">Snapshots (Admin)</div>
+                                        <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3">Snapshots (Admin)</div>
                                         <SettingsGroup>
                                             <SettingsRow
                                                 label="Create Snapshot"
@@ -368,7 +368,7 @@ export default function Settings({ initialPage }: { initialPage?: string }) {
                                     </>
                                 )}
 
-                                <div className="text-[11px] uppercase font-semibold text-gray-400 pl-3">Reset</div>
+                                <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3">Reset</div>
                                 <SettingsGroup>
                                     <SettingsRow label="Reset Notifications" onClick={() => { localStorage.removeItem('clearedNotifications'); window.location.reload(); }} />
                                     <SettingsRow
@@ -393,33 +393,33 @@ export default function Settings({ initialPage }: { initialPage?: string }) {
 
                     {activetab === 'appearance' && (
                         <>
-                            <div className="text-[11px] uppercase font-semibold text-gray-400 pl-3 mb-2">Colors</div>
+                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Colors</div>
                             <SettingsGroup>
                                 <div className="p-5 flex justify-center gap-8">
                                     <button onClick={() => theme !== 'light' && toggletheme()} className="flex flex-col items-center gap-2 group">
-                                        <div className={`w-32 h-20 rounded-lg border flex overflow-hidden shadow-sm transition-all ${theme === 'light' ? 'border-accent ring-2 ring-accent/20' : 'border-gray-200 dark:border-white/10 group-hover:border-gray-300'}`}>
-                                            <div className="w-1/3 bg-[#f5f5f7]" />
-                                            <div className="w-2/3  bg-white relative">
-                                                <div className="absolute top-2 left-2 w-10 h-2 bg-blue-500 rounded-full opacity-20"></div>
-                                                <div className="absolute top-5 left-2 w-6 h-2 bg-gray-200 rounded-full"></div>
+                                        <div className={`w-32 h-20 border flex overflow-hidden transition-all ${theme === 'light' ? 'border-accent ring-2 ring-accent/20' : 'border-[--border-color] group-hover:border-[--text-muted]'}`}>
+                                            <div className="w-1/3 bg-[--bg-surface]" />
+                                            <div className="w-2/3 bg-[--bg-base] relative">
+                                                <div className="absolute top-2 left-2 w-10 h-2 bg-accent opacity-20"></div>
+                                                <div className="absolute top-5 left-2 w-6 h-2 bg-[--border-color]"></div>
                                             </div>
                                         </div>
-                                        <span className={`text-[12px] font-medium ${theme === 'light' ? 'text-blue-600' : 'text-gray-500'}`}>Light</span>
+                                        <span className={`text-[12px] font-medium ${theme === 'light' ? 'text-accent' : 'text-[--text-muted]'}`}>Light</span>
                                     </button>
                                     <button onClick={() => theme !== 'dark' && toggletheme()} className="flex flex-col items-center gap-2 group">
-                                        <div className={`w-32 h-20 rounded-lg border flex overflow-hidden shadow-sm transition-all ${theme === 'dark' ? 'border-accent ring-2 ring-accent/20' : 'border-gray-200 dark:border-white/10 group-hover:border-gray-300'}`}>
-                                            <div className="w-1/3 bg-[#2d2d2d]" />
-                                            <div className="w-2/3 bg-[#1e1e1e] relative">
-                                                <div className="absolute top-2 left-2 w-10 h-2 bg-blue-500 rounded-full opacity-50"></div>
-                                                <div className="absolute top-5 left-2 w-6 h-2 bg-gray-700 rounded-full"></div>
+                                        <div className={`w-32 h-20 border flex overflow-hidden transition-all ${theme === 'dark' ? 'border-accent ring-2 ring-accent/20' : 'border-[--border-color] group-hover:border-[--text-muted]'}`}>
+                                            <div className="w-1/3 bg-[#1e2030]" />
+                                            <div className="w-2/3 bg-[#161822] relative">
+                                                <div className="absolute top-2 left-2 w-10 h-2 bg-accent opacity-50"></div>
+                                                <div className="absolute top-5 left-2 w-6 h-2 bg-[#363a4f]"></div>
                                             </div>
                                         </div>
-                                        <span className={`text-[12px] font-medium ${theme === 'dark' ? 'text-blue-500' : 'text-gray-500'}`}>Dark</span>
+                                        <span className={`text-[12px] font-medium ${theme === 'dark' ? 'text-accent' : 'text-[--text-muted]'}`}>Dark</span>
                                     </button>
                                 </div>
                             </SettingsGroup>
 
-                            <div className="text-[11px] uppercase font-semibold text-gray-400 pl-3 mb-2">Accessibility</div>
+                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Accessibility</div>
                             <SettingsGroup>
                                 <SettingsRow label="Reduce Transparency" toggle toggleValue={reducetransparency} onToggle={setreducetransparency} />
                                 <SettingsRow label="Reduce Motion" toggle toggleValue={reducemotion} onToggle={setreducemotion} />
@@ -431,14 +431,14 @@ export default function Settings({ initialPage }: { initialPage?: string }) {
 
                     {activetab === 'users' && (
 
-                        <div className="h-full -m-8 md:-m-0 border border-black/5 dark:border-white/5 rounded-xl overflow-hidden shadow-sm">
+                        <div className="h-full -m-8 md:-m-0 border border-[--border-color] overflow-hidden">
                             <UserManagement />
                         </div>
                     )}
 
                     {activetab === 'wallpaper' && (
                         <>
-                            <div className="text-[11px] uppercase font-semibold text-gray-400 pl-3 mb-2">Wallpaper URL</div>
+                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Wallpaper URL</div>
                             <SettingsGroup>
                                 <div className="p-4">
                                     <input
@@ -446,34 +446,34 @@ export default function Settings({ initialPage }: { initialPage?: string }) {
                                         value={wallpaperurl}
                                         onChange={(e) => setwallpaperurl(e.target.value)}
                                         placeholder="https://example.com/wallpaper.jpg"
-                                        className="w-full px-3 py-2 bg-gray-100 dark:bg-white/10 rounded-lg outline-none text-[14px] border border-black/5 dark:border-white/10 focus:ring-2 ring-blue-500/50"
+                                        className="w-full px-3 py-2 bg-overlay outline-none text-[14px] text-[--text-color] border border-[--border-color] focus:border-accent"
                                     />
-                                    <p className="text-[11px] text-gray-400 mt-2">Enter a URL to use as your wallpaper</p>
+                                    <p className="text-[11px] text-[--text-muted] mt-2">Enter a URL to use as your wallpaper</p>
                                 </div>
                             </SettingsGroup>
 
-                            <div className="text-[11px] uppercase font-semibold text-gray-400 pl-3 mb-2 mt-4">Preset Wallpapers</div>
+                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2 mt-4">Preset Wallpapers</div>
                             <SettingsGroup>
                                 <div className="p-4 grid grid-cols-3 gap-3">
                                     {['/bg.jpg', '/bg-dark.jpg', '/wallpaper-1.jpg', '/wallpaper-2.jpg', '/wallpaper-3.jpg', '/wallpaper-4.jpg'].map((wp) => (
                                         <button
                                             key={wp}
                                             onClick={() => setwallpaperurl(wp)}
-                                            className={`aspect-video rounded-lg bg-cover bg-center border-2 transition-all ${wallpaperurl === wp ? 'border-blue-500 ring-2 ring-blue-500/30' : 'border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20'}`}
+                                            className={`aspect-video bg-cover bg-center border-2 transition-all ${wallpaperurl === wp ? 'border-accent ring-2 ring-accent/30' : 'border-[--border-color] hover:border-[--text-muted]'}`}
                                             style={{ backgroundImage: `url('${wp}')` }}
                                         />
                                     ))}
                                 </div>
                             </SettingsGroup>
 
-                            <div className="text-[11px] uppercase font-semibold text-gray-400 pl-3 mb-2 mt-4">Accent Color</div>
+                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2 mt-4">Accent Color</div>
                             <SettingsGroup>
                                 <div className="p-4 flex gap-3 flex-wrap">
-                                    {['#007AFF', '#34C759', '#FF9500', '#FF3B30', '#AF52DE', '#5856D6', '#FF2D55', '#00C7BE'].map((color) => (
+                                    {['#ed8796', '#f5a97f', '#eed49f', '#a6da95', '#8bd5ca', '#8aadf4', '#b7bdf8', '#f5bde6', '#c6a0f6'].map((color) => (
                                         <button
                                             key={color}
                                             onClick={() => setaccentcolor(color)}
-                                            className={`w-8 h-8 rounded-full transition-all ${accentcolor === color ? 'ring-2 ring-offset-2 ring-gray-400 dark:ring-white scale-110' : 'hover:scale-105'}`}
+                                            className={`w-8 h-8  transition-all ${accentcolor === color ? 'ring-2 ring-offset-2 ring-[--text-muted] scale-110' : 'hover:scale-105'}`}
                                             style={{ backgroundColor: color }}
                                         />
                                     ))}
@@ -484,7 +484,7 @@ export default function Settings({ initialPage }: { initialPage?: string }) {
 
                     {activetab === 'wifi' && (
                         <>
-                            <div className="text-[11px] uppercase font-semibold text-gray-400 pl-3 mb-2">Wi-Fi</div>
+                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Wi-Fi</div>
                             <SettingsGroup>
                                 <SettingsRow
                                     label="Wi-Fi"
@@ -502,17 +502,17 @@ export default function Settings({ initialPage }: { initialPage?: string }) {
 
                             {wifienabled && (
                                 <>
-                                    <div className="flex items-center justify-between text-[11px] uppercase font-semibold text-gray-400 pl-3 mb-2 mt-4">
+                                    <div className="flex items-center justify-between text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2 mt-4">
                                         <span>Available Networks</span>
-                                        <button onClick={fetchwifinetworks} className="p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded">
+                                        <button onClick={fetchwifinetworks} className="p-1 hover:bg-overlay">
                                             <IoRefresh className={wifiloading ? 'animate-spin' : ''} size={14} />
                                         </button>
                                     </div>
                                     <SettingsGroup>
                                         {wifiloading ? (
-                                            <div className="p-4 text-center text-gray-500 text-sm">Scanning...</div>
+                                            <div className="p-4 text-center text-[--text-muted] text-sm">Scanning...</div>
                                         ) : wifinetworks.length === 0 ? (
-                                            <div className="p-4 text-center text-gray-500 text-sm">No networks found</div>
+                                            <div className="p-4 text-center text-[--text-muted] text-sm">No networks found</div>
                                         ) : (
                                             wifinetworks.map((net, i) => (
                                                 <SettingsRow
@@ -535,7 +535,7 @@ export default function Settings({ initialPage }: { initialPage?: string }) {
                             )}
 
                             {!iselectron && (
-                                <div className="mt-4 p-4 bg-yellow-100 dark:bg-yellow-900/30 rounded-xl text-sm text-yellow-800 dark:text-yellow-200">
+                                <div className="mt-4 p-4 bg-pastel-yellow/10 border border-pastel-yellow/30 text-sm text-pastel-yellow">
                                     Wi-Fi controls require native mode (Electron)
                                 </div>
                             )}
@@ -544,7 +544,7 @@ export default function Settings({ initialPage }: { initialPage?: string }) {
 
                     {activetab === 'bluetooth' && (
                         <>
-                            <div className="text-[11px] uppercase font-semibold text-gray-400 pl-3 mb-2">Bluetooth</div>
+                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Bluetooth</div>
                             <SettingsGroup>
                                 <SettingsRow
                                     label="Bluetooth"
@@ -560,17 +560,17 @@ export default function Settings({ initialPage }: { initialPage?: string }) {
 
                             {btenabled && (
                                 <>
-                                    <div className="flex items-center justify-between text-[11px] uppercase font-semibold text-gray-400 pl-3 mb-2 mt-4">
+                                    <div className="flex items-center justify-between text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2 mt-4">
                                         <span>Devices</span>
-                                        <button onClick={fetchbtdevices} className="p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded">
+                                        <button onClick={fetchbtdevices} className="p-1 hover:bg-overlay">
                                             <IoRefresh className={btloading ? 'animate-spin' : ''} size={14} />
                                         </button>
                                     </div>
                                     <SettingsGroup>
                                         {btloading ? (
-                                            <div className="p-4 text-center text-gray-500 text-sm">Scanning...</div>
+                                            <div className="p-4 text-center text-[--text-muted] text-sm">Scanning...</div>
                                         ) : btdevices.length === 0 ? (
-                                            <div className="p-4 text-center text-gray-500 text-sm">No devices found</div>
+                                            <div className="p-4 text-center text-[--text-muted] text-sm">No devices found</div>
                                         ) : (
                                             btdevices.map((dev, i) => (
                                                 <SettingsRow
@@ -586,7 +586,7 @@ export default function Settings({ initialPage }: { initialPage?: string }) {
                             )}
 
                             {!iselectron && (
-                                <div className="mt-4 p-4 bg-yellow-100 dark:bg-yellow-900/30 rounded-xl text-sm text-yellow-800 dark:text-yellow-200">
+                                <div className="mt-4 p-4 bg-pastel-yellow/10 border border-pastel-yellow/30 text-sm text-pastel-yellow">
                                     Bluetooth controls require native mode (Electron)
                                 </div>
                             )}
@@ -595,12 +595,12 @@ export default function Settings({ initialPage }: { initialPage?: string }) {
 
                     {activetab === 'sound' && (
                         <>
-                            <div className="text-[11px] uppercase font-semibold text-gray-400 pl-3 mb-2">Output</div>
+                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Output</div>
                             <SettingsGroup>
                                 <div className="p-4">
                                     <div className="flex items-center justify-between mb-3">
-                                        <span className="text-sm font-medium">Volume</span>
-                                        <span className="text-sm text-gray-500">{volume}%</span>
+                                        <span className="text-sm font-medium text-[--text-color]">Volume</span>
+                                        <span className="text-sm text-[--text-muted]">{volume}%</span>
                                     </div>
                                     <input
                                         type="range"
@@ -612,7 +612,7 @@ export default function Settings({ initialPage }: { initialPage?: string }) {
                                             setvolume(v);
                                             if (iselectron) await audioapi.setvolume(v);
                                         }}
-                                        className="w-full h-2 bg-gray-200 dark:bg-white/10 rounded-full appearance-none cursor-pointer accent-accent"
+                                        className="w-full h-2 bg-[--border-color] appearance-none cursor-pointer accent-accent"
                                     />
                                 </div>
                                 <SettingsRow
@@ -627,7 +627,7 @@ export default function Settings({ initialPage }: { initialPage?: string }) {
                                 />
                             </SettingsGroup>
 
-                            <div className="text-[11px] uppercase font-semibold text-gray-400 pl-3 mb-2 mt-4">Sound Effects</div>
+                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2 mt-4">Sound Effects</div>
                             <SettingsGroup>
                                 <SettingsRow
                                     label="UI Sound Effects"
@@ -639,7 +639,7 @@ export default function Settings({ initialPage }: { initialPage?: string }) {
                             </SettingsGroup>
 
                             {!iselectron && (
-                                <div className="mt-4 p-4 bg-yellow-100 dark:bg-yellow-900/30 rounded-xl text-sm text-yellow-800 dark:text-yellow-200">
+                                <div className="mt-4 p-4 bg-pastel-yellow/10 border border-pastel-yellow/30 text-sm text-pastel-yellow">
                                     System volume controls require native mode (Electron)
                                 </div>
                             )}
@@ -660,7 +660,7 @@ export default function Settings({ initialPage }: { initialPage?: string }) {
 
     if (ismobile) {
         return (
-            <div className="relative h-full w-full bg-white dark:bg-[#1c1c1e] font-sf text-black dark:text-white overflow-hidden">
+            <div className="relative h-full w-full bg-[--bg-base] font-mono text-[--text-color] overflow-hidden">
                 <AnimatePresence mode="popLayout" initial={false}>
                     {showsidebar ? (
                         <motion.div
@@ -669,44 +669,44 @@ export default function Settings({ initialPage }: { initialPage?: string }) {
                             animate={{ x: 0, opacity: 1 }}
                             exit={{ x: '-30%', opacity: 0 }}
                             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                            className="absolute pb-10 inset-0 z-30 bg-[#f5f5f7] dark:bg-[#1c1c1e] flex flex-col"
+                            className="absolute pb-10 inset-0 z-30 bg-surface flex flex-col"
                         >
                             <div className="px-4 pt-12 pb-2">
-                                <h1 className="text-[32px] font-bold">Settings</h1>
+                                <h1 className="text-[32px] font-bold text-[--text-color]">Settings</h1>
                             </div>
                             <div className="px-4 py-2">
                                 <div className="relative">
-                                    <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                                    <input placeholder="Search" className="w-full bg-white dark:bg-[#2c2c2e] rounded-xl pl-9 pr-3 py-2 text-[16px] outline-none placeholder-gray-500" />
+                                    <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[--text-muted]" size={16} />
+                                    <input placeholder="Search" className="w-full bg-overlay pl-9 pr-3 py-2 text-[16px] outline-none text-[--text-color] placeholder-[--text-muted]" />
                                 </div>
                             </div>
                             <div className="flex-1 overflow-y-auto px-4 py-2 space-y-4">
                                 <div
-                                    className="flex items-center gap-3 p-4 bg-white dark:bg-[#2c2c2e] rounded-2xl cursor-pointer"
+                                    className="flex items-center gap-3 p-4 bg-overlay border border-[--border-color] cursor-pointer"
                                     onClick={() => { setactivetab('users'); setshowsidebar(false); }}
                                 >
-                                    <div className="w-14 h-14 rounded-full overflow-hidden shrink-0 border border-black/5">
+                                    <div className="w-14 h-14  overflow-hidden shrink-0 border border-[--border-color]">
                                         <Image src={user?.avatar || '/me.png'} alt="Profile" width={56} height={56} className="w-full h-full object-cover" />
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <div className="text-[18px] font-semibold truncate">{user?.name || 'Guest'}</div>
-                                        <div className="text-[14px] text-gray-500 truncate">{user?.role === 'admin' ? 'Administrator' : 'Standard User'}</div>
+                                        <div className="text-[18px] font-semibold truncate text-[--text-color]">{user?.name || 'Guest'}</div>
+                                        <div className="text-[14px] text-[--text-muted] truncate">{user?.role === 'admin' ? 'Administrator' : 'Standard User'}</div>
                                     </div>
-                                    <IoChevronForward className="text-gray-400" size={24} />
+                                    <IoChevronForward className="text-[--text-muted]" size={24} />
                                 </div>
 
-                                <div className="bg-white dark:bg-[#2c2c2e] rounded-2xl overflow-hidden">
+                                <div className="bg-overlay border border-[--border-color] overflow-hidden">
                                     {sidebaritems.filter((i: any) => i.type !== 'spacer').map((item: any, i: number, arr: any[]) => (
                                         <div
                                             key={item.id}
                                             onClick={() => { setactivetab(item.id); setshowsidebar(false); }}
-                                            className={`flex items-center gap-3 px-4 py-3 cursor-pointer active:bg-black/5 dark:active:bg-white/10 ${i !== arr.length - 1 ? 'border-b border-gray-100 dark:border-white/5' : ''}`}
+                                            className={`flex items-center gap-3 px-4 py-3 cursor-pointer active:bg-overlay ${i !== arr.length - 1 ? 'border-b border-[--border-color]' : ''}`}
                                         >
-                                            <div className="w-7 h-7 rounded-md flex items-center justify-center text-white shrink-0" style={{ backgroundColor: item.color }}>
+                                            <div className="w-7 h-7 flex items-center justify-center text-[--bg-base] shrink-0" style={{ backgroundColor: item.color }}>
                                                 <item.icon size={16} />
                                             </div>
-                                            <span className="text-[16px] font-medium flex-1">{item.label}</span>
-                                            <IoChevronForward className="text-gray-400" size={20} />
+                                            <span className="text-[16px] font-medium flex-1 text-[--text-color]">{item.label}</span>
+                                            <IoChevronForward className="text-[--text-muted]" size={20} />
                                         </div>
                                     ))}
                                 </div>
@@ -719,9 +719,9 @@ export default function Settings({ initialPage }: { initialPage?: string }) {
                             animate={{ x: 0 }}
                             exit={{ x: '100%' }}
                             transition={{ type: 'tween', stiffness: 300, damping: 30 }}
-                            className="absolute inset-0 z-30 bg-white dark:bg-[#1c1c1e] flex flex-col"
+                            className="absolute inset-0 z-30 bg-[--bg-base] flex flex-col"
                         >
-                            <div className="h-14 flex items-center px-2 border-b border-black/5 dark:border-white/5 bg-white/80 dark:bg-[#1c1c1e]/80 backdrop-blur-xl">
+                            <div className="h-14 flex items-center px-2 border-b border-[--border-color] bg-surface">
                                 <button
                                     onClick={() => setshowsidebar(true)}
                                     className="flex items-center text-accent px-2"
@@ -729,7 +729,7 @@ export default function Settings({ initialPage }: { initialPage?: string }) {
                                     <IoChevronBack size={26} />
                                     <span className="text-[16px]">Settings</span>
                                 </button>
-                                <span className="absolute left-1/2 -translate-x-1/2 font-semibold text-[16px]">
+                                <span className="absolute left-1/2 -translate-x-1/2 font-semibold text-[16px] text-[--text-color]">
                                     {sidebaritems.find(i => i.id === activetab)?.label}
                                 </span>
                             </div>
@@ -742,26 +742,26 @@ export default function Settings({ initialPage }: { initialPage?: string }) {
     }
 
     return (
-        <div ref={containerref} className="flex h-full w-full font-sf text-black dark:text-white overflow-hidden">
-            <div className="w-[260px] border-r border-black/5 dark:border-white/10 bg-gray-100/80 dark:bg-[#1e1e1e]/80 backdrop-blur-xl flex flex-col pt-10 h-full">
+        <div ref={containerref} className="flex h-full w-full font-mono text-[--text-color] overflow-hidden">
+            <div className="w-[260px] border-r border-[--border-color] bg-surface flex flex-col pt-3 h-full anime-gradient-top">
                 <div className="px-4 py-2 mb-2">
                     <div className="relative">
-                        <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-                        <input placeholder="Search" className="w-full bg-black/5 dark:bg-white/10 rounded-lg pl-8 pr-3 py-1 text-[13px] outline-none placeholder-gray-500 transition-all focus:bg-white dark:focus:bg-[#2c2c2e] focus:shadow-sm" />
+                        <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[--text-muted]" size={14} />
+                        <input placeholder="Search" className="w-full bg-overlay border border-[--border-color] pl-8 pr-3 py-1 text-[13px] outline-none text-[--text-color] placeholder-[--text-muted] transition-all focus:border-accent" />
                     </div>
                 </div>
 
                 <div className="px-3 pb-2">
                     <div
-                        className="flex items-center gap-3 p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-lg cursor-pointer transition-colors"
+                        className="flex items-center gap-3 p-2 hover:bg-overlay cursor-pointer transition-colors"
                         onClick={() => setactivetab('users')}
                     >
-                        <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-black/5">
+                        <div className="w-10 h-10  overflow-hidden shrink-0 border border-[--border-color]">
                             <Image src={user?.avatar || '/me.png'} alt="Profile" width={40} height={40} className="w-full h-full object-cover" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <div className="text-[13px] font-semibold truncate leading-tight">{user?.name || 'Guest'}</div>
-                            <div className="text-[11px] text-gray-500 truncate">{user?.role === 'admin' ? 'Administrator' : 'Standard User'}</div>
+                            <div className="text-[13px] font-semibold truncate leading-tight text-[--text-color]">{user?.name || 'Guest'}</div>
+                            <div className="text-[11px] text-[--text-muted] truncate">{user?.role === 'admin' ? 'Administrator' : 'Standard User'}</div>
                         </div>
                     </div>
                 </div>
@@ -773,10 +773,10 @@ export default function Settings({ initialPage }: { initialPage?: string }) {
                             <div
                                 key={item.id}
                                 onClick={() => setactivetab(item.id)}
-                                className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg cursor-pointer mx-1 transition-colors ${activetab === item.id ? 'bg-accent text-white' : 'text-black dark:text-gray-200 hover:bg-black/5 dark:hover:bg-white/5'}`}
+                                className={`flex items-center gap-2.5 px-3 py-1.5 cursor-pointer mx-1 transition-colors ${activetab === item.id ? 'bg-accent text-[--bg-base]' : 'text-[--text-color] hover:bg-overlay'}`}
                             >
-                                <div className="w-5 h-5 rounded flex items-center justify-center text-white shrink-0 text-[12px]" style={{ backgroundColor: activetab === item.id ? 'transparent' : item.color }}>
-                                    <item.icon size={12} className={activetab === item.id ? 'text-white' : ''} />
+                                <div className="w-5 h-5 flex items-center justify-center text-[--bg-base] shrink-0 text-[12px]" style={{ backgroundColor: activetab === item.id ? 'transparent' : item.color }}>
+                                    <item.icon size={12} className={activetab === item.id ? 'text-[--bg-base]' : ''} />
                                 </div>
                                 <span className="text-[13px] leading-none pb-[1px]">{item.label}</span>
                             </div>

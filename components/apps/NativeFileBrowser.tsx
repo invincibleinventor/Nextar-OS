@@ -135,63 +135,63 @@ export default function NativeFileBrowser({ isFocused, initialPath }: NativeFile
 
     if (!iselectron) {
         return (
-            <div className="h-full flex flex-col items-center justify-center bg-neutral-900 text-white">
-                <IoFolderOutline size={64} className="text-neutral-600 mb-4" />
+            <div className="h-full flex flex-col items-center justify-center bg-surface text-[--text-color]">
+                <IoFolderOutline size={64} className="text-[--text-muted] mb-4" />
                 <p className="text-xl font-medium mb-2">Native File Browser</p>
-                <p className="text-neutral-500">Only available in Electron mode</p>
-                <p className="text-neutral-600 text-sm mt-4">Run with: npm run electron:dev</p>
+                <p className="text-[--text-muted]">Only available in Electron mode</p>
+                <p className="text-[--text-muted] text-sm mt-4">Run with: npm run electron:dev</p>
             </div>
         );
     }
 
     return (
-        <div className="h-full flex flex-col bg-[#1e1e1e] text-white">
-            <div className="h-12 bg-neutral-900 border-b border-neutral-700 flex items-center px-4 shrink-0 gap-2">
+        <div className="h-full flex flex-col bg-[--bg-base] text-[--text-color]">
+            <div className="h-12 bg-surface border-b border-[--border-color] flex items-center px-4 shrink-0 gap-2">
                 <div className="flex items-center gap-1 ml-16">
                     <button
                         onClick={goback}
                         disabled={historyindex <= 0}
-                        className={`p-1.5 rounded hover:bg-neutral-700 ${historyindex <= 0 ? 'opacity-30' : ''}`}
+                        className={`p-1.5 rounded hover:bg-overlay ${historyindex <= 0 ? 'opacity-30' : ''}`}
                     >
                         <IoChevronBack size={18} />
                     </button>
                     <button
                         onClick={goforward}
                         disabled={historyindex >= history.length - 1}
-                        className={`p-1.5 rounded hover:bg-neutral-700 ${historyindex >= history.length - 1 ? 'opacity-30' : ''}`}
+                        className={`p-1.5 rounded hover:bg-overlay ${historyindex >= history.length - 1 ? 'opacity-30' : ''}`}
                     >
                         <IoChevronForward size={18} />
                     </button>
                     <button
                         onClick={goup}
-                        className="p-1.5 rounded hover:bg-neutral-700"
+                        className="p-1.5 rounded hover:bg-overlay"
                         title="Go up"
                     >
                         ↑
                     </button>
                 </div>
 
-                <div className="flex-1 flex items-center bg-neutral-800 rounded-lg px-3 py-1.5 mx-4">
-                    <span className="text-neutral-400 text-sm truncate">{currentpath}</span>
+                <div className="flex-1 flex items-center bg-overlay px-3 py-1.5 mx-4">
+                    <span className="text-[--text-muted] text-sm truncate">{currentpath}</span>
                 </div>
 
                 <button
                     onClick={() => loaddir(currentpath)}
-                    className="p-1.5 rounded hover:bg-neutral-700"
+                    className="p-1.5 rounded hover:bg-overlay"
                 >
                     <IoRefresh size={18} className={loading ? 'animate-spin' : ''} />
                 </button>
 
-                <div className="flex bg-neutral-800 rounded-lg p-0.5">
+                <div className="flex bg-overlay p-0.5">
                     <button
                         onClick={() => setviewmode('list')}
-                        className={`p-1.5 rounded ${viewmode === 'list' ? 'bg-neutral-600' : ''}`}
+                        className={`p-1.5 rounded ${viewmode === 'list' ? 'bg-surface' : ''}`}
                     >
                         <IoListOutline size={16} />
                     </button>
                     <button
                         onClick={() => setviewmode('grid')}
-                        className={`p-1.5 rounded ${viewmode === 'grid' ? 'bg-neutral-600' : ''}`}
+                        className={`p-1.5 rounded ${viewmode === 'grid' ? 'bg-surface' : ''}`}
                     >
                         <IoGridOutline size={16} />
                     </button>
@@ -199,13 +199,13 @@ export default function NativeFileBrowser({ isFocused, initialPath }: NativeFile
             </div>
 
             <div className="flex flex-1 overflow-hidden">
-                <div className="w-48 bg-neutral-900/50 border-r border-neutral-700 p-2 overflow-y-auto shrink-0">
-                    <div className="text-xs text-neutral-500 uppercase mb-2 px-2">Quick Access</div>
+                <div className="w-48 bg-surface border-r border-[--border-color] p-2 overflow-y-auto shrink-0">
+                    <div className="text-xs text-[--text-muted] uppercase mb-2 px-2">Quick Access</div>
                     {quicknav.map((item) => (
                         <button
                             key={item.path}
                             onClick={() => navigate(item.path)}
-                            className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-left hover:bg-neutral-700 ${currentpath === item.path ? 'bg-accent/30 text-accent' : ''}`}
+                            className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-overlay ${currentpath === item.path ? 'bg-accent/30 text-accent' : ''}`}
                         >
                             <item.icon size={16} />
                             {item.name}
@@ -214,15 +214,15 @@ export default function NativeFileBrowser({ isFocused, initialPath }: NativeFile
                 </div>
 
                 <div className="flex-1 flex flex-col min-w-0">
-                    <div className="p-2 border-b border-neutral-700">
+                    <div className="p-2 border-b border-[--border-color]">
                         <div className="relative">
-                            <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" size={16} />
+                            <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[--text-muted]" size={16} />
                             <input
                                 type="text"
                                 value={searchquery}
                                 onChange={(e) => setsearchquery(e.target.value)}
                                 placeholder="Search files..."
-                                className="w-full bg-neutral-800 rounded-lg pl-9 pr-4 py-2 text-sm outline-none placeholder-neutral-500"
+                                className="w-full bg-overlay pl-9 pr-4 py-2 text-sm outline-none placeholder-[--text-muted]"
                             />
                         </div>
                     </div>
@@ -230,27 +230,27 @@ export default function NativeFileBrowser({ isFocused, initialPath }: NativeFile
                     <div className="flex-1 overflow-auto p-2">
                         {loading ? (
                             <div className="flex items-center justify-center h-full">
-                                <IoRefresh size={32} className="animate-spin text-neutral-500" />
+                                <IoRefresh size={32} className="animate-spin text-[--text-muted]" />
                             </div>
                         ) : error ? (
-                            <div className="flex flex-col items-center justify-center h-full text-red-400">
+                            <div className="flex flex-col items-center justify-center h-full text-pastel-red">
                                 <p className="text-lg mb-2">Error</p>
-                                <p className="text-sm text-neutral-500">{error}</p>
+                                <p className="text-sm text-[--text-muted]">{error}</p>
                                 <button
                                     onClick={() => navigate('/home')}
-                                    className="mt-4 px-4 py-2 bg-neutral-700 rounded-lg hover:bg-neutral-600"
+                                    className="mt-4 px-4 py-2 bg-overlay hover:bg-surface"
                                 >
                                     Go Home
                                 </button>
                             </div>
                         ) : filteredfiles.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center h-full text-neutral-500">
+                            <div className="flex flex-col items-center justify-center h-full text-[--text-muted]">
                                 <IoFolderOutline size={48} className="mb-2 opacity-50" />
                                 <p>No files found</p>
                             </div>
                         ) : viewmode === 'list' ? (
                             <table className="w-full text-sm">
-                                <thead className="text-neutral-500 text-xs uppercase sticky top-0 bg-[#1e1e1e]">
+                                <thead className="text-[--text-muted] text-xs uppercase sticky top-0 bg-[--bg-base]">
                                     <tr>
                                         <th className="text-left py-2 px-3">Name</th>
                                         <th className="text-left py-2 px-3 w-24">Size</th>
@@ -261,7 +261,7 @@ export default function NativeFileBrowser({ isFocused, initialPath }: NativeFile
                                     {filteredfiles.map((file) => (
                                         <tr
                                             key={file.name}
-                                            className={`hover:bg-neutral-800 cursor-pointer ${selectedfile === file.name ? 'bg-accent/20' : ''}`}
+                                            className={`hover:bg-overlay cursor-pointer ${selectedfile === file.name ? 'bg-accent/20' : ''}`}
                                             onClick={() => setselectedfile(file.name)}
                                             onDoubleClick={() => openfile(file)}
                                         >
@@ -270,36 +270,36 @@ export default function NativeFileBrowser({ isFocused, initialPath }: NativeFile
                                                     {file.isdir ? (
                                                         <IoFolderOutline className="text-accent" size={18} />
                                                     ) : (
-                                                        <IoDocumentOutline className="text-neutral-400" size={18} />
+                                                        <IoDocumentOutline className="text-[--text-muted]" size={18} />
                                                     )}
-                                                    <span className={file.name.startsWith('.') ? 'text-neutral-500' : ''}>
+                                                    <span className={file.name.startsWith('.') ? 'text-[--text-muted]' : ''}>
                                                         {file.name}
                                                     </span>
-                                                    {file.issymlink && <span className="text-xs text-neutral-500">→</span>}
+                                                    {file.issymlink && <span className="text-xs text-[--text-muted]">→</span>}
                                                 </div>
                                             </td>
-                                            <td className="py-2 px-3 text-neutral-500">
+                                            <td className="py-2 px-3 text-[--text-muted]">
                                                 {file.isdir ? '--' : formatsize(file.size || 0)}
                                             </td>
                                             <td className="py-2 px-3 text-right">
                                                 <div className="flex items-center justify-end gap-1 opacity-0 hover:opacity-100 transition-opacity">
                                                     <button
                                                         onClick={(e) => { e.stopPropagation(); openfile(file); }}
-                                                        className="p-1 hover:bg-neutral-600 rounded"
+                                                        className="p-1 hover:bg-overlay rounded"
                                                         title="Open"
                                                     >
                                                         <IoOpenOutline size={14} />
                                                     </button>
                                                     <button
                                                         onClick={(e) => { e.stopPropagation(); showinfolder(file.name); }}
-                                                        className="p-1 hover:bg-neutral-600 rounded"
+                                                        className="p-1 hover:bg-overlay rounded"
                                                         title="Show in folder"
                                                     >
                                                         <IoFolderOutline size={14} />
                                                     </button>
                                                     <button
                                                         onClick={(e) => { e.stopPropagation(); trashfile(file.name); }}
-                                                        className="p-1 hover:bg-red-500/20 text-red-400 rounded"
+                                                        className="p-1 hover:bg-overlay text-pastel-red rounded"
                                                         title="Move to trash"
                                                     >
                                                         <IoTrashOutline size={14} />
@@ -315,16 +315,16 @@ export default function NativeFileBrowser({ isFocused, initialPath }: NativeFile
                                 {filteredfiles.map((file) => (
                                     <div
                                         key={file.name}
-                                        className={`flex flex-col items-center p-3 rounded-lg hover:bg-neutral-800 cursor-pointer ${selectedfile === file.name ? 'bg-accent/20 ring-1 ring-accent' : ''}`}
+                                        className={`flex flex-col items-center p-3 hover:bg-overlay cursor-pointer ${selectedfile === file.name ? 'bg-accent/20 ring-1 ring-accent' : ''}`}
                                         onClick={() => setselectedfile(file.name)}
                                         onDoubleClick={() => openfile(file)}
                                     >
                                         {file.isdir ? (
                                             <IoFolderOutline className="text-accent" size={40} />
                                         ) : (
-                                            <IoDocumentOutline className="text-neutral-400" size={40} />
+                                            <IoDocumentOutline className="text-[--text-muted]" size={40} />
                                         )}
-                                        <span className={`text-xs mt-2 text-center truncate w-full ${file.name.startsWith('.') ? 'text-neutral-500' : ''}`}>
+                                        <span className={`text-xs mt-2 text-center truncate w-full ${file.name.startsWith('.') ? 'text-[--text-muted]' : ''}`}>
                                             {file.name}
                                         </span>
                                     </div>
@@ -335,7 +335,7 @@ export default function NativeFileBrowser({ isFocused, initialPath }: NativeFile
                 </div>
             </div>
 
-            <div className="h-8 bg-neutral-900 border-t border-neutral-700 flex items-center px-4 text-xs text-neutral-500 shrink-0">
+            <div className="h-8 bg-surface border-t border-[--border-color] flex items-center px-4 text-xs text-[--text-muted] shrink-0">
                 <span>{filteredfiles.length} items</span>
                 {selectedfile && <span className="ml-4">Selected: {selectedfile}</span>}
                 <span className="ml-auto">Native File Browser • Linux Host</span>

@@ -7,12 +7,14 @@ import { getUsers, User } from '../utils/db';
 import { verifyPassword } from '../utils/crypto';
 import { useDevice } from './DeviceContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { IoArrowForward, IoLockClosed, IoPerson, IoInformationCircleOutline } from 'react-icons/io5';
+import { IoArrowForward, IoLockClosed, IoPerson, IoMoon, IoRefresh } from 'react-icons/io5';
 import { iselectron, power } from '@/utils/platform';
+import { useSettings } from './SettingsContext';
 
 export default function LockScreen() {
     const { login, user, isLoading: authLoading, guestLogin } = useAuth();
     const { setosstate, osstate, ismobile } = useDevice();
+    const { islightbackground } = useSettings();
     const [password, setPassword] = useState('');
     const [error, setError] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -58,7 +60,6 @@ export default function LockScreen() {
         if (isSubmitting || !selectedUser) return;
 
         if (lockoutUntil && Date.now() < lockoutUntil) {
-            const remaining = Math.ceil((lockoutUntil - Date.now()) / 1000);
             setError(true);
             setTimeout(() => setError(false), 500);
             return;
@@ -102,50 +103,88 @@ export default function LockScreen() {
     if (authLoading || loadingUsers) return null;
     if (osstate === 'booting') return null;
 
+    const timeStr = currentTime?.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: false }) || '';
+    const dateStr = currentTime?.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' }) || '';
+
     if (ismobile) {
         return (
-            <div className="fixed inset-0 z-[99999] flex flex-col items-center bg-black overflow-hidden font-sf">
-                <div className="absolute inset-0 z-0 bg-[url('/bg.jpg')] bg-cover bg-center filter blur-md brightness-75"></div>
+            <div className="fixed inset-0 z-[99999] flex flex-col items-center bg-[--bg-base] overflow-hidden font-mono">
+                {/* Background with better visibility */}
+                <div className="absolute inset-0 z-0 bg-[url('/bg.jpg')] bg-cover bg-center opacity-25" />
+                <div className="absolute inset-0 z-0 bg-gradient-to-b from-[--bg-base]/70 via-[--bg-base]/50 to-[--bg-base]/80" />
 
-                <div className="h-12 w-full z-10"></div>
+                {/* Top accent line */}
+                <motion.div
+                    className="absolute top-0 left-0 right-0 h-[2px] z-20"
+                    style={{ background: 'linear-gradient(90deg, transparent, var(--accent-color), transparent)' }}
+                    initial={{ scaleX: 0 }}
+                    animate={{ scaleX: 1 }}
+                    transition={{ duration: 0.8, delay: 0.3 }}
+                />
 
-                <div className="z-10 mt-8 mb-4">
-                    <IoLockClosed className="text-white text-3xl opacity-80" />
-                </div>
+                <div className="h-12 w-full z-10" />
 
-                <div className="z-10 flex flex-col items-center mb-8">
-                    <h1 className="text-7xl font-semibold text-white tracking-wide drop-shadow-lg">
-                        {currentTime?.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: false })}
+                {/* Lock icon */}
+                <motion.div
+                    className="z-10 mt-6 mb-3"
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: 0.1 }}
+                >
+                    <div className="w-10 h-10 flex items-center justify-center border border-pastel-red/40 bg-pastel-red/10"
+                        style={{ boxShadow: '0 0 20px rgba(237,135,150,0.3)' }}>
+                        <IoLockClosed className="text-pastel-red text-lg" />
+                    </div>
+                </motion.div>
+
+                {/* Time display - no shimmer, use text-glow */}
+                <motion.div
+                    className="z-10 flex flex-col items-center mb-6"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                >
+                    <h1 className={`text-7xl font-bold tracking-tight ${islightbackground ? 'text-black' : 'text-white'}`}>
+                        {timeStr}
                     </h1>
-                    <p className="text-lg text-white font-semibold mt-2 drop-shadow-md">
-                        {currentTime?.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}
-                    </p>
-                </div>
+                    <div className="w-16 h-[2px] mt-3 mb-2" style={{ background: 'linear-gradient(90deg, transparent, var(--accent-color), transparent)' }} />
+                    <p className={`text-base font-medium ${islightbackground ? 'text-black/60' : 'text-white/60'}`}>{dateStr}</p>
+                </motion.div>
 
-                <div className="z-20 w-full px-8 flex flex-col items-center gap-6 flex-1 justify-center">
-                    <div className="flex items-center gap-6 overflow-x-auto w-full justify-center py-4 no-scrollbar">
+                {/* User selection and login */}
+                <div className="z-20 w-full px-8 flex flex-col items-center gap-5 flex-1 justify-center">
+                    <div className="flex items-center gap-5 overflow-x-auto w-full justify-center py-3 no-scrollbar">
                         {users.map(u => (
-                            <div
+                            <motion.div
                                 key={u.username}
                                 onClick={() => { setSelectedUser(u); setPassword(''); setError(false); }}
-                                className={`flex flex-col items-center gap-2 cursor-pointer transition-all duration-300 shrink-0
-                                    ${selectedUser?.username === u.username ? 'scale-110 opacity-100' : 'scale-90 opacity-60'}`}
+                                className="flex flex-col items-center gap-2 cursor-pointer shrink-0"
+                                animate={{
+                                    scale: selectedUser?.username === u.username ? 1.05 : 0.9,
+                                    opacity: selectedUser?.username === u.username ? 1 : 0.5
+                                }}
+                                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
                             >
-                                <div className={`relative w-20 h-20 rounded-full overflow-hidden shadow-xl border-2 ${selectedUser?.username === u.username ? 'border-white' : 'border-transparent'}`}>
+                                <div
+                                    className={`relative w-20 h-20 overflow-hidden border-2 transition-all duration-300 ${selectedUser?.username === u.username ? 'border-pastel-red' : 'border-[--border-color]'}`}
+                                    style={selectedUser?.username === u.username ? { boxShadow: '0 0 20px rgba(237,135,150,0.4), 0 0 40px rgba(237,135,150,0.15)' } : {}}
+                                >
                                     <Image src={u.avatar || "/pfp.png"} alt={u.name} fill className="object-cover" />
                                 </div>
-                                <span className="text-sm font-medium text-white">{u.name}</span>
-                            </div>
+                                <span className="text-sm font-medium text-[--text-color]">{u.name}</span>
+                            </motion.div>
                         ))}
-                        <div
+                        <motion.div
                             onClick={() => guestLogin()}
-                            className="flex flex-col items-center gap-2 cursor-pointer transition-all duration-300 shrink-0 scale-90 opacity-60"
+                            className="flex flex-col items-center gap-2 cursor-pointer shrink-0"
+                            animate={{ scale: 0.9, opacity: 0.5 }}
+                            whileTap={{ scale: 0.85 }}
                         >
-                            <div className="relative w-20 h-20 rounded-full bg-gray-600/50 backdrop-blur-md flex items-center justify-center shadow-xl border-2 border-transparent">
-                                <IoPerson size={32} className="text-white/80" />
+                            <div className="relative w-20 h-20 bg-[--bg-overlay] flex items-center justify-center border-2 border-[--border-color]">
+                                <IoPerson size={32} className="text-[--text-muted]" />
                             </div>
-                            <span className="text-sm font-medium text-white">Guest</span>
-                        </div>
+                            <span className="text-sm font-medium text-[--text-color]">Guest</span>
+                        </motion.div>
                     </div>
 
                     <AnimatePresence mode="wait">
@@ -156,7 +195,7 @@ export default function LockScreen() {
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -10 }}
                                 onSubmit={handleLogin}
-                                className="w-full max-w-[280px] relative mt-4"
+                                className="w-full max-w-[280px] relative mt-2"
                             >
                                 <motion.div
                                     animate={error ? { x: [-5, 5, -5, 5, 0] } : {}}
@@ -167,57 +206,109 @@ export default function LockScreen() {
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         placeholder="Password"
-                                        className="w-full bg-white/10 hover:bg-white/20 focus:bg-white/20 transition-colors backdrop-blur-xl border border-white/20 rounded-full py-3 px-4 outline-none placeholder-white/40 text-white"
+                                        className="w-full bg-[--bg-overlay] border-2 border-[--border-color] focus:border-pastel-red py-3 px-4 outline-none placeholder-[--text-muted] text-[--text-color] transition-all duration-300"
+                                        style={{ WebkitTextFillColor: 'var(--text-color)' }}
                                     />
                                 </motion.div>
+                                <div className="h-5 mt-2 text-center">
+                                    {error && <span className="text-xs font-medium text-pastel-red">Incorrect password</span>}
+                                </div>
                                 <button type="submit" className="hidden" />
                             </motion.form>
                         )}
                     </AnimatePresence>
                 </div>
 
-                <div className="w-full flex flex-col items-center pb-8 z-10 gap-6 mt-auto">
-                    <div className="w-32 h-1 bg-white rounded-full opacity-50"></div>
+                {/* Bottom accent */}
+                <div className="w-full flex flex-col items-center pb-8 z-10 gap-4 mt-auto">
+                    <div className="w-16 h-[2px]" style={{ background: 'linear-gradient(90deg, transparent, var(--accent-color), transparent)' }} />
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-black text-white font-sf">
+        <div className="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-[--bg-base] text-[--text-color] font-mono">
+            {/* Background - more visible with gradient overlay */}
             <div className="absolute inset-0 z-0 bg-[url('/bg.jpg')] bg-cover bg-center">
-                <div className="absolute inset-0 backdrop-blur-2xl bg-black/20"></div>
+                <div className="absolute inset-0 bg-gradient-to-b from-[--bg-base]/75 via-[--bg-base]/60 to-[--bg-base]/80" />
             </div>
 
-            <div className="z-10 flex flex-col items-center w-full max-w-md">
-                <div className="flex items-center gap-8 mt-32 mb-10 overflow-x-auto p-4 mask-fade">
+            {/* Decorative accent lines */}
+            <motion.div
+                className="absolute top-0 left-0 right-0 h-[2px] z-20"
+                style={{ background: 'linear-gradient(90deg, transparent, var(--accent-color), transparent)' }}
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ duration: 1, delay: 0.3 }}
+            />
+            <motion.div
+                className="absolute bottom-0 left-0 right-0 h-[2px] z-20"
+                style={{ background: 'linear-gradient(90deg, transparent, var(--accent-color), transparent)' }}
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ duration: 1, delay: 0.5 }}
+            />
+
+            {/* Time display - no shimmer, use glow effect */}
+            <motion.div
+                className="z-10 absolute top-20 flex flex-col items-center gap-3"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+            >
+                <span className={`text-8xl font-bold tracking-tight ${islightbackground ? 'text-black' : 'text-white'}`}>
+                    {timeStr}
+                </span>
+                <div className="w-20 h-[2px]" style={{ background: 'linear-gradient(90deg, transparent, var(--accent-color), transparent)' }} />
+                <span className={`text-xl font-medium ${islightbackground ? 'text-black/60' : 'text-white/60'}`}>{dateStr}</span>
+            </motion.div>
+
+            {/* User selection */}
+            <motion.div
+                className="z-10 flex flex-col items-center w-full max-w-md mt-16"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+            >
+                <div className="flex items-center gap-8 mb-8 overflow-x-auto p-4">
                     {users.map(u => (
-                        <div
+                        <motion.div
                             key={u.username}
                             onClick={() => { setSelectedUser(u); setPassword(''); setError(false); }}
-                            className={`flex flex-col items-center gap-3 cursor-pointer transition-all duration-300
-                                ${selectedUser?.username === u.username ? 'scale-110 opacity-100' : 'scale-90 opacity-60 hover:opacity-80'}`}
+                            className="flex flex-col items-center gap-3 cursor-pointer"
+                            animate={{
+                                scale: selectedUser?.username === u.username ? 1.05 : 0.9,
+                                opacity: selectedUser?.username === u.username ? 1 : 0.5
+                            }}
+                            whileHover={{ opacity: 0.8 }}
+                            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
                         >
-                            <div className={`relative w-24 h-24 rounded-full overflow-hidden  border-2 transition-colors ${selectedUser?.username === u.username ? 'border-white' : 'border-transparent'}`}>
+                            <div
+                                className={`relative w-24 h-24 overflow-hidden border-2 transition-all duration-300 ${selectedUser?.username === u.username ? 'border-pastel-red' : 'border-[--border-color]'}`}
+                                style={selectedUser?.username === u.username ? { boxShadow: '0 0 25px rgba(237,135,150,0.4), 0 0 50px rgba(237,135,150,0.15)' } : {}}
+                            >
                                 <Image src={u.avatar || "/pfp.png"} alt={u.name} fill className="object-cover" />
                             </div>
-                            <span className="text-lg font-medium drop-shadow-md">{u.name}</span>
-                        </div>
+                            <span className="text-base font-medium">{u.name}</span>
+                        </motion.div>
                     ))}
 
-                    <div
-                        onClick={() => {
-                            guestLogin();
-                        }}
-                        className={`flex flex-col items-center gap-3 cursor-pointer transition-all duration-300 scale-90 opacity-60 hover:opacity-80`}
+                    <motion.div
+                        onClick={() => guestLogin()}
+                        className="flex flex-col items-center gap-3 cursor-pointer"
+                        animate={{ scale: 0.9, opacity: 0.5 }}
+                        whileHover={{ opacity: 0.8 }}
+                        whileTap={{ scale: 0.85 }}
                     >
-                        <div className="w-24 h-24 rounded-full bg-gray-500/50 backdrop-blur-md flex items-center justify-center border-2 border-transparent shadow-2xl">
-                            <IoPerson size={40} className="text-white/80" />
+                        <div className="w-24 h-24 bg-[--bg-overlay] flex items-center justify-center border-2 border-[--border-color]">
+                            <IoPerson size={40} className="text-[--text-muted]" />
                         </div>
-                        <span className="text-lg font-medium drop-shadow-md">Guest User</span>
-                    </div>
+                        <span className="text-base font-medium">Guest User</span>
+                    </motion.div>
                 </div>
 
+                {/* Password form */}
                 <AnimatePresence mode="wait">
                     {selectedUser && (
                         <motion.form
@@ -226,7 +317,7 @@ export default function LockScreen() {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
                             onSubmit={handleLogin}
-                            className="w-full max-w-[240px] relative flex flex-col items-center"
+                            className="w-full max-w-[260px] relative flex flex-col items-center"
                         >
                             <motion.div
                                 animate={error ? { x: [-5, 5, -5, 5, 0] } : {}}
@@ -239,52 +330,59 @@ export default function LockScreen() {
                                     name="search"
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="Enter Password"
-                                    className="w-full bg-white/20 hover:bg-white/25 focus:bg-white/25 transition-colors backdrop-blur-md border border-white/10 rounded-full py-1.5  outline-none placeholder-white/50 shadow-inner text-sm pl-4 appearance-none"
+                                    className="w-full bg-[--bg-overlay] border-2 border-[--border-color] focus:border-pastel-red py-2 outline-none placeholder-[--text-muted] text-sm pl-4 pr-10 appearance-none text-[--text-color] transition-all duration-300"
+                                    style={{ WebkitTextFillColor: 'var(--text-color)' }}
                                     autoFocus
                                 />
                                 <button
                                     type="submit"
                                     disabled={!password || isSubmitting}
-                                    className={`absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full flex items-center justify-center transition-all
-                                        ${password ? 'bg-white text-black' : 'bg-transparent text-transparent'}`}
+                                    className={`absolute right-1.5 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center transition-all duration-300
+                                        ${password ? 'bg-pastel-red text-[--bg-base]' : 'bg-transparent text-transparent'}`}
+                                    style={password ? { boxShadow: '0 0 12px rgba(237,135,150,0.4)' } : {}}
                                 >
                                     {!isSubmitting && <IoArrowForward size={14} />}
-                                    {isSubmitting && <div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin" />}
+                                    {isSubmitting && <div className="w-3 h-3 border-2 border-[--bg-base] border-t-transparent animate-spin" />}
                                 </button>
                             </motion.div>
 
                             <div className="h-6 mt-2">
-                                {error && <span className="text-xs font-medium text-red-300 drop-shadow-md">Incorrect password</span>}
-                                {!error && <span className="text-[10px] text-white/40">Touch ID or Enter Password</span>}
+                                {error && <span className="text-xs font-medium text-pastel-red">Incorrect password</span>}
+                                {!error && <span className="text-[10px] text-[--text-muted]">Touch ID or Enter Password</span>}
                             </div>
                         </motion.form>
                     )}
                 </AnimatePresence>
-            </div>
+            </motion.div>
 
-            <div className="absolute top-32 flex flex-col items-center gap-1">
-                <span className="text-8xl font-bold tracking-tight drop-shadow-xl text-white/90">{currentTime?.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: false })}</span>
-                <span className="text-xl text-white/80 font-semibold drop-shadow-md">
-                    {currentTime?.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}
-                </span>
-            </div>
-
-            <div className="absolute bottom-12 flex flex-col items-center gap-4">
-                <div className="flex gap-6">
-                    <div onClick={async () => { if (iselectron) await power.sleep(); }} className="flex flex-col items-center gap-1 cursor-pointer group">
-                        <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur flex items-center justify-center group-hover:bg-white/20 transition-colors">
-                            <IoLockClosed size={18} />
-                        </div>
-                        <span className="text-[10px] font-medium opacity-60">Sleep</span>
+            {/* Bottom action buttons */}
+            <motion.div
+                className="absolute bottom-10 flex gap-8 z-10"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+            >
+                <div onClick={async () => { if (iselectron) await power.sleep(); }} className="flex flex-col items-center gap-2 cursor-pointer group">
+                    <div className="w-11 h-11 bg-[--bg-overlay] border border-[--border-color] flex items-center justify-center group-hover:border-accent transition-all duration-300"
+                        style={{ transition: 'box-shadow 0.3s, border-color 0.3s' }}
+                        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = '0 0 15px rgba(var(--accent-rgb, 198,160,246),0.3)'; }}
+                        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = 'none'; }}
+                    >
+                        <IoMoon size={18} className="text-[--text-color]" />
                     </div>
-                    <div onClick={async () => { if (iselectron) await power.restart(); else window.location.reload(); }} className="flex flex-col items-center gap-1 cursor-pointer group">
-                        <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur flex items-center justify-center group-hover:bg-white/20 transition-colors">
-                            <IoInformationCircleOutline size={20} />
-                        </div>
-                        <span className="text-[10px] font-medium opacity-60">Restart</span>
-                    </div>
+                    <span className="text-[10px] font-medium text-[--text-muted]">Sleep</span>
                 </div>
-            </div>
+                <div onClick={async () => { if (iselectron) await power.restart(); else window.location.reload(); }} className="flex flex-col items-center gap-2 cursor-pointer group">
+                    <div className="w-11 h-11 bg-[--bg-overlay] border border-[--border-color] flex items-center justify-center group-hover:border-accent transition-all duration-300"
+                        style={{ transition: 'box-shadow 0.3s, border-color 0.3s' }}
+                        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = '0 0 15px rgba(var(--accent-rgb, 198,160,246),0.3)'; }}
+                        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = 'none'; }}
+                    >
+                        <IoRefresh size={18} className="text-[--text-color]" />
+                    </div>
+                    <span className="text-[10px] font-medium text-[--text-muted]">Restart</span>
+                </div>
+            </motion.div>
         </div>
     );
 }

@@ -202,49 +202,49 @@ export default function TextEdit({ id, content: initialContent, title, isFocused
     };
 
     return (
-        <div className="flex flex-col w-full h-full bg-white/90 dark:bg-[#1e1e1e]/90 backdrop-blur-xl text-black dark:text-white font-sans text-sm relative" onContextMenu={handleContextMenu}>
-            <div className="h-[50px] flex items-center px-4 pl-[80px] bg-[#f5f5f5]/50 dark:bg-[#2d2d2d]/50 border-b border-gray-200 dark:border-white/10 select-none gap-2 draggable-area backdrop-blur-md">
-                <button onClick={handleOpen} className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded" title="Open">
+        <div className="flex flex-col w-full h-full bg-[--bg-base] text-[--text-color] font-mono text-sm relative" onContextMenu={handleContextMenu}>
+            <div className="h-[50px] flex items-center px-4 pl-[80px] bg-surface border-b border-[--border-color] select-none gap-2 draggable-area">
+                <button onClick={handleOpen} className="p-1 hover:bg-overlay" title="Open">
                     <IoFolderOpenOutline />
                 </button>
-                <button onClick={handleSave} disabled={files.find(f => f.id === currentFileId)?.isReadOnly} className={`p-1 rounded ${files.find(f => f.id === currentFileId)?.isReadOnly ? 'opacity-50 cursor-not-allowed' : 'hover:bg-black/5 dark:hover:bg-white/10'}`} title="Save">
+                <button onClick={handleSave} disabled={files.find(f => f.id === currentFileId)?.isReadOnly} className={`p-1 ${files.find(f => f.id === currentFileId)?.isReadOnly ? 'opacity-50 cursor-not-allowed' : 'hover:bg-overlay'}`} title="Save">
                     <IoSaveOutline />
                 </button>
-                <div className="w-[1px] h-4 bg-gray-300 dark:bg-white/20 mx-1"></div>
-                <button onClick={() => execCmd('bold')} className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded font-bold" title="Bold">B</button>
-                <button onClick={() => execCmd('italic')} className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded italic" title="Italic">I</button>
-                <button onClick={() => execCmd('underline')} className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded underline" title="Underline">U</button>
-                <div className="w-[1px] h-4 bg-gray-300 dark:bg-white/20 mx-1"></div>
-                <button onClick={() => execCmd('justifyLeft')} className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded">Left</button>
-                <button onClick={() => execCmd('justifyCenter')} className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded">Center</button>
+                <div className="w-[1px] h-4 bg-[--border-color] mx-1"></div>
+                <button onClick={() => execCmd('bold')} className="p-1 hover:bg-overlay font-bold" title="Bold">B</button>
+                <button onClick={() => execCmd('italic')} className="p-1 hover:bg-overlay italic" title="Italic">I</button>
+                <button onClick={() => execCmd('underline')} className="p-1 hover:bg-overlay underline" title="Underline">U</button>
+                <div className="w-[1px] h-4 bg-[--border-color] mx-1"></div>
+                <button onClick={() => execCmd('justifyLeft')} className="p-1 hover:bg-overlay">Left</button>
+                <button onClick={() => execCmd('justifyCenter')} className="p-1 hover:bg-overlay">Center</button>
 
                 <div className="flex-1"></div>
                 {files.find(f => f.id === currentFileId)?.isReadOnly && (
-                    <div className="flex items-center gap-1 text-xs text-gray-500 mr-2">
+                    <div className="flex items-center gap-1 text-xs text-[--text-muted] mr-2">
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                         Locked
                     </div>
                 )}
-                <span className="text-xs text-gray-500">{isSaved ? 'Saved' : 'Unsaved'}</span>
+                <span className="text-xs text-[--text-muted]">{isSaved ? 'Saved' : 'Unsaved'}</span>
             </div>
 
             {showFindReplace && (
-                <div className="absolute top-10 right-0 left-0 bg-[#f0f0f0] dark:bg-[#333] border-b border-gray-300 dark:border-black/20 p-2 flex gap-2 items-center z-10 animate-in slide-in-from-top-2">
+                <div className="absolute top-10 right-0 left-0 bg-surface border-b border-[--border-color] p-2 flex gap-2 items-center z-10 animate-in slide-in-from-top-2">
                     <IoSearchOutline />
                     <input
-                        className="bg-white dark:bg-black/20 px-2 py-1 rounded text-xs outline-none border border-transparent focus:border-blue-500"
+                        className="bg-overlay px-2 py-1 text-xs outline-none border border-transparent focus:border-accent"
                         placeholder="Find..."
                         value={findText}
                         onChange={(e) => setFindText(e.target.value)}
                     />
                     <input
-                        className="bg-white dark:bg-black/20 px-2 py-1 rounded text-xs outline-none border border-transparent focus:border-blue-500"
+                        className="bg-overlay px-2 py-1 text-xs outline-none border border-transparent focus:border-accent"
                         placeholder="Replace with..."
                         value={replaceText}
                         onChange={(e) => setReplaceText(e.target.value)}
                     />
-                    <button onClick={handleFindReplace} className="px-2 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600">Replace All</button>
-                    <button onClick={() => setShowFindReplace(false)} className="ml-auto p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded"><IoClose /></button>
+                    <button onClick={handleFindReplace} className="px-2 py-1 bg-accent text-[--text-color] text-xs hover:bg-accent/80">Replace All</button>
+                    <button onClick={() => setShowFindReplace(false)} className="ml-auto p-1 hover:bg-overlay"><IoClose /></button>
                 </div>
             )}
 

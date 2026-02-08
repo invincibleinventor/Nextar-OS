@@ -33,23 +33,23 @@ export default function ForceQuit({ isopen, onclose }: ForceQuitProps) {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[99998]"
+                        className="fixed inset-0 bg-[--bg-base]/80 z-[99998]"
                         onClick={onclose}
                     />
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        className="fixed left-0 top-0 bottom-0 right-0 h-max mx-auto my-auto w-[380px] bg-[#f5f5f5] dark:bg-[#2a2a2a] rounded-xl shadow-2xl z-[99999] font-sf overflow-hidden"
+                        className="fixed left-0 top-0 bottom-0 right-0 h-max mx-auto my-auto w-[380px] bg-surface border border-[--border-color] z-[99999] font-mono overflow-hidden anime-glow"
                     >
-                        <div className="p-4 border-b border-black/10 dark:border-white/10">
-                            <h2 className="text-base font-semibold text-center dark:text-white">Force Quit Applications</h2>
-                            <p className="text-xs text-gray-500 text-center mt-1">If an app doesn&apos;t respond, select it and click Force Quit</p>
+                        <div className="p-4 border-b border-[--border-color]">
+                            <h2 className="text-base font-semibold text-center text-[--text-color]">Force Quit Applications</h2>
+                            <p className="text-xs text-[--text-muted] text-center mt-1">If an app doesn&apos;t respond, select it and click Force Quit</p>
                         </div>
 
                         <div className="max-h-[300px] overflow-y-auto">
                             {activewindows.length === 0 ? (
-                                <div className="p-8 text-center text-gray-500">
+                                <div className="p-8 text-center text-[--text-muted]">
                                     <IoWarning size={32} className="mx-auto mb-2 opacity-50" />
                                     <p className="text-sm">No applications running</p>
                                 </div>
@@ -61,7 +61,7 @@ export default function ForceQuit({ isopen, onclose }: ForceQuitProps) {
                                     return (
                                         <div
                                             key={win.id}
-                                            className={`flex items-center gap-3 px-4 py-3 hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer group transition-colors ${iscrashed ? 'bg-red-500/10' : ''}`}
+                                            className={`flex items-center gap-3 px-4 py-3 hover:bg-overlay cursor-pointer group transition-colors ${iscrashed ? 'bg-pastel-red/10' : ''}`}
                                             onClick={() => handleForceQuit(win.id, proc?.pid)}
                                         >
                                             <div className="w-10 h-10 shrink-0">
@@ -74,19 +74,19 @@ export default function ForceQuit({ isopen, onclose }: ForceQuitProps) {
                                                 />
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <div className="font-medium text-sm dark:text-white truncate flex items-center gap-2">
+                                                <div className="font-medium text-sm text-[--text-color] truncate flex items-center gap-2">
                                                     {win.appname}
                                                     {iscrashed && (
-                                                        <span className="text-[10px] px-1.5 py-0.5 bg-red-500 text-white rounded">Not Responding</span>
+                                                        <span className="text-[10px] px-1.5 py-0.5 bg-pastel-red text-[--bg-base]">Not Responding</span>
                                                     )}
                                                 </div>
-                                                <div className="text-xs text-gray-500 truncate">
+                                                <div className="text-xs text-[--text-muted] truncate">
                                                     {proc ? `PID: ${proc.pid}` : 'Window'}
                                                 </div>
                                             </div>
                                             <IoCloseCircle
                                                 size={24}
-                                                className="text-red-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                                                className="text-pastel-red opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
                                             />
                                         </div>
                                     );
@@ -94,11 +94,11 @@ export default function ForceQuit({ isopen, onclose }: ForceQuitProps) {
                             )}
                         </div>
 
-                        <div className="p-3 border-t border-black/10 dark:border-white/10 flex justify-between items-center">
-                            <span className="text-xs text-gray-500">{activewindows.length} app{activewindows.length !== 1 ? 's' : ''} running</span>
+                        <div className="p-3 border-t border-[--border-color] flex justify-between items-center">
+                            <span className="text-xs text-[--text-muted]">{activewindows.length} app{activewindows.length !== 1 ? 's' : ''} running</span>
                             <button
                                 onClick={onclose}
-                                className="px-4 py-1.5 text-sm font-medium bg-gray-200 dark:bg-white/10 rounded-lg hover:bg-gray-300 dark:hover:bg-white/20 transition-colors dark:text-white"
+                                className="px-4 py-1.5 text-sm font-medium bg-overlay border border-[--border-color] hover:bg-overlay transition-colors text-[--text-color]"
                             >
                                 Cancel
                             </button>

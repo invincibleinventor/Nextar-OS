@@ -87,10 +87,10 @@ export const PermissionDialog: React.FC = () => {
     const permdetails = getPermissionDetails(pendingRequest.permission);
 
     return (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <div className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-xl rounded-xl shadow-2xl w-[340px] overflow-hidden">
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-[--bg-base]/80">
+            <div className="bg-surface border border-[--border-color] shadow-pastel-lg w-[340px] overflow-hidden anime-glow">
                 <div className="p-6 flex flex-col items-center text-center">
-                    <div className="w-16 h-16 rounded-xl overflow-hidden flex items-center justify-center mb-4 shadow-lg">
+                    <div className="w-16 h-16 overflow-hidden flex items-center justify-center mb-4">
                         {app ? (
                             <TintedAppIcon
                                 appId={app.id}
@@ -100,41 +100,41 @@ export const PermissionDialog: React.FC = () => {
                                 useFill={false}
                             />
                         ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                            <div className="w-full h-full bg-accent flex items-center justify-center">
                                 <span className="text-3xl">{permdetails.icon}</span>
                             </div>
                         )}
                     </div>
 
-                    <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">
+                    <h2 className="text-lg font-semibold text-[--text-color] mb-2">
                         &quot;{app?.appname || pendingRequest.appId}&quot; Would Like to {permdetails.title}
                     </h2>
 
-                    <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-1">
+                    <p className="text-sm text-[--text-muted] mb-1">
                         {permdetails.description}
                     </p>
 
-                    <div className="mt-3 px-3 py-2 bg-neutral-100 dark:bg-neutral-700 rounded-lg w-full">
+                    <div className="mt-3 px-3 py-2 bg-overlay w-full">
                         <div className="flex items-center gap-2 justify-center">
                             <span className="text-xl">{permdetails.icon}</span>
-                            <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                            <span className="text-sm font-medium text-[--text-muted]">
                                 {pendingRequest.permission}
                             </span>
                         </div>
                     </div>
                 </div>
 
-                <div className="border-t border-neutral-200 dark:border-neutral-700 flex">
+                <div className="border-t border-[--border-color] flex">
                     <button
                         onClick={denyPending}
-                        className="flex-1 py-3 text-blue-500 font-medium hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+                        className="flex-1 py-3 bg-overlay border border-[--border-color] font-medium hover:bg-overlay transition-colors text-[--text-color]"
                     >
                         Don&apos;t Allow
                     </button>
-                    <div className="w-px bg-neutral-200 dark:bg-neutral-700" />
+                    <div className="w-px bg-[--border-color]" />
                     <button
                         onClick={grantPending}
-                        className="flex-1 py-3 text-blue-500 font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+                        className="flex-1 py-3 bg-accent text-[--bg-base] font-semibold hover:bg-accent/80 transition-colors"
                     >
                         Allow
                     </button>

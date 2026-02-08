@@ -25,10 +25,10 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [reducemotion, setreducemotion] = useState(false);
     const [reducetransparency, setreducetransparency] = useState(false);
     const [soundeffects, setsoundeffects] = useState(false);
-    const [wallpaperurl, setwallpaperurl] = useState('/bg-dark.jpg');
-    const [accentcolor, setaccentcolor] = useState('#00C7BE');
+    const [wallpaperurl, setwallpaperurl] = useState('/bg.jpg');
+    const [accentcolor, setaccentcolor] = useState('#ed8796');
     const [islightbackground, setislightbackground] = useState(false);
-    const [inverselabelcolor, setinverselabelcolor] = useState(false);
+    const [inverselabelcolor, setinverselabelcolor] = useState(true);
 
     const { isGuest } = useAuth();
 

@@ -73,15 +73,16 @@ export default function Calculator({ appId = 'calculator', id }: { appId?: strin
         setwaitingfornewvalue(false);
     };
 
-    const btnstyle = "h-14 w-14 rounded-full flex items-center justify-center text-2xl font-medium transition active:opacity-70";
-    const numbtn = `${btnstyle} bg-[#333333] text-white`;
-    const opbtn = `${btnstyle} bg-[#ff9f0a] text-white`;
-    const fnbtn = `${btnstyle} bg-[#a5a5a5] text-black`;
+    const btnstyle = "h-14 w-14  flex items-center justify-center text-2xl font-medium transition active:opacity-70";
+    const numbtn = `${btnstyle} bg-overlay text-[--text-color] hover:bg-[--border-color]`;
+    const opbtn = `${btnstyle} bg-pastel-peach text-[--bg-base]`;
+    const eqbtn = `${btnstyle} bg-pastel-red text-[--bg-base]`;
+    const fnbtn = `${btnstyle} bg-[--border-color] text-[--text-color]`;
 
     return (
-        <div className="w-full h-full bg-black flex flex-col p-4 select-none">
+        <div className="w-full h-full bg-[--bg-base] flex flex-col p-4 select-none">
             <div className="flex-1 flex items-end justify-end px-2 mb-2">
-                <div className="text-white text-6xl font-light tracking-tight truncate">{display}</div>
+                <div className="text-[--text-color] text-6xl font-light tracking-tight truncate font-mono">{display}</div>
             </div>
             <div className="grid grid-cols-4 gap-3">
                 <button onClick={clear} className={fnbtn}>{display === '0' ? 'AC' : 'C'}</button>
@@ -104,9 +105,9 @@ export default function Calculator({ appId = 'calculator', id }: { appId?: strin
                 <button onClick={() => handlenum('3')} className={numbtn}>3</button>
                 <button onClick={() => handleop('+')} className={opbtn}>+</button>
 
-                <button onClick={() => handlenum('0')} className={`${numbtn} col-span-2 w-auto rounded-full pl-6 justify-start`}>0</button>
+                <button onClick={() => handlenum('0')} className={`${numbtn} col-span-2 w-auto  pl-6 justify-start`}>0</button>
                 <button onClick={() => !display.includes('.') && setdisplay(display + '.')} className={numbtn}>.</button>
-                <button onClick={calculate} className={opbtn}>=</button>
+                <button onClick={calculate} className={eqbtn}>=</button>
             </div>
         </div>
     );

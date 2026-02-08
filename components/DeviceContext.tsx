@@ -33,7 +33,7 @@ export const DeviceProvider = ({ children }: { children: React.ReactNode }) => {
     const [devicetype, setdevicetype] = useState<deviceType>('desktop');
     const [brightness, setbrightness] = useState(100);
     const [volume, setvolume] = useState(50);
-    const [appmode, setappmodestate] = useState<appMode>('portfolio');
+    const [appmode, setappmodestate] = useState<appMode>('os');
 
     const setappmode = (mode: appMode) => {
         setappmodestate(mode);

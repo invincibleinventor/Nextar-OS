@@ -171,20 +171,20 @@ export default function FileViewer({ content: initialContent, title: initialTitl
 
     if (viewingContent !== null) {
         return (
-            <div className="flex flex-col h-full w-full bg-white dark:bg-[#1e1e1e] text-black dark:text-white font-sf">
-                <div className="h-[50px] border-b border-black/5 dark:border-white/5 flex items-center justify-between px-4 bg-gray-50/50 dark:bg-[#282828] draggable-region">
-                    <div className={`${ismobile ? 'ps-0' : 'ps-20'} flex items-center gap-2 `}>
-                        <IoDocumentTextOutline className="text-gray-500" />
+            <div className="flex flex-col h-full w-full bg-[--bg-base] text-[--text-color] font-mono">
+                <div className="h-[50px] border-b border-[--border-color] flex items-center justify-between px-4 bg-surface draggable-region">
+                    <div className={`flex items-center gap-2 `}>
+                        <IoDocumentTextOutline className="text-[--text-muted]" />
                         <span className="text-sm font-semibold truncate">{viewingTitle}</span>
                     </div>
                     <button
                         onClick={handleOpenClick}
-                        className="px-3 py-1 text-xs font-medium bg-gray-200 dark:bg-white/10 rounded-md hover:bg-gray-300 dark:hover:bg-white/20 transition"
+                        className="px-3 py-1 text-xs font-medium bg-overlay hover:bg-overlay transition"
                     >
                         Open...
                     </button>
                 </div>
-                <div className="flex-1 overflow-y-auto w-full h-full bg-[#525659]">
+                <div className="flex-1 overflow-y-auto w-full h-full bg-overlay">
                     {viewingType === 'application/pdf' ? (
                         <iframe
                             src={viewingContent}
@@ -192,7 +192,7 @@ export default function FileViewer({ content: initialContent, title: initialTitl
                             title={viewingTitle}
                         />
                     ) : (
-                        <div className="max-w-3xl mx-auto prose dark:prose-invert prose-sm p-8 bg-white dark:bg-[#1e1e1e] min-h-full">
+                        <div className="max-w-3xl mx-auto prose prose-sm p-8 bg-[--bg-base] min-h-full">
                             <ReactMarkdown>{viewingContent}</ReactMarkdown>
                         </div>
                     )}
@@ -205,7 +205,7 @@ export default function FileViewer({ content: initialContent, title: initialTitl
 
     return (
         <div
-            className="flex h-full w-full bg-[#f5f5f5] dark:bg-[#1e1e1e] text-black dark:text-white font-sf overflow-hidden"
+            className="flex h-full w-full bg-[--bg-base] text-[--text-color] font-mono overflow-hidden"
             onContextMenu={handleContextMenu}
             onClick={() => { setContextMenu(null); setSelectedFile(null); }}
         >
@@ -232,37 +232,37 @@ export default function FileViewer({ content: initialContent, title: initialTitl
                 className="hidden md:flex"
             />
 
-            <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-[#1e1e1e]">
-                <div className="h-[50px] border-b border-black/5 dark:border-white/5 flex items-center px-4 gap-4 bg-[#f6f6f6] dark:bg-[#252526]">
+            <div className="flex-1 flex flex-col min-w-0 bg-[--bg-base]">
+                <div className="h-[50px] border-b border-[--border-color] flex items-center px-4 gap-4 bg-surface">
                     <div className="flex gap-2">
                         <button
                             onClick={navigateBack}
                             disabled={historyIndex <= 0}
-                            className="text-gray-500 hover:text-black dark:hover:text-white disabled:opacity-30 disabled:hover:text-gray-500 transition-colors"
+                            className="text-[--text-muted] hover:text-[--text-color] disabled:opacity-30 disabled:hover:text-[--text-muted] transition-colors"
                         >
                             <IoChevronBack size={18} />
                         </button>
                         <button
                             onClick={navigateForward}
                             disabled={historyIndex >= history.length - 1}
-                            className="text-gray-500 hover:text-black dark:hover:text-white disabled:opacity-30 disabled:hover:text-gray-500 transition-colors"
+                            className="text-[--text-muted] hover:text-[--text-color] disabled:opacity-30 disabled:hover:text-[--text-muted] transition-colors"
                         >
                             <IoChevronForward size={18} />
                         </button>
                     </div>
 
-                    <div className="flex items-center bg-gray-200 dark:bg-gray-700 rounded-lg p-0.5 border border-black/5 dark:border-white/5">
+                    <div className="flex items-center bg-overlay p-0.5 border border-[--border-color]">
                         <button
                             onClick={() => setFileModal({ isOpen: true, type: 'create-folder' })}
-                            className="p-1 hover:bg-white dark:hover:bg-gray-600 rounded-md transition-colors text-gray-600 dark:text-gray-300"
+                            className="p-1 hover:bg-overlay transition-colors text-[--text-muted]"
                             title="New Folder"
                         >
                             <IoFolderOpenOutline className="text-lg" />
                         </button>
-                        <div className="w-[1px] h-4 bg-gray-300 dark:bg-gray-600 mx-1"></div>
+                        <div className="w-[1px] h-4 bg-[--border-color] mx-1"></div>
                         <button
                             onClick={() => setFileModal({ isOpen: true, type: 'create-file' })}
-                            className="p-1 hover:bg-white dark:hover:bg-gray-600 rounded-md transition-colors text-gray-600 dark:text-gray-300"
+                            className="p-1 hover:bg-overlay transition-colors text-[--text-muted]"
                             title="New File"
                         >
                             <IoDocumentTextOutline className="text-lg" />
@@ -277,14 +277,14 @@ export default function FileViewer({ content: initialContent, title: initialTitl
 
                 <div className="flex-1 overflow-y-auto p-0" onClick={() => setSelectedFile(null)}>
                     <div className="flex flex-col w-full">
-                        <div className="flex items-center px-4 py-2 border-b border-black/5 dark:border-white/5 text-xs text-gray-500 font-medium bg-gray-50 dark:bg-[#252526]">
+                        <div className="flex items-center px-4 py-2 border-b border-[--border-color] text-xs text-[--text-muted] font-medium bg-surface">
                             <span className="flex-1">Name</span>
                             <span className="w-24 text-right">Date</span>
                             <span className="w-20 text-right">Size</span>
                             <span className="w-24 text-right">Kind</span>
                         </div>
                         {currentFiles.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+                            <div className="flex flex-col items-center justify-center py-20 text-[--text-muted]">
                                 <span className="text-4xl mb-2 opacity-50">folder_open</span>
                                 <span className="text-sm">Empty Folder</span>
                             </div>
@@ -300,10 +300,10 @@ export default function FileViewer({ content: initialContent, title: initialTitl
                                             e.stopPropagation();
                                             handleContextMenu(e, item.id);
                                         }}
-                                        className={`flex items-center px-4 py-1.5 border-b border-black/5 dark:border-white/5 cursor-default text-xs
+                                        className={`flex items-center px-4 py-1.5 border-b border-[--border-color] cursor-default text-xs
                                             ${selectedFile === item.name
-                                                ? 'bg-accent text-white'
-                                                : 'hover:bg-black/5 dark:hover:bg-white/5 odd:bg-gray-50/50 dark:odd:bg-white/5'
+                                                ? 'bg-accent text-[--text-color]'
+                                                : 'hover:bg-overlay odd:bg-surface'
                                             }
                                             ${!supported ? 'opacity-50 grayscale' : ''}
                                         `}
@@ -312,9 +312,9 @@ export default function FileViewer({ content: initialContent, title: initialTitl
                                             {getFileIcon(item.mimetype, item.name, item.icon, item.id)}
                                         </div>
                                         <span className="flex-1 truncate font-medium">{item.name}</span>
-                                        <span className={`w-24 text-right truncate ${selectedFile === item.name ? 'text-white/80' : 'text-gray-500'}`}>{item.date}</span>
-                                        <span className={`w-20 text-right truncate ${selectedFile === item.name ? 'text-white/80' : 'text-gray-500'}`}>{item.size}</span>
-                                        <span className={`w-24 text-right truncate ${selectedFile === item.name ? 'text-white/80' : 'text-gray-500'}`}>
+                                        <span className={`w-24 text-right truncate ${selectedFile === item.name ? 'text-[--text-color]/80' : 'text-[--text-muted]'}`}>{item.date}</span>
+                                        <span className={`w-20 text-right truncate ${selectedFile === item.name ? 'text-[--text-color]/80' : 'text-[--text-muted]'}`}>{item.size}</span>
+                                        <span className={`w-24 text-right truncate ${selectedFile === item.name ? 'text-[--text-color]/80' : 'text-[--text-muted]'}`}>
                                             {item.mimetype === 'inode/directory' ? 'Folder' : item.mimetype.split('/')[1] || 'File'}
                                         </span>
                                     </div>
@@ -324,10 +324,10 @@ export default function FileViewer({ content: initialContent, title: initialTitl
                     </div>
                 </div>
 
-                <div className="px-4 py-3 border-t border-black/5 dark:border-white/5 text-xs text-gray-500 flex justify-end gap-3 items-center bg-gray-50 dark:bg-[#252526]">
+                <div className="px-4 py-3 border-t border-[--border-color] text-xs text-[--text-muted] flex justify-end gap-3 items-center bg-surface">
                     <button
                         onClick={() => setSelectedFile(null)}
-                        className="px-4 py-1.5 rounded-md bg-white border border-gray-300 shadow-sm hover:bg-gray-50 text-gray-700 font-medium min-w-[80px]"
+                        className="px-4 py-1.5 bg-overlay border border-[--border-color] hover:bg-overlay text-[--text-color] font-medium min-w-[80px]"
                     >
                         Cancel
                     </button>
@@ -340,7 +340,7 @@ export default function FileViewer({ content: initialContent, title: initialTitl
                             const item = currentFiles.find(i => i.name === selectedFile);
                             if (item) handleItemDoubleClick(item);
                         }}
-                        className="px-4 py-1.5 rounded-md bg-accent text-white font-medium shadow-sm hover:bg-[#007afe] disabled:opacity-50 disabled:cursor-not-allowed min-w-[80px]"
+                        className="px-4 py-1.5 bg-accent text-[--text-color] font-medium hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed min-w-[80px]"
                     >
                         Open
                     </button>

@@ -95,7 +95,7 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
 
     if (ismobile) {
         return (
-            <div className="flex flex-col h-full w-full bg-white dark:bg-[#1c1c1e] font-sf overflow-hidden">
+            <div className="flex flex-col h-full w-full bg-[--bg-base] font-mono overflow-hidden">
                 <AnimatePresence mode="popLayout">
                     {mobileview === 'grid' && (
                         <motion.div
@@ -105,15 +105,15 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
                             exit={{ opacity: 0 }}
                             className="flex-1 flex flex-col"
                         >
-                            <div className="h-14 flex items-center justify-between px-4 border-b border-black/5 dark:border-white/10">
-                                <span className="text-[26px] dark:text-white text-black font-bold">Photos</span>
+                            <div className="h-14 flex items-center justify-between px-4 border-b border-[--border-color]">
+                                <span className="text-[26px] text-[--text-color] font-bold">Photos</span>
                                 <div className="flex gap-4 text-accent">
                                     <IoGridOutline size={22} />
                                 </div>
                             </div>
                             <div className="flex-1 overflow-y-auto p-2">
                                 {photos.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                                    <div className="flex flex-col items-center justify-center h-full text-[--text-muted]">
                                         <IoImagesOutline size={48} className="mb-4 opacity-50" />
                                         <span className="text-sm">No photos in file system</span>
                                         <span className="text-xs mt-1">Add image files to see them here</span>
@@ -149,10 +149,10 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
                             exit={{ opacity: 0 }}
                             className="absolute inset-0 z-30 bg-black flex flex-col"
                         >
-                            <div className="h-14 flex items-center justify-between px-4 bg-black/80 backdrop-blur-xl">
+                            <div className="h-14 flex items-center justify-between px-4 bg-surface">
                                 <button
                                     onClick={() => { setviewingimage(null); setmobileview('grid'); }}
-                                    className="text-white flex items-center gap-1"
+                                    className="text-[--text-color] flex items-center gap-1"
                                 >
                                     <IoChevronBack size={24} />
                                     <span>Photos</span>
@@ -167,8 +167,8 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
                                     className="max-w-full max-h-full object-contain"
                                 />
                             </div>
-                            <div className="h-16 flex items-center justify-center px-4 bg-black/80 backdrop-blur-xl">
-                                <span className="text-white text-sm">{viewingimage.title}</span>
+                            <div className="h-16 flex items-center justify-center px-4 bg-surface">
+                                <span className="text-[--text-color] text-sm">{viewingimage.title}</span>
                             </div>
                         </motion.div>
                     )}
@@ -178,11 +178,11 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
     }
 
     return (
-        <div ref={containerref} className="flex h-full w-full bg-white dark:bg-[#1e1e1e] font-sf text-black dark:text-white overflow-hidden">
-            <div className={`${viewingimage ? 'hidden' : ''} w-[200px] flex flex-col pt-[50px] border-r border-black/5 dark:border-white/10 bg-[#f5f5f7]/80 dark:bg-[#2d2d2d]/80 backdrop-blur-xl shrink-0`}>
-                <div className="px-4 mb-2 text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Library</div>
+        <div ref={containerref} className="flex h-full w-full bg-[--bg-base] font-mono text-[--text-color] overflow-hidden">
+            <div className={`${viewingimage ? 'hidden' : ''} w-[200px] flex flex-col pt-4 border-r border-[--border-color] bg-surface shrink-0 anime-gradient-top`}>
+                <div className="px-4 mb-2 text-[11px] font-semibold text-[--text-muted] uppercase tracking-wide">Library</div>
                 <div className="px-2">
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-accent/10 text-accent">
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-accent/10 text-accent">
                         <IoImagesOutline size={16} />
                         <span className="text-[13px] font-medium">All Photos</span>
                         <span className="ml-auto text-[11px] opacity-70">{photos.length}</span>
@@ -198,9 +198,9 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="flex-1 flex flex-col bg-[#1e1e1e]"
+                            className="flex-1 flex flex-col bg-surface"
                         >
-                            <div className="h-12 px-4 pl-20 flex items-center justify-between  border-b border-white/10 ">
+                            <div className="h-12 px-4 pl-20 flex items-center justify-between border-b border-[--border-color]">
                                 <button
                                     onClick={() => setviewingimage(null)}
                                     className="text-accent flex items-center gap-1 text-sm font-medium"
@@ -208,9 +208,9 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
                                     <IoChevronBack size={18} />
                                     All Photos
                                 </button>
-                                <span className="text-white/60 text-sm">{viewingimage.title}</span>
+                                <span className="text-[--text-muted] text-sm">{viewingimage.title}</span>
                             </div>
-                            <div className="flex-1 flex overflow-y-scroll items-center justify-center p-8 bg-black">
+                            <div className="flex-1 flex overflow-y-scroll items-center justify-center p-8 bg-surface">
                                 <Image
                                     src={viewingimage.src}
                                     alt={viewingimage.title}
@@ -228,12 +228,12 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
                             exit={{ opacity: 0 }}
                             className="flex-1 flex flex-col"
                         >
-                            <div className="h-[50px] flex items-center justify-between px-4 border-b border-black/5 dark:border-white/10 bg-white/50 dark:bg-black/20">
+                            <div className="h-[50px] flex items-center justify-between px-4 border-b border-[--border-color] bg-surface">
                                 <span className="font-semibold">All Photos</span>
                             </div>
                             <div className="flex-1 overflow-y-auto p-4">
                                 {photos.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                                    <div className="flex flex-col items-center justify-center h-full text-[--text-muted]">
                                         <IoImagesOutline size={64} className="mb-4 opacity-50" />
                                         <span className="text-lg">No Photos</span>
                                         <span className="text-sm mt-1">Add image files to your file system to see them here</span>
@@ -243,7 +243,7 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
                                         {photos.map((photo) => (
                                             <div
                                                 key={photo.id}
-                                                className="aspect-square relative rounded-lg overflow-hidden cursor-pointer group"
+                                                className="aspect-square relative overflow-hidden cursor-pointer group"
                                                 onClick={() => handlePhotoClick(photo)}
                                             >
                                                 <Image
@@ -253,7 +253,7 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
                                                     className="object-cover group-hover:scale-105 transition-transform"
                                                     sizes="(max-width: 768px) 33vw, 20vw"
                                                 />
-                                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                                                <div className="absolute inset-0 bg-transparent group-hover:bg-overlay transition-colors" />
                                             </div>
                                         ))}
                                     </div>
