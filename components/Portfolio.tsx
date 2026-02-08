@@ -563,6 +563,39 @@ const ProjectsSection = () => {
     );
 };
 
+const SkillsStars = () => {
+    const [m, setM] = useState(false);
+    useEffect(() => { setM(true); }, []);
+    if (!m) return null;
+    return (
+        <div className="absolute inset-0 overflow-hidden">
+            {[...Array(30)].map((_, i) => {
+                const r1 = seededrandom(i + 2000);
+                const r2 = seededrandom(i + 2100);
+                const r3 = seededrandom(i + 2200);
+                const r4 = seededrandom(i + 2300);
+                return (
+                    <motion.div
+                        key={i}
+                        className="absolute w-1 h-1 rounded-full"
+                        style={{
+                            background: BG,
+                            left: `${Math.round(r1 * 100)}%`,
+                            top: `${Math.round(r2 * 100)}%`,
+                            opacity: 0.1
+                        }}
+                        animate={{
+                            scale: [0.5, 1.5, 0.5],
+                            opacity: [0.05, 0.2, 0.05]
+                        }}
+                        transition={{ duration: 3 + r3 * 3, repeat: Infinity, delay: r4 * 3 }}
+                    />
+                );
+            })}
+        </div>
+    );
+};
+
 const SkillsSection = () => {
     const [activecat, setactivecat] = useState(0);
     const categories = [
@@ -574,31 +607,7 @@ const SkillsSection = () => {
 
     return (
         <section id="skills" className="py-32 px-8 relative overflow-hidden" style={{ background: '#2a2a3e' }}>
-            <div className="absolute inset-0 overflow-hidden">
-                {[...Array(30)].map((_, i) => {
-                    const r1 = seededrandom(i + 2000);
-                    const r2 = seededrandom(i + 2100);
-                    const r3 = seededrandom(i + 2200);
-                    const r4 = seededrandom(i + 2300);
-                    return (
-                        <motion.div
-                            key={i}
-                            className="absolute w-1 h-1 rounded-full"
-                            style={{
-                                background: BG,
-                                left: `${r1 * 100}%`,
-                                top: `${r2 * 100}%`,
-                                opacity: 0.1
-                            }}
-                            animate={{
-                                scale: [0.5, 1.5, 0.5],
-                                opacity: [0.05, 0.2, 0.05]
-                            }}
-                            transition={{ duration: 3 + r3 * 3, repeat: Infinity, delay: r4 * 3 }}
-                        />
-                    );
-                })}
-            </div>
+            <SkillsStars />
 
             <motion.div
                 className="absolute right-[5%] top-1/2 -translate-y-1/2 text-[15rem] font-black leading-none select-none pointer-events-none opacity-5"
@@ -820,39 +829,48 @@ const AboutSection = () => {
     );
 };
 
+const ContactParticles = () => {
+    const [m, setM] = useState(false);
+    useEffect(() => { setM(true); }, []);
+    if (!m) return null;
+    return (
+        <div className="absolute inset-0 overflow-hidden">
+            {[...Array(40)].map((_, i) => {
+                const r1 = seededrandom(i + 3000);
+                const r2 = seededrandom(i + 3100);
+                const r3 = seededrandom(i + 3200);
+                const r4 = seededrandom(i + 3300);
+                const r5 = seededrandom(i + 3400);
+                const r6 = seededrandom(i + 3500);
+                return (
+                    <motion.div
+                        key={i}
+                        className="absolute"
+                        style={{
+                            width: Math.round(2 + r1 * 3),
+                            height: Math.round(2 + r2 * 3),
+                            borderRadius: '50%',
+                            background: i % 3 === 0 ? PINK : BG,
+                            left: `${Math.round(r3 * 100)}%`,
+                            top: `${Math.round(r4 * 100)}%`,
+                            opacity: 0.1
+                        }}
+                        animate={{
+                            y: [0, -30, 0],
+                            opacity: [0.05, 0.15, 0.05]
+                        }}
+                        transition={{ duration: 4 + r5 * 4, repeat: Infinity, delay: r6 * 4 }}
+                    />
+                );
+            })}
+        </div>
+    );
+};
+
 const ContactSection = ({ onBoot, embedded }: { onBoot: () => void; embedded?: boolean }) => {
     return (
         <section className="py-32 px-8 relative overflow-hidden" style={{ background: `linear-gradient(135deg, #2a2a3e 0%, #363650 100%)` }}>
-            <div className="absolute inset-0 overflow-hidden">
-                {[...Array(40)].map((_, i) => {
-                    const r1 = seededrandom(i + 3000);
-                    const r2 = seededrandom(i + 3100);
-                    const r3 = seededrandom(i + 3200);
-                    const r4 = seededrandom(i + 3300);
-                    const r5 = seededrandom(i + 3400);
-                    const r6 = seededrandom(i + 3500);
-                    return (
-                        <motion.div
-                            key={i}
-                            className="absolute"
-                            style={{
-                                width: 2 + r1 * 3,
-                                height: 2 + r2 * 3,
-                                borderRadius: '50%',
-                                background: i % 3 === 0 ? PINK : BG,
-                                left: `${r3 * 100}%`,
-                                top: `${r4 * 100}%`,
-                                opacity: 0.1
-                            }}
-                            animate={{
-                                y: [0, -30, 0],
-                                opacity: [0.05, 0.15, 0.05]
-                            }}
-                            transition={{ duration: 4 + r5 * 4, repeat: Infinity, delay: r6 * 4 }}
-                        />
-                    );
-                })}
-            </div>
+            <ContactParticles />
 
             <div className="absolute right-[10%] top-1/2 -translate-y-1/2">
                 <PastelSun size={250} className="opacity-50" />
