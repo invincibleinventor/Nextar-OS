@@ -16,7 +16,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
     const { windows, removewindow, setactivewindow, updatewindow, addwindow } = useWindows();
     const containerref = useRef<HTMLDivElement>(null);
     const ignoreclickref = useRef(false);
-    const { wallpaperurl } = useSettings();
+    const { wallpaperurl, islightbackground } = useSettings();
     const { ismobile } = useDevice();
     const { files } = useFileSystem();
     const [searchquery, setsearchquery] = useState('');
@@ -60,7 +60,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                         }
                     `}</style>
                     <motion.div
-                        className={`absolute backdrop-blur-sm inset-0  bg-center  bg-cover bg-no-repeat`}
+                        className={`absolute inset-0  bg-center  bg-cover bg-no-repeat`}
                         onClick={onclose}
                         style={{ backgroundImage: `url('${wallpaperurl}')` }}
                         initial={{ opacity: 0 }}
@@ -77,9 +77,9 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="relative pt-16 px-6 flex flex-col items-center pointer-events-auto">
-                            <div className="w-full max-w-lg bg-white/20 dark:bg-black/40 backdrop-blur-2xl rounded-2xl border border-white/20 shadow-2xl overflow-hidden">
-                                <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10">
-                                    <IoSearch className="text-white/70 text-xl shrink-0" />
+                            <div className="w-full max-w-lg bg-surface border border-[--border-color] shadow-pastel overflow-hidden">
+                                <div className="flex items-center gap-3 px-4 py-3 border-b border-[--border-color]">
+                                    <IoSearch className="text-[--text-muted] text-xl shrink-0" />
                                     <input
                                         ref={searchinputref}
                                         type="text"
@@ -87,11 +87,12 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                                         onChange={(e) => setsearchquery(e.target.value)}
                                         placeholder="Next Search"
                                         autoFocus
-                                        className="flex-1 bg-transparent text-white text-base font-medium outline-none placeholder-white/50"
+                                        className="flex-1 bg-transparent text-[--text-color] text-base font-medium outline-none placeholder:text-[--text-muted]"
+                                        style={{ color: 'var(--text-color)', WebkitTextFillColor: 'var(--text-color)', caretColor: 'var(--text-color)' }}
                                     />
                                     {searchquery && (
-                                        <button onClick={() => setsearchquery('')} className="p-1 hover:bg-white/10 rounded-full">
-                                            <IoClose className="text-white/60 text-lg" />
+                                        <button onClick={() => setsearchquery('')} className="p-1 hover:bg-overlay ">
+                                            <IoClose className="text-[--text-muted] text-lg" />
                                         </button>
                                     )}
                                 </div>
@@ -100,7 +101,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                                     <div className="max-h-[50vh] overflow-y-auto">
                                         {apps.filter(app => app.appname.toLowerCase().includes(searchquery.toLowerCase())).length > 0 && (
                                             <div className="p-2">
-                                                <div className="text-white/40 text-xs font-semibold uppercase tracking-wide px-2 py-1">Apps</div>
+                                                <div className="text-[--text-muted] text-xs font-semibold uppercase tracking-wide px-2 py-1">Apps</div>
                                                 {apps.filter(app => app.appname.toLowerCase().includes(searchquery.toLowerCase())).slice(0, 5).map(app => (
                                                     <div
                                                         key={app.id}
@@ -109,20 +110,20 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                                                             setsearchquery('');
                                                             onclose();
                                                         }}
-                                                        className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/10 cursor-pointer transition-colors"
+                                                        className="flex items-center gap-3 px-2 py-2 hover:bg-overlay cursor-pointer transition-colors"
                                                     >
                                                         <div className="w-8 h-8 shrink-0">
                                                             <TintedAppIcon appId={app.id} appName={app.appname} originalIcon={app.icon} size={32} useFill={false} />
                                                         </div>
-                                                        <span className="text-white font-medium text-sm">{app.appname}</span>
+                                                        <span className="text-[--text-color] font-medium text-sm">{app.appname}</span>
                                                     </div>
                                                 ))}
                                             </div>
                                         )}
 
                                         {files.filter(f => !f.isTrash && f.name.toLowerCase().includes(searchquery.toLowerCase())).length > 0 && (
-                                            <div className="p-2 border-t border-white/10">
-                                                <div className="text-white/40 text-xs font-semibold uppercase tracking-wide px-2 py-1">Files</div>
+                                            <div className="p-2 border-t border-[--border-color]">
+                                                <div className="text-[--text-muted] text-xs font-semibold uppercase tracking-wide px-2 py-1">Files</div>
                                                 {files.filter(f => !f.isTrash && f.name.toLowerCase().includes(searchquery.toLowerCase())).slice(0, 5).map(file => (
                                                     <div
                                                         key={file.id}
@@ -131,14 +132,14 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                                                             setsearchquery('');
                                                             onclose();
                                                         }}
-                                                        className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-white/10 cursor-pointer transition-colors"
+                                                        className="flex items-center gap-3 px-2 py-2 hover:bg-overlay cursor-pointer transition-colors"
                                                     >
                                                         <div className="w-8 h-8 flex items-center justify-center text-2xl shrink-0">
                                                             {file.mimetype === 'inode/directory' ? '📁' : '📄'}
                                                         </div>
                                                         <div className="flex-1 min-w-0">
-                                                            <div className="text-white font-medium text-sm truncate">{file.name}</div>
-                                                            <div className="text-white/40 text-xs truncate">{file.mimetype}</div>
+                                                            <div className="text-[--text-color] font-medium text-sm truncate">{file.name}</div>
+                                                            <div className="text-[--text-muted] text-xs truncate">{file.mimetype}</div>
                                                         </div>
                                                     </div>
                                                 ))}
@@ -147,7 +148,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
 
                                         {apps.filter(app => app.appname.toLowerCase().includes(searchquery.toLowerCase())).length === 0 &&
                                             files.filter(f => !f.isTrash && f.name.toLowerCase().includes(searchquery.toLowerCase())).length === 0 && (
-                                                <div className="p-6 text-center text-white/40">
+                                                <div className="p-6 text-center text-[--text-muted]">
                                                     <div className="text-2xl mb-2">🔍</div>
                                                     <div className="text-sm">No results found</div>
                                                 </div>
@@ -160,7 +161,8 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
 
                     {windows.length === 0 && !searchquery && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
-                            <div className="text-white/40 text-lg font-medium tracking-wide">No Recent Apps</div>
+                            <div className={`text-lg font-medium tracking-wide ${islightbackground ? 'text-black/60' : 'text-white/60'}`}
+                                style={{ textShadow: islightbackground ? 'none' : '0 1px 4px rgba(0,0,0,0.5)' }}>No Recent Apps</div>
                         </div>
                     )}
 
@@ -184,6 +186,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                                             key={win.id}
                                             win={win}
                                             appdata={appdata}
+                                            islightbackground={islightbackground}
                                             onclose={onclose}
                                             onkill={() => {
                                                 ignoreclickref.current = true;
@@ -208,7 +211,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
 });
 
 
-const AppCard = ({ win, appdata, onkill, onopen }: any) => {
+const AppCard = ({ win, appdata, onkill, onopen, islightbackground }: any) => {
     const isdragging = useRef(false);
 
     return (
@@ -268,12 +271,11 @@ const AppCard = ({ win, appdata, onkill, onopen }: any) => {
                         />
                     </div>
                 )}
-                <span className="text-white font-semibold text-sm tracking-wide drop-shadow-md">{win.title}</span>
+                <span className={`font-semibold text-sm tracking-wide ${islightbackground ? 'text-black' : 'text-white'}`}
+                    style={{ textShadow: islightbackground ? 'none' : '0 1px 3px rgba(0,0,0,0.6)' }}>{win.title}</span>
             </div>
 
-            <div className="flex-1 w-full bg-white dark:bg-[#1c1c1e] rounded-[24px] overflow-hidden shadow-2xl ring-1 ring-white/10 relative group">
-                <div className="absolute inset-0 pointer-events-none ring-1 ring-inset ring-black/10 rounded-[24px] z-20" />
-
+            <div className="flex-1 w-full bg-surface border-2 border-[--border-color] shadow-pastel overflow-hidden relative group anime-accent-top">
                 <div className="absolute inset-0 z-[99999] bg-transparent cursor-grab active:cursor-grabbing" />
 
                 <div id={`recent-app-slot-${win.id}`} className="w-full h-full" />

@@ -200,14 +200,14 @@ const Dock = () => {
               }
             ]}
             onClose={() => setContextMenu(null)}
-            className="!fixed !static !transform-none !m-0 !w-48 shadow-2xl border border-white/20"
+            className="!fixed !static !transform-none !m-0 !w-48 border border-[--border-color]"
           />
         </div>
       )}
 
       <motion.div
         data-tour="dock"
-        className="fixed z-0 before:absolute before:inset-0 before:bg-transparent before:content-[''] before:backdrop-blur-[12px] before:webkit-backdrop-blur-[12px] before:z-[-1] bottom-1 mx-auto left-0 right-0 w-max before:rounded-3xl bg-white bg-opacity-30 dark:bg-black dark:bg-opacity-10 px-[8px] pt-[10px] pb-[12px] flex flex-shrink-0 rounded-3xl border-[0.1px] dark:border-neutral-600 border-neutral-500 shadow-2xl transition-colors duration-500"
+        className="fixed bottom-0 mx-auto left-0 right-0 w-max bg-surface px-[8px] pt-[10px] pb-[12px] flex flex-shrink-0 border-t-2 border-accent/40 transition-colors duration-500 anime-glow-sm"
         style={{
           zIndex: 9999,
           height: '67px',
@@ -256,7 +256,7 @@ const Dock = () => {
               >
                 {ishover && (
                   <motion.div
-                    className="absolute bottom-full mb-4 text-sm dark:bg-black dark:text-white dark:bg-opacity-10 bg-white text-black bg-opacity-30 backdrop-blur-lg px-2 py-1 rounded-md shadow-lg border border-white/20"
+                    className="absolute bottom-full mb-4 text-sm bg-overlay text-[--text-color] px-2 py-1 border border-[--border-color] anime-glow-sm"
                     style={{ whiteSpace: 'nowrap' }}
                     initial={{ opacity: 0, y: 10, scale: 0.8 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -276,7 +276,7 @@ const Dock = () => {
                 />
 
                 {haswin && !islaunchpad && !isTrash && (
-                  <div className="absolute -bottom-2 w-[4px] h-[4px] bg-black/50 dark:bg-white rounded-full"></div>
+                  <div className="absolute -bottom-2 w-[5px] h-[5px] bg-accent anime-pulse"></div>
                 )}
               </motion.div>
             );

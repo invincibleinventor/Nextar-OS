@@ -75,18 +75,18 @@ export default function FilePicker({ mode, initialPath, onSelect, onCancel, acce
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
-            <div className="w-[600px] h-[400px] bg-white dark:bg-[#282828] rounded-xl shadow-2xl flex flex-col font-sf overflow-hidden border border-gray-200 dark:border-white/10 animate-in zoom-in-95 duration-200">
-                <div className="h-10 border-b border-gray-200 dark:border-white/10 flex items-center justify-between px-3 bg-gray-50 dark:bg-[#333]">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[--bg-base]/80 p-4">
+            <div className="w-[600px] h-[400px] bg-surface flex flex-col font-mono overflow-hidden border border-[--border-color] animate-in zoom-in-95 duration-200">
+                <div className="h-10 border-b border-[--border-color] flex items-center justify-between px-3 bg-overlay">
                     <div className="flex items-center gap-2">
                         <div className="flex items-center gap-1">
-                            <button onClick={handleBack} disabled={currentPath.length === 0} className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded disabled:opacity-30">
+                            <button onClick={handleBack} disabled={currentPath.length === 0} className="p-1 hover:bg-overlay disabled:opacity-30">
                                 <IoChevronBack />
                             </button>
                         </div>
                         <span className="font-semibold text-sm ml-2">{currentPath[currentPath.length - 1] || 'Home'}</span>
                     </div>
-                    <span className="text-xs font-medium text-gray-500">{mode === 'open' ? 'Open File' : 'Save File'}</span>
+                    <span className="text-xs font-medium text-[--text-muted]">{mode === 'open' ? 'Open File' : 'Save File'}</span>
                 </div>
 
                 <div className="flex-1 flex overflow-hidden">
@@ -99,9 +99,9 @@ export default function FilePicker({ mode, initialPath, onSelect, onCancel, acce
                         className="!w-[140px] text-xs"
                         isOverlay={false}
                     />
-                    <div className="flex-1 overflow-y-auto p-0 bg-white dark:bg-[#1e1e1e]">
+                    <div className="flex-1 overflow-y-auto p-0 bg-[--bg-base]">
                         <div className="flex flex-col w-full">
-                            <div className="sticky top-0 z-10 flex items-center px-4 py-2 border-b border-gray-200 dark:border-white/10 text-xs text-gray-500 font-medium bg-gray-50 dark:bg-[#333]">
+                            <div className="sticky top-0 z-10 flex items-center px-4 py-2 border-b border-[--border-color] text-xs text-[--text-muted] font-medium bg-overlay">
                                 <span className="flex-1">Name</span>
                                 <span className="w-24 text-right">Date</span>
                                 <span className="w-20 text-right">Size</span>
@@ -134,8 +134,8 @@ export default function FilePicker({ mode, initialPath, onSelect, onCancel, acce
                                                     handleConfirm();
                                                 }
                                             }}
-                                            className={`flex items-center px-4 py-1.5 border-b border-gray-100 dark:border-white/5 cursor-default text-xs
-                                                ${isSelected ? 'bg-blue-500 text-white' : 'hover:bg-gray-100 dark:hover:bg-white/5'}
+                                            className={`flex items-center px-4 py-1.5 border-b border-[--border-color] cursor-default text-xs
+                                                ${isSelected ? 'bg-accent text-[--bg-base]' : 'hover:bg-overlay'}
                                                 ${isDimmed ? 'opacity-30' : ''}
                                             `}
                                         >
@@ -143,9 +143,9 @@ export default function FilePicker({ mode, initialPath, onSelect, onCancel, acce
                                                 {getFileIcon(file.mimetype, file.name, file.icon, file.id)}
                                             </div>
                                             <span className="flex-1 truncate font-medium">{file.name}</span>
-                                            <span className={`w-24 text-right truncate ${isSelected ? 'text-white/80' : 'text-gray-500'}`}>{file.date}</span>
-                                            <span className={`w-20 text-right truncate ${isSelected ? 'text-white/80' : 'text-gray-500'}`}>{file.size}</span>
-                                            <span className={`w-24 text-right truncate ${isSelected ? 'text-white/80' : 'text-gray-500'}`}>
+                                            <span className={`w-24 text-right truncate ${isSelected ? 'text-[--bg-base]/80' : 'text-[--text-muted]'}`}>{file.date}</span>
+                                            <span className={`w-20 text-right truncate ${isSelected ? 'text-[--bg-base]/80' : 'text-[--text-muted]'}`}>{file.size}</span>
+                                            <span className={`w-24 text-right truncate ${isSelected ? 'text-[--bg-base]/80' : 'text-[--text-muted]'}`}>
                                                 {file.mimetype === 'inode/directory' ? 'Folder' : file.mimetype.split('/')[1] || 'File'}
                                             </span>
                                         </div>
@@ -157,12 +157,12 @@ export default function FilePicker({ mode, initialPath, onSelect, onCancel, acce
                 </div>
 
 
-                <div className="p-3 border-t border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-[#333] flex items-center gap-3">
+                <div className="p-3 border-t border-[--border-color] bg-overlay flex items-center gap-3">
                     {mode === 'save' && (
                         <div className="flex-1 flex items-center gap-2">
                             <span className="text-xs font-medium">Name:</span>
                             <input
-                                className="flex-1 bg-white dark:bg-black/20 border border-gray-300 dark:border-white/10 rounded px-2 py-1 text-sm outline-none focus:border-blue-500"
+                                className="flex-1 bg-overlay border border-[--border-color] px-2 py-1 text-sm outline-none focus:border-accent"
                                 value={saveFileName}
                                 onChange={e => setSaveFileName(e.target.value)}
                                 placeholder="Untitled"
@@ -173,11 +173,11 @@ export default function FilePicker({ mode, initialPath, onSelect, onCancel, acce
                     {mode === 'open' && <div className="flex-1"></div>}
 
                     <div className="flex items-center gap-2">
-                        <button onClick={onCancel} className="px-3 py-1 bg-gray-200 dark:bg-white/10 rounded text-xs font-medium hover:bg-gray-300 dark:hover:bg-white/20">Cancel</button>
+                        <button onClick={onCancel} className="px-3 py-1 bg-overlay border border-[--border-color] text-xs font-medium hover:bg-overlay text-[--text-color]">Cancel</button>
                         <button
                             onClick={handleConfirm}
                             disabled={isConfirmDisabled()}
-                            className="px-3 py-1 bg-blue-500 text-white rounded text-xs font-medium hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-3 py-1 bg-accent text-[--bg-base] text-xs font-medium hover:bg-accent/80 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {mode === 'open' ? 'Open' : 'Save'}
                         </button>

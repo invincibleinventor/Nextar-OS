@@ -124,7 +124,7 @@ export const SelectionArea: React.FC<SelectionAreaProps> = ({ onSelectionChange,
 
     return (
         <div
-            className="absolute bg-blue-500/20 border border-blue-500/50 pointer-events-none"
+            className="absolute bg-accent/20 border border-accent/50 pointer-events-none"
             style={{
                 top: rect.y,
                 left: rect.x,

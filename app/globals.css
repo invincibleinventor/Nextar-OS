@@ -8,7 +8,7 @@ body {
   padding: 0;
   overflow: hidden;
   overscroll-behavior: none;
-  background-color: black !important;
+  background-color: var(--bg-base) !important;
   touch-action: none;
   -webkit-user-select: none;
   user-select: none;
@@ -22,7 +22,22 @@ body {
 @tailwind utilities;
 
 :root {
-  --accent-color: #007AFF;
+  --accent-color: #ed8796;
+  --bg-base: #eff1f5;
+  --bg-surface: #e6e9ef;
+  --bg-overlay: #dce0e8;
+  --border-color: #bcc0cc;
+  --text-color: #4c4f69;
+  --text-muted: #8c8fa1;
+}
+
+.dark {
+  --bg-base: #161822;
+  --bg-surface: #1e2030;
+  --bg-overlay: #24263a;
+  --border-color: #363a4f;
+  --text-color: #cad3f5;
+  --text-muted: #6e738d;
 }
 
 
@@ -209,14 +224,14 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: color-mix(in srgb, var(--accent-color) 40%, transparent);
   border: 4px solid transparent;
-  border-radius: 99px;
+  border-radius: 0;
   background-clip: content-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: color-mix(in srgb, var(--accent-color) 60%, transparent);
 }
 
 ::-webkit-scrollbar-corner {
@@ -224,8 +239,201 @@ body {
 }
 
 .darkiconbg{
- background: linear-gradient(135deg, var(--accent-color) 0%, color-mix(in srgb, var(--accent-color) 50%, #000) 100%);
+  background: var(--accent-color);
 }
 .lighticonbg{
-background: linear-gradient(135deg, var(--accent-color) 0%, color-mix(in srgb, var(--accent-color) 50%, #fff) 100%);
+  background: var(--accent-color);
+}
+
+.anime-surface {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+}
+.anime-overlay {
+  background: var(--bg-overlay);
+  border: 1px solid var(--border-color);
+}
+.anime-accent-left {
+  border-left: 3px solid var(--accent-color);
+}
+.anime-accent-top {
+  border-top: 2px solid var(--accent-color);
+}
+.anime-accent-bottom {
+  border-bottom: 2px solid var(--accent-color);
+}
+
+/* Anime glow effects */
+.anime-glow {
+  box-shadow: 0 0 12px -2px color-mix(in srgb, var(--accent-color) 30%, transparent),
+              0 0 4px -1px color-mix(in srgb, var(--accent-color) 15%, transparent);
+}
+.anime-glow-sm {
+  box-shadow: 0 0 6px -1px color-mix(in srgb, var(--accent-color) 25%, transparent);
+}
+.anime-glow-lg {
+  box-shadow: 0 0 24px -4px color-mix(in srgb, var(--accent-color) 35%, transparent),
+              0 0 8px -2px color-mix(in srgb, var(--accent-color) 20%, transparent);
+}
+
+/* Anime-style focus ring */
+.anime-focus:focus-within {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-color) 40%, transparent);
+  border-color: var(--accent-color) !important;
+}
+
+/* Anime gradient overlays */
+.anime-gradient-fade {
+  background: linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--accent-color) 4%, var(--bg-base)) 100%);
+}
+.anime-gradient-top {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent-color) 6%, var(--bg-surface)) 0%, var(--bg-surface) 100%);
+}
+
+/* Anime accent stripe for active states */
+.anime-active {
+  position: relative;
+}
+.anime-active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent-color);
+}
+
+/* Anime hover lift */
+.anime-hover {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.anime-hover:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px -2px color-mix(in srgb, var(--accent-color) 20%, transparent);
+}
+
+/* Anime pulse for notifications/badges */
+@keyframes anime-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent-color) 40%, transparent); }
+  50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-color) 0%, transparent); }
+}
+.anime-pulse {
+  animation: anime-pulse 2s ease-in-out infinite;
+}
+
+/* Anime sparkle for selected items */
+@keyframes anime-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.anime-shimmer {
+  background: linear-gradient(90deg, transparent 0%, color-mix(in srgb, var(--accent-color) 8%, transparent) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: anime-shimmer 3s ease-in-out infinite;
+}
+
+/* Rich shadow utilities for the pastel anime aesthetic */
+.shadow-pastel {
+  box-shadow: 0 4px 20px -4px rgba(237, 135, 150, 0.15),
+              0 2px 8px -2px rgba(183, 189, 248, 0.1);
+}
+.shadow-pastel-lg {
+  box-shadow: 0 8px 32px -6px rgba(237, 135, 150, 0.2),
+              0 4px 16px -4px rgba(183, 189, 248, 0.15);
+}
+.shadow-pastel-active {
+  box-shadow: 0 8px 40px -8px rgba(237, 135, 150, 0.3),
+              0 4px 20px -4px rgba(198, 160, 246, 0.2),
+              0 0 0 1px var(--border-color);
+}
+.shadow-pastel-pink {
+  box-shadow: 0 4px 20px -4px rgba(245, 189, 230, 0.25);
+}
+.shadow-pastel-blue {
+  box-shadow: 0 4px 20px -4px rgba(138, 173, 244, 0.25);
+}
+.shadow-pastel-mauve {
+  box-shadow: 0 4px 20px -4px rgba(198, 160, 246, 0.25);
+}
+.shadow-pastel-teal {
+  box-shadow: 0 4px 20px -4px rgba(139, 213, 202, 0.25);
+}
+
+/* Pastel icon backgrounds per-color */
+.icon-bg-red { background: #ed8796; }
+.icon-bg-peach { background: #f5a97f; }
+.icon-bg-yellow { background: #eed49f; }
+.icon-bg-green { background: #a6da95; }
+.icon-bg-teal { background: #8bd5ca; }
+.icon-bg-blue { background: #8aadf4; }
+.icon-bg-lavender { background: #b7bdf8; }
+.icon-bg-pink { background: #f5bde6; }
+.icon-bg-mauve { background: #c6a0f6; }
+
+/* Catppuccin folder colors */
+.folder-blue { color: #8aadf4; }
+.folder-pink { color: #f5bde6; }
+.folder-mauve { color: #c6a0f6; }
+.folder-red { color: #ed8796; }
+.folder-peach { color: #f5a97f; }
+.folder-yellow { color: #eed49f; }
+.folder-green { color: #a6da95; }
+.folder-teal { color: #8bd5ca; }
+.folder-lavender { color: #b7bdf8; }
+
+/* Settings toggle - pastel style */
+.toggle-pastel {
+  background: var(--border-color);
+  transition: background 0.2s;
+}
+.toggle-pastel.active {
+  background: #a6da95;
+}
+
+/* Flat input styling */
+.input-pastel {
+  background: var(--bg-overlay);
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.input-pastel:focus {
+  border-color: var(--accent-color);
+}
+.input-pastel::placeholder {
+  color: var(--text-muted);
+}
+
+/* Anime text glow */
+.anime-text-glow {
+  text-shadow: 0 0 12px color-mix(in srgb, var(--accent-color) 40%, transparent),
+               0 0 4px color-mix(in srgb, var(--accent-color) 20%, transparent);
+}
+
+/* Anime underline accent for tab-like navigation */
+.anime-tab-active {
+  position: relative;
+}
+.anime-tab-active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 25%;
+  right: 25%;
+  height: 2px;
+  background: var(--accent-color);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--accent-color) 50%, transparent);
+}
+
+/* Anime card - combines surface + border + subtle glow for card-like components */
+.anime-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.anime-card:hover {
+  border-color: color-mix(in srgb, var(--accent-color) 40%, var(--border-color));
+  box-shadow: 0 0 8px -2px color-mix(in srgb, var(--accent-color) 15%, transparent);
 }

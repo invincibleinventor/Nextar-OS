@@ -16,7 +16,7 @@ interface CalendarEvent {
 
 const monthnames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const eventcolors = ['#007AFF', '#34C759', '#FF3B30', '#FF9500', '#AF52DE', '#5856D6'];
+const eventcolors = ['#8aadf4', '#a6da95', '#ed8796', '#f5a97f', '#c6a0f6', '#b7bdf8'];
 
 export default function Calendar({ windowId }: { windowId?: string }) {
     const { ismobile } = useDevice();
@@ -169,12 +169,12 @@ export default function Calendar({ windowId }: { windowId?: string }) {
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        className="fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] w-[320px] bg-white dark:bg-[#2a2a2a] rounded-xl shadow-2xl z-50 p-4"
+                        className="fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] w-[320px] bg-surface border border-[--border-color] shadow-pastel-lg z-50 p-4"
                     >
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-semibold">{editingevent ? 'Edit Event' : 'New Event'}</h3>
-                            <button onClick={resetmodal} className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded">
-                                <IoClose size={20} />
+                            <h3 className="font-semibold text-[--text-color]">{editingevent ? 'Edit Event' : 'New Event'}</h3>
+                            <button onClick={resetmodal} className="p-1 hover:bg-overlay">
+                                <IoClose size={20} className="text-[--text-color]" />
                             </button>
                         </div>
                         <input
@@ -182,21 +182,21 @@ export default function Calendar({ windowId }: { windowId?: string }) {
                             placeholder="Event title"
                             value={neweventtitle}
                             onChange={e => setneweventtitle(e.target.value)}
-                            className="w-full px-3 py-2 bg-gray-100 dark:bg-white/10 rounded-lg mb-3 outline-none text-sm"
+                            className="w-full px-3 py-2 bg-overlay border border-[--border-color] mb-3 outline-none text-sm text-[--text-color] placeholder:text-[--text-muted]"
                             autoFocus
                         />
                         <input
                             type="time"
                             value={neweventtime}
                             onChange={e => setneweventtime(e.target.value)}
-                            className="w-full px-3 py-2 bg-gray-100 dark:bg-white/10 rounded-lg mb-3 outline-none text-sm"
+                            className="w-full px-3 py-2 bg-overlay border border-[--border-color] mb-3 outline-none text-sm text-[--text-color]"
                         />
                         <div className="flex gap-2 mb-4">
                             {eventcolors.map(c => (
                                 <button
                                     key={c}
                                     onClick={() => setneweventcolor(c)}
-                                    className={`w-6 h-6 rounded-full ${neweventcolor === c ? 'ring-2 ring-offset-2 ring-blue-500' : ''}`}
+                                    className={`w-6 h-6 ${neweventcolor === c ? 'ring-2 ring-offset-2 ring-accent' : ''}`}
                                     style={{ backgroundColor: c }}
                                 />
                             ))}
@@ -205,14 +205,14 @@ export default function Calendar({ windowId }: { windowId?: string }) {
                             {editingevent && (
                                 <button
                                     onClick={() => deleteEvent(editingevent.id)}
-                                    className="px-3 py-2 bg-red-500/10 text-red-500 rounded-lg text-sm font-medium flex items-center gap-1"
+                                    className="px-3 py-2 bg-pastel-red/10 text-pastel-red text-sm font-medium flex items-center gap-1"
                                 >
                                     <IoTrash size={16} /> Delete
                                 </button>
                             )}
                             <button
                                 onClick={editingevent ? updateEvent : addEvent}
-                                className="flex-1 px-3 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium"
+                                className="flex-1 px-3 py-2 bg-accent text-[--bg-base] text-sm font-medium"
                             >
                                 {editingevent ? 'Update' : 'Add Event'}
                             </button>
@@ -225,33 +225,33 @@ export default function Calendar({ windowId }: { windowId?: string }) {
 
     if (ismobile) {
         return (
-            <div className="h-full w-full bg-[#f5f5f7] dark:bg-[#1c1c1e] flex flex-col font-sf text-black dark:text-white">
+            <div className="h-full w-full bg-[--bg-base] flex flex-col font-mono text-[--text-color]">
                 <div className="px-4 pt-4 pb-2">
                     <div className="flex items-center justify-between mb-4">
-                        <h1 className="text-[34px] font-bold">{monthnames[currentmonth]}</h1>
-                        <span className="text-[17px] text-gray-500">{currentyear}</span>
+                        <h1 className="text-[34px] font-bold text-[--text-color]">{monthnames[currentmonth]}</h1>
+                        <span className="text-[17px] text-[--text-muted]">{currentyear}</span>
                     </div>
                     <div className="flex items-center gap-4">
-                        <button onClick={prevmonth} className="p-2 rounded-full bg-white dark:bg-[#2c2c2e]">
-                            <IoChevronBack size={20} className="text-accent" />
+                        <button onClick={prevmonth} className="p-2 bg-surface border border-[--border-color]">
+                            <IoChevronBack size={20} className="text-[--text-color]" />
                         </button>
                         <button
                             onClick={() => { setcurrentmonth(today.getMonth()); setcurrentyear(today.getFullYear()); }}
-                            className="px-4 py-2 rounded-xl bg-accent text-white text-[15px] font-semibold"
+                            className="px-4 py-2 bg-accent text-[--bg-base] text-[15px] font-semibold"
                         >
                             Today
                         </button>
-                        <button onClick={nextmonth} className="p-2 rounded-full bg-white dark:bg-[#2c2c2e]">
-                            <IoChevronForward size={20} className="text-accent" />
+                        <button onClick={nextmonth} className="p-2 bg-surface border border-[--border-color]">
+                            <IoChevronForward size={20} className="text-[--text-color]" />
                         </button>
                     </div>
                 </div>
 
                 <div className="flex-1 p-4">
-                    <div className="bg-white dark:bg-[#2c2c2e] rounded-2xl p-4 shadow-sm">
+                    <div className="bg-surface border border-[--border-color] p-4">
                         <div className="grid grid-cols-7 gap-1 mb-2">
                             {weekdays.map(day => (
-                                <div key={day} className="text-center text-[12px] font-semibold text-gray-500">
+                                <div key={day} className="text-center text-[12px] font-semibold text-[--text-muted]">
                                     {day}
                                 </div>
                             ))}
@@ -260,8 +260,8 @@ export default function Calendar({ windowId }: { windowId?: string }) {
                             {days.map((day, i) => (
                                 <div
                                     key={i}
-                                    className={`aspect-square flex items-center justify-center rounded-full text-[15px] font-medium ${day === null ? '' :
-                                        istoday(day) ? 'bg-accent text-white' : 'hover:bg-black/5 dark:hover:bg-white/10'
+                                    className={`aspect-square flex items-center justify-center text-[15px] font-medium ${day === null ? '' :
+                                        istoday(day) ? 'bg-accent text-[--bg-base]' : 'hover:bg-overlay text-[--text-color]'
                                         }`}
                                 >
                                     {day}
@@ -275,30 +275,30 @@ export default function Calendar({ windowId }: { windowId?: string }) {
     }
 
     return (
-        <div className="h-full w-full bg-white dark:bg-[#1e1e1e] flex font-sf text-black dark:text-white">
-            <div className="w-[240px] border-r border-black/5 dark:border-white/5 bg-neutral-100/80 dark:bg-[#2d2d2d]/80 backdrop-blur-2xl flex flex-col pt-[54px]">
+        <div className="h-full w-full bg-[--bg-base] flex font-mono text-[--text-color]">
+            <div className="w-[240px] border-r border-[--border-color] bg-surface flex flex-col pt-4 anime-gradient-top">
                 <div className="px-4 mb-6">
-                    <div className="w-full aspect-square bg-white dark:bg-[#363636] rounded-xl border border-black/5 dark:border-white/5 shadow-sm flex flex-col items-center justify-center mb-4">
-                        <div className="text-[14px] font-semibold text-[#FF3B30] uppercase mb-1">{today.toLocaleDateString('en-US', { weekday: 'short' })}</div>
-                        <div className="text-[48px] font-light leading-none tracking-tighter">{today.getDate()}</div>
+                    <div className="w-full aspect-square bg-overlay border border-[--border-color] flex flex-col items-center justify-center mb-4">
+                        <div className="text-[14px] font-semibold text-pastel-red uppercase mb-1">{today.toLocaleDateString('en-US', { weekday: 'short' })}</div>
+                        <div className="text-[48px] font-light leading-none tracking-tighter text-[--text-color]">{today.getDate()}</div>
                     </div>
                 </div>
 
                 <div className="space-y-1 px-2 flex-1">
-                    <div className="px-3 py-2 bg-black/5 dark:bg-white/10 rounded-lg text-[13px] font-medium flex justify-between items-center cursor-pointer">
+                    <div className="px-3 py-2 bg-overlay text-[13px] font-medium flex justify-between items-center cursor-pointer text-[--text-color]">
                         <span>All Calendars</span>
                     </div>
-                    <div className="px-3 py-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg text-[13px] text-black/70 dark:text-white/70 flex items-center gap-2 cursor-pointer">
-                        <span className="w-2 h-2 rounded-full bg-accent"></span>
+                    <div className="px-3 py-2 hover:bg-overlay text-[13px] text-[--text-muted] flex items-center gap-2 cursor-pointer">
+                        <span className="w-2 h-2 bg-accent"></span>
                         <span>Personal</span>
                     </div>
-                    <div className="px-3 py-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg text-[13px] text-black/70 dark:text-white/70 flex items-center gap-2 cursor-pointer">
-                        <span className="w-2 h-2 rounded-full bg-[#34C759]"></span>
+                    <div className="px-3 py-2 hover:bg-overlay text-[13px] text-[--text-muted] flex items-center gap-2 cursor-pointer">
+                        <span className="w-2 h-2 bg-pastel-green"></span>
                         <span>Work</span>
                     </div>
                 </div>
 
-                <div className="p-4 border-t border-black/5 dark:border-white/5">
+                <div className="p-4 border-t border-[--border-color]">
                     <button
                         onClick={() => openaddmodal(today.getDate())}
                         className="flex items-center gap-2 text-accent text-[13px] font-medium"
@@ -310,28 +310,28 @@ export default function Calendar({ windowId }: { windowId?: string }) {
             </div>
 
             <div className="flex-1 flex flex-col">
-                <div className="h-[52px] shrink-0 flex items-center justify-between px-6 border-b border-black/5 dark:border-white/5">
+                <div className="h-[52px] shrink-0 flex items-center justify-between px-6 border-b border-[--border-color]">
                     <div className="flex items-center gap-4">
-                        <button onClick={prevmonth} className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded">
+                        <button onClick={prevmonth} className="p-1 hover:bg-overlay text-[--text-color]">
                             <IoChevronBack size={18} />
                         </button>
-                        <button onClick={nextmonth} className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded">
+                        <button onClick={nextmonth} className="p-1 hover:bg-overlay text-[--text-color]">
                             <IoChevronForward size={18} />
                         </button>
-                        <span className="font-bold text-[18px]">{monthnames[currentmonth]} {currentyear}</span>
+                        <span className="font-bold text-[18px] text-[--text-color]">{monthnames[currentmonth]} {currentyear}</span>
                     </div>
                     <button
                         onClick={() => { setcurrentmonth(today.getMonth()); setcurrentyear(today.getFullYear()); }}
-                        className="px-3 py-1 text-[13px] font-medium bg-black/5 dark:bg-white/10 rounded-lg hover:bg-black/10 dark:hover:bg-white/15"
+                        className="px-3 py-1 text-[13px] font-medium bg-overlay hover:bg-surface text-[--text-color]"
                     >
                         Today
                     </button>
                 </div>
 
                 <div className="flex-1 p-6 overflow-y-auto">
-                    <div className="grid grid-cols-7 border-l border-t border-black/10 dark:border-white/10">
+                    <div className="grid grid-cols-7 border-l border-t border-[--border-color]">
                         {weekdays.map(day => (
-                            <div key={day} className="text-center py-2 text-[12px] font-semibold text-gray-500 border-r border-b border-black/10 dark:border-white/10 bg-gray-50 dark:bg-[#252525]">
+                            <div key={day} className="text-center py-2 text-[12px] font-semibold text-[--text-muted] border-r border-b border-[--border-color] bg-overlay">
                                 {day}
                             </div>
                         ))}
@@ -340,13 +340,13 @@ export default function Calendar({ windowId }: { windowId?: string }) {
                             return (
                                 <div
                                     key={i}
-                                    className={`min-h-[80px] p-2 border-r border-b border-black/10 dark:border-white/10 ${day === null ? 'bg-gray-50 dark:bg-[#252525]' : 'hover:bg-gray-50 dark:hover:bg-[#252525] cursor-pointer'
+                                    className={`min-h-[80px] p-2 border-r border-b border-[--border-color] ${day === null ? 'bg-overlay' : 'hover:bg-surface cursor-pointer'
                                         }`}
                                     onDoubleClick={() => day && openaddmodal(day)}
                                 >
                                     {day && (
                                         <>
-                                            <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-[13px] font-medium ${istoday(day) ? 'bg-accent text-white' : ''
+                                            <span className={`inline-flex items-center justify-center w-7 h-7 text-[13px] font-medium ${istoday(day) ? 'bg-pastel-red text-[--bg-base]' : 'text-[--text-color]'
                                                 }`}>
                                                 {day}
                                             </span>
@@ -355,14 +355,14 @@ export default function Calendar({ windowId }: { windowId?: string }) {
                                                     <div
                                                         key={ev.id}
                                                         onClick={(e) => { e.stopPropagation(); openeditmodal(ev); }}
-                                                        className="text-[11px] px-1.5 py-0.5 rounded truncate cursor-pointer hover:opacity-80"
+                                                        className="text-[11px] px-1.5 py-0.5 truncate cursor-pointer hover:opacity-80"
                                                         style={{ backgroundColor: ev.color + '20', color: ev.color }}
                                                     >
                                                         {ev.time && <span className="font-semibold">{ev.time} </span>}{ev.title}
                                                     </div>
                                                 ))}
                                                 {dayevents.length > 2 && (
-                                                    <div className="text-[10px] text-gray-500">+{dayevents.length - 2} more</div>
+                                                    <div className="text-[10px] text-[--text-muted]">+{dayevents.length - 2} more</div>
                                                 )}
                                             </div>
                                         </>

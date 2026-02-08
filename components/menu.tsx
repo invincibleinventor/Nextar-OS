@@ -35,7 +35,7 @@ export default function Menu(props: any) {
                     e.stopPropagation();
                     props.ontoggle(props.visible ? null : props.id);
                 }}
-                className={`${props.bold ? 'font-bold' : 'font-medium'} font-sf px-3 rounded-md cursor-pointer duration-100 transition-all ease-in dark:hover:bg-white dark:hover:bg-opacity-20 hover:bg-white hover:bg-opacity-20 text-[14px] dark:text-white text-black ${props.visible ? 'bg-white dark:bg-white dark:bg-opacity-20 bg-opacity-20' : ''}`}
+                className={`${props.bold ? 'font-bold' : 'font-medium'} font-mono px-3 cursor-pointer duration-100 transition-all ease-in hover:bg-pastel-lavender/15 text-[14px] text-[--text-color] ${props.visible ? 'bg-pastel-lavender/15' : ''}`}
                 whileHover={{ scale: 1 }}
                 transition={{ type: 'tween', ease: 'easeOut', duration: 0.15 }}
             >
@@ -50,17 +50,17 @@ export default function Menu(props: any) {
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ duration: 0.1 }}
                     style={{ zIndex: 99999 }}
-                    className="absolute left-0 mt-3 min-w-[220px] bg-white/40 dark:bg-[#1e1e1e]/40 backdrop-blur-xl border border-black/5 dark:border-white/10 rounded-[10px] shadow-[0_10px_40px_rgba(0,0,0,0.2)] dark:shadow-[0_10px_40px_rgba(0,0,0,0.6)] p-[5px] flex flex-col font-sf"
+                    className="absolute left-0 mt-3 min-w-[220px] bg-overlay border border-[--border-color] p-[5px] flex flex-col font-mono anime-glow-sm"
                 >
                     {props.data.map((item: any, idx: number) =>
                         item.separator ? (
-                            <div key={`sep-${idx}`} className="h-[1px] bg-black/10 dark:bg-white/10 my-1 mx-2" />
+                            <div key={`sep-${idx}`} className="h-[1px] bg-[--border-color] my-1 mx-2" />
                         ) : (
                             <div
                                 key={item.title || idx}
-                                className={`px-3 py-1 rounded-[5px] text-[13px] font-medium transition-colors ${item.disabled
-                                    ? 'opacity-50 cursor-not-allowed text-gray-400'
-                                    : 'text-black dark:text-white hover:bg-accent hover:text-white cursor-pointer active:bg-accent/80'
+                                className={`px-3 py-1 text-[13px] font-medium transition-colors ${item.disabled
+                                    ? 'opacity-50 cursor-not-allowed text-[--text-muted]'
+                                    : 'text-[--text-color] hover:bg-accent hover:text-[--bg-base] cursor-pointer active:bg-accent/80'
                                     }`}
                                 onMouseDown={(e) => e.preventDefault()}
                                 onClick={(e) => {

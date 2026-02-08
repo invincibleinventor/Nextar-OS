@@ -152,16 +152,16 @@ export default function ApiDocs() {
     };
 
     const sidebarContent = (
-        <div className={`${ismobile ? 'w-full' : 'w-72'} border-r border-black/5 dark:border-white/5 bg-white/80 dark:bg-[#2c2c2e]/80 backdrop-blur-xl overflow-y-auto shrink-0 flex flex-col`}>
+        <div className={`${ismobile ? 'w-full' : 'w-72'} border-r border-[--border-color] bg-surface overflow-y-auto shrink-0 flex flex-col`}>
             <div className="p-3">
                 <div className="relative mb-4">
-                    <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                    <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[--text-muted]" size={14} />
                     <input
                         type="text"
                         value={search}
                         onChange={e => setsearch(e.target.value)}
                         placeholder="Search APIs..."
-                        className="w-full bg-black/5 dark:bg-white/10 rounded-lg pl-9 pr-3 py-2 text-sm outline-none"
+                        className="w-full bg-overlay pl-9 pr-3 py-2 text-sm outline-none"
                     />
                 </div>
 
@@ -169,11 +169,11 @@ export default function ApiDocs() {
                     <div key={cat.name} className="mb-2">
                         <button
                             onClick={() => setexpandedcat(expandedcat === cat.name ? null : cat.name)}
-                            className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                            className="w-full flex items-center justify-between px-3 py-2 hover:bg-overlay transition-colors"
                         >
                             <span className="font-medium text-sm">{cat.name}</span>
                             <div className="flex items-center gap-2">
-                                <span className="text-xs text-gray-400">{cat.apis.length}</span>
+                                <span className="text-xs text-[--text-muted]">{cat.apis.length}</span>
                                 {expandedcat === cat.name ? <IoChevronDown size={14} /> : <IoChevronForward size={14} />}
                             </div>
                         </button>
@@ -183,7 +183,7 @@ export default function ApiDocs() {
                                     <button
                                         key={api.name}
                                         onClick={() => setselectedapi(api)}
-                                        className={`w-full text-left px-3 py-1.5 rounded-md text-sm transition-colors ${selectedapi?.name === api.name ? 'bg-accent/10 text-accent' : 'text-gray-600 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5'}`}
+                                        className={`w-full text-left px-3 py-1.5 text-sm transition-colors ${selectedapi?.name === api.name ? 'bg-accent/10 text-accent' : 'text-[--text-muted] hover:bg-overlay'}`}
                                     >
                                         <code className="text-xs">{api.name}</code>
                                     </button>
@@ -201,27 +201,27 @@ export default function ApiDocs() {
             <div className="max-w-3xl mx-auto space-y-6">
                 {!selectedapi ? (
                     <>
-                        <div className="bg-gradient-to-br from-accent/10 to-purple-500/10 rounded-2xl p-6 border border-accent/20">
+                        <div className="bg-pastel-purple/10 p-6 border border-accent/20">
                             <div className="flex items-center gap-3 mb-4">
-                                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                                    <IoBook className="text-white" size={24} />
+                                <div className="w-12 h-12 bg-accent flex items-center justify-center">
+                                    <IoBook className="text-[--text-color]" size={24} />
                                 </div>
                                 <div>
-                                    <h1 className="font-bold text-xl dark:text-white">API Documentation</h1>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">{totalapis} APIs available</p>
+                                    <h1 className="font-bold text-xl text-[--text-color]">API Documentation</h1>
+                                    <p className="text-sm text-[--text-muted]">{totalapis} APIs available</p>
                                 </div>
                             </div>
-                            <p className="text-sm text-gray-600 dark:text-gray-300">
+                            <p className="text-sm text-[--text-muted]">
                                 Build apps for NextarOS using these APIs. Select an API from the sidebar to see usage examples.
                             </p>
                         </div>
 
-                        <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4">
+                        <div className="bg-pastel-yellow/10 border border-pastel-yellow/20 p-4">
                             <div className="flex items-start gap-3">
-                                <IoWarning className="text-yellow-500 shrink-0 mt-0.5" size={20} />
+                                <IoWarning className="text-pastel-yellow shrink-0 mt-0.5" size={20} />
                                 <div>
-                                    <h3 className="font-bold text-sm mb-1 dark:text-white">Bundling Required</h3>
-                                    <p className="text-xs text-gray-600 dark:text-gray-300">
+                                    <h3 className="font-bold text-sm mb-1 text-[--text-color]">Bundling Required</h3>
+                                    <p className="text-xs text-[--text-muted]">
                                         The Code Editor runs vanilla JavaScript/Python. For apps with imports, you need to bundle your code
                                         or host externally. Use the quickstart example without imports for simple apps.
                                     </p>
@@ -229,16 +229,16 @@ export default function ApiDocs() {
                             </div>
                         </div>
 
-                        <div className="bg-white dark:bg-[#2c2c2e] rounded-2xl p-6 border border-black/5 dark:border-white/5">
+                        <div className="bg-surface p-6 border border-[--border-color]">
                             <div className="flex items-center gap-3 mb-4">
                                 <IoRocket className="text-accent" size={24} />
-                                <h2 className="text-xl font-bold dark:text-white">Quick Start</h2>
+                                <h2 className="text-xl font-bold text-[--text-color]">Quick Start</h2>
                             </div>
-                            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                                This example works in the Code Editor. Save as <code className="bg-black/5 dark:bg-white/10 px-1 rounded">.js</code> and click Run:
+                            <p className="text-sm text-[--text-muted] mb-4">
+                                This example works in the Code Editor. Save as <code className="bg-overlay px-1">.js</code> and click Run:
                             </p>
                             <div className="relative">
-                                <pre className="bg-black/5 dark:bg-black/30 dark:text-gray-200 rounded-xl p-4 text-sm overflow-x-auto select-text">{`function greet(name) {
+                                <pre className="bg-overlay p-4 text-sm overflow-x-auto select-text">{`function greet(name) {
   console.log('Hello, ' + name + '!');
   console.log('Welcome to NextarOS');
   return 'Greeting sent';
@@ -250,22 +250,22 @@ const result = 2 + 2;
 console.log('2 + 2 = ' + result);`}</pre>
                                 <button
                                     onClick={() => copytoClipboard(`function greet(name) {\n  console.log('Hello, ' + name + '!');\n  console.log('Welcome to NextarOS');\n  return 'Greeting sent';\n}\n\ngreet('Developer');\n\nconst result = 2 + 2;\nconsole.log('2 + 2 = ' + result);`)}
-                                    className="absolute top-2 right-2 p-2 rounded-lg bg-white/10 hover:bg-white/20"
+                                    className="absolute top-2 right-2 p-2 bg-overlay hover:bg-overlay"
                                 >
-                                    {copiedtext ? <IoCheckmarkCircle size={16} className="text-green-500" /> : <IoClipboard size={16} />}
+                                    {copiedtext ? <IoCheckmarkCircle size={16} className="text-pastel-green" /> : <IoClipboard size={16} />}
                                 </button>
                             </div>
                         </div>
 
-                        <div className="bg-white dark:bg-[#2c2c2e] rounded-2xl p-6 border border-black/5 dark:border-white/5">
+                        <div className="bg-surface p-6 border border-[--border-color]">
                             <div className="flex items-center gap-3 mb-4">
                                 <IoCodeSlash className="text-accent" size={24} />
-                                <h2 className="text-xl font-bold dark:text-white">apps.json Schema</h2>
+                                <h2 className="text-xl font-bold text-[--text-color]">apps.json Schema</h2>
                             </div>
-                            <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                            <p className="text-sm text-[--text-muted] mb-4">
                                 For external apps, create an apps.json in your GitHub repo:
                             </p>
-                            <pre className="bg-black/5 dark:bg-black/30 dark:text-gray-200 rounded-xl p-4 text-sm overflow-x-auto select-text">{`{
+                            <pre className="bg-overlay p-4 text-sm overflow-x-auto select-text">{`{
   "apps": [{
     "id": "my-app",
     "name": "My App",
@@ -280,30 +280,30 @@ console.log('2 + 2 = ' + result);`}</pre>
                         </div>
                     </>
                 ) : (
-                    <div className="bg-white dark:bg-[#2c2c2e] rounded-2xl p-6 border border-black/5 dark:border-white/5">
+                    <div className="bg-surface p-6 border border-[--border-color]">
                         <button onClick={() => setselectedapi(null)} className="text-accent text-sm mb-4 hover:underline">
                             ← Back to overview
                         </button>
                         <h2 className="text-2xl font-bold mb-2 font-mono select-text">{selectedapi.name}</h2>
-                        <p className="text-gray-600 dark:text-gray-300 mb-6">{selectedapi.desc}</p>
+                        <p className="text-[--text-muted] mb-6">{selectedapi.desc}</p>
 
                         {selectedapi.returns && (
                             <div className="mb-4">
-                                <span className="text-xs font-semibold uppercase text-gray-400">Returns</span>
-                                <code className="ml-2 text-sm bg-black/5 dark:bg-white/10 px-2 py-1 rounded select-text">{selectedapi.returns}</code>
+                                <span className="text-xs font-semibold uppercase text-[--text-muted]">Returns</span>
+                                <code className="ml-2 text-sm bg-overlay px-2 py-1 select-text">{selectedapi.returns}</code>
                             </div>
                         )}
 
                         <div className="mb-2">
-                            <span className="text-xs font-semibold uppercase text-gray-400">Usage Example</span>
+                            <span className="text-xs font-semibold uppercase text-[--text-muted]">Usage Example</span>
                         </div>
                         <div className="relative">
-                            <pre className="bg-black/5 dark:bg-black/30 dark:text-gray-200 rounded-xl p-4 text-sm overflow-x-auto select-text whitespace-pre-wrap">{selectedapi.usage}</pre>
+                            <pre className="bg-overlay p-4 text-sm overflow-x-auto select-text whitespace-pre-wrap">{selectedapi.usage}</pre>
                             <button
                                 onClick={() => copytoClipboard(selectedapi.usage)}
-                                className="absolute top-2 right-2 p-2 rounded-lg bg-white/10 hover:bg-white/20"
+                                className="absolute top-2 right-2 p-2 bg-overlay hover:bg-overlay"
                             >
-                                {copiedtext === selectedapi.usage ? <IoCheckmarkCircle size={16} className="text-green-500" /> : <IoClipboard size={16} />}
+                                {copiedtext === selectedapi.usage ? <IoCheckmarkCircle size={16} className="text-pastel-green" /> : <IoClipboard size={16} />}
                             </button>
                         </div>
                     </div>
@@ -314,14 +314,14 @@ console.log('2 + 2 = ' + result);`}</pre>
 
     if (ismobile) {
         return (
-            <div className="h-full flex flex-col bg-[#fafafa] dark:bg-[#1c1c1e]">
-                <div className="flex items-center gap-3 px-4 py-3 bg-white dark:bg-[#2c2c2e] border-b border-black/5 dark:border-white/5">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                        <IoBook className="text-white" size={20} />
+            <div className="h-full flex flex-col bg-[--bg-base]">
+                <div className="flex items-center gap-3 px-4 py-3 bg-surface border-b border-[--border-color]">
+                    <div className="w-10 h-10 bg-accent flex items-center justify-center">
+                        <IoBook className="text-[--text-color]" size={20} />
                     </div>
                     <div>
                         <h1 className="font-bold text-lg">API Docs</h1>
-                        <p className="text-xs text-gray-500">{totalapis} APIs</p>
+                        <p className="text-xs text-[--text-muted]">{totalapis} APIs</p>
                     </div>
                 </div>
                 <div className="flex-1 overflow-hidden flex flex-col">
@@ -332,15 +332,15 @@ console.log('2 + 2 = ' + result);`}</pre>
     }
 
     return (
-        <div className="h-full flex flex-col bg-[#fafafa] dark:bg-[#1c1c1e]">
-            <div className="flex items-center justify-between px-6 py-4 bg-white dark:bg-[#2c2c2e] border-b border-black/5 dark:border-white/5 pl-20">
+        <div className="h-full flex flex-col bg-[--bg-base]">
+            <div className="flex items-center justify-between px-6 py-4 bg-surface border-b border-[--border-color]">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                        <IoBook className="text-white" size={20} />
+                    <div className="w-10 h-10 bg-accent flex items-center justify-center">
+                        <IoBook className="text-[--text-color]" size={20} />
                     </div>
                     <div>
-                        <h1 className="font-bold text-lg dark:text-white">API Documentation</h1>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{totalapis} APIs available</p>
+                        <h1 className="font-bold text-lg text-[--text-color]">API Documentation</h1>
+                        <p className="text-xs text-[--text-muted]">{totalapis} APIs available</p>
                     </div>
                 </div>
             </div>

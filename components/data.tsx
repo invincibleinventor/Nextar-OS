@@ -135,7 +135,7 @@ export const personal = {
             stack: ["Next.js", "React", "TailwindCSS", "Framer Motion"],
             link: "https://baladev.in",
             github: "https://github.com/invincibleinventor/nextar-os",
-            icon: <FaReact className="text-blue-500" />
+            icon: <FaReact className="text-pastel-blue" />
         },
         {
             title: "SASTracker",
@@ -145,7 +145,7 @@ export const personal = {
             stack: ["Next.js", "Supabase", "LLMs", "TailwindCSS", "FastAPI"],
             link: "https://sastracker.vercel.app",
             github: "https://github.com/invincibleinventor/sastracker",
-            icon: <SiNextdotjs className="text-black dark:text-white" />
+            icon: <SiNextdotjs className="text-[--text-color]" />
         },
         {
             title: "SquadSearch",
@@ -155,7 +155,7 @@ export const personal = {
             stack: ["Next.js", "Supabase", "GSAP", "TailwindCSS", "LLMs", "FastAPI", "Python"],
             link: "https://squadsearch.vercel.app",
             github: "https://github.com/invincibleinventor/squadsearch",
-            icon: <SiNextdotjs className="text-black dark:text-white" />
+            icon: <SiNextdotjs className="text-[--text-color]" />
         },
         {
             title: "Falar",
@@ -165,7 +165,7 @@ export const personal = {
             stack: ["Next.js", "Supabase", "TailwindCSS", "Amazon S3"],
             link: "https://falarapp.vercel.app",
             github: "https://github.com/invincibleinventor/falarapp",
-            icon: <SiNextdotjs className="text-black dark:text-white" />
+            icon: <SiNextdotjs className="text-[--text-color]" />
         },
         {
             title: "CleanMyLinkedIn",
@@ -175,7 +175,7 @@ export const personal = {
             stack: ["JavaScript", "Chrome Extension", "Gemini API"],
             link: "https://github.com/invincibleinventor/cleanmylinkedin",
             github: "https://github.com/invincibleinventor/cleanmylinkedin",
-            icon: <FaLinkedin className="text-blue-600" />
+            icon: <FaLinkedin className="text-pastel-blue" />
         },
         {
             title: "AIButton",
@@ -185,7 +185,7 @@ export const personal = {
             stack: ["JavaScript", "Chrome Extension", "Supabase"],
             link: "https://github.com/invincibleinventor/aibutton",
             github: "https://github.com/invincibleinventor/aibutton",
-            icon: <FaLinkedin className="text-blue-600" />
+            icon: <FaLinkedin className="text-pastel-blue" />
         },
         {
             title: "EzyPing",
@@ -195,7 +195,7 @@ export const personal = {
             stack: ["Next.js", "TypeScript", "Node.js", "CRON"],
             link: "https://ezyping.vercel.app",
             github: "https://github.com/invincibleinventor/ezyping",
-            icon: <SiTypescript className="text-blue-600" />
+            icon: <SiTypescript className="text-pastel-blue" />
         }
     ],
     skills: [
@@ -452,14 +452,14 @@ export const apps: appdata[] = [
     {
         id: 'aboutbala',
         appname: 'About Bala',
-        icon: '/about.png',
-        maximizeable: false,
+        icon: '/bala.jpeg',
+        maximizeable: true,
         componentname: 'apps/AboutBala',
         additionaldata: {},
         multiwindow: false,
-        titlebarblurred: true,
+        titlebarblurred: false,
         pinned: true,
-        defaultsize: { width: 400, height: 550 },
+        defaultsize: { width: 900, height: 650 },
         category: 'Utilities',
         webOnly: true
     },
@@ -524,7 +524,7 @@ export const apps: appdata[] = [
     {
         id: 'aboutnextaros',
         appname: 'About NextarOS',
-        icon: '/logo.svg',
+        icon: '/about.png',
         maximizeable: false,
         componentname: 'apps/AboutNextarOS',
         additionaldata: {},
@@ -692,7 +692,7 @@ export const ALL_MAILS: MailItem[] = [
         iconSrc: `pfp.png`,
         preview: 'Thanks for stopping by. I am a Second-year Computer Science undergraduate...',
         content: (
-            <div className="space-y-4 text-sm leading-relaxed text-black dark:text-white">
+            <div className="space-y-4 text-sm leading-relaxed text-[--text-color]">
                 <p>Hi there,</p>
                 <p>Welcome to <strong>NextarOS</strong>! I built this &quot;Portfolio OS&quot; to demonstrate the power of modern web technologies.</p>
                 <p><strong>About Me:</strong></p>
@@ -714,21 +714,21 @@ export const ALL_MAILS: MailItem[] = [
         iconSrc: `/appimages/${proj.title.toLowerCase()}.png`,
         preview: `Repository update for ${proj.title}.${proj.desc}`,
         content: (
-            <div className="space-y-4 text-sm leading-relaxed text-black dark:text-white">
-                <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-black/5 dark:border-white/10">
-                    <div className="w-16 flex  shrink-0 h-16 bg-white dark:bg-black rounded-lg flex items-center justify-center overflow-hidden shadow-sm border border-black/5">
+            <div className="space-y-4 text-sm leading-relaxed text-[--text-color]">
+                <div className="flex items-center gap-4 p-4 bg-overlay border border-[--border-color]">
+                    <div className="w-16 flex  shrink-0 h-16 bg-surface flex items-center justify-center overflow-hidden border border-[--border-color]">
                         <Image src={`/appimages/${proj.title.toLowerCase()}.png`} width={64} height={64} alt={proj.title} className="w-full flex shrink-0 h-full object-cover" />
                     </div>
                     <div>
                         <h3 className="font-bold text-lg">{proj.title}</h3>
-                        <p className="text-xs text-gray-500">{proj.stack.join(' • ')}</p>
+                        <p className="text-xs text-[--text-muted]">{proj.stack.join(' • ')}</p>
                     </div>
                 </div>
                 <p><strong>Description:</strong></p>
                 <p>{proj.desc}</p>
                 <p><strong>Tech Stack:</strong> {proj.stack.join(', ')}</p>
                 <div className="pt-4 flex gap-3">
-                    <a href={proj.link || '#'} target="_blank" rel="noreferrer" className="inline-block px-4 py-2 bg-accent text-center line-clamp-2 mx-auto text-white rounded-md text-xs font-semibold hover:bg-[#0062cc] transition shadow-sm">
+                    <a href={proj.link || '#'} target="_blank" rel="noreferrer" className="inline-block px-4 py-2 bg-accent text-center line-clamp-2 mx-auto text-[--bg-base] text-xs font-semibold hover:opacity-90 transition">
                         View Project
                     </a>
                 </div>
@@ -1027,9 +1027,9 @@ export const generateGuestFilesystem = (): filesystemitem[] => {
     fs.push({ ...resumeBase, id: 'guest-desktop-resume', parent: 'guest-desktop' } as filesystemitem);
 
     const socialLinks = [
-        { id: 'guest-about-github', name: 'Github', link: personal.personal.socials.github, icon: <FaGithub className="w-full h-full text-gray-700 dark:text-gray-300" />, desc: "My Github Profile" },
+        { id: 'guest-about-github', name: 'Github', link: personal.personal.socials.github, icon: <FaGithub className="w-full h-full text-[--text-color]" />, desc: "My Github Profile" },
         { id: 'guest-about-linkedin', name: 'LinkedIn', link: personal.personal.socials.linkedin, icon: <FaLinkedin className="w-full h-full text-[#0077b5]" />, desc: "My LinkedIn Profile" },
-        { id: 'guest-about-threads', name: 'Threads', link: personal.personal.socials.threads, icon: <PiThreadsLogo className="w-full h-full text-black dark:text-white" />, desc: "My Threads Profile" }
+        { id: 'guest-about-threads', name: 'Threads', link: personal.personal.socials.threads, icon: <PiThreadsLogo className="w-full h-full text-[--text-color]" />, desc: "My Threads Profile" }
     ];
 
     socialLinks.forEach(s => {
@@ -1296,15 +1296,15 @@ const FileConfig: Record<string, {
 }> = {
     'inode/directory': {
         appId: 'explorer',
-        icon: <Image src="/folder.png" alt="folder" width={64} height={64} className="w-full h-full object-contain drop-shadow-md" />,
+        icon: <IoFolderOutline className="w-full h-full text-pastel-blue" />,
     },
     'inode/shortcut': {
         appId: 'explorer',
-        icon: <Image src="/folder.png" alt="shortcut" width={64} height={64} className="w-full h-full object-contain drop-shadow-md" />,
+        icon: <IoFolderOutline className="w-full h-full text-pastel-lavender" />,
     },
     'application/x-executable': {
         appId: 'app-launch',
-        icon: <Image src="/app-store.png" alt="app" width={64} height={64} className="w-full h-full object-contain drop-shadow-md" />,
+        icon: <IoAppsOutline className="w-full h-full text-pastel-mauve" />,
     },
     'image/png': {
         appId: 'photos',
@@ -1341,14 +1341,14 @@ const FileConfig: Record<string, {
     },
     'text/x-uri': {
         appId: 'browser',
-        icon: <IoGlobeOutline className="w-full h-full text-blue-500" />,
+        icon: <IoGlobeOutline className="w-full h-full text-pastel-blue" />,
         getLaunchProps: (file) => ({
             initialurl: file.link || file.content
         })
     },
     'text/markdown': {
         appId: 'fileviewer',
-        icon: <IoDocumentTextOutline className="w-full h-full text-gray-500" />,
+        icon: <IoDocumentTextOutline className="w-full h-full text-[--text-muted]" />,
         getLaunchProps: (file) => ({
             id: file.id,
             content: file.content,
@@ -1358,7 +1358,7 @@ const FileConfig: Record<string, {
     },
     'text/plain': {
         appId: 'textedit',
-        icon: <IoDocumentTextOutline className="w-full h-full text-gray-500" />,
+        icon: <IoDocumentTextOutline className="w-full h-full text-pastel-peach" />,
         getLaunchProps: (file) => ({
             id: file.id,
             content: file.content,
@@ -1403,7 +1403,7 @@ export const getFileIcon = (mimetype: string, name: string, itemicon?: React.Rea
     }
     const config = FileConfig[mimetype];
     if (config && config.icon) return config.icon;
-    return <IoDocumentTextOutline className="w-full h-full text-gray-500" />;
+    return <IoDocumentTextOutline className="w-full h-full text-[--text-muted]" />;
 };
 
 const FolderPathMap: Record<string, string[]> = {

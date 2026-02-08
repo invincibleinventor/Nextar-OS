@@ -107,99 +107,98 @@ export default function Launchpad({ onclose }: { onclose: () => void }) {
     };
 
     return (
-        <motion.div
-            initial={{ opacity: 0, scale: 1.1, filter: "blur(20px)" }}
-            animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-            exit={{ opacity: 0, scale: 1.1, filter: "blur(20px)" }}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
-            className="fixed inset-0 z-[99999] flex flex-col items-center pt-20 pb-12
-                bg-black/40 backdrop-blur-3xl overflow-hidden"
-            onClick={() => {
-                onclose();
-            }}
-            onPan={(e, info) => {
-                if (info.offset.x < -50) paginate(1);
-                if (info.offset.x > 50) paginate(-1);
-            }}
-        >
-            <div
-                className="w-full max-w-md px-8 mb-4"
+        <>
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                className="fixed inset-0 z-[99998] bg-[--bg-base]/60"
+                onClick={onclose}
+            />
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: -20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: -20 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="fixed z-[99999] inset-0 m-auto w-[90vw] max-w-[680px] h-[75vh] flex flex-col bg-surface border-2 border-[--border-color] shadow-pastel-active overflow-hidden anime-glow-lg"
                 onClick={(e) => e.stopPropagation()}
-            >
-                <div className="relative">
-                    <IoSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50 text-lg" />
-                    <input
-                        autoFocus
-                        placeholder="Search Apps"
-                        className="w-full bg-white/10 border border-white/10 rounded-lg  pr-4 py-2 
-                            text-white placeholder-white/50 text-[15px] text-center
-                            outline-none focus:bg-white/15 focus:border-white/20 transition-all"
-                        value={searchterm}
-                        onChange={e => { setsearchterm(e.target.value); setpage(0); }}
-                        onClick={(e) => e.stopPropagation()}
-                    />
-                </div>
-            </div>
-
-            <div
-                className="flex-1 w-full max-w-[1100px] px-8 sm:px-16 flex items-center justify-center"
-                onClick={(e) => {
+                onPan={(e, info) => {
+                    if (info.offset.x < -50) paginate(1);
+                    if (info.offset.x > 50) paginate(-1);
                 }}
             >
-                <AnimatePresence mode='wait'>
-                    <motion.div
-                        key={page}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 gap-x-6 gap-y-10 w-full"
-                    >
-                        {currentapps.map(app => (
-                            <motion.div
-                                key={app.id}
-                                whileHover={{ scale: 1.08 }}
-                                whileTap={{ scale: 0.95 }}
-                                className="flex flex-col items-center gap-3 cursor-pointer"
-                                onClick={() => handleappclick(app)}
-                            >
-                                <div className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 relative">
-                                    {'isLinuxApp' in app && app.isLinuxApp && app.icon?.startsWith('/') ? (
-                                        <img
-                                            src={`file://${app.icon}`}
-                                            alt={app.appname}
-                                            className="w-full h-full object-contain rounded-xl"
-                                            onError={(e) => { (e.target as HTMLImageElement).src = '/appstore.png'; }}
-                                        />
-                                    ) : (
-                                        <TintedAppIcon
-                                            appId={app.id}
-                                            appName={app.appname}
-                                            originalIcon={app.icon}
-                                            size={96}
-                                        />
-                                    )}
-                                </div>
-                                <span className="text-white text-[13px] font-medium text-center leading-tight drop-shadow-md truncate max-w-[90px]">
-                                    {app.appname}
-                                </span>
-                            </motion.div>
-                        ))}
-                    </motion.div>
-                </AnimatePresence>
-            </div>
-
-            {totalpages > 1 && (
-                <div className="flex gap-2 pt-8">
-                    {Array.from({ length: totalpages }).map((_, i) => (
-                        <div
-                            key={i}
-                            className={`w-2 h-2 rounded-full cursor-pointer transition-colors ${i === page ? 'bg-white' : 'bg-white/30'}`}
-                            onClick={(e) => { e.stopPropagation(); setpage(i); }}
+                <div className="px-4 pt-4 pb-3 border-b border-[--border-color] bg-[--bg-overlay]">
+                    <div className="relative">
+                        <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[--text-muted] text-sm" />
+                        <input
+                            autoFocus
+                            placeholder="Search Apps"
+                            className="w-full bg-overlay border border-[--border-color] pl-9 pr-4 py-2
+                                text-[--text-color] placeholder-[--text-muted] text-[13px]
+                                outline-none transition-all font-mono"
+                            value={searchterm}
+                            onChange={e => { setsearchterm(e.target.value); setpage(0); }}
                         />
-                    ))}
+                    </div>
                 </div>
-            )}
-        </motion.div>
+
+                <div className="flex-1 overflow-y-auto p-5">
+                    <AnimatePresence mode='wait'>
+                        <motion.div
+                            key={page}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.15 }}
+                            className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-x-4 gap-y-6"
+                        >
+                            {currentapps.map(app => (
+                                <motion.div
+                                    key={app.id}
+                                    whileHover={{ scale: 1.08 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    className="flex flex-col items-center gap-2 cursor-pointer"
+                                    onClick={() => handleappclick(app)}
+                                >
+                                    <div className="w-14 h-14 md:w-16 md:h-16 relative">
+                                        {'isLinuxApp' in app && app.isLinuxApp && app.icon?.startsWith('/') ? (
+                                            <img
+                                                src={`file://${app.icon}`}
+                                                alt={app.appname}
+                                                className="w-full h-full object-contain"
+                                                onError={(e) => { (e.target as HTMLImageElement).src = '/appstore.png'; }}
+                                            />
+                                        ) : (
+                                            <TintedAppIcon
+                                                appId={app.id}
+                                                appName={app.appname}
+                                                originalIcon={app.icon}
+                                                size={64}
+                                            />
+                                        )}
+                                    </div>
+                                    <span className="text-[--text-color] text-[11px] font-medium text-center leading-tight truncate max-w-[80px] font-mono">
+                                        {app.appname}
+                                    </span>
+                                </motion.div>
+                            ))}
+                        </motion.div>
+                    </AnimatePresence>
+                </div>
+
+                {totalpages > 1 && (
+                    <div className="flex gap-2 py-3 justify-center border-t border-[--border-color]">
+                        {Array.from({ length: totalpages }).map((_, i) => (
+                            <div
+                                key={i}
+                                className={`w-2 h-2 cursor-pointer transition-colors ${i === page ? 'bg-pastel-red' : 'bg-[--border-color]'}`}
+                                onClick={(e) => { e.stopPropagation(); setpage(i); }}
+                            />
+                        ))}
+                    </div>
+                )}
+            </motion.div>
+        </>
     )
 }

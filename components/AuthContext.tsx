@@ -21,7 +21,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const { setosstate } = useDevice();
+    const { osstate, setosstate } = useDevice();
 
     useEffect(() => {
         const initAuth = async () => {
@@ -38,7 +38,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         avatar: '/me.png'
                     };
                     setUser(guestUser);
-                    setosstate('unlocked');
                 }
             } catch {
             } finally {
@@ -47,7 +46,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
 
         initAuth();
-    }, [setosstate]);
+    }, []);
+
+    useEffect(() => {
+        if (user?.username === 'guest' && osstate === 'locked') {
+            setosstate('unlocked');
+        }
+    }, [user, osstate, setosstate]);
 
     const login = async (password: string): Promise<boolean> => {
         try {

@@ -12,6 +12,18 @@ const config: Config = {
     extend: {
       colors: {
         accent: 'var(--accent-color)',
+        base: 'var(--bg-base)',
+        surface: 'var(--bg-surface)',
+        overlay: 'var(--bg-overlay)',
+        'pastel-red': '#ed8796',
+        'pastel-peach': '#f5a97f',
+        'pastel-yellow': '#eed49f',
+        'pastel-green': '#a6da95',
+        'pastel-teal': '#8bd5ca',
+        'pastel-blue': '#8aadf4',
+        'pastel-lavender': '#b7bdf8',
+        'pastel-pink': '#f5bde6',
+        'pastel-mauve': '#c6a0f6',
       },
       cursor: {
         'fancy': 'url(/cursor.png), default',
@@ -19,13 +31,10 @@ const config: Config = {
 
       fontFamily: {
         sf: ['"SF Pro"', 'sans-serif'],
+        mono: ['var(--font-mono)', '"JetBrains Mono"', 'ui-monospace', 'monospace'],
       },
-      backdropBlur: {
-        'none': 'none',
-        'sm': '4px',
-        'md': '8px',
-        'lg': '12px',
-        'xl': '16px',
+      borderColor: {
+        DEFAULT: 'var(--border-color)',
       },
       screens: {
         '3xs': '440px',

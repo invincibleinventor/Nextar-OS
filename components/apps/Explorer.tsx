@@ -534,7 +534,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
         return (
             <div
                 ref={containerref}
-                className="flex flex-col h-full w-full bg-white dark:bg-[#1e1e1e] text-black dark:text-white font-sf text-[15px] overflow-hidden relative select-none"
+                className="flex flex-col h-full w-full bg-[--bg-base] text-[--text-color] font-mono text-[15px] overflow-hidden relative select-none"
             >
                 <input
                     type="file"
@@ -568,9 +568,9 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                             animate={{ x: 0 }}
                             exit={{ x: '-105%' }}
                             transition={{ type: 'tween', ease: 'easeOut', duration: 0.25 }}
-                            className="absolute inset-0 z-20 bg-[#f5f5f7] dark:bg-[#1c1c1e] pt-2"
+                            className="absolute inset-0 z-20 bg-surface pt-2"
                         >
-                            <div className="h-12 flex items-center justify-between px-4 border-b border-black/5 dark:border-white/10">
+                            <div className="h-12 flex items-center justify-between px-4 border-b border-[--border-color]">
                                 <span className="font-semibold text-lg">Browse</span>
                                 <button
                                     onClick={() => setmobileview('files')}
@@ -582,7 +582,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                             <div className="overflow-y-auto h-full pb-20 pt-2 px-2">
                                 {sidebaritems.map((group, idx) => (
                                     <div key={idx} className="mb-6">
-                                        <div className="text-[13px] font-bold text-gray-500/80 dark:text-gray-400/80 uppercase tracking-wide mb-2 px-3">
+                                        <div className="text-[13px] font-bold text-[--text-muted] uppercase tracking-wide mb-2 px-3">
                                             {group.title}
                                         </div>
                                         <div className="space-y-1">
@@ -590,12 +590,12 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                                 <div
                                                     key={item.name}
                                                     onClick={() => handlesidebarclick(item.name, item.path)}
-                                                    className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200
+                                                    className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-all duration-200
                                                         ${selected === item.name
-                                                            ? 'bg-accent text-white'
-                                                            : 'text-black dark:text-white active:bg-black/5 dark:active:bg-white/10'}`}
+                                                            ? 'bg-accent text-[--bg-base]'
+                                                            : 'text-[--text-color] active:bg-overlay'}`}
                                                 >
-                                                    <item.icon className={`text-xl ${selected === item.name ? 'text-white' : 'text-accent'}`} />
+                                                    <item.icon className={`text-xl ${selected === item.name ? 'text-[--bg-base]' : 'text-accent'}`} />
                                                     <span className="font-medium">{item.name}</span>
                                                 </div>
                                             ))}
@@ -603,14 +603,14 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                                 <div
                                                     key="Trash"
                                                     onClick={() => handlesidebarclick('Trash', [])}
-                                                    className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200 mt-4
+                                                    className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-all duration-200 mt-4
                                                         ${selected === 'Trash'
-                                                            ? 'bg-accent text-white'
-                                                            : 'text-black dark:text-white active:bg-black/5 dark:active:bg-white/10'}`}
+                                                            ? 'bg-accent text-[--bg-base]'
+                                                            : 'text-[--text-color] active:bg-overlay'}`}
                                                 >
                                                     {trashHasItems
-                                                        ? <IoTrash className={`text-xl ${selected === 'Trash' ? 'text-white' : 'text-red-500'}`} />
-                                                        : <IoTrashOutline className={`text-xl ${selected === 'Trash' ? 'text-white' : 'text-red-500'}`} />
+                                                        ? <IoTrash className={`text-xl ${selected === 'Trash' ? 'text-[--bg-base]' : 'text-pastel-red'}`} />
+                                                        : <IoTrashOutline className={`text-xl ${selected === 'Trash' ? 'text-[--bg-base]' : 'text-pastel-red'}`} />
                                                     }
                                                     <span className="font-medium">Trash</span>
                                                 </div>
@@ -630,7 +630,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                             exit={{ opacity: 0 }}
                             className="flex-1 flex flex-col h-full"
                         >
-                            <div className="h-14 shrink-0 flex items-center justify-between px-4 border-b border-black/5 dark:border-white/10 bg-white/80 dark:bg-[#1e1e1e]/80 backdrop-blur-xl">
+                            <div className="h-14 shrink-0 flex items-center justify-between px-4 border-b border-[--border-color] bg-surface">
                                 <div className="flex items-center gap-3">
                                     {currentpath.length > 1 ? (
                                         <button
@@ -672,11 +672,11 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                 </div>
                             </div>
 
-                            <div className="px-4 py-2 border-b border-black/5 dark:border-white/10">
+                            <div className="px-4 py-2 border-b border-[--border-color]">
                                 <div className="relative">
-                                    <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                    <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[--text-muted]" />
                                     <input
-                                        className="w-full bg-black/5 dark:bg-white/10 rounded-xl pl-10 pr-4 py-2.5 text-[15px] outline-none placeholder-gray-500 text-black dark:text-white"
+                                        className="w-full bg-overlay pl-10 pr-4 py-2.5 text-[15px] outline-none placeholder-[--text-muted] text-[--text-color]"
                                         placeholder="Search"
                                         value={searchquery}
                                         onChange={(e) => setsearchquery(e.target.value)}
@@ -689,21 +689,21 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                 onContextMenu={(e) => handleContextMenu(e)}
                             >
                                 {isLoading ? (
-                                    <div className="flex flex-col items-center justify-center h-full text-gray-400">
-                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-500 mb-2"></div>
+                                    <div className="flex flex-col items-center justify-center h-full text-[--text-muted]">
+                                        <div className="animate-spin h-8 w-8 border-b-2 border-[--text-muted] mb-2"></div>
                                         <span className="text-sm">Loading Files...</span>
                                     </div>
                                 ) : filesList.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                                    <div className="flex flex-col items-center justify-center h-full text-[--text-muted]">
                                         <span className="text-4xl mb-2 opacity-50">¯\_(ツ)_/¯</span>
                                         <span className="text-sm">No items found</span>
                                     </div>
                                 ) : (
-                                    <div className="divide-y divide-black/5 dark:divide-white/5">
+                                    <div className="divide-y divide-[--border-color]">
                                         {filesList.map((file) => (
                                             <div
                                                 key={file.id}
-                                                className="flex items-center gap-4 px-4 py-3 active:bg-black/5 dark:active:bg-white/10"
+                                                className="flex items-center gap-4 px-4 py-3 active:bg-overlay"
                                                 onClick={() => handlefileopen(file)}
                                                 onTouchStart={(e) => handlelongpress(file.id, e)}
                                                 onTouchEnd={cancellongpress}
@@ -719,15 +719,15 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <div className="font-medium text-[17px] truncate">{getDisplayName(file)}</div>
-                                                    <div className="text-[13px] text-gray-500 dark:text-gray-400">
+                                                    <div className="text-[13px] text-[--text-muted]">
                                                         {file.mimetype === 'inode/directory' ? 'Folder' : file.size || '--'}
                                                     </div>
                                                 </div>
                                                 {isLocked(file.id) && (
-                                                    <IoLockClosed className="text-gray-400 text-sm" />
+                                                    <IoLockClosed className="text-[--text-muted] text-sm" />
                                                 )}
                                                 {file.mimetype === 'inode/directory' && (
-                                                    <IoChevronForward className="text-gray-400" />
+                                                    <IoChevronForward className="text-[--text-muted]" />
                                                 )}
                                             </div>
                                         ))}
@@ -744,10 +744,10 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                             </div>
 
                             {isTrashView && (
-                                <div className="p-4 border-t border-black/5 dark:border-white/10 bg-white dark:bg-[#1e1e1e]">
+                                <div className="p-4 border-t border-[--border-color] bg-[--bg-base]">
                                     <button
                                         onClick={emptyTrash}
-                                        className="w-full py-3 rounded-xl bg-red-500/10 text-red-500 font-medium text-[15px]"
+                                        className="w-full py-3 bg-pastel-red/10 text-pastel-red font-medium text-[15px]"
                                     >
                                         Empty Trash
                                     </button>
@@ -764,7 +764,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
         <div
             ref={containerref}
             onContextMenu={(e) => handleContextMenu(e)}
-            className="flex h-full w-full bg-transparent text-black dark:text-white font-sf text-[13px] overflow-hidden rounded-b-xl relative select-none"
+            className="flex h-full w-full bg-transparent text-[--text-color] font-mono text-[13px] overflow-hidden relative select-none"
             onClick={() => {
                 if (isnarrow && showsidebar) setshowsidebar(false);
                 setContextMenu(null);
@@ -806,51 +806,51 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
             >
                 <div
                     onClick={() => handlesidebarclick('Trash', [])}
-                    className={`flex items-center gap-3 px-3 py-1.5 rounded-md cursor-pointer transition-colors mt-4 mx-1
+                    className={`flex items-center gap-3 px-3 py-1.5 cursor-pointer transition-colors mt-4 mx-1
                         ${selected === 'Trash'
-                            ? 'bg-black/10 dark:bg-white/10 text-black dark:text-white'
-                            : 'text-gray-600 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/5'}`}
+                            ? 'bg-overlay text-[--text-color]'
+                            : 'text-[--text-muted] hover:bg-overlay'}`}
                 >
                     {trashHasItems
-                        ? <IoTrash className={`text-lg ${selected === 'Trash' ? 'text-blue-500' : 'text-gray-500'}`} />
-                        : <IoTrashOutline className={`text-lg ${selected === 'Trash' ? 'text-blue-500' : 'text-gray-500'}`} />
+                        ? <IoTrash className={`text-lg ${selected === 'Trash' ? 'text-accent' : 'text-[--text-muted]'}`} />
+                        : <IoTrashOutline className={`text-lg ${selected === 'Trash' ? 'text-accent' : 'text-[--text-muted]'}`} />
                     }
                     <span className="text-[13px] font-medium leading-none pb-0.5">Trash</span>
                 </div>
             </Sidebar>
 
-            <div className={`flex-1 flex ${isnarrow ? 'flex-col' : 'flex-row'} min-w-0 dark:bg-neutral-900 bg-white relative overflow-hidden`}>
+            <div className={`flex-1 flex ${isnarrow ? 'flex-col' : 'flex-row'} min-w-0 bg-[--bg-base] relative overflow-hidden`}>
 
                 <div className="flex-1 flex flex-col min-w-0 min-h-0">
-                    <div className={`${!ismobile && !showsidebar ? 'ps-20' : ''} h-[50px] shrink-0 flex items-center justify-between px-4 border-b border-black/5 dark:border-white/5`}>
-                        <div className="flex items-center gap-2 text-gray-500">
+                    <div className={`h-[50px] shrink-0 flex items-center justify-between px-4 border-b border-[--border-color]`}>
+                        <div className="flex items-center gap-2 text-[--text-muted]">
                             {isnarrow && (
-                                <button onClick={() => setshowsidebar(!showsidebar)} className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded-md transition-colors mr-2">
-                                    <IoListOutline className="text-xl text-black dark:text-white" />
+                                <button onClick={() => setshowsidebar(!showsidebar)} className="p-1 hover:bg-overlay transition-colors mr-2">
+                                    <IoListOutline className="text-xl text-[--text-color]" />
                                 </button>
                             )}
                             <div className={(isnarrow && !ismobile) ? "flex items-center gap-1" : "flex items-center gap-1"}>
-                                <IoChevronBack className={`text-xl ${currentpath.length > 1 ? 'text-black dark:text-white cursor-pointer rounded' : 'opacity-20'}`} onClick={() => currentpath.length > 1 && setcurrentpath(currentpath.slice(0, -1))} />
+                                <IoChevronBack className={`text-xl ${currentpath.length > 1 ? 'text-[--text-color] cursor-pointer' : 'opacity-20'}`} onClick={() => currentpath.length > 1 && setcurrentpath(currentpath.slice(0, -1))} />
                                 <IoChevronForward className="text-xl opacity-20" />
                             </div>
-                            <span className="text-[14px] font-semibold text-black dark:text-white ml-2">
+                            <span className="text-[14px] font-semibold text-[--text-color] ml-2">
                                 {isTrashView ? 'Trash' : currentpath[currentpath.length - 1]}
                             </span>
                         </div>
                         <div className="flex items-center gap-2">
                             {!isTrashView && (
-                                <div className="flex items-center bg-neutral-100 dark:bg-neutral-800 rounded-lg p-0.5 border border-black/5 dark:border-white/5">
+                                <div className="flex items-center bg-overlay p-0.5 border border-[--border-color]">
                                     <button
                                         onClick={() => setFileModal({ isOpen: true, type: 'create-folder' })}
-                                        className="p-1 hover:bg-white dark:hover:bg-gray-700 rounded-md transition-colors text-gray-600 dark:text-gray-300"
+                                        className="p-1 hover:bg-overlay transition-colors text-[--text-muted]"
                                         title="New Folder"
                                     >
                                         <IoFolderOpenOutline className="text-lg" />
                                     </button>
-                                    <div className="w-[1px] h-4 bg-neutral-300 dark:bg-neutral-600 mx-2"></div>
+                                    <div className="w-[1px] h-4 bg-[--border-color] mx-2"></div>
                                     <button
                                         onClick={() => setFileModal({ isOpen: true, type: 'create-file' })}
-                                        className="p-1 hover:bg-white dark:hover:bg-gray-700 rounded-md transition-colors text-gray-600 dark:text-gray-300"
+                                        className="p-1 hover:bg-overlay transition-colors text-[--text-muted]"
                                         title="New File"
                                     >
                                         <IoDocumentTextOutline className="text-lg" />
@@ -859,9 +859,9 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                             )}
 
                             <div className="relative w-40 sm:w-48 ml-2">
-                                <IoSearch className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400" />
+                                <IoSearch className="absolute left-2 top-1/2 -translate-y-1/2 text-[--text-muted]" />
                                 <input
-                                    className="w-full bg-black/5 dark:bg-white/10 rounded-md pl-7 pr-2 py-1 text-xs outline-none focus:ring-1 ring-blue-500/50 transition-all placeholder-gray-500 text-black dark:text-white"
+                                    className="w-full bg-overlay pl-7 pr-2 py-1 text-xs outline-none focus:ring-1 ring-accent/50 transition-all placeholder-[--text-muted] text-[--text-color]"
                                     placeholder="Search"
                                     value={searchquery}
                                     onChange={(e) => setsearchquery(e.target.value)}
@@ -869,7 +869,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                             </div>
                             <button
                                 onClick={() => setshowpreview(!showpreview)}
-                                className={`p-1 rounded-md transition-colors ${showpreview ? 'bg-black/10 dark:bg-white/10 text-accent' : 'hover:bg-black/5 dark:hover:bg-white/5 text-gray-500'}`}
+                                className={`p-1 transition-colors ${showpreview ? 'bg-overlay text-accent' : 'hover:bg-overlay text-[--text-muted]'}`}
                                 title="Toggle Preview"
                             >
                                 <IoInformationCircleOutline className="text-lg" />
@@ -916,10 +916,10 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                     <div
                                         key={i}
                                         data-id={file.id}
-                                        className={`explorer-item group flex flex-col items-center gap-2 p-2 rounded-lg transition-colors cursor-default
+                                        className={`explorer-item group flex flex-col items-center gap-2 p-2 transition-colors cursor-default
                                         ${isSelected
-                                                ? 'bg-black/10 dark:bg-white/10'
-                                                : 'hover:bg-black/5 dark:hover:bg-white/5'}`}
+                                                ? 'bg-overlay'
+                                                : 'hover:bg-overlay'}`}
                                         onDoubleClick={() => handlefileopen(file)}
                                         onContextMenu={(e) => {
                                             e.stopPropagation();
@@ -959,13 +959,13 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                         <div className="w-12 h-12 sm:w-16 sm:h-16 relative flex items-center justify-center">
                                             {getFileIcon(file.mimetype, file.name, file.icon, file.id)}
                                         </div>
-                                        <span className={`text-[12px] text-center leading-tight px-2 py-0.5 rounded break-words w-full line-clamp-2
-                                        ${isSelected ? 'bg-accent text-white font-medium' : 'text-gray-700 dark:text-gray-300'}`}>
+                                        <span className={`text-[12px] text-center leading-tight px-2 py-0.5 break-words w-full line-clamp-2
+                                        ${isSelected ? 'bg-accent text-[--bg-base] font-medium' : 'text-[--text-muted]'}`}>
                                             {getDisplayName(file)}
                                         </span>
                                         {isLocked(file.id) && (
-                                            <div className="absolute top-1 right-1 bg-white/80 dark:bg-black/80 rounded-full p-0.5 shadow-sm">
-                                                <IoLockClosed className="text-[8px] text-black dark:text-white" />
+                                            <div className="absolute top-1 right-1 bg-surface p-0.5">
+                                                <IoLockClosed className="text-[8px] text-[--text-muted]" />
                                             </div>
                                         )}
                                     </div>
@@ -973,7 +973,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                             })}
                         </div>
                         {filesList.length === 0 && (
-                            <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                            <div className="flex flex-col items-center justify-center h-full text-[--text-muted]">
                                 <span className="text-4xl mb-2 opacity-50">¯\_(ツ)_/¯</span>
                                 <span className="text-sm">No items found</span>
                                 {!isTrashView && <span className="text-xs opacity-50 mt-1">Right click to create new items</span>}
@@ -981,8 +981,8 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                         )}
                     </div>
 
-                    <div className="h-[24px] bg-[#f8f8f8] dark:bg-[#282828] border-t border-black/5 dark:border-white/5 flex items-center px-4 justify-center shrink-0">
-                        <span className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">
+                    <div className="h-[24px] bg-surface border-t border-[--border-color] flex items-center px-4 justify-center shrink-0">
+                        <span className="text-[10px] text-[--text-muted] font-medium">
                             {filesList.length} item{filesList.length !== 1 && 's'}
                         </span>
                     </div>
@@ -991,34 +991,34 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                 {showpreview && (
                     <div className={`
                         ${isnarrow
-                            ? 'h-[30%] w-full border-t border-black/10 dark:border-white/10'
-                            : 'w-[250px] border-l border-black/5 dark:border-white/5'
+                            ? 'h-[30%] w-full border-t border-[--border-color]'
+                            : 'w-[250px] border-l border-[--border-color]'
                         }
-                        bg-white/50 dark:bg-[#2d2d2d]/50 backdrop-blur-md flex flex-col transition-all duration-300 overflow-y-auto shrink-0
+                        bg-surface flex flex-col transition-all duration-300 overflow-y-auto shrink-0
                     `}>
                         {activefile ? (
                             <div className="flex flex-col items-center p-6 text-center animate-in fade-in duration-300">
                                 <div className="w-24 object-cover h-24 mb-4 drop-shadow-xl relative">
                                     {getFileIcon(activefile.mimetype, activefile.name, activefile.icon, activefile.id)}
                                 </div>
-                                <h3 className="text-lg font-semibold text-black dark:text-white mb-1 break-words w-full">{getDisplayName(activefile)}</h3>
-                                <p className="text-[11px] text-gray-500 dark:text-gray-400 mb-4">{activefile.mimetype}</p>
+                                <h3 className="text-lg font-semibold text-[--text-color] mb-1 break-words w-full">{getDisplayName(activefile)}</h3>
+                                <p className="text-[11px] text-[--text-muted] mb-4">{activefile.mimetype}</p>
 
                                 <div className="w-full space-y-3 text-left">
-                                    <div className="h-px w-full bg-black/5 dark:bg-white/5"></div>
+                                    <div className="h-px w-full bg-[--border-color]"></div>
 
                                     <div className="grid grid-cols-[80px_1fr] gap-2 text-[11px]">
-                                        <span className="text-gray-500 text-right">Modified</span>
-                                        <span className="text-black dark:text-white">{activefile.date}</span>
+                                        <span className="text-[--text-muted] text-right">Modified</span>
+                                        <span className="text-[--text-color]">{activefile.date}</span>
 
-                                        <span className="text-gray-500 text-right">Size</span>
-                                        <span className="text-black dark:text-white">{activefile.size}</span>
+                                        <span className="text-[--text-muted] text-right">Size</span>
+                                        <span className="text-[--text-color]">{activefile.size}</span>
                                     </div>
 
                                     {activefile.description && (
                                         <div className="pt-2">
-                                            <div className="text-xs font-semibold text-gray-500 mb-1">Information</div>
-                                            <p className="text-[12px] text-black/80 dark:text-white/80 leading-relaxed">
+                                            <div className="text-xs font-semibold text-[--text-muted] mb-1">Information</div>
+                                            <p className="text-[12px] text-[--text-color] leading-relaxed">
                                                 {activefile.description}
                                             </p>
                                         </div>
@@ -1027,14 +1027,14 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                     <div className="pt-4 flex justify-center gap-2">
                                         <button
                                             onClick={() => handlefileopen(activefile)}
-                                            className="bg-accent hover:bg-[#007afe] text-white px-4 py-1.5 rounded-full text-xs font-medium shadow-sm active:scale-95 transition-all"
+                                            className="bg-accent hover:bg-accent/80 text-[--bg-base] px-4 py-1.5 text-xs font-medium active:scale-95 transition-all"
                                         >
                                             Open
                                         </button>
                                         {activefile.isTrash && (
                                             <button
                                                 onClick={() => restoreFromTrash(activefile.id)}
-                                                className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-1.5 rounded-full text-xs font-medium shadow-sm active:scale-95 transition-all"
+                                                className="bg-overlay hover:bg-overlay text-[--text-color] px-4 py-1.5 text-xs font-medium active:scale-95 transition-all"
                                             >
                                                 Put Back
                                             </button>
@@ -1044,7 +1044,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                         {(activefile.isTrash || !activefile.isSystem) && (
                                             <button
                                                 onClick={() => activefile.isTrash ? deleteItem(activefile.id) : moveToTrash(activefile.id)}
-                                                className="text-red-500 hover:text-red-600 text-[10px] font-medium transition-colors"
+                                                className="text-pastel-red hover:text-pastel-red/80 text-[10px] font-medium transition-colors"
                                             >
                                                 {activefile.isTrash ? 'Delete Immediately' : 'Move to Trash'}
                                             </button>
@@ -1054,18 +1054,18 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                             </div>
                         ) : (
                             isTrashView ? (
-                                <div className="flex flex-col items-center justify-center h-full text-center p-4 text-gray-400">
+                                <div className="flex flex-col items-center justify-center h-full text-center p-4 text-[--text-muted]">
                                     <IoTrashOutline className="text-4xl mb-2 opacity-20" />
                                     <span className="text-xs mb-4">Items in Trash are deleted after 30 days</span>
                                     <button
                                         onClick={emptyTrash}
-                                        className="px-4 py-1.5 border border-gray-300 dark:border-gray-600 rounded-md text-xs font-medium hover:bg-black/5 dark:hover:bg-white/5"
+                                        className="px-4 py-1.5 border border-[--border-color] text-[--text-muted] text-xs font-medium hover:bg-overlay"
                                     >
                                         Empty Trash
                                     </button>
                                 </div>
                             ) : (
-                                <div className="flex flex-col items-center justify-center h-full text-center p-4 text-gray-400">
+                                <div className="flex flex-col items-center justify-center h-full text-center p-4 text-[--text-muted]">
                                     <IoInformationCircleOutline className="text-4xl mb-2 opacity-20" />
                                     <span className="text-xs">Select an item to view details</span>
                                 </div>

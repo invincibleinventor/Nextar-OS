@@ -39,7 +39,7 @@ export default function Next({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                         id: 'calc',
                         name: `${result}`,
                         subtitle: query,
-                        icon: <IoCalculator className="text-2xl text-orange-500" />,
+                        icon: <IoCalculator className="text-2xl text-pastel-peach" />,
                         action: () => {
                             navigator.clipboard.writeText(String(result));
                         }
@@ -181,17 +181,17 @@ export default function Next({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                     exit={{ opacity: 0, scale: 0.95, y: -20 }}
                     transition={{ type: 'spring', damping: 25, stiffness: 400 }}
                     onClick={e => e.stopPropagation()}
-                    className="w-[600px] max-w-[90vw] bg-white/40 dark:bg-[#1e1e1e]/40 backdrop-blur-2xl rounded-xl shadow-2xl border border-black/10 dark:border-white/10 overflow-hidden"
+                    className="w-[600px] max-w-[90vw] bg-[--bg-surface] shadow-pastel-active border border-[--border-color] overflow-hidden anime-glow-lg"
                 >
-                    <div className="flex items-center gap-3 p-4 border-b border-black/5 dark:border-white/5">
-                        <IoSearch className="text-xl text-gray-600 dark:text-gray-200" />
+                    <div className="flex items-center gap-3 p-4 border-b border-[--border-color]">
+                        <IoSearch className="text-xl text-[--text-muted]" />
                         <input
                             ref={inputRef}
                             type="text"
                             value={query}
                             onChange={e => setQuery(e.target.value)}
                             placeholder="Next Search"
-                            className="flex-1 dark:text-white bg-transparent text-lg outline-none placeholder-gray-600 dark:placeholder-gray-200"
+                            className="flex-1 text-[--text-color] bg-transparent text-lg outline-none placeholder:text-[--text-muted]"
                             autoFocus
                         />
                     </div>
@@ -205,25 +205,25 @@ export default function Next({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                                         result.action();
                                         onClose();
                                     }}
-                                    className={`flex items-center text-white gap-3 px-4 py-3 cursor-pointer transition-colors ${idx === selectedIndex
-                                        ? 'bg-accent text-white'
-                                        : 'hover:bg-black/5 dark:hover:bg-white/5'
+                                    className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${idx === selectedIndex
+                                        ? 'bg-accent text-[--bg-base]'
+                                        : 'text-[--text-color] hover:bg-overlay'
                                         }`}
                                 >
                                     <div className="w-8 h-8 flex items-center justify-center shrink-0 relative">
                                         {result.icon}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <div className={`font-medium truncate ${idx === selectedIndex ? 'text-white' : 'dark:text-gray-100 text-gray-800'}`}>
+                                        <div className={`font-medium truncate ${idx === selectedIndex ? 'text-[--bg-base]' : 'text-[--text-color]'}`}>
                                             {result.name}
                                         </div>
                                         {result.subtitle && (
-                                            <div className={`text-xs truncate ${idx === selectedIndex ? 'text-white/70' : 'dark:text-gray-300 text-gray-500'}`}>
+                                            <div className={`text-xs truncate ${idx === selectedIndex ? 'opacity-70' : 'text-[--text-muted]'}`}>
                                                 {result.subtitle}
                                             </div>
                                         )}
                                     </div>
-                                    <div className={`text-xs px-2 py-0.5 rounded ${idx === selectedIndex ? 'bg-white/20' : 'bg-black/5 dark:bg-white/10'
+                                    <div className={`text-xs px-2 py-0.5 ${idx === selectedIndex ? 'bg-[--bg-base]/20' : 'bg-overlay'
                                         }`}>
                                         {result.type}
                                     </div>
@@ -233,12 +233,12 @@ export default function Next({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                     )}
 
                     {query && results.length === 0 && (
-                        <div className="p-8 text-center text-gray-400">
+                        <div className="p-8 text-center text-[--text-muted]">
                             No results for &ldquo;{query}&rdquo;
                         </div>
                     )}
 
-                    <div className="px-4 hidden py-2 border-t border-black/5 dark:border-white/5 text-xs text-gray-400 flex items-center justify-between">
+                    <div className="px-4 hidden py-2 border-t border-[--border-color] text-xs text-[--text-muted] flex items-center justify-between">
                         <span>⌘K to open</span>
                         <span>↑↓ navigate • ↵ open • esc close</span>
                     </div>

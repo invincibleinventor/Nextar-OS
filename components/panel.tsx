@@ -283,7 +283,7 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
             <div
                 style={{ zIndex: 99999 }}
                 data-tour="menubar"
-                className="fixed h-[35px] z-[99999] before:absolute before:inset-0 before:bg-transparent before:content-[''] before:backdrop-blur-[250px] before:webkit-backdrop-blur-[250px] before:z-[-1] top-0 w-screen py-[6px] flex px-4 justify-between items-center content-center bg-white bg-opacity-30 dark:bg-black dark:bg-opacity-10 transition-colors duration-500"
+                className="fixed h-[35px] z-[99999] top-0 w-screen py-[6px] flex px-4 justify-between items-center content-center bg-[--bg-surface] border-b border-[--border-color] anime-gradient-top"
             >
                 <div className="relative flex flex-row items-center content-center space-x-0">
                     <div className="flex items-center justify-center h-full mr-2" data-tour="dynamic-main-menu">
@@ -331,35 +331,35 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
                         {!iselectron && (
                             <button
                                 onClick={() => setappmode('portfolio')}
-                                className="px-2 py-1 text-xs font-medium bg-white/10 hover:bg-white/20 rounded-md transition-colors dark:text-white text-black"
+                                className="px-2 py-1 text-xs font-medium bg-pastel-red/15 hover:bg-pastel-red/25 text-pastel-red border border-pastel-red/30 transition-colors"
                             >
                                 Exit NextarOS
                             </button>
                         )}
                         <button
                             onClick={() => window.dispatchEvent(new CustomEvent('toggle-next'))}
-                            className=" rounded hover:bg-white/10 transition-colors"
+                            className="hover:bg-pastel-lavender/10 transition-colors"
                             title="Next (⌘K)"
                         >
-                            <svg className="w-4 h-4 dark:text-white text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4 text-[--text-color]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                         </button>
-                        <IoWifi className={`w-[18px] h-[18px] ${wifistatus.connected ? 'text-black dark:text-white' : 'text-neutral-400 dark:text-neutral-500'}`} />
+                        <IoWifi className={`w-[18px] h-[18px] ${wifistatus.connected ? 'text-pastel-blue' : 'text-pastel-lavender'}`} />
                         <div className='flex items-center space-x-1'>
                             {batterystatus.available && (
-                                <span className="text-[11px] font-medium text-black dark:text-white">{batterystatus.percentage}%</span>
+                                <span className="text-[11px] font-medium text-[--text-color]">{batterystatus.percentage}%</span>
                             )}
-                            <IoIosBatteryFull className={`w-[24px] h-[24px] ${batterystatus.charging ? 'text-green-500' : 'text-black dark:text-white'}`} />
+                            <IoIosBatteryFull className={`w-[24px] h-[24px] ${batterystatus.charging ? 'text-pastel-green' : 'text-pastel-yellow'}`} />
                         </div>
                     </div>
                     <div className="relative">
                         <div
-                            className={`p-1 rounded flex flex-row items-center content-center space-x-2 cursor-pointer transition-all duration-200 active:opacity-50 ${showcontrolcenter ? 'bg-white/20 dark:bg-white/10' : 'hover:bg-white/10'}`}
+                            className={`p-1 flex flex-row items-center content-center space-x-2 cursor-pointer transition-all duration-200 active:opacity-50 ${showcontrolcenter ? 'bg-pastel-lavender/20' : 'hover:bg-pastel-lavender/10'}`}
                             onClick={() => setshowcontrolcenter(!showcontrolcenter)}
                         >
-                            <div className={`px-1 rounded-md py-[2px] ${showcontrolcenter ? 'bg-white/20' : ''}`}>
-                                <svg className="w-4 h-4 dark:text-white text-black" color="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29 29" id="control-centre">
+                            <div className={`px-1 py-[2px] ${showcontrolcenter ? 'bg-pastel-lavender/15' : ''}`}>
+                                <svg className="w-4 h-4 text-[--text-color]" color="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29 29" id="control-centre">
                                     <path d="M7.5 13h14a5.5 5.5 0 0 0 0-11h-14a5.5 5.5 0 0 0 0 11Zm0-9h14a3.5 3.5 0 0 1 0 7h-14a3.5 3.5 0 0 1 0-7Zm0 6A2.5 2.5 0 1 0 5 7.5 2.5 2.5 0 0 0 7.5 10Zm14 6h-14a5.5 5.5 0 0 0 0 11h14a5.5 5.5 0 0 0 0-11Zm1.434 8a2.5 2.5 0 1 1 2.5-2.5 2.5 2.5 0 0 1-2.5 2.5Z" fill="currentColor"></path>
                                 </svg>
                             </div>
@@ -381,7 +381,7 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
                     </div>
 
                     <div
-                        className='flex flex-row items-center content-center space-x-2 text-[14px] font-sf font-semibold dark:text-white text-black cursor-pointer hover:opacity-70 transition-opacity'
+                        className='flex flex-row items-center content-center space-x-2 text-[14px] font-mono font-semibold text-[--text-color] cursor-pointer hover:opacity-70 transition-opacity'
                         onClick={ontogglenotifications}
                     >
                         <h1 className=''>{currentdate}</h1>

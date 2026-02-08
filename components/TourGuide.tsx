@@ -11,33 +11,31 @@ interface TourGuideProps {
 
 const tourStyles = `
 .driver-popover {
-    background: rgba(30, 30, 30, 0.85) !important;
-    backdrop-filter: blur(20px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    border-radius: 12px !important;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.05) inset !important;
-    color: white !important;
+    background: var(--surface) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 0px !important;
+    box-shadow: 4px 4px 0px var(--border-color) !important;
+    color: var(--text-color) !important;
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif !important;
 }
 
 .driver-popover-title {
     font-size: 15px !important;
     font-weight: 600 !important;
-    color: white !important;
+    color: var(--text-color) !important;
     margin-bottom: 6px !important;
 }
 
 .driver-popover-description {
     font-size: 13px !important;
-    color: rgba(255, 255, 255, 0.8) !important;
+    color: var(--text-muted) !important;
     line-height: 1.5 !important;
     white-space: pre-line !important;
 }
 
 .driver-popover-progress-text {
     font-size: 11px !important;
-    color: rgba(255, 255, 255, 0.5) !important;
+    color: var(--text-muted) !important;
 }
 
 .driver-popover-navigation-btns {
@@ -46,10 +44,10 @@ const tourStyles = `
 
 .driver-popover-prev-btn,
 .driver-popover-next-btn {
-    background: rgba(255, 255, 255, 0.1) !important;
-    color: white !important;
-    border: none !important;
-    border-radius: 8px !important;
+    background: var(--overlay) !important;
+    color: var(--text-color) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 0px !important;
     padding: 8px 16px !important;
     font-size: 13px !important;
     font-weight: 400 !important;
@@ -58,45 +56,47 @@ const tourStyles = `
 
 .driver-popover-prev-btn:hover,
 .driver-popover-next-btn:hover {
-    background: rgba(255, 255, 255, 0.2) !important;
+    background: var(--overlay) !important;
 }
 
 .driver-popover-next-btn {
-    background: #007AFF !important;
+    background: var(--accent) !important;
+    color: var(--bg-base) !important;
+    border: 1px solid var(--accent) !important;
 }
 
 .driver-popover-next-btn:hover {
-    background: #0056b3 !important;
+    opacity: 0.8 !important;
 }
 
 .driver-popover-close-btn {
-    color: rgba(255, 255, 255, 0.6) !important;
+    color: var(--text-muted) !important;
     width: 24px !important;
     height: 24px !important;
 }
 
 .driver-popover-close-btn:hover {
-    color: white !important;
+    color: var(--text-color) !important;
 }
 
 .driver-popover-arrow {
-    border-color: rgba(30, 30, 30, 0.85) !important;
+    border-color: var(--surface) !important;
 }
 
 .driver-popover-arrow-side-bottom {
-    border-top-color: rgba(30, 30, 30, 0.85) !important;
+    border-top-color: var(--surface) !important;
 }
 
 .driver-popover-arrow-side-top {
-    border-bottom-color: rgba(30, 30, 30, 0.85) !important;
+    border-bottom-color: var(--surface) !important;
 }
 
 .driver-popover-arrow-side-left {
-    border-right-color: rgba(30, 30, 30, 0.85) !important;
+    border-right-color: var(--surface) !important;
 }
 
 .driver-popover-arrow-side-right {
-    border-left-color: rgba(30, 30, 30, 0.85) !important;
+    border-left-color: var(--surface) !important;
 }
 `;
 
@@ -121,9 +121,9 @@ export default function TourGuide({ isOpen, onClose }: TourGuideProps) {
             showProgress: true,
             animate: true,
             allowClose: true,
-            overlayColor: 'rgba(0, 0, 0, 0.6)',
+            overlayColor: 'var(--bg-base)',
             stagePadding: 8,
-            stageRadius: 12,
+            stageRadius: 0,
             popoverClass: 'nextaros-tour-popover',
             onDestroyStarted: () => {
                 driverInstance.destroy();

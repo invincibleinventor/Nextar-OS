@@ -203,7 +203,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
 
     return (
         <div
-            className="relative w-full h-full overflow-hidden bg-transparent"
+            className="relative w-full h-full overflow-hidden"
             onClick={() => editmode && seteditmode(false)}
             onTouchStart={(e) => {
                 if ((e.target as HTMLElement).closest('.app-icon')) return;
@@ -233,7 +233,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="absolute inset-0 z-50 flex items-end justify-center bg-black/20 backdrop-blur-[2px]"
+                        className="absolute inset-0 z-50 flex items-end justify-center bg-[--bg-base]/70"
                         onClick={() => setConfirmDelete(null)}
                     >
                         <motion.div
@@ -245,24 +245,24 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                             onClick={(e) => e.stopPropagation()}
                         >
                             <div className="flex flex-col gap-2">
-                                <div className="bg-white/90 dark:bg-[#1e1e1e]/90 backdrop-blur-xl rounded-[14px] overflow-hidden">
-                                    <div className="p-4 text-center border-b border-black/5 dark:border-white/5">
-                                        <h3 className="text-[13px] font-semibold text-gray-500 dark:text-gray-400">Delete Item?</h3>
-                                        <p className="text-[13px] text-gray-500 dark:text-gray-400 mt-1">Are you sure you want to remove this item from the home screen?</p>
+                                <div className="bg-surface border border-[--border-color] overflow-hidden">
+                                    <div className="p-4 text-center border-b border-[--border-color]">
+                                        <h3 className="text-[13px] font-semibold text-[--text-muted]">Delete Item?</h3>
+                                        <p className="text-[13px] text-[--text-muted] mt-1">Are you sure you want to remove this item from the home screen?</p>
                                     </div>
                                     <button
                                         onClick={() => {
                                             if (confirmDelete) moveToTrash(confirmDelete);
                                             setConfirmDelete(null);
                                         }}
-                                        className="w-full py-4 text-[20px] text-red-500 font-normal active:bg-black/5 dark:active:bg-white/5 transition-colors"
+                                        className="w-full py-4 text-[20px] text-pastel-red font-normal active:bg-overlay transition-colors"
                                     >
                                         Delete
                                     </button>
                                 </div>
                                 <button
                                     onClick={() => setConfirmDelete(null)}
-                                    className="w-full py-4 bg-white dark:bg-[#1e1e1e] rounded-[14px] text-[20px] text-accent font-semibold active:scale-[0.98] transition-all shadow-sm"
+                                    className="w-full py-4 bg-overlay border border-[--border-color] text-[20px] text-accent font-semibold active:scale-[0.98] transition-all"
                                 >
                                     Cancel
                                 </button>
@@ -284,9 +284,9 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                     }
                 }}
             >
-                <div className="w-[100vw] h-full flex flex-col pt-14 relative snap-center flex-shrink-0">
-                    <div className="flex-1 px-4">
-                        <div data-tour="ios-apps" className="grid grid-cols-4 gap-x-2 gap-y-5">
+                <div className="w-[100vw] h-full flex flex-col pt-6 relative snap-center flex-shrink-0">
+                    <div className="flex-1 px-5">
+                        <div data-tour="ios-apps" className="grid grid-cols-4 gap-x-4 gap-y-6">
                             {griditems.map((item, index) => (
                                 <motion.div
                                     key={item.id}
@@ -343,7 +343,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                                     <div className="relative">
                                         {editmode && (
                                             <button
-                                                className="absolute -top-1 -left-1 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center z-10"
+                                                className="absolute -top-1 -left-1 w-5 h-5 bg-overlay border border-[--border-color] flex items-center justify-center z-10"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     if (item.mimetype === 'application/x-executable' || item.id.startsWith('desktop-app-')) {
@@ -353,12 +353,12 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                                                     }
                                                 }}
                                             >
-                                                <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg className="w-3 h-3 text-[--text-color]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                                 </svg>
                                             </button>
                                         )}
-                                        <div className="w-[60px] h-[60px] rounded-full overflow-hidden  shadow-sm  relative">
+                                        <div className="w-[60px] h-[60px] overflow-hidden shadow-sm relative">
                                             {item.mimetype === 'application/x-executable' ? (() => {
                                                 const appId = extractAppId(item.id);
                                                 const appData = apps.find(a => a.id === appId);
@@ -383,8 +383,8 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                                         </div>
                                     </div>
                                     <span
-                                        className={`text-[11px] font-medium text-center leading-tight truncate w-full tracking-tight ${inverselabelcolor && islightbackground ? 'text-black/90' : 'text-white/90'}`}
-                                        style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
+                                        className={`text-[11px] font-semibold text-center leading-tight truncate w-full tracking-tight px-1 font-mono ${islightbackground ? 'text-black' : 'text-white'}`}
+                                        style={{ textShadow: islightbackground ? 'none' : '0 1px 3px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.3)' }}
                                     >
                                         {item.name}
                                     </span>
@@ -397,7 +397,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                         <motion.button
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="absolute bottom-[165px] left-0 right-0 mx-auto w-max z-30 px-6 py-2 bg-white/20 backdrop-blur-md rounded-full text-white font-medium text-sm"
+                            className="absolute bottom-[165px] left-0 right-0 mx-auto w-max z-30 px-6 py-2 bg-pastel-red/20 text-pastel-red border border-pastel-red/30 font-medium text-sm"
                             onClick={(e) => {
                                 e.stopPropagation();
                                 seteditmode(false);
@@ -407,7 +407,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                         </motion.button>
                     )}
 
-                    <div data-tour="ios-dock" className={`mx-auto mb-7 p-3 rounded-[25px] w-max flex items-center justify-between gap-4 transition-all duration-300 ${isoverlayopen ? 'bg-transparent' : 'dark:bg-black/10 bg-white/10 backdrop-blur-sm shadow-lg border border-white/10'}`}>
+                    <div data-tour="ios-dock" className={`mx-auto mb-7 p-3 w-max flex items-center justify-between gap-4 transition-all duration-300 ${isoverlayopen ? 'bg-transparent' : 'bg-[--bg-surface]/80 border border-[--border-color]/50'}`}>
                         {dockapps.map(app => (
                             <motion.button
                                 key={app.id}
@@ -415,7 +415,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                                     openSystemItem(app.id, { addwindow, windows, setactivewindow, updatewindow, ismobile });
                                 }}
                                 whileTap={{ scale: 0.85 }}
-                                className="w-[65px] h-[65px] aspect-square rounded-[18px] overflow-hidden relative"
+                                className="w-[65px] h-[65px] aspect-square overflow-hidden relative"
                             >
                                 <TintedAppIcon
                                     appId={app.id}
@@ -435,8 +435,8 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
             </div>
 
             <div className={`absolute bottom-[140px] left-0 right-0 flex justify-center gap-2 z-20 pointer-events-none transition-opacity duration-300 ${isoverlayopen || page === 1 ? 'opacity-0' : 'opacity-100'}`}>
-                <div className={`w-2 h-2 rounded-full transition-all duration-300 ${page === 0 ? 'bg-white' : 'bg-white/30'}`} />
-                <div className={`w-2 h-2 rounded-full transition-all duration-300 ${page === 1 ? 'bg-white' : 'bg-white/30'}`} />
+                <div className={`w-2 h-2  transition-all duration-300 ${page === 0 ? 'bg-pastel-red' : 'bg-[--text-muted]'}`} />
+                <div className={`w-2 h-2  transition-all duration-300 ${page === 1 ? 'bg-pastel-red' : 'bg-[--text-muted]'}`} />
             </div>
         </div>
     );

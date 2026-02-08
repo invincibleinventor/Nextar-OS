@@ -21,32 +21,32 @@ interface TintedAppIconProps {
     useFill?: boolean;
 }
 
-const appIconMap: Record<string, IconType> = {
-    'explorer': IoFolderOutline,
-    'settings': IoSettingsOutline,
-    'python': IoCodeSlashOutline,
-    'mail': IoMailOutline,
-    'calendar': IoCalendarOutline,
-    'textedit': IoDocumentTextOutline,
-    'notes': IoReaderOutline,
-    'music': IoMusicalNotesOutline,
-    'calculator': IoCalculatorOutline,
-    'appstore': IoStorefrontOutline,
-    'terminal': IoTerminalOutline,
-    'photos': IoImagesOutline,
-    'browser': IoGlobeOutline,
-    'welcome': IoHomeOutline,
-    'fileviewer': IoDocumentTextOutline,
-    'apidocs': IoBookOutline,
-    'systemmonitor': IoStatsChartOutline,
-    'baladev': IoCodeSlashOutline,
-    'launchpad-item': IoGridOutline,
-    'trash-folder': IoTrashOutline,
-    'aboutbala': IoInformationCircleOutline,
-    'getinfo': IoInformationCircleOutline,
+const appIconMap: Record<string, { icon: IconType; bg: string }> = {
+    'explorer': { icon: IoFolderOutline, bg: '#8aadf4' },
+    'settings': { icon: IoSettingsOutline, bg: '#6e738d' },
+    'python': { icon: IoCodeSlashOutline, bg: '#a6da95' },
+    'mail': { icon: IoMailOutline, bg: '#8aadf4' },
+    'calendar': { icon: IoCalendarOutline, bg: '#ed8796' },
+    'textedit': { icon: IoDocumentTextOutline, bg: '#eed49f' },
+    'notes': { icon: IoReaderOutline, bg: '#f5a97f' },
+    'music': { icon: IoMusicalNotesOutline, bg: '#f5bde6' },
+    'calculator': { icon: IoCalculatorOutline, bg: '#8bd5ca' },
+    'appstore': { icon: IoStorefrontOutline, bg: '#8aadf4' },
+    'terminal': { icon: IoTerminalOutline, bg: '#24263a' },
+    'photos': { icon: IoImagesOutline, bg: '#c6a0f6' },
+    'browser': { icon: IoGlobeOutline, bg: '#8aadf4' },
+    'welcome': { icon: IoHomeOutline, bg: '#f5bde6' },
+    'fileviewer': { icon: IoDocumentTextOutline, bg: '#b7bdf8' },
+    'apidocs': { icon: IoBookOutline, bg: '#8bd5ca' },
+    'systemmonitor': { icon: IoStatsChartOutline, bg: '#f5a97f' },
+    'baladev': { icon: IoCodeSlashOutline, bg: '#c6a0f6' },
+    'launchpad-item': { icon: IoGridOutline, bg: '#b7bdf8' },
+    'trash-folder': { icon: IoTrashOutline, bg: '#6e738d' },
+    'aboutbala': { icon: IoInformationCircleOutline, bg: '#8aadf4' },
+    'getinfo': { icon: IoInformationCircleOutline, bg: '#6e738d' },
 };
 
-const excludedApps: string[] = [];
+const excludedApps: string[] = ['aboutbala'];
 
 export default function TintedAppIcon({ appId, appName, originalIcon, size = 40, className = '', useFill = true }: TintedAppIconProps) {
     if (excludedApps.includes(appId)) {
@@ -57,7 +57,7 @@ export default function TintedAppIcon({ appId, appName, originalIcon, size = 40,
                     alt={appName}
                     fill
                     sizes="96px"
-                    className={`rounded-full ease-in-out transition-all duration-200 object-cover ${className}`}
+                    className={` ease-in-out transition-all duration-200 object-cover ${className}`}
                     draggable={false}
                 />
             );
@@ -68,15 +68,15 @@ export default function TintedAppIcon({ appId, appName, originalIcon, size = 40,
                 alt={appName}
                 width={size}
                 height={size}
-                className={`rounded-full ease-in-out transition-all duration-200 object-cover ${className}`}
+                className={` ease-in-out transition-all duration-200 object-cover ${className}`}
                 draggable={false}
             />
         );
     }
 
-    const Icon = appIconMap[appId];
+    const entry = appIconMap[appId];
 
-    if (!Icon) {
+    if (!entry) {
         if (useFill) {
             return (
                 <Image
@@ -84,7 +84,7 @@ export default function TintedAppIcon({ appId, appName, originalIcon, size = 40,
                     alt={appName}
                     fill
                     sizes="96px"
-                    className={`rounded-xl ease-in-out transition-all duration-200 object-cover ${className}`}
+                    className={` ease-in-out transition-all duration-200 object-cover ${className}`}
                     draggable={false}
                 />
             );
@@ -95,46 +95,50 @@ export default function TintedAppIcon({ appId, appName, originalIcon, size = 40,
                 alt={appName}
                 width={size}
                 height={size}
-                className={`rounded-xl ease-in-out transition-all duration-200 object-cover ${className}`}
+                className={` ease-in-out transition-all duration-200 object-cover ${className}`}
                 draggable={false}
             />
         );
     }
 
+    const Icon = entry.icon;
+    const bgColor = entry.bg;
+
     if (useFill) {
         return (
-            <div className={`absolute inset-0 rounded-full overflow-hidden ${className}`}>
+            <div className={`absolute inset-0  overflow-hidden ${className}`}>
                 <div
-                    className="absolute dark:brightness-50 filter dark:darkiconbg lighticonbg inset-0 rounded-full"
+                    className="absolute inset-0 "
+                    style={{ background: bgColor }}
                 />
                 <div className="absolute inset-0 flex items-center justify-center">
-                    <Icon className="text-white drop-shadow-lg w-[50%] h-[50%]" />
+                    <Icon className="text-white drop-shadow-sm w-[50%] h-[50%]" />
                 </div>
             </div>
         );
     }
 
     return (
-        <div style={{
-                width: size,
-                height: size, }} className='relative flex items-center justify-center  overflow=hidden'>
-        <div
-            className={`rounded-full  absolute dark:brightness-50  filter dark:darkiconbg lighticonbg  ${className}`}
-            style={{
-                width: size,
-                height: size,
-                background: ''
-            }}
-        >
-        </div>
-            <Icon className="text-white drop-shadow-lg w-[50%] h-[50%]" />
-
+        <div style={{ width: size, height: size }} className="relative flex items-center justify-center overflow-hidden">
+            <div
+                className={` absolute ${className}`}
+                style={{
+                    width: size,
+                    height: size,
+                    background: bgColor,
+                }}
+            />
+            <Icon className="text-white drop-shadow-sm w-[50%] h-[50%] relative z-10" />
         </div>
     );
 }
 
 export function getAppIcon(appId: string): IconType | null {
-    return appIconMap[appId] || null;
+    return appIconMap[appId]?.icon || null;
+}
+
+export function getAppColor(appId: string): string {
+    return appIconMap[appId]?.bg || '#6e738d';
 }
 
 export function isExcludedApp(appId: string): boolean {

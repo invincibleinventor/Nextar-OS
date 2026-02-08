@@ -316,6 +316,7 @@ const Desktop = () => {
 
   useEffect(() => {
     if (osstate === 'unlocked' && user && !haslaunchedwelcome.current) {
+      openSystemItem('aboutbala', context);
       openSystemItem('welcome', context);
       haslaunchedwelcome.current = true;
     }
@@ -329,7 +330,7 @@ const Desktop = () => {
     return (
       <motion.div
         data-tour="ios-statusbar"
-        className="absolute top-0 left-0 right-0 h-11 z-[10000] flex items-center justify-between px-6 cursor-pointer bg-transparent backdrop-blur-md"
+        className="absolute top-0 left-0 right-0 h-11 z-[10000] flex items-center justify-between px-6 cursor-pointer bg-[--bg-surface] border-b border-[--border-color]"
         drag="y"
         dragConstraints={{ top: 0, bottom: 0 }}
         onDragEnd={(_, info) => {
@@ -342,15 +343,15 @@ const Desktop = () => {
           }
         }}
       >
-        <div className="text-[15px] dark:text-white text-black font-semibold drop-shadow-md pl-6">
+        <div className="text-[15px] text-[--text-color] font-semibold pl-6">
           {timestr}
         </div>
-        <div className="flex dark:text-white text-black items-center gap-2 pr-6">
-          <BiSignal5 className=" drop-shadow-md" size={18} />
-          <IoWifi className=" drop-shadow-md" size={18} />
+        <div className="flex text-[--text-color] items-center gap-2 pr-6">
+          <BiSignal5 size={18} />
+          <IoWifi size={18} />
           <div className="flex items-center">
-            <span className="text-[12px] font-medium  mr-1">100%</span>
-            <IoBatteryFull className="drop-shadow-md" size={24} />
+            <span className="text-[12px] font-medium mr-1">100%</span>
+            <IoBatteryFull size={24} />
           </div>
         </div>
       </motion.div>
@@ -452,7 +453,7 @@ const Desktop = () => {
                           setSelectedFileIds([item.id]);
                         }
                       }}
-                      className={`desktop-item p-2 flex rounded-md flex-col items-center content-center text-white cursor-default group border transition-all w-[90px]
+                      className={`desktop-item p-2 flex  flex-col items-center content-center text-white cursor-default group border transition-all w-[90px]
                         ${isSelected
                           ? 'bg-black/20 dark:bg-white/20 border-white/20 backdrop-blur-md'
                           : 'hover:bg-neutral-400/20 border-transparent hover:border-white/10 hover:backdrop-blur-lg'
@@ -479,8 +480,7 @@ const Desktop = () => {
                         </div>
                       </div>
                       <span
-                        className={`text-[11px] w-full font-semibold text-center break-words leading-tight line-clamp-2 px-1 rounded-sm ${isSelected ? 'bg-accent' : ''} ${inverselabelcolor && islightbackground ? 'text-black' : 'text-white'}`}
-                        style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' }}
+                        className={`text-[11px] w-full font-semibold text-center break-words leading-tight line-clamp-2 px-1  ${isSelected ? 'bg-accent' : ''} ${inverselabelcolor && islightbackground ? 'text-black' : 'text-white'}`}
                       >{item.name}</span>
                     </div>
                   )
@@ -586,7 +586,7 @@ const Desktop = () => {
                   }
                 }}
               >
-                <div className="w-full h-[5px] mb-[12px] bg-neutral-300/90 dark:bg-white/80 rounded-full  cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.3)] backdrop-blur-md"></div>
+                <div className="w-full h-[5px] mb-[12px] bg-neutral-300/90 dark:bg-white/80   cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.3)] backdrop-blur-md"></div>
               </motion.div>
             </div>
           </div>

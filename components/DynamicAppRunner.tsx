@@ -309,11 +309,11 @@ export default function DynamicAppRunner({ code, appname, appicon, fileid, codeH
 
     if (!babelloaded || isbuilding) {
         return (
-            <div className="h-full w-full flex items-center justify-center bg-white dark:bg-[#1c1c1e]">
+            <div className="h-full w-full flex items-center justify-center bg-[--bg-base]">
                 <div className="text-center">
-                    <div className="w-10 h-10 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                    <p className="text-sm text-gray-500 font-medium">{!babelloaded ? 'Loading transpiler...' : 'Building app...'}</p>
-                    <p className="text-xs text-gray-400 mt-1">{appname || 'User App'}</p>
+                    <div className="w-10 h-10 border-2 border-accent border-t-transparent  animate-spin mx-auto mb-4" />
+                    <p className="text-sm text-[--text-muted] font-medium">{!babelloaded ? 'Loading transpiler...' : 'Building app...'}</p>
+                    <p className="text-xs text-[--text-muted] mt-1">{appname || 'User App'}</p>
                 </div>
             </div>
         );
@@ -321,17 +321,17 @@ export default function DynamicAppRunner({ code, appname, appicon, fileid, codeH
 
     if (error) {
         return (
-            <div className="h-full w-full flex items-center justify-center bg-red-50 dark:bg-red-900/20 p-6">
+            <div className="h-full w-full flex items-center justify-center bg-[--bg-base] p-6">
                 <div className="max-w-md text-center">
-                    <div className="w-14 h-14 rounded-xl bg-red-100 dark:bg-red-900/50 flex items-center justify-center mx-auto mb-4">
+                    <div className="w-14 h-14 bg-overlay flex items-center justify-center mx-auto mb-4">
                         <span className="text-3xl">❌</span>
                     </div>
-                    <h2 className="text-lg font-bold text-red-600 dark:text-red-400 mb-2">Compilation Error</h2>
-                    <p className="text-sm text-red-600 dark:text-red-300 mb-4 font-mono break-words">{error.message}</p>
+                    <h2 className="text-lg font-bold text-pastel-red mb-2">Compilation Error</h2>
+                    <p className="text-sm text-pastel-red mb-4 font-mono break-words">{error.message}</p>
                     {error.stack && (
                         <details className="text-left">
-                            <summary className="text-xs text-gray-500 cursor-pointer mb-2">Stack trace</summary>
-                            <pre className="text-[10px] bg-red-100 dark:bg-red-900/30 p-3 rounded-lg overflow-auto max-h-32 text-red-700 dark:text-red-300">
+                            <summary className="text-xs text-[--text-muted] cursor-pointer mb-2">Stack trace</summary>
+                            <pre className="text-[10px] bg-overlay p-3 overflow-auto max-h-32 text-pastel-red">
                                 {error.stack}
                             </pre>
                         </details>
@@ -343,12 +343,12 @@ export default function DynamicAppRunner({ code, appname, appicon, fileid, codeH
 
     if (!UserComponent) {
         return (
-            <div className="h-full w-full flex items-center justify-center bg-yellow-50 dark:bg-yellow-900/20 p-6">
+            <div className="h-full w-full flex items-center justify-center bg-[--bg-base] p-6">
                 <div className="text-center">
                     <span className="text-4xl mb-4 block">⚠️</span>
-                    <h2 className="font-bold text-yellow-700 dark:text-yellow-300 mb-2">No Component Found</h2>
-                    <p className="text-sm text-yellow-600 dark:text-yellow-400">
-                        Create a function like <code className="bg-yellow-200 dark:bg-yellow-800 px-1 rounded">function App() {'{}'}</code>
+                    <h2 className="font-bold text-pastel-yellow mb-2">No Component Found</h2>
+                    <p className="text-sm text-[--text-muted]">
+                        Create a function like <code className="bg-overlay px-1">function App() {'{}'}</code>
                     </p>
                 </div>
             </div>
@@ -357,7 +357,7 @@ export default function DynamicAppRunner({ code, appname, appicon, fileid, codeH
 
     return (
         <ErrorBoundary appname={appname}>
-            <div className="h-full w-full overflow-auto bg-white dark:bg-[#1c1c1e] text-black dark:text-white">
+            <div className="h-full w-full overflow-auto bg-[--bg-base] text-[--text-color]">
                 <UserComponent appData={{ name: appname, icon: appicon || '🚀', fileid }} />
             </div>
         </ErrorBoundary>
@@ -380,13 +380,13 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode; appname
     render() {
         if (this.state.haserror) {
             return (
-                <div className="h-full w-full flex items-center justify-center bg-red-50 dark:bg-red-900/20 p-6">
+                <div className="h-full w-full flex items-center justify-center bg-[--bg-base] p-6">
                     <div className="max-w-md text-center">
-                        <div className="w-14 h-14 rounded-xl bg-red-100 dark:bg-red-900/50 flex items-center justify-center mx-auto mb-4">
+                        <div className="w-14 h-14 bg-overlay flex items-center justify-center mx-auto mb-4">
                             <span className="text-3xl">💥</span>
                         </div>
-                        <h2 className="text-lg font-bold text-red-600 dark:text-red-400 mb-2">Runtime Error</h2>
-                        <p className="text-sm text-red-600 dark:text-red-300 font-mono break-words">
+                        <h2 className="text-lg font-bold text-pastel-red mb-2">Runtime Error</h2>
+                        <p className="text-sm text-pastel-red font-mono break-words">
                             {this.state.error?.message || 'Unknown error'}
                         </p>
                     </div>

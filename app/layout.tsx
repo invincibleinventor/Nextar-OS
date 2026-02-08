@@ -1,5 +1,12 @@
 import type { Metadata, Viewport } from 'next';
+import { JetBrains_Mono } from 'next/font/google';
 import './globals.css';
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
+  display: 'swap',
+});
 import { WindowProvider } from '@/components/WindowContext';
 import { ThemeProvider } from '@/components/ThemeContext';
 import { DeviceProvider } from '@/components/DeviceContext';
@@ -110,9 +117,9 @@ import Script from 'next/script';
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider>
-      <html className='bg-black' lang="en" suppressHydrationWarning>
+      <html className={`bg-black ${jetbrainsMono.variable}`} lang="en" suppressHydrationWarning>
         <head />
-        <body className="font-sf w-screen h-screen overflow-hidden bg-black antialiased">
+        <body className="font-mono w-screen h-screen overflow-hidden bg-black antialiased">
           <Script
             id="service-worker"
             strategy="afterInteractive"

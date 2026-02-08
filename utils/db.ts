@@ -15,7 +15,7 @@ export interface User {
     role: 'admin' | 'user';
 }
 
-const openDB = (): Promise<IDBDatabase> => {
+const openDB = (retried = false): Promise<IDBDatabase> => {
     return new Promise((resolve, reject) => {
         if (typeof indexedDB === 'undefined') {
             reject("IndexedDB not available");
@@ -61,7 +61,21 @@ const openDB = (): Promise<IDBDatabase> => {
             };
 
             request.onsuccess = (event) => {
-                resolve((event.target as IDBOpenDBRequest).result);
+                const db = (event.target as IDBOpenDBRequest).result;
+                const requiredStores = [STORE_NAME, USERS_STORE_NAME, PERMISSIONS_STORE_NAME];
+                const missing = requiredStores.some(name => !db.objectStoreNames.contains(name));
+
+                if (missing && !retried) {
+                    db.close();
+                    const deleteReq = indexedDB.deleteDatabase(DB_NAME);
+                    deleteReq.onsuccess = () => {
+                        openDB(true).then(resolve).catch(reject);
+                    };
+                    deleteReq.onerror = () => reject("Failed to reset corrupted database");
+                    return;
+                }
+
+                resolve(db);
             };
         } catch (e) {
             console.error("IndexedDB initialization error:", e);
