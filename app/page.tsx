@@ -233,7 +233,8 @@ const Desktop = () => {
         const backEvent = new CustomEvent('app-back', { cancelable: true });
         window.dispatchEvent(backEvent);
         if (!backEvent.defaultPrevented) {
-          setshowrecentapps(true);
+          // Minimize all visible windows to go to home screen
+          setwindows((prev: any[]) => prev.map((w: any) => ({ ...w, isminimized: true })));
         }
         return;
       }
@@ -241,6 +242,7 @@ const Desktop = () => {
       // No visible windows - try home screen back (e.g., app library → home)
       const homeBackEvent = new CustomEvent('app-back', { cancelable: true });
       window.dispatchEvent(homeBackEvent);
+      // If not handled (already on home page 0), do nothing
     };
 
     window.addEventListener('popstate', handlePopState);
