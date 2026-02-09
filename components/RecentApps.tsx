@@ -226,7 +226,7 @@ const AppCard = ({ win, appdata, onkill, onopen, islightbackground }: any) => {
             dragConstraints={{ top: 0, bottom: 0 }}
             dragElastic={0.1}
             dragDirectionLock={true}
-            dragMomentum={true}
+            dragMomentum={false}
             onDragStart={() => { isdragging.current = true; }}
             onDragEnd={(_, info) => {
                 setTimeout(() => { isdragging.current = false; }, 100);
