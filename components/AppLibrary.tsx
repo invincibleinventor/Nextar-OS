@@ -63,7 +63,7 @@ const AppLibrary = () => {
     return (
         <div
             className="w-full h-full overflow-y-auto overflow-x-hidden pt-8 px-5 pb-32 scrollbar-hide select-none [&::-webkit-scrollbar]:hidden bg-[--bg-surface]"
-            style={{ touchAction: 'pan-y', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            style={{ touchAction: 'pan-x pan-y', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); }}
         >
             <h1 className="text-2xl font-bold text-[--text-color] mb-4">App Library</h1>
