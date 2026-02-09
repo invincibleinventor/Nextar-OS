@@ -14,7 +14,7 @@ export const initialnotifications: Notification[] = [
 
     {
         id: 'n4',
-        appname: 'Welcome',
+        appname: 'Installer',
         title: 'Welcome to NextarOS!',
         description: 'Hi! This is Bala! Welcome to NextarOS - my convergent web OS simulation! Please feel free to explore it!',
         time: '2h ago',

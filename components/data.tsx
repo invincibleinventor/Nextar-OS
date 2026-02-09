@@ -17,7 +17,8 @@ import {
     IoSearch, IoGlobeOutline, IoInformationCircleOutline,
     IoCodeOutline, IoMailOutline, IoPersonCircleOutline, IoFlagOutline, IoSchoolOutline, IoConstructOutline, IoFolderOpenOutline, IoLogoGithub, IoHeartOutline,
     IoDesktopOutline,
-    IoDownloadOutline
+    IoDownloadOutline,
+    IoImageOutline
 } from "react-icons/io5";
 
 export interface appdata {
@@ -89,7 +90,7 @@ export const componentmap: { [key: string]: any } = {
     'apps/AboutBala': dynamic(() => import('./apps/AboutBala')),
     'apps/AppStore': dynamic(() => import('./apps/AppStore')),
     'apps/BalaDev': dynamic(() => import('./apps/BalaDev')),
-    'apps/Welcome': dynamic(() => import('./apps/Welcome')),
+    'apps/Installer': dynamic(() => import('./apps/Welcome')),
     'apps/Mail': dynamic(() => import('./apps/Mail')),
     'apps/Calculator': dynamic(() => import('./apps/Calculator')),
     'apps/ExternalAppLoader': dynamic(() => import('./apps/ExternalAppLoader')),
@@ -412,10 +413,10 @@ export const apps: appdata[] = [
     },
     {
         id: 'welcome',
-        appname: 'Welcome',
+        appname: 'Installer',
         icon: '/info.png',
         maximizeable: false,
-        componentname: 'apps/Welcome',
+        componentname: 'apps/Installer',
         additionaldata: {},
         multiwindow: false,
         titlebarblurred: false,
@@ -524,7 +525,7 @@ export const apps: appdata[] = [
     {
         id: 'aboutnextaros',
         appname: 'About NextarOS',
-        icon: '/about.png',
+        icon: '/info.png',
         maximizeable: false,
         componentname: 'apps/AboutNextarOS',
         additionaldata: {},
@@ -937,7 +938,7 @@ export const generateGuestFilesystem = (): filesystemitem[] => {
             mimetype: 'text/x-uri',
             date: 'Today',
             size: '--',
-            icon: <Image className='w-full h-full p-[6px] sm:w-full sm:h-full' src='/github.png' alt={`${p.title} source code`} width={64} height={64} />,
+            icon: <IoLogoGithub className="w-full h-full text-[--text-color]" />,
             link: p.github,
             description: `View source code for ${p.title} on GitHub.`,
             isReadOnly: true,
@@ -950,7 +951,7 @@ export const generateGuestFilesystem = (): filesystemitem[] => {
             parent: pid,
             mimetype: 'text/x-uri',
             date: 'Today',
-            icon: <Image className='w-full p-[6px] h-full sm:w-full sm:h-full' src='/live.png' alt={`${p.title} live demo`} width={64} height={64} />,
+            icon: <IoGlobeOutline className="w-full h-full text-pastel-blue" />,
             size: '--',
             link: p.link,
             description: `Open live demo of ${p.title}.`,
@@ -962,7 +963,7 @@ export const generateGuestFilesystem = (): filesystemitem[] => {
             name: `${p.title}.png`,
             mimetype: 'image/png',
             date: 'Today',
-            icon: <Image className='w-full h-full p-[6px] sm:w-full sm:h-full' src={`/appimages/${p.title.toLowerCase()}.png`} alt={`${p.title} screenshot`} width={64} height={64} />,
+            icon: `/appimages/${p.title.toLowerCase()}.png`,
             size: '2.5 MB',
             description: p.desc,
             link: `/appimages/${p.title.toLowerCase()}.png`,
@@ -994,7 +995,7 @@ export const generateGuestFilesystem = (): filesystemitem[] => {
         name: 'RESUME.pdf',
         mimetype: 'application/pdf',
         date: 'Today',
-        icon: <Image className='w-full h-full p-[6px] sm:w-full sm:h-full' src='/pdf.png' alt="Resume" width={64} height={64} />,
+        icon: <IoDocumentTextOutline className="w-full h-full text-pastel-red" />,
         size: 'PDF',
         link: '/Balasubramanian TBR.pdf',
         content: '/Balasubramanian TBR.pdf',
@@ -1060,7 +1061,7 @@ export const generateGuestFilesystem = (): filesystemitem[] => {
         linkPath: 'guest-project-NextarOS',
         isSystem: false,
         isReadOnly: true,
-        icon: <Image src="/folder.png" alt="folder" width={64} height={64} className="w-full h-full object-contain drop-shadow-md" />,
+        icon: <IoFolderOutline className="w-full h-full text-pastel-lavender drop-shadow-md" />,
         owner: 'guest'
     });
 
@@ -1308,7 +1309,7 @@ const FileConfig: Record<string, {
     },
     'image/png': {
         appId: 'photos',
-        icon: <Image src="/photos.png" alt="image" width={64} height={64} className="w-full h-full object-contain" />,
+        icon: <IoImageOutline className="w-full h-full text-pastel-green" />,
         getLaunchProps: (file) => ({
             singleview: true,
             src: file.content || file.link,
@@ -1320,7 +1321,7 @@ const FileConfig: Record<string, {
     },
     'image/jpeg': {
         appId: 'photos',
-        icon: <Image src="/photos.png" alt="image" width={64} height={64} className="w-full h-full object-contain" />,
+        icon: <IoImageOutline className="w-full h-full text-pastel-green" />,
         getLaunchProps: (file) => ({
             singleview: true,
             src: file.content || file.link,
@@ -1332,7 +1333,7 @@ const FileConfig: Record<string, {
     },
     'application/pdf': {
         appId: 'fileviewer',
-        icon: <Image src="/pdf.png" alt="pdf" width={64} height={64} className="w-full h-full object-contain" />,
+        icon: <IoDocumentTextOutline className="w-full h-full text-pastel-red" />,
         getLaunchProps: (file) => ({
             content: file.content,
             title: file.name,
@@ -1368,7 +1369,7 @@ const FileConfig: Record<string, {
     }
 };
 
-export const getFileIcon = (mimetype: string, name: string, itemicon?: React.ReactNode | string, fileId?: string) => {
+export const getFileIcon = (mimetype: string, name: string, itemicon?: React.ReactNode | string, fileId?: string, content?: string) => {
     if ((mimetype === 'application/x-executable' || mimetype === 'application/x-app') && fileId) {
         let appId = fileId;
         if (appId.includes('desktop-app-')) {
@@ -1400,6 +1401,9 @@ export const getFileIcon = (mimetype: string, name: string, itemicon?: React.Rea
             return <span className="text-3xl flex items-center justify-center w-full h-full">{itemicon}</span>;
         }
         return itemicon;
+    }
+    if (mimetype.startsWith('image/') && content) {
+        return <Image className="w-full h-full object-cover" src={content} alt={name} width={64} height={64} />;
     }
     const config = FileConfig[mimetype];
     if (config && config.icon) return config.icon;

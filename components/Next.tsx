@@ -87,7 +87,7 @@ export default function Next({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                 id: file.id,
                 name: file.name,
                 subtitle: isFolder ? `Folder${pathInfo}` : `${file.mimetype}${pathInfo}`,
-                icon: <div className="w-8 h-8">{getFileIcon(file.mimetype, file.name, file.icon, file.id)}</div>,
+                icon: <div className="w-8 h-8">{getFileIcon(file.mimetype, file.name, file.icon, file.id, file.content || file.link)}</div>,
                 action: () => {
                     if (isFolder) {
                         addwindow({

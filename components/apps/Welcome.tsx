@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useWindows } from '../WindowContext';
 import { useDevice } from '../DeviceContext';
 import { personal, openSystemItem, generateFullFilesystemForUser, generateUserFilesystem } from '../data';
-import { IoArrowForward, IoCheckmarkCircle, IoSparkles, IoAppsOutline, IoDesktopOutline, IoPhonePortraitOutline, IoLogoGithub, IoFolderOpenOutline, IoTerminalOutline, IoDocumentTextOutline, IoLogoLinkedin, IoPersonAdd, IoMail, IoCloudDownloadOutline } from "react-icons/io5";
+import { IoArrowForward, IoCheckmarkCircle, IoDownloadOutline, IoAppsOutline, IoDesktopOutline, IoPhonePortraitOutline, IoLogoGithub, IoFolderOpenOutline, IoTerminalOutline, IoDocumentTextOutline, IoLogoLinkedin, IoPersonAdd, IoMail, IoCloudDownloadOutline } from "react-icons/io5";
 import { useAuth } from '../AuthContext';
 import { createUser, getUsers, User, saveAllFiles, isFilesystemInstalled, resetDB, initDB } from '../../utils/db';
 import { hashPassword } from '../../utils/crypto';
@@ -81,8 +81,28 @@ export default function Welcome(props: any) {
         }
 
         try {
+            const cleanUsername = username.toLowerCase().trim();
+
+            if (cleanUsername.length < 3) {
+                setCreateError('Username must be at least 3 characters');
+                setIsCreating(false);
+                return;
+            }
+
+            if (!/^[a-z0-9_]+$/.test(cleanUsername)) {
+                setCreateError('Username: only lowercase letters, numbers, underscores');
+                setIsCreating(false);
+                return;
+            }
+
+            if (cleanUsername === 'guest') {
+                setCreateError('Cannot use "guest" as username');
+                setIsCreating(false);
+                return;
+            }
+
             const users = await getUsers();
-            const existingUser = users.find(u => u.username === username);
+            const existingUser = users.find(u => u.username === cleanUsername);
             if (existingUser) {
                 setCreateError('Username already taken');
                 setIsCreating(false);
@@ -94,7 +114,7 @@ export default function Welcome(props: any) {
             const hashedPassword = await hashPassword(password);
 
             const newUser: User = {
-                username,
+                username: cleanUsername,
                 passwordHash: hashedPassword,
                 name,
                 role,
@@ -107,21 +127,26 @@ export default function Welcome(props: any) {
             if (isFirstUser) {
                 const fsInstalled = await isFilesystemInstalled();
                 if (!fsInstalled) {
-                    const fullFs = generateFullFilesystemForUser(username);
+                    const fullFs = generateFullFilesystemForUser(cleanUsername);
                     await saveAllFiles(fullFs);
                 }
             } else {
-                const userFs = generateUserFilesystem(username);
+                const userFs = generateUserFilesystem(cleanUsername);
                 await saveAllFiles(userFs);
             }
 
-            await login(password);
+            const loggedIn = await login(password);
 
-            alert(`Account created! You are now logged in as ${name} (${role}).`);
+            if (loggedIn) {
+                alert(`Account created! You are now logged in as ${name} (${role}).`);
+            } else {
+                alert(`Account created! Please log in with your credentials.`);
+            }
             setView('welcome');
 
-        } catch {
-            setCreateError('Failed to create account');
+        } catch (err: any) {
+            const msg = typeof err === 'string' ? err : (err?.message || 'Failed to create account');
+            setCreateError(msg);
         } finally {
             setIsCreating(false);
         }
@@ -129,14 +154,14 @@ export default function Welcome(props: any) {
 
     const steps = [
         {
-            title: "Welcome",
+            title: "Get Started",
             content: (
                 <div className="text-center space-y-6">
                     <div className="w-20 h-20 mx-auto bg-accent flex items-center justify-center">
-                        <IoSparkles size={40} className="text-[--text-color]" />
+                        <IoDownloadOutline size={40} className="text-[--text-color]" />
                     </div>
                     <div>
-                        <h2 className="text-2xl font-semibold mb-2">NextarOS</h2>
+                        <h2 className="text-2xl font-semibold mb-2">NextarOS Installer</h2>
                         <p className="text-sm text-[--text-muted] max-w-sm mx-auto">
                             A web-based operating system interface built with Next.js, featuring window management, file operations, and native-like interactions.
                         </p>

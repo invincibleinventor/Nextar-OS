@@ -30,6 +30,7 @@ import AboutDevice from '@/components/AboutDevice';
 import { useSettings } from '@/components/SettingsContext';
 import { useMenuRegistration } from '@/components/AppMenuContext';
 import Portfolio from '@/components/Portfolio';
+import DesktopEffects from '@/components/DesktopEffects';
 
 const Desktop = () => {
   const { windows, addwindow, setwindows, updatewindow, setactivewindow, activewindow } = useWindows();
@@ -44,6 +45,7 @@ const Desktop = () => {
   const [showforcequit, setshowforcequit] = useState(false);
   const [showaboutmac, setshowaboutmac] = useState(false);
   const [issystemgestureactive, setissystemgestureactive] = useState(false);
+  const [showdesktopeffects, setshowdesktopeffects] = useState(true);
 
   const { user } = useAuth();
 
@@ -168,17 +170,37 @@ const Desktop = () => {
     const handleToggleNext = () => setshownext(prev => !prev);
     const handleForceQuit = () => setshowforcequit(true);
     const handleAboutMac = () => setshowaboutmac(true);
+    const handleCloseAboutBala = () => {
+      const aboutBalaWindow = windows.find((w: any) => w.appname === 'About Bala' || w.id?.startsWith('aboutbala'));
+      if (aboutBalaWindow) {
+        updatewindow(aboutBalaWindow.id, { isminimized: true });
+      }
+    };
+    const handleTourEnded = () => {
+      const aboutBalaWindow = windows.find((w: any) => w.appname === 'About Bala' || w.id?.startsWith('aboutbala'));
+      if (aboutBalaWindow) {
+        updatewindow(aboutBalaWindow.id, { isminimized: false });
+        setactivewindow(aboutBalaWindow.id);
+      }
+    };
+    const handleToggleDesktopEffects = () => setshowdesktopeffects((prev: boolean) => !prev);
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('start-tour', handleStartTour);
     window.addEventListener('toggle-next', handleToggleNext);
     window.addEventListener('show-force-quit', handleForceQuit);
     window.addEventListener('show-about-mac', handleAboutMac);
+    window.addEventListener('close-aboutbala', handleCloseAboutBala);
+    window.addEventListener('tour-ended', handleTourEnded);
+    window.addEventListener('toggle-desktop-effects', handleToggleDesktopEffects);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('start-tour', handleStartTour);
       window.removeEventListener('toggle-next', handleToggleNext);
       window.removeEventListener('show-force-quit', handleForceQuit);
       window.removeEventListener('show-about-mac', handleAboutMac);
+      window.removeEventListener('close-aboutbala', handleCloseAboutBala);
+      window.removeEventListener('tour-ended', handleTourEnded);
+      window.removeEventListener('toggle-desktop-effects', handleToggleDesktopEffects);
     };
   }, [showappswitcher]);
 
@@ -317,7 +339,6 @@ const Desktop = () => {
   useEffect(() => {
     if (osstate === 'unlocked' && user && !haslaunchedwelcome.current) {
       openSystemItem('aboutbala', context);
-      openSystemItem('welcome', context);
       haslaunchedwelcome.current = true;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -371,6 +392,7 @@ const Desktop = () => {
             : osstate === 'booting' ? 'opacity-0 scale-100' : 'opacity-0 scale-[0.98] pointer-events-none'}`}
         style={{ backgroundImage: `url('${wallpaperurl}')` }}
       >
+        {!ismobile && <DesktopEffects active={showdesktopeffects} />}
         {!ismobile && (
           <>
             <FileModal
@@ -476,7 +498,7 @@ const Desktop = () => {
                     >
                       <div className="w-14 h-14 relative mb-1 drop-shadow-md">
                         <div className="w-full h-full aspect-square">
-                          {getFileIcon(item.mimetype, item.name, item.icon, item.id)}
+                          {getFileIcon(item.mimetype, item.name, item.icon, item.id, item.content || item.link)}
                         </div>
                       </div>
                       <span

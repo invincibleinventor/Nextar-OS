@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { IoFolderOutline, IoDocumentTextOutline } from 'react-icons/io5';
 
 interface FileModalProps {
     isOpen: boolean;
@@ -47,8 +48,8 @@ const FileModal: React.FC<FileModalProps> = ({ isOpen, type, initialValue = '', 
 
                 <form onSubmit={handleSubmit} className="p-4">
                     <div className="flex items-center justify-center mb-4">
-                        <div className="w-12 h-12 bg-accent flex items-center justify-center text-[--bg-base] text-2xl">
-                            {type === 'create-folder' ? '📂' : '📄'}
+                        <div className="w-12 h-12 bg-accent flex items-center justify-center text-[--bg-base] p-2.5">
+                            {type === 'create-folder' ? <IoFolderOutline className="w-full h-full" /> : <IoDocumentTextOutline className="w-full h-full" />}
                         </div>
                     </div>
 

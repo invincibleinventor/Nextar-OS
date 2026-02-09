@@ -82,10 +82,10 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                             }
                         }}
                         style={{ zIndex: 2147483647 }}
-                        className="fixed top-0 left-0 right-0 flex flex-col w-full pointer-events-auto max-h-[85vh]"
+                        className="fixed inset-0 flex flex-col w-full pointer-events-auto"
                     >
                         <div
-                            className="flex flex-col w-full"
+                            className="flex flex-col w-full h-full"
                             style={{ backgroundColor: 'var(--bg-surface)' }}
                         >
                             <div className="flex flex-col items-center mt-16 mb-6 shrink-0">
@@ -93,11 +93,11 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                 <div className="text-xl text-[--text-muted] font-medium mt-1">{date}</div>
                             </div>
 
-                            <div className="w-full px-4 pb-8 border-t border-[--border-color]">
+                            <div className="w-full px-4 flex-1 min-h-0 overflow-y-auto">
                                 {notifications.length === 0 ? (
                                     <div className="text-center text-[--text-muted] mt-8 mb-4 text-lg font-medium">No Notifications</div>
                                 ) : (
-                                    <div className="flex flex-col gap-3 max-w-md mx-auto pt-4 max-h-[45vh] overflow-y-auto">
+                                    <div className="flex flex-col gap-3 max-w-md mx-auto pt-2 pb-8">
                                         <AnimatePresence mode='popLayout'>
                                             {notifications.map((n) => (
                                                 <motion.div
@@ -141,7 +141,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                 )}
                             </div>
 
-                            <div className="w-16 h-1.5 bg-pastel-pink/60 mx-auto mb-3 rounded-full shadow-[0_0_8px_rgba(245,189,230,0.4)]" />
+                            <div className="w-16 h-1.5 bg-[--text-muted]/40 mx-auto mb-3 mt-2 rounded-full shrink-0" />
                         </div>
                     </motion.div>
                 </>,

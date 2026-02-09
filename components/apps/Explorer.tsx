@@ -715,7 +715,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                                 }}
                                             >
                                                 <div className="w-12 h-12 relative flex-shrink-0">
-                                                    {getFileIcon(file.mimetype, file.name, file.icon, file.id)}
+                                                    {getFileIcon(file.mimetype, file.name, file.icon, file.id, file.content || file.link)}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <div className="font-medium text-[17px] truncate">{getDisplayName(file)}</div>
@@ -957,7 +957,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                         }}
                                     >
                                         <div className="w-12 h-12 sm:w-16 sm:h-16 relative flex items-center justify-center">
-                                            {getFileIcon(file.mimetype, file.name, file.icon, file.id)}
+                                            {getFileIcon(file.mimetype, file.name, file.icon, file.id, file.content || file.link)}
                                         </div>
                                         <span className={`text-[12px] text-center leading-tight px-2 py-0.5 break-words w-full line-clamp-2
                                         ${isSelected ? 'bg-accent text-[--bg-base] font-medium' : 'text-[--text-muted]'}`}>
@@ -999,7 +999,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                         {activefile ? (
                             <div className="flex flex-col items-center p-6 text-center animate-in fade-in duration-300">
                                 <div className="w-24 object-cover h-24 mb-4 drop-shadow-xl relative">
-                                    {getFileIcon(activefile.mimetype, activefile.name, activefile.icon, activefile.id)}
+                                    {getFileIcon(activefile.mimetype, activefile.name, activefile.icon, activefile.id, activefile.content || activefile.link)}
                                 </div>
                                 <h3 className="text-lg font-semibold text-[--text-color] mb-1 break-words w-full">{getDisplayName(activefile)}</h3>
                                 <p className="text-[11px] text-[--text-muted] mb-4">{activefile.mimetype}</p>

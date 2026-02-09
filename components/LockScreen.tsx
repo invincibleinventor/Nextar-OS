@@ -94,6 +94,8 @@ export default function LockScreen() {
                     if (selectedUser?.username) {
                         localStorage.setItem('lastLoggedInUser', selectedUser.username);
                     }
+                    setPassword('');
+                    setIsSubmitting(false);
                 }
             }
         }, 600);
@@ -144,11 +146,13 @@ export default function LockScreen() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
                 >
-                    <h1 className={`text-7xl font-bold tracking-tight ${islightbackground ? 'text-black' : 'text-white'}`}>
+                    <h1 className={`text-7xl font-bold tracking-tight ${islightbackground ? 'text-black/80' : 'text-white'}`}
+                        style={{ textShadow: islightbackground ? 'none' : '0 2px 8px rgba(0,0,0,0.5)' }}>
                         {timeStr}
                     </h1>
                     <div className="w-16 h-[2px] mt-3 mb-2" style={{ background: 'linear-gradient(90deg, transparent, var(--accent-color), transparent)' }} />
-                    <p className={`text-base font-medium ${islightbackground ? 'text-black/60' : 'text-white/60'}`}>{dateStr}</p>
+                    <p className={`text-base font-medium ${islightbackground ? 'text-black/60' : 'text-white/80'}`}
+                        style={{ textShadow: islightbackground ? 'none' : '0 1px 4px rgba(0,0,0,0.5)' }}>{dateStr}</p>
                 </motion.div>
 
                 {/* User selection and login */}
@@ -257,11 +261,13 @@ export default function LockScreen() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
             >
-                <span className={`text-8xl font-bold tracking-tight ${islightbackground ? 'text-black' : 'text-white'}`}>
+                <span className={`text-8xl font-bold tracking-tight ${islightbackground ? 'text-black/80' : 'text-white'}`}
+                    style={{ textShadow: islightbackground ? 'none' : '0 2px 10px rgba(0,0,0,0.5)' }}>
                     {timeStr}
                 </span>
                 <div className="w-20 h-[2px]" style={{ background: 'linear-gradient(90deg, transparent, var(--accent-color), transparent)' }} />
-                <span className={`text-xl font-medium ${islightbackground ? 'text-black/60' : 'text-white/60'}`}>{dateStr}</span>
+                <span className={`text-xl font-medium ${islightbackground ? 'text-black/60' : 'text-white/80'}`}
+                    style={{ textShadow: islightbackground ? 'none' : '0 1px 4px rgba(0,0,0,0.5)' }}>{dateStr}</span>
             </motion.div>
 
             {/* User selection */}
@@ -290,7 +296,8 @@ export default function LockScreen() {
                             >
                                 <Image src={u.avatar || "/pfp.png"} alt={u.name} fill className="object-cover" />
                             </div>
-                            <span className="text-base font-medium">{u.name}</span>
+                            <span className={`text-base font-medium ${islightbackground ? 'text-black/70' : 'text-white/90'}`}
+                                style={{ textShadow: islightbackground ? 'none' : '0 1px 3px rgba(0,0,0,0.5)' }}>{u.name}</span>
                         </motion.div>
                     ))}
 
@@ -304,7 +311,8 @@ export default function LockScreen() {
                         <div className="w-24 h-24 bg-[--bg-overlay] flex items-center justify-center border-2 border-[--border-color]">
                             <IoPerson size={40} className="text-[--text-muted]" />
                         </div>
-                        <span className="text-base font-medium">Guest User</span>
+                        <span className={`text-base font-medium ${islightbackground ? 'text-black/70' : 'text-white/90'}`}
+                            style={{ textShadow: islightbackground ? 'none' : '0 1px 3px rgba(0,0,0,0.5)' }}>Guest User</span>
                     </motion.div>
                 </div>
 

@@ -1,11 +1,6 @@
 'use client';
+import Portfolio from '../Portfolio';
 
 export default function AboutBala() {
-    return (
-        <iframe
-            src="/portfolio"
-            className="w-full h-full border-0"
-            title="Portfolio"
-        />
-    );
+    return <Portfolio embedded />;
 }

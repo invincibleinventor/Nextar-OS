@@ -54,7 +54,7 @@ export default function FileInfo({ fileId, item }: FileInfoProps) {
         <div className="flex flex-col w-full h-full bg-[--bg-base] text-[--text-color] font-mono text-xs">
             <div className="flex flex-col items-center p-6 border-b border-[--border-color] bg-surface">
                 <div className="w-16 h-16 relative mb-4">
-                    {localItem ? getFileIcon(mimetype, name, icon, id) : null}
+                    {localItem ? getFileIcon(mimetype, name, icon, id, localItem.content || localItem.link) : null}
                 </div>
 
                 {isRenaming ? (
