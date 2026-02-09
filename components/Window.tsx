@@ -489,7 +489,7 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
       )}
 
       <div
-        className={`w-full h-full flex-1 overflow-hidden ${ismaximized || ismobile ? '' : ''} ${(isminimized || issystemgestureactive || shouldblur || isRecentAppView) ? 'pointer-events-none' : 'pointer-events-auto'}`}
+        className={`w-full h-full flex-1 overflow-hidden ${ismaximized || ismobile ? '' : ''} ${(isminimized || issystemgestureactive || shouldblur || isRecentAppView) ? 'pointer-events-none' : 'pointer-events-auto'} ${isRecentAppView ? 'recent-app-frozen' : ''}`}
       >
         <AppErrorBoundary appId={app?.id || appname} windowId={id} onCrash={handleCrash}>
           <MemoizedDynamicComponent appname={app ? app.appname : ''} icon={app ? app.icon : ''} component={app?.componentname ? app.componentname : component} appprops={{ ...props, windowId: id }} isFocused={activewindow === id && !shouldblur} isExternal={app?.isExternal} externalUrl={app?.externalUrl} />

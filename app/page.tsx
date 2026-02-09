@@ -56,6 +56,8 @@ const Desktop = () => {
   const { createFolder, createFile, files, emptyTrash, moveItem, refreshFileSystem, copyItem, cutItem, pasteItem, clipboard, moveToTrash, renameItem, currentUserDesktopId } = useFileSystem();
 
   const context = { addwindow, windows, updatewindow, setactivewindow, ismobile, activewindow, files };
+  const windowsref = useRef(windows);
+  windowsref.current = windows;
   const containerRef = useRef<HTMLDivElement>(null);
 
 
@@ -171,13 +173,15 @@ const Desktop = () => {
     const handleForceQuit = () => setshowforcequit(true);
     const handleAboutMac = () => setshowaboutmac(true);
     const handleCloseAboutBala = () => {
-      const aboutBalaWindow = windows.find((w: any) => w.appname === 'About Bala' || w.id?.startsWith('aboutbala'));
+      const currentWindows = windowsref.current;
+      const aboutBalaWindow = currentWindows.find((w: any) => w.appname === 'About Bala' || w.id?.startsWith('aboutbala'));
       if (aboutBalaWindow) {
         updatewindow(aboutBalaWindow.id, { isminimized: true });
       }
     };
     const handleTourEnded = () => {
-      const aboutBalaWindow = windows.find((w: any) => w.appname === 'About Bala' || w.id?.startsWith('aboutbala'));
+      const currentWindows = windowsref.current;
+      const aboutBalaWindow = currentWindows.find((w: any) => w.appname === 'About Bala' || w.id?.startsWith('aboutbala'));
       if (aboutBalaWindow) {
         updatewindow(aboutBalaWindow.id, { isminimized: false });
         setactivewindow(aboutBalaWindow.id);
