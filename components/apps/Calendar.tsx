@@ -2,6 +2,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { IoChevronBack, IoChevronForward, IoAddCircleOutline, IoClose, IoTrash } from "react-icons/io5";
 import { useDevice } from '../DeviceContext';
+import { useWindows } from '../WindowContext';
 import { useMenuAction } from '../hooks/useMenuAction';
 import { useAppPreferences } from '../AppPreferencesContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -20,6 +21,7 @@ const eventcolors = ['#8aadf4', '#a6da95', '#ed8796', '#f5a97f', '#c6a0f6', '#b7
 
 export default function Calendar({ windowId }: { windowId?: string }) {
     const { ismobile } = useDevice();
+    const { activewindow } = useWindows();
     const { getPreference, setPreference } = useAppPreferences();
     const today = new Date();
     const [currentmonth, setcurrentmonth] = useState(today.getMonth());
@@ -153,6 +155,16 @@ export default function Calendar({ windowId }: { windowId?: string }) {
     }), [currentmonth, currentyear]);
 
     useMenuAction('calendar', menuActions, windowId);
+
+    useEffect(() => {
+        if (!windowId) return;
+        const handleAppBack = (e: Event) => {
+            if (activewindow !== windowId) return;
+            if (showmodal) { e.preventDefault(); resetmodal(); }
+        };
+        window.addEventListener('app-back', handleAppBack);
+        return () => window.removeEventListener('app-back', handleAppBack);
+    }, [windowId, activewindow, showmodal]);
 
     const EventModal = () => (
         <AnimatePresence>

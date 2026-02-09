@@ -19,9 +19,10 @@ interface fileviewerprops {
     content?: string;
     title?: string;
     type?: string;
+    windowId?: string;
 }
 
-export default function FileViewer({ content: initialContent, title: initialTitle = 'Untitled', type: initialType = 'text/plain' }: fileviewerprops) {
+export default function FileViewer({ content: initialContent, title: initialTitle = 'Untitled', type: initialType = 'text/plain', windowId }: fileviewerprops) {
     const { files, createFolder, createFile, deleteItem, moveToTrash } = useFileSystem();
     const { activewindow } = useWindows();
     const [viewingContent, setViewingContent] = useState<string | null>(initialContent !== undefined ? initialContent : null);
@@ -42,6 +43,17 @@ export default function FileViewer({ content: initialContent, title: initialTitl
 
     const [fileModal, setFileModal] = useState<{ isOpen: boolean, type: 'create-folder' | 'create-file' | 'rename', initialValue?: string }>({ isOpen: false, type: 'create-folder' });
     const [contextMenu, setContextMenu] = useState<{ x: number, y: number, fileId?: string } | null>(null);
+
+    useEffect(() => {
+        if (!windowId) return;
+        const handleAppBack = (e: Event) => {
+            if (activewindow !== windowId) return;
+            if (viewingContent !== null) { e.preventDefault(); setViewingContent(null); }
+            else if (historyIndex > 0) { e.preventDefault(); navigateBack(); }
+        };
+        window.addEventListener('app-back', handleAppBack);
+        return () => window.removeEventListener('app-back', handleAppBack);
+    }, [windowId, activewindow, viewingContent, historyIndex]);
 
     useEffect(() => {
         if (initialContent !== undefined) {

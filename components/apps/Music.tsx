@@ -1,8 +1,9 @@
 'use client';
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { IoPlay, IoPause, IoPlaySkipForward, IoPlaySkipBack, IoShuffle, IoRepeat, IoVolumeHigh, IoVolumeMedium, IoVolumeLow, IoVolumeMute, IoSearch, IoMusicalNotes, IoHeart, IoHeartOutline, IoChevronBack } from 'react-icons/io5';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDevice } from '../DeviceContext';
+import { useWindows } from '../WindowContext';
 import { useAppPreferences } from '../AppPreferencesContext';
 import { useMenuAction } from '../hooks/useMenuAction';
 import { useMusic } from '../MusicContext';
@@ -15,6 +16,7 @@ const formattime = (seconds: number): string => {
 
 export default function Music({ windowId }: { windowId?: string }) {
     const { ismobile } = useDevice();
+    const { activewindow } = useWindows();
     const { getPreference, setPreference } = useAppPreferences();
 
     const {
@@ -72,6 +74,16 @@ export default function Music({ windowId }: { windowId?: string }) {
     }), [play, pause, next, prev, toggleshuffle, togglerepeat]);
 
     useMenuAction('music', menuActions, windowId);
+
+    useEffect(() => {
+        if (!windowId || !ismobile) return;
+        const handleAppBack = (e: Event) => {
+            if (activewindow !== windowId) return;
+            if (!showplaylist) { e.preventDefault(); setshowplaylist(true); }
+        };
+        window.addEventListener('app-back', handleAppBack);
+        return () => window.removeEventListener('app-back', handleAppBack);
+    }, [windowId, ismobile, activewindow, showplaylist]);
 
     const volumeicon = volume === 0 ? IoVolumeMute : volume < 33 ? IoVolumeLow : volume < 66 ? IoVolumeMedium : IoVolumeHigh;
     const progress = duration > 0 ? (currenttime / duration) * 100 : 0;

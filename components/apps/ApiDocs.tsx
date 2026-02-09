@@ -1,7 +1,9 @@
 'use client';
 import React, { useState } from 'react';
 import { IoCodeSlash, IoBook, IoRocket, IoSearch, IoChevronForward, IoChevronDown, IoClipboard, IoCheckmarkCircle, IoWarning } from 'react-icons/io5';
+import { useEffect } from 'react';
 import { useDevice } from '../DeviceContext';
+import { useWindows } from '../WindowContext';
 
 interface ApiItem {
     name: string;
@@ -128,12 +130,23 @@ addToast('Error occurred', 'error')`, returns: 'void'
 
 const totalapis = apicategories.reduce((sum, cat) => sum + cat.apis.length, 0);
 
-export default function ApiDocs() {
+export default function ApiDocs({ windowId }: { windowId?: string }) {
     const { ismobile } = useDevice();
+    const { activewindow } = useWindows();
     const [search, setsearch] = useState('');
     const [expandedcat, setexpandedcat] = useState<string | null>('Window APIs');
     const [selectedapi, setselectedapi] = useState<ApiItem | null>(null);
     const [copiedtext, setcopiedtext] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!windowId || !ismobile) return;
+        const handleAppBack = (e: Event) => {
+            if (activewindow !== windowId) return;
+            if (selectedapi) { e.preventDefault(); setselectedapi(null); }
+        };
+        window.addEventListener('app-back', handleAppBack);
+        return () => window.removeEventListener('app-back', handleAppBack);
+    }, [windowId, ismobile, activewindow, selectedapi]);
 
     const filteredcategories = search
         ? apicategories.map(cat => ({

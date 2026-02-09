@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useDevice } from './DeviceContext';
 import { apps, filesystemitem, openSystemItem, getFileIcon } from './data';
 
@@ -30,6 +30,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
     const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
     const longpresstimer = useRef<NodeJS.Timeout | null>(null);
     const touchstartpos = useRef<{ x: number; y: number } | null>(null);
+    const scrollcontainerref = useRef<HTMLDivElement>(null);
     const [iconorder, seticonorder] = useState<string[]>([]);
 
     const desktopItems = files.filter(item => item.parent === currentUserDesktopId && !item.isTrash);
@@ -40,6 +41,28 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
             seticonorder(JSON.parse(savedorder));
         }
     }, []);
+
+    useEffect(() => {
+        const scrollToHome = () => {
+            if (page === 1 && scrollcontainerref.current) {
+                scrollcontainerref.current.scrollTo({ left: 0, behavior: 'smooth' });
+            }
+        };
+        const handleAppBack = (e: Event) => {
+            if (page === 1) {
+                e.preventDefault();
+                scrollToHome();
+            }
+        };
+        const handleHomePressed = () => scrollToHome();
+
+        window.addEventListener('app-back', handleAppBack);
+        window.addEventListener('home-pressed', handleHomePressed);
+        return () => {
+            window.removeEventListener('app-back', handleAppBack);
+            window.removeEventListener('home-pressed', handleHomePressed);
+        };
+    }, [page]);
 
     const dockAppIds = ['explorer', 'browser', 'mail', 'settings'];
 
@@ -273,6 +296,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
             </AnimatePresence>
 
             <div
+                ref={scrollcontainerref}
                 className="flex w-full h-full overflow-x-auto snap-x snap-mandatory scrollbar-hide [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
                 style={{ scrollBehavior: 'smooth', WebkitOverflowScrolling: 'touch', touchAction: 'pan-x pan-y' }}
                 onScroll={(e) => {

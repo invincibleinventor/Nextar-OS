@@ -28,12 +28,12 @@ const sidebaritems = [
     { id: 'wallpaper', label: 'Wallpaper', icon: IoImageOutline, color: '#8aadf4' },
 ];
 
-export default function Settings({ initialPage }: { initialPage?: string }) {
+export default function Settings({ initialPage, windowId }: { initialPage?: string, windowId?: string }) {
     const [activetab, setactivetab] = useState(initialPage || "general");
     const [showsidebar, setshowsidebar] = useState(true);
     const { reducemotion, setreducemotion, reducetransparency, setreducetransparency, soundeffects, setsoundeffects, wallpaperurl, setwallpaperurl, accentcolor, setaccentcolor, inverselabelcolor, setinverselabelcolor } = useSettings();
     const { theme, toggletheme } = useTheme();
-    const { addwindow, windows, updatewindow, setactivewindow } = useWindows();
+    const { addwindow, windows, updatewindow, setactivewindow, activewindow } = useWindows();
     const { ismobile } = useDevice();
     const { user } = useAuth();
     const containerref = useRef<HTMLDivElement>(null);
@@ -116,6 +116,19 @@ export default function Settings({ initialPage }: { initialPage?: string }) {
         observer.observe(containerref.current);
         return () => observer.disconnect();
     }, []);
+
+    useEffect(() => {
+        if (!windowId || !ismobile) return;
+        const handleAppBack = (e: Event) => {
+            if (activewindow !== windowId) return;
+            if (!showsidebar) {
+                e.preventDefault();
+                setshowsidebar(true);
+            }
+        };
+        window.addEventListener('app-back', handleAppBack);
+        return () => window.removeEventListener('app-back', handleAppBack);
+    }, [windowId, ismobile, activewindow, showsidebar]);
 
     const Toggle = ({ value, onChange }: { value: boolean, onChange: (v: boolean) => void }) => (
         <button
