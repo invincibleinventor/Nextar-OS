@@ -77,6 +77,12 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     }, [wallpaperurl, analyzebrightness]);
 
     useEffect(() => {
+        const storedTheme = localStorage.getItem('theme');
+        const prefersDark = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const isDark = storedTheme === 'dark' || (!storedTheme && prefersDark);
+        const defaultWallpaper = isDark ? '/bg-dark.jpg' : '/bg.jpg';
+        setwallpaperurl(defaultWallpaper);
+
         if (isGuest) return;
 
         const storedMotion = localStorage.getItem('reduceMotion');
