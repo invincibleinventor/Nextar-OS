@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useEffect, useMemo } from 'react';
 import { useDevice } from '../DeviceContext';
+import { useWindows } from '../WindowContext';
 import { useAppPreferences } from '../AppPreferencesContext';
 import { IoAdd, IoTrashOutline, IoSearchOutline } from 'react-icons/io5';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -16,6 +17,7 @@ interface Note {
 
 export default function Notes({ isFocused = true, appId = 'notes', windowId }: { isFocused?: boolean, appId?: string, windowId?: string }) {
     const { ismobile } = useDevice();
+    const { activewindow } = useWindows();
     const { getPreference, setPreference } = useAppPreferences();
 
     const [notes, setNotes] = useState<Note[]>([]);
@@ -66,6 +68,16 @@ export default function Notes({ isFocused = true, appId = 'notes', windowId }: {
             setSelectedNote(newNotes[0] || null);
         }
     };
+
+    useEffect(() => {
+        if (!windowId || !ismobile) return;
+        const handleAppBack = (e: Event) => {
+            if (activewindow !== windowId) return;
+            if (selectedNote && !showSidebar) { e.preventDefault(); setShowSidebar(true); setSelectedNote(null); }
+        };
+        window.addEventListener('app-back', handleAppBack);
+        return () => window.removeEventListener('app-back', handleAppBack);
+    }, [windowId, ismobile, activewindow, selectedNote, showSidebar]);
 
     const menuActions = useMemo(() => ({
         'new-note': () => {

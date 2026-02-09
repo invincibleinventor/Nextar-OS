@@ -63,7 +63,7 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
     const { user } = useAuth();
     const { theme } = useTheme();
     const { files, createFile, createFolder, updateFileContent, renameItem, deleteItem, currentUserDocsId } = useFileSystem();
-    const { addwindow } = useWindows();
+    const { addwindow, activewindow } = useWindows();
     const { addToast } = useNotifications();
     const editorRef = useRef<any>(null);
 
@@ -450,6 +450,20 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
     }), [runcode, saveFile]);
 
     useMenuAction(appId, menuActions, id);
+
+    useEffect(() => {
+        if (!id || !ismobile) return;
+        const handleAppBack = (e: Event) => {
+            if (activewindow !== id) return;
+            if (shownewfiledialog) { e.preventDefault(); setshownewfiledialog(false); }
+            else if (showrenamedialog) { e.preventDefault(); setshowrenamedialog(false); setselectedfileforcontext(null); }
+            else if (mobilefilepanel) { e.preventDefault(); setmobilefilepanel(false); }
+            else if (showfindreplace) { e.preventDefault(); setshowfindreplace(false); }
+            else if (showpanel) { e.preventDefault(); setshowpanel(false); }
+        };
+        window.addEventListener('app-back', handleAppBack);
+        return () => window.removeEventListener('app-back', handleAppBack);
+    }, [id, ismobile, activewindow, shownewfiledialog, showrenamedialog, mobilefilepanel, showfindreplace, showpanel]);
 
     const renderFileTree = (parentId: string, depth: number = 0) => {
         const children = projectFiles(parentId);

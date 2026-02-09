@@ -21,6 +21,7 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
     const { files } = useFileSystem();
     const { ismobile } = useDevice();
     const { user } = useAuth();
+    const { activewindow } = useWindows();
     const containerref = useRef<HTMLDivElement>(null);
     const [isnarrow, setisnarrow] = useState(false);
     const [viewingimage, setviewingimage] = useState<{ src: string, title: string, id: string } | null>(
@@ -87,6 +88,20 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
         observer.observe(containerref.current);
         return () => observer.disconnect();
     }, []);
+
+    useEffect(() => {
+        if (!windowId) return;
+        const handleAppBack = (e: Event) => {
+            if (activewindow !== windowId) return;
+            if (mobileview === 'photo') {
+                e.preventDefault();
+                setmobileview('grid');
+                setviewingimage(null);
+            }
+        };
+        window.addEventListener('app-back', handleAppBack);
+        return () => window.removeEventListener('app-back', handleAppBack);
+    }, [windowId, activewindow, mobileview]);
 
     const handlePhotoClick = (photo: typeof photos[0]) => {
         setviewingimage(photo);

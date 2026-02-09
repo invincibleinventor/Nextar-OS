@@ -1,13 +1,25 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { IoMailOutline, IoChevronBack, IoArchiveOutline, IoTrashOutline, IoPencilOutline, IoMailOpenOutline } from "react-icons/io5";
 import { useDevice } from '../DeviceContext';
+import { useWindows } from '../WindowContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function Mail(props: any) {
+export default function Mail({ windowId, ...props }: any) {
     const [selectedFolder, setSelectedFolder] = useState('inbox');
     const { ismobile } = useDevice();
+    const { activewindow } = useWindows();
     const [mobileview, setmobileview] = useState<'mailboxes' | 'list'>('list');
+
+    useEffect(() => {
+        if (!windowId || !ismobile) return;
+        const handleAppBack = (e: Event) => {
+            if (activewindow !== windowId) return;
+            if (mobileview === 'list') { e.preventDefault(); setmobileview('mailboxes'); }
+        };
+        window.addEventListener('app-back', handleAppBack);
+        return () => window.removeEventListener('app-back', handleAppBack);
+    }, [windowId, ismobile, activewindow, mobileview]);
 
     const mailboxItems = [
         { id: 'inbox', label: 'Inbox', icon: IoMailOutline, count: 0 },

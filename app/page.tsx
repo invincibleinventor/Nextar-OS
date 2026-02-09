@@ -58,6 +58,8 @@ const Desktop = () => {
   const context = { addwindow, windows, updatewindow, setactivewindow, ismobile, activewindow, files };
   const windowsref = useRef(windows);
   windowsref.current = windows;
+  const overlayref = useRef({ showcontrolcenter, shownotificationcenter, showrecentapps, shownext, showforcequit, showaboutmac, showappswitcher });
+  overlayref.current = { showcontrolcenter, shownotificationcenter, showrecentapps, shownext, showforcequit, showaboutmac, showappswitcher };
   const containerRef = useRef<HTMLDivElement>(null);
 
 
@@ -207,6 +209,43 @@ const Desktop = () => {
       window.removeEventListener('toggle-desktop-effects', handleToggleDesktopEffects);
     };
   }, [showappswitcher]);
+
+  useEffect(() => {
+    if (!ismobile) return;
+
+    history.pushState({ guard: true }, '');
+
+    const handlePopState = () => {
+      history.pushState({ guard: true }, '');
+
+      const s = overlayref.current;
+      if (s.shownotificationcenter) { setshownotificationcenter(false); return; }
+      if (s.showcontrolcenter) { setshowcontrolcenter(false); return; }
+      if (s.shownext) { setshownext(false); return; }
+      if (s.showforcequit) { setshowforcequit(false); return; }
+      if (s.showaboutmac) { setshowaboutmac(false); return; }
+      if (s.showappswitcher) { setshowappswitcher(false); return; }
+      if (s.showrecentapps) { setshowrecentapps(false); return; }
+
+      const currentWindows = windowsref.current;
+      const visibleWindows = currentWindows.filter((w: any) => !w.isminimized);
+      if (visibleWindows.length > 0) {
+        const backEvent = new CustomEvent('app-back', { cancelable: true });
+        window.dispatchEvent(backEvent);
+        if (!backEvent.defaultPrevented) {
+          setshowrecentapps(true);
+        }
+        return;
+      }
+
+      // No visible windows - try home screen back (e.g., app library → home)
+      const homeBackEvent = new CustomEvent('app-back', { cancelable: true });
+      window.dispatchEvent(homeBackEvent);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [ismobile]);
 
   const handleContextMenu = (e: React.MouseEvent, fileId?: string) => {
     if (ismobile) return;
@@ -563,7 +602,7 @@ const Desktop = () => {
 
             <RecentApps isopen={showrecentapps} onclose={() => setshowrecentapps(false)} />
 
-            <div className={`absolute bottom-0 left-0 right-0 h-10 flex items-end justify-center z-[9999] ${(shownotificationcenter || showcontrolcenter) ? 'pointer-events-none' : 'pointer-events-auto'}`}>
+            <div className={`absolute left-0 right-0 h-10 flex items-end justify-center z-[9999] ${(shownotificationcenter || showcontrolcenter) ? 'pointer-events-none' : 'pointer-events-auto'}`} style={{ bottom: 'max(env(safe-area-inset-bottom, 0px), 4px)' }}>
               <motion.div
                 className="w-[140px] h-[21px] flex items-center content-center cursor-pointer"
                 whileTap={{ scale: 0.95 }}
@@ -583,6 +622,7 @@ const Desktop = () => {
                     if (isflick || (offset.y < -30)) {
                       setshowrecentapps(false);
                       setwindows(windows.map((w: any) => ({ ...w, isminimized: true })));
+                      window.dispatchEvent(new CustomEvent('home-pressed'));
                     }
                   } else if (showcontrolcenter) {
                     if (isdragup || isflick) setshowcontrolcenter(false);
@@ -592,6 +632,7 @@ const Desktop = () => {
                     if (isdragup) {
                       if (isflick) {
                         setwindows(windows.map((w: any) => ({ ...w, isminimized: true })));
+                        window.dispatchEvent(new CustomEvent('home-pressed'));
                       } else {
                         setshowrecentapps(true);
                       }
@@ -610,6 +651,7 @@ const Desktop = () => {
                   } else {
                     setwindows(windows.map((w: any) => ({ ...w, isminimized: true })));
                   }
+                  window.dispatchEvent(new CustomEvent('home-pressed'));
                 }}
               >
                 <div className="w-full h-[5px] mb-[12px] bg-neutral-300/90 dark:bg-white/80   cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.3)] backdrop-blur-md"></div>

@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { IoArrowBack, IoArrowForward, IoShareOutline, IoBookOutline, IoCopyOutline, IoLockClosedOutline, IoRefreshOutline, IoReaderOutline, IoChevronBack, IoChevronForward, IoReloadOutline, IoLockClosed, IoAddOutline, IoStarOutline, IoSearchOutline } from 'react-icons/io5';
 import { useDevice } from '../DeviceContext';
@@ -87,6 +87,16 @@ export default function Browser({ initialurl = 'https://baladev.vercel.app', app
             setinputvalue(history[newIndex]);
         }
     }, [currentIndex, history]);
+
+    useEffect(() => {
+        if (!id) return;
+        const handleAppBack = (e: Event) => {
+            if (activewindow !== id) return;
+            if (currentIndex > 0) { e.preventDefault(); goBack(); }
+        };
+        window.addEventListener('app-back', handleAppBack);
+        return () => window.removeEventListener('app-back', handleAppBack);
+    }, [id, activewindow, currentIndex, goBack]);
 
     const menuActions = useMemo(() => ({
         'new-window': () => { },

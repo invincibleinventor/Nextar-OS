@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { IoSearch, IoRocketOutline, IoGlobeOutline, IoOpenOutline, IoLogoGithub, IoCodeSlashOutline, IoServerOutline, IoPhonePortraitOutline, IoLayersOutline, IoChevronBack, IoDownloadOutline, IoTrashOutline, IoAddCircleOutline, IoRefresh, IoCheckmarkCircle, IoWarning, IoPlayCircle } from "react-icons/io5";
 import Image from 'next/image';
 import { personal, openSystemItem } from '../data';
@@ -36,6 +36,17 @@ export default function AppStore({ appId = 'appstore', id }: { appId?: string, i
         if (!selectedexternalapp) return null;
         return externalApps.find(a => a.id === selectedexternalapp.id) || selectedexternalapp;
     }, [selectedexternalapp, externalApps]);
+
+    useEffect(() => {
+        if (!id) return;
+        const handleAppBack = (e: Event) => {
+            if (activewindow !== id) return;
+            if (selectedexternalapp) { e.preventDefault(); setselectedexternalapp(null); }
+            else if (selectedproject) { e.preventDefault(); setselectedproject(null); }
+        };
+        window.addEventListener('app-back', handleAppBack);
+        return () => window.removeEventListener('app-back', handleAppBack);
+    }, [id, activewindow, selectedexternalapp, selectedproject]);
 
     const appStoreMenus = useMemo(() => ({
         Store: [

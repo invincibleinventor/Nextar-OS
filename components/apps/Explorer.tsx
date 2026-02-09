@@ -146,6 +146,22 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
         }
     }, [currentpath, windowId, updatewindow, isDesktopBackend, windows]);
 
+    useEffect(() => {
+        if (!windowId || isDesktopBackend) return;
+        const handleAppBack = (e: Event) => {
+            if (activewindow !== windowId) return;
+            if (currentpath.length > 1) {
+                e.preventDefault();
+                setcurrentpath(currentpath.slice(0, -1));
+            } else if (ismobile && mobileview === 'preview') {
+                e.preventDefault();
+                setmobileview('files');
+            }
+        };
+        window.addEventListener('app-back', handleAppBack);
+        return () => window.removeEventListener('app-back', handleAppBack);
+    }, [windowId, isDesktopBackend, activewindow, currentpath, ismobile, mobileview]);
+
     const handlesidebarclick = (itemname: string, path: string[]) => {
         setselected(itemname);
         setcurrentpath(path);

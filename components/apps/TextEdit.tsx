@@ -171,6 +171,17 @@ export default function TextEdit({ id, content: initialContent, title, isFocused
 
     useMenuAction(appId, menuActions, id);
 
+    useEffect(() => {
+        if (!id) return;
+        const handleAppBack = (e: Event) => {
+            if (activewindow !== id) return;
+            if (showPicker) { e.preventDefault(); setShowPicker(false); }
+            else if (showFindReplace) { e.preventDefault(); setShowFindReplace(false); }
+        };
+        window.addEventListener('app-back', handleAppBack);
+        return () => window.removeEventListener('app-back', handleAppBack);
+    }, [id, activewindow, showPicker, showFindReplace]);
+
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if ((e.metaKey || e.ctrlKey) && e.key === 's') {
             e.preventDefault();

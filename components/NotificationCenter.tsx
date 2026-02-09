@@ -61,12 +61,13 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                 <>
                     <motion.div
                         initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
+                        animate={{ opacity: 0.4 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
                         style={{ zIndex: 2147483647 }}
-                        className="fixed inset-0"
+                        className="fixed inset-0 bg-black"
                         onClick={onclose}
+                        onPointerDown={(e) => dragControls.start(e)}
                     />
 
                     <motion.div
@@ -86,7 +87,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                             }
                         }}
                         style={{ zIndex: 2147483647 }}
-                        className="fixed top-0 left-0 right-0 flex flex-col w-full pointer-events-auto min-h-[70vh] max-h-screen"
+                        className="fixed top-0 left-0 right-0 flex flex-col w-full pointer-events-auto min-h-[70vh] max-h-[80vh]"
                     >
                         <div
                             className="flex flex-col w-full h-full"
@@ -241,9 +242,9 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                     <>
                         <motion.div
                             initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
+                            animate={{ opacity: 0.3 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 w-screen h-screen z-[999998] pointer-events-auto"
+                            className="fixed inset-0 w-screen h-screen z-[999998] pointer-events-auto bg-black"
                             onClick={onclose}
                         />
                         <motion.div
