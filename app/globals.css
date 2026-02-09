@@ -452,9 +452,9 @@ body {
   visibility: hidden;
 }
 
-/* Accent button text: always use dark text for readability on pastel accent backgrounds */
+/* Accent button text: light text in light mode, dark text in dark mode */
 .bg-accent {
-  color: #1e1e2e !important;
+  color: white !important;
 }
 .dark .bg-accent {
   color: #1e1e2e !important;
