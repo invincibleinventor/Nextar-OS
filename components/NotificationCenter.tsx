@@ -1,5 +1,5 @@
 'use client';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import Image from 'next/image';
 import { createPortal } from 'react-dom';
 import { useNotifications } from './NotificationContext';
@@ -40,6 +40,8 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
         };
     }, [osstate, unviewednotifications, markasviewed]);
 
+    const dragControls = useDragControls();
+
     if (!mounted) return null;
     if (osstate !== 'unlocked') return null;
 
@@ -74,6 +76,8 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                         exit={{ y: '-100%' }}
                         transition={{ type: "spring", stiffness: 300, damping: 40, mass: 1 }}
                         drag="y"
+                        dragControls={dragControls}
+                        dragListener={false}
                         dragConstraints={{ top: -1000, bottom: 0 }}
                         dragElastic={0.05}
                         onDragEnd={(_, info) => {
@@ -82,18 +86,21 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                             }
                         }}
                         style={{ zIndex: 2147483647 }}
-                        className="fixed inset-0 flex flex-col w-full pointer-events-auto"
+                        className="fixed top-0 left-0 right-0 flex flex-col w-full pointer-events-auto min-h-[70vh] max-h-screen"
                     >
                         <div
                             className="flex flex-col w-full h-full"
                             style={{ backgroundColor: 'var(--bg-surface)' }}
                         >
-                            <div className="flex flex-col items-center mt-16 mb-6 shrink-0">
+                            <div
+                                className="flex flex-col items-center mt-16 mb-6 shrink-0 cursor-grab active:cursor-grabbing"
+                                onPointerDown={(e) => dragControls.start(e)}
+                            >
                                 <h1 className="text-7xl font-medium text-[--text-color] tracking-tight">{time.split(' ')[0]}</h1>
                                 <div className="text-xl text-[--text-muted] font-medium mt-1">{date}</div>
                             </div>
 
-                            <div className="w-full px-4 flex-1 min-h-0 overflow-y-auto">
+                            <div className="w-full px-4 flex-1 min-h-0 overflow-y-auto" style={{ touchAction: 'pan-y', overscrollBehavior: 'contain' }}>
                                 {notifications.length === 0 ? (
                                     <div className="text-center text-[--text-muted] mt-8 mb-4 text-lg font-medium">No Notifications</div>
                                 ) : (
@@ -141,7 +148,12 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                 )}
                             </div>
 
-                            <div className="w-16 h-1.5 bg-[--text-muted]/40 mx-auto mb-3 mt-2 rounded-full shrink-0" />
+                            <div
+                                className="py-3 shrink-0 cursor-grab active:cursor-grabbing"
+                                onPointerDown={(e) => dragControls.start(e)}
+                            >
+                                <div className="w-16 h-1.5 bg-[--text-muted]/40 mx-auto rounded-full" />
+                            </div>
                         </div>
                     </motion.div>
                 </>,
