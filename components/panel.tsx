@@ -8,7 +8,7 @@ import Control from './controlcenter';
 import Logo from './mainlogo';
 import { useAppMenus } from './AppMenuContext';
 
-import { IoWifi, IoBatteryFull, IoToggle, IoSettingsOutline } from 'react-icons/io5';
+import { IoWifi, IoBatteryFull, IoToggle, IoSettingsOutline, IoSparkles } from 'react-icons/io5';
 import { BsToggles2 } from "react-icons/bs";
 import { useDevice } from './DeviceContext';
 import { IoIosBatteryFull } from 'react-icons/io';
@@ -336,6 +336,13 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
                                 Exit NextarOS
                             </button>
                         )}
+                        <button
+                            onClick={() => window.dispatchEvent(new CustomEvent('toggle-desktop-effects'))}
+                            className="hover:bg-pastel-lavender/10 transition-colors p-0.5"
+                            title="Toggle Desktop Effects"
+                        >
+                            <IoSparkles className="w-4 h-4 text-pastel-pink" />
+                        </button>
                         <button
                             onClick={() => window.dispatchEvent(new CustomEvent('toggle-next'))}
                             className="hover:bg-pastel-lavender/10 transition-colors"

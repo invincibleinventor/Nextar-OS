@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { personal } from './data';
 import { useDevice } from './DeviceContext';
-import { IoLogoGithub, IoLogoLinkedin, IoMail, IoDownload, IoPlay, IoGlobe, IoBriefcase, IoCalendar, IoArrowForward } from 'react-icons/io5';
+import { IoLogoGithub, IoLogoLinkedin, IoMail, IoDownload, IoPlay, IoGlobe, IoBriefcase, IoCalendar, IoArrowForward, IoRocketOutline, IoChevronForward } from 'react-icons/io5';
 
 const BG = '#f0edf5';
 const INK = '#2e2e3a';
@@ -308,7 +308,7 @@ const HeroSection = ({ onBoot, embedded }: { onBoot: () => void; embedded?: bool
 
 
     return (
-        <motion.section className="min-h-screen relative overflow-hidden flex items-center" style={{ background: BG, opacity }}>
+        <motion.section className="min-h-screen relative overflow-hidden flex items-center snap-start" style={{ background: BG, opacity }}>
             <RainEffect />
             <FloatingEmbers />
 
@@ -326,7 +326,7 @@ const HeroSection = ({ onBoot, embedded }: { onBoot: () => void; embedded?: bool
                 <PastelSun size={120} className="opacity-60" />
             </div>
 
-            <motion.div className="hidden md:block" style={{ x: samuraix }}>
+            <motion.div style={{ x: samuraix }}>
                 <SamuraiSilhouette />
             </motion.div>
             <GrassLine />
@@ -435,7 +435,7 @@ const ProjectsSection = () => {
     const [hoveredidx, sethoveredidx] = useState<number | null>(null);
 
     return (
-        <section id="projects" className="py-32 px-8 relative overflow-hidden" style={{ background: `linear-gradient(180deg, ${BG} 0%, #d8d4cf 50%, ${BG} 100%)` }}>
+        <section id="projects" className="py-32 px-8 relative overflow-hidden snap-start" style={{ background: `linear-gradient(180deg, ${BG} 0%, #d8d4cf 50%, ${BG} 100%)` }}>
             <RainEffect />
             <FloatingEmbers />
 
@@ -606,7 +606,7 @@ const SkillsSection = () => {
     ];
 
     return (
-        <section id="skills" className="py-32 px-8 relative overflow-hidden" style={{ background: '#2a2a3e' }}>
+        <section id="skills" className="py-32 px-8 relative overflow-hidden snap-start" style={{ background: '#2a2a3e' }}>
             <SkillsStars />
 
             <motion.div
@@ -711,7 +711,7 @@ const AboutSection = () => {
     ];
 
     return (
-        <section id="about" className="py-32 px-8 relative overflow-hidden" style={{ background: BG }}>
+        <section id="about" className="py-32 px-8 relative overflow-hidden snap-start" style={{ background: BG }}>
             <RainEffect />
             <FloatingEmbers />
 
@@ -867,9 +867,9 @@ const ContactParticles = () => {
     );
 };
 
-const ContactSection = ({ onBoot, embedded }: { onBoot: () => void; embedded?: boolean }) => {
+const ContactSection = ({ onBoot, embedded, onGetStarted }: { onBoot: () => void; embedded?: boolean; onGetStarted?: () => void }) => {
     return (
-        <section className="py-32 px-8 relative overflow-hidden" style={{ background: `linear-gradient(135deg, #2a2a3e 0%, #363650 100%)` }}>
+        <section className="py-32 px-8 relative overflow-hidden snap-start" style={{ background: `linear-gradient(135deg, #2a2a3e 0%, #363650 100%)` }}>
             <ContactParticles />
 
             <div className="absolute right-[10%] top-1/2 -translate-y-1/2">
@@ -963,7 +963,28 @@ const ContactSection = ({ onBoot, embedded }: { onBoot: () => void; embedded?: b
                     </motion.a>
                 </motion.div>
 
-                {!embedded && (
+                {embedded ? (
+                    <motion.div
+                        className="mt-16 pt-8 flex items-center gap-6"
+                        style={{ borderTop: `1px solid ${BG}15` }}
+                        initial={{ opacity: 0 }}
+                        whileInView={{ opacity: 1 }}
+                        transition={{ delay: 0.3 }}
+                    >
+                        <motion.button
+                            onClick={onGetStarted}
+                            className="px-10 py-4 font-black text-sm uppercase tracking-wider flex items-center gap-3 overflow-hidden group relative"
+                            style={{ background: PINK, color: INK }}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                        >
+                            <IoRocketOutline className="w-5 h-5" />
+                            <span>GET STARTED</span>
+                            <IoChevronForward className="w-4 h-4" />
+                            <motion.div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-full transition-transform duration-500" />
+                        </motion.button>
+                    </motion.div>
+                ) : (
                     <motion.div
                         className="mt-16 pt-8 flex items-center gap-6"
                         style={{ borderTop: `1px solid ${BG}15` }}
@@ -988,6 +1009,87 @@ const ContactSection = ({ onBoot, embedded }: { onBoot: () => void; embedded?: b
     );
 };
 
+const TourCard = ({ onTakeTour, onSkip }: { onTakeTour: () => void; onSkip: () => void }) => (
+    <section className="min-h-screen relative overflow-hidden flex items-center justify-center snap-start" style={{ background: BG }}>
+        <FloatingEmbers />
+        <motion.div
+            className="absolute left-[8%] top-1/2 -translate-y-1/2 text-[10rem] md:text-[16rem] font-black leading-none select-none pointer-events-none opacity-[0.03]"
+            style={{ color: INK, writingMode: 'vertical-rl' }}
+        >
+            案内
+        </motion.div>
+
+        <motion.div
+            className="relative z-10 text-center max-w-lg mx-auto px-6"
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+        >
+            <motion.div
+                className="w-20 h-20 mx-auto mb-8 rounded-sm flex items-center justify-center"
+                style={{ background: PINK }}
+                animate={{ rotate: [0, 5, -5, 0] }}
+                transition={{ duration: 4, repeat: Infinity }}
+            >
+                <IoRocketOutline className="w-10 h-10" style={{ color: INK }} />
+            </motion.div>
+
+            <h2 className="text-3xl md:text-5xl font-black mb-4" style={{ color: INK }}>
+                Explore NextarOS
+            </h2>
+            <p className="text-sm md:text-base mb-10 leading-relaxed" style={{ color: GRAY }}>
+                Take a guided tour of the OS experience, or skip ahead to see the projects.
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <motion.button
+                    onClick={onTakeTour}
+                    className="px-8 py-3.5 font-black text-sm uppercase tracking-wider flex items-center gap-2"
+                    style={{ background: PINK, color: INK }}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                >
+                    <IoRocketOutline className="w-4 h-4" />
+                    Take the Tour
+                </motion.button>
+                <motion.button
+                    onClick={onSkip}
+                    className="px-8 py-3.5 font-bold text-sm uppercase tracking-wider flex items-center gap-2"
+                    style={{ color: GRAY, border: `2px solid ${LIGHTGRAY}40` }}
+                    whileHover={{ scale: 1.03, borderColor: `${INK}40` }}
+                    whileTap={{ scale: 0.97 }}
+                >
+                    Skip to Projects
+                    <IoChevronForward className="w-4 h-4" />
+                </motion.button>
+            </div>
+        </motion.div>
+    </section>
+);
+
+const MobileHints = () => {
+    const [visible, setvisible] = useState(true);
+    useEffect(() => {
+        const timer = setTimeout(() => setvisible(false), 4000);
+        return () => clearTimeout(timer);
+    }, []);
+    return (
+        <AnimatePresence>
+            {visible && (
+                <motion.div
+                    className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-sm pointer-events-none"
+                    style={{ background: `${INK}e0`, color: BG }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 20 }}
+                >
+                    <span className="text-xs font-bold tracking-wider">↕ SCROLL TO EXPLORE</span>
+                </motion.div>
+            )}
+        </AnimatePresence>
+    );
+};
+
 const scrollstyles = `
 .portfolio-scroll::-webkit-scrollbar { width: 6px; }
 .portfolio-scroll::-webkit-scrollbar-track { background: ${BG}; }
@@ -998,12 +1100,32 @@ const scrollstyles = `
 `;
 
 export default function Portfolio({ embedded }: { embedded?: boolean } = {}) {
-    const { setappmode, setosstate } = useDevice();
+    const { setappmode, setosstate, ismobile } = useDevice();
     const [booting, setbooting] = useState(false);
     const containerref = useRef<HTMLDivElement>(null);
 
     const handleboot = useCallback(() => setbooting(true), []);
     const handlecomplete = useCallback(() => { setbooting(false); setosstate('booting'); setappmode('os'); }, [setosstate, setappmode]);
+
+    const handlegetstarted = useCallback(() => {
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('close-aboutbala'));
+        }
+    }, []);
+
+    const handletaketour = useCallback(() => {
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('close-aboutbala'));
+            setTimeout(() => window.dispatchEvent(new Event('start-tour')), 300);
+        }
+    }, []);
+
+    const handleskiptoprojects = useCallback(() => {
+        if (containerref.current) {
+            const projectsEl = containerref.current.querySelector('#projects');
+            if (projectsEl) projectsEl.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, []);
 
     return (
         <>
@@ -1011,14 +1133,15 @@ export default function Portfolio({ embedded }: { embedded?: boolean } = {}) {
             {!embedded && <TextureOverlay />}
             {!embedded && <AnimatePresence>{booting && <BootSequence onComplete={handlecomplete} />}</AnimatePresence>}
 
-            <div ref={containerref} className={`portfolio-scroll ${embedded ? 'w-full h-full' : 'fixed inset-0'} overflow-y-auto overflow-x-hidden`} style={{ fontFamily: '"Zen Kaku Gothic New", -apple-system, BlinkMacSystemFont, sans-serif' }}>
+            <div ref={containerref} className={`portfolio-scroll ${embedded ? 'w-full h-full' : 'fixed inset-0'} overflow-y-auto overflow-x-hidden snap-y snap-mandatory`} style={{ fontFamily: '"Zen Kaku Gothic New", -apple-system, BlinkMacSystemFont, sans-serif' }}>
                 <HeroSection onBoot={handleboot} embedded={embedded} />
+                {embedded && <TourCard onTakeTour={handletaketour} onSkip={handleskiptoprojects} />}
                 <ProjectsSection />
                 <SkillsSection />
                 <AboutSection />
-                <ContactSection onBoot={handleboot} embedded={embedded} />
+                <ContactSection onBoot={handleboot} embedded={embedded} onGetStarted={handlegetstarted} />
 
-                <footer className="py-6 px-8 flex items-center justify-between text-xs" style={{ background: INK, color: LIGHTGRAY }}>
+                <footer className="py-6 px-8 flex items-center justify-between text-xs snap-end" style={{ background: INK, color: LIGHTGRAY }}>
                     <div>© {new Date().getFullYear()} {personal.personal.name}</div>
                     <div className="flex gap-4">
                         <motion.a href={personal.personal.socials.github} target="_blank" whileHover={{ color: BG }}><IoLogoGithub className="w-4 h-4" /></motion.a>
@@ -1027,6 +1150,8 @@ export default function Portfolio({ embedded }: { embedded?: boolean } = {}) {
                     </div>
                 </footer>
             </div>
+
+            {embedded && ismobile && <MobileHints />}
         </>
     );
 }

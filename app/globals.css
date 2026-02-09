@@ -437,3 +437,11 @@ body {
   border-color: color-mix(in srgb, var(--accent-color) 40%, var(--border-color));
   box-shadow: 0 0 8px -2px color-mix(in srgb, var(--accent-color) 15%, transparent);
 }
+
+/* Accent button text: always use dark text for readability on pastel accent backgrounds */
+.bg-accent {
+  color: #1e1e2e !important;
+}
+.dark .bg-accent {
+  color: #1e1e2e !important;
+}

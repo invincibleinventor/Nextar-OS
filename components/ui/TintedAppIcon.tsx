@@ -9,7 +9,7 @@ import {
     IoTerminalOutline, IoImagesOutline, IoInformationCircleOutline,
     IoGlobeOutline, IoReaderOutline, IoStatsChartOutline,
     IoStorefrontOutline, IoBookOutline, IoHomeOutline, IoTrashOutline,
-    IoGridOutline
+    IoGridOutline, IoDownloadOutline
 } from 'react-icons/io5';
 
 interface TintedAppIconProps {
@@ -35,7 +35,7 @@ const appIconMap: Record<string, { icon: IconType; bg: string }> = {
     'terminal': { icon: IoTerminalOutline, bg: '#24263a' },
     'photos': { icon: IoImagesOutline, bg: '#c6a0f6' },
     'browser': { icon: IoGlobeOutline, bg: '#8aadf4' },
-    'welcome': { icon: IoHomeOutline, bg: '#f5bde6' },
+    'welcome': { icon: IoDownloadOutline, bg: '#8aadf4' },
     'fileviewer': { icon: IoDocumentTextOutline, bg: '#b7bdf8' },
     'apidocs': { icon: IoBookOutline, bg: '#8bd5ca' },
     'systemmonitor': { icon: IoStatsChartOutline, bg: '#f5a97f' },
@@ -43,6 +43,7 @@ const appIconMap: Record<string, { icon: IconType; bg: string }> = {
     'launchpad-item': { icon: IoGridOutline, bg: '#b7bdf8' },
     'trash-folder': { icon: IoTrashOutline, bg: '#6e738d' },
     'aboutbala': { icon: IoInformationCircleOutline, bg: '#8aadf4' },
+    'aboutnextaros': { icon: IoHomeOutline, bg: '#f5bde6' },
     'getinfo': { icon: IoInformationCircleOutline, bg: '#6e738d' },
 };
 
@@ -57,7 +58,7 @@ export default function TintedAppIcon({ appId, appName, originalIcon, size = 40,
                     alt={appName}
                     fill
                     sizes="96px"
-                    className={` ease-in-out transition-all duration-200 object-cover ${className}`}
+                    className={`ease-in-out transition-all duration-200 object-cover shadow-md ${className}`}
                     draggable={false}
                 />
             );
@@ -68,7 +69,7 @@ export default function TintedAppIcon({ appId, appName, originalIcon, size = 40,
                 alt={appName}
                 width={size}
                 height={size}
-                className={` ease-in-out transition-all duration-200 object-cover ${className}`}
+                className={`ease-in-out transition-all duration-200 object-cover shadow-md ${className}`}
                 draggable={false}
             />
         );
@@ -84,7 +85,7 @@ export default function TintedAppIcon({ appId, appName, originalIcon, size = 40,
                     alt={appName}
                     fill
                     sizes="96px"
-                    className={` ease-in-out transition-all duration-200 object-cover ${className}`}
+                    className={`ease-in-out transition-all duration-200 object-cover shadow-md ${className}`}
                     draggable={false}
                 />
             );
@@ -95,7 +96,7 @@ export default function TintedAppIcon({ appId, appName, originalIcon, size = 40,
                 alt={appName}
                 width={size}
                 height={size}
-                className={` ease-in-out transition-all duration-200 object-cover ${className}`}
+                className={`ease-in-out transition-all duration-200 object-cover shadow-md ${className}`}
                 draggable={false}
             />
         );
@@ -106,9 +107,9 @@ export default function TintedAppIcon({ appId, appName, originalIcon, size = 40,
 
     if (useFill) {
         return (
-            <div className={`absolute inset-0  overflow-hidden ${className}`}>
+            <div className={`absolute inset-0 overflow-hidden shadow-md ${className}`}>
                 <div
-                    className="absolute inset-0 "
+                    className="absolute inset-0"
                     style={{ background: bgColor }}
                 />
                 <div className="absolute inset-0 flex items-center justify-center">
@@ -119,9 +120,9 @@ export default function TintedAppIcon({ appId, appName, originalIcon, size = 40,
     }
 
     return (
-        <div style={{ width: size, height: size }} className="relative flex items-center justify-center overflow-hidden">
+        <div style={{ width: size, height: size }} className="relative flex items-center justify-center overflow-hidden shadow-md">
             <div
-                className={` absolute ${className}`}
+                className={`absolute ${className}`}
                 style={{
                     width: size,
                     height: size,

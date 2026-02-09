@@ -274,7 +274,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
 
             <div
                 className="flex w-full h-full overflow-x-auto snap-x snap-mandatory scrollbar-hide [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-                style={{ scrollBehavior: 'smooth' }}
+                style={{ scrollBehavior: 'smooth', WebkitOverflowScrolling: 'touch', touchAction: 'pan-x pan-y' }}
                 onScroll={(e) => {
                     const scrollLeft = e.currentTarget.scrollLeft;
                     const width = e.currentTarget.offsetWidth;
@@ -372,12 +372,12 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                                                     />
                                                 ) : (
                                                     <div className="w-full h-full flex flex-col">
-                                                        {getFileIcon(item.mimetype, item.name, item.icon, item.id)}
+                                                        {getFileIcon(item.mimetype, item.name, item.icon, item.id, item.content || item.link)}
                                                     </div>
                                                 );
                                             })() : (
                                                 <div className="w-full h-full flex flex-col">
-                                                    {getFileIcon(item.mimetype, item.name, item.icon, item.id)}
+                                                    {getFileIcon(item.mimetype, item.name, item.icon, item.id, item.content || item.link)}
                                                 </div>
                                             )}
                                         </div>

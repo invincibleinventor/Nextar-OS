@@ -11,7 +11,7 @@ interface TourGuideProps {
 
 const tourStyles = `
 .driver-popover {
-    background: var(--surface) !important;
+    background: var(--bg-surface) !important;
     border: 1px solid var(--border-color) !important;
     border-radius: 0px !important;
     box-shadow: 4px 4px 0px var(--border-color) !important;
@@ -44,7 +44,7 @@ const tourStyles = `
 
 .driver-popover-prev-btn,
 .driver-popover-next-btn {
-    background: var(--overlay) !important;
+    background: var(--bg-overlay) !important;
     color: var(--text-color) !important;
     border: 1px solid var(--border-color) !important;
     border-radius: 0px !important;
@@ -56,13 +56,13 @@ const tourStyles = `
 
 .driver-popover-prev-btn:hover,
 .driver-popover-next-btn:hover {
-    background: var(--overlay) !important;
+    background: var(--bg-overlay) !important;
 }
 
 .driver-popover-next-btn {
-    background: var(--accent) !important;
+    background: var(--accent-color) !important;
     color: var(--bg-base) !important;
-    border: 1px solid var(--accent) !important;
+    border: 1px solid var(--accent-color) !important;
 }
 
 .driver-popover-next-btn:hover {
@@ -80,23 +80,23 @@ const tourStyles = `
 }
 
 .driver-popover-arrow {
-    border-color: var(--surface) !important;
+    border-color: var(--bg-surface) !important;
 }
 
 .driver-popover-arrow-side-bottom {
-    border-top-color: var(--surface) !important;
+    border-top-color: var(--bg-surface) !important;
 }
 
 .driver-popover-arrow-side-top {
-    border-bottom-color: var(--surface) !important;
+    border-bottom-color: var(--bg-surface) !important;
 }
 
 .driver-popover-arrow-side-left {
-    border-right-color: var(--surface) !important;
+    border-right-color: var(--bg-surface) !important;
 }
 
 .driver-popover-arrow-side-right {
-    border-left-color: var(--surface) !important;
+    border-left-color: var(--bg-surface) !important;
 }
 `;
 
@@ -128,51 +128,62 @@ export default function TourGuide({ isOpen, onClose }: TourGuideProps) {
             onDestroyStarted: () => {
                 driverInstance.destroy();
                 onClose();
+                if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new Event('tour-ended'));
+                }
             },
             steps: ismobile ? [
                 {
                     popover: {
-                        title: '👋 Welcome to Mobile Mode!',
-                        description: 'Experience NextarOS on mobile. Let us show you around!', side: 'bottom',
-                        align: 'center'
+                        title: 'Welcome to NextarOS',
+                        description: 'A full mobile OS experience in your browser.\nLet\'s walk through the key features!',
+                        side: 'bottom' as const,
+                        align: 'center' as const
                     }
                 },
                 {
                     element: '[data-tour="ios-statusbar"]',
                     popover: {
-                        title: '📱 Status Bar',
-                        description: 'Time, network, and battery status.\n\n↓ Swipe down from top-right for Control Center',
-                        side: 'bottom'
+                        title: 'Status Bar',
+                        description: 'Shows time, signal, and battery.\n\nTry it: Swipe down from the TOP-RIGHT corner to open Control Center.',
+                        side: 'bottom' as const
                     }
                 },
                 {
                     element: '[data-tour="ios-apps"]',
                     popover: {
-                        title: '📲 Home Screen',
-                        description: 'Tap apps to open them.\nLong-press for options and edit mode.',
-                        side: 'top'
+                        title: 'Home Screen Apps',
+                        description: 'Tap any app icon to launch it.\nLong-press an icon to enter edit mode (rearrange & delete).',
+                        side: 'top' as const
                     }
                 },
                 {
                     element: '[data-tour="ios-dock"]',
                     popover: {
-                        title: '🚀 Dock',
-                        description: 'Your favorite apps. Always accessible from any page.',
-                        side: 'top'
+                        title: 'Dock',
+                        description: 'Quick-access apps pinned at the bottom.\nThese stay visible on every home screen page.',
+                        side: 'top' as const
                     }
                 },
                 {
                     popover: {
-                        title: '✋ Gestures',
-                        description: '↓ Swipe from top-right: Control Center\n↓ Swipe from top-left: Notifications\n↑ Swipe from bottom: Home/Recent Apps\n← → Swipe horizontally: Switch pages',
-                        side: 'bottom'
+                        title: 'Swipe Gestures',
+                        description: 'Swipe DOWN from top-right → Control Center\nSwipe DOWN from top-left → Notifications\nSwipe UP from bottom → Home / Recent Apps\nSwipe LEFT/RIGHT → Switch pages & App Library',
+                        side: 'bottom' as const
                     }
                 },
                 {
                     popover: {
-                        title: '🎉 Enjoy!',
-                        description: 'Explore apps, swipe between pages, and experience NextarOS mobile!',
-                        side: 'bottom'
+                        title: 'Draggable Panels',
+                        description: 'Notification and Control panels can be dragged up and down.\nSwipe them away to dismiss!',
+                        side: 'bottom' as const
+                    }
+                },
+                {
+                    popover: {
+                        title: 'You\'re All Set!',
+                        description: 'Explore the apps, customize settings, and enjoy NextarOS.\nHave fun!',
+                        side: 'bottom' as const
                     }
                 }
             ] : [

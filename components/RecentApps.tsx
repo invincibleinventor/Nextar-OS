@@ -7,7 +7,7 @@ import { apps, openSystemItem } from './data';
 import { useDevice } from './DeviceContext';
 import { useSettings } from './SettingsContext';
 import TintedAppIcon from './ui/TintedAppIcon';
-import { IoSearch, IoClose } from 'react-icons/io5';
+import { IoSearch, IoClose, IoFolderOutline, IoDocumentTextOutline } from 'react-icons/io5';
 import { useFileSystem } from './FileSystemContext';
 
 
@@ -48,7 +48,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0, pointerEvents: 'none' }}
-                    transition={{ duration: 0.2 }}
+                    transition={{ duration: 0.15 }}
                 >
                     <style>{`
                         .scrollbar-hide::-webkit-scrollbar {
@@ -60,7 +60,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                         }
                     `}</style>
                     <motion.div
-                        className={`absolute inset-0  bg-center  bg-cover bg-no-repeat`}
+                        className={`absolute inset-0 bg-center bg-cover bg-no-repeat`}
                         onClick={onclose}
                         style={{ backgroundImage: `url('${wallpaperurl}')` }}
                         initial={{ opacity: 0 }}
@@ -112,7 +112,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                                                         }}
                                                         className="flex items-center gap-3 px-2 py-2 hover:bg-overlay cursor-pointer transition-colors"
                                                     >
-                                                        <div className="w-8 h-8 shrink-0">
+                                                        <div className="w-8 h-8 shrink-0 shadow-md">
                                                             <TintedAppIcon appId={app.id} appName={app.appname} originalIcon={app.icon} size={32} useFill={false} />
                                                         </div>
                                                         <span className="text-[--text-color] font-medium text-sm">{app.appname}</span>
@@ -134,8 +134,8 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                                                         }}
                                                         className="flex items-center gap-3 px-2 py-2 hover:bg-overlay cursor-pointer transition-colors"
                                                     >
-                                                        <div className="w-8 h-8 flex items-center justify-center text-2xl shrink-0">
-                                                            {file.mimetype === 'inode/directory' ? '📁' : '📄'}
+                                                        <div className="w-8 h-8 flex items-center justify-center shrink-0">
+                                                            {file.mimetype === 'inode/directory' ? <IoFolderOutline className="w-6 h-6 text-pastel-blue" /> : <IoDocumentTextOutline className="w-6 h-6 text-pastel-peach" />}
                                                         </div>
                                                         <div className="flex-1 min-w-0">
                                                             <div className="text-[--text-color] font-medium text-sm truncate">{file.name}</div>
@@ -172,7 +172,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        transition={{ duration: (searchquery == '' ? 0.2 : 0), ease: "easeOut" }}
+                        transition={{ duration: (searchquery == '' ? 0.15 : 0) }}
                         onClick={(e) => { if (!ignoreclickref.current && e.target === e.currentTarget) onclose(); }}
                         style={{ willChange: 'opacity', transform: 'translateZ(0)' }}
                     >
@@ -217,14 +217,11 @@ const AppCard = ({ win, appdata, onkill, onopen, islightbackground }: any) => {
     return (
         <motion.div
             className="relative flex-shrink-0 w-[75vw] md:w-[45vw] lg:w-[350px] h-full flex flex-col"
-            initial={{ opacity: 0, scale: 0.95, x: 100 }}
-            animate={{ opacity: 1, scale: 1, x: 0 }}
-            exit={{
-                opacity: 0,
-                scale: 0.8,
-                y: -200,
-                transition: { duration: 0.25, ease: "easeOut" }
-            }}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.7, y: -300, transition: { duration: 0.3, ease: "easeOut" } }}
+            transition={{ duration: 0.2 }}
+            layout={false}
             drag="y"
             dragConstraints={{ top: 0, bottom: 0 }}
             dragElastic={0.1}
@@ -253,15 +250,10 @@ const AppCard = ({ win, appdata, onkill, onopen, islightbackground }: any) => {
                 willChange: 'transform, opacity',
                 transform: 'translateZ(0)'
             }}
-            transition={{
-                type: "spring",
-                stiffness: 400,
-                damping: 35
-            }}
         >
             <div className="flex items-center gap-2 mb-3 px-1 pointer-events-none">
                 {appdata && (
-                    <div className="w-8 h-8">
+                    <div className="w-8 h-8 shadow-md">
                         <TintedAppIcon
                             appId={appdata.id}
                             appName={appdata.appname}
@@ -277,7 +269,6 @@ const AppCard = ({ win, appdata, onkill, onopen, islightbackground }: any) => {
 
             <div className="flex-1 w-full bg-surface border-2 border-[--border-color] shadow-pastel overflow-hidden relative group anime-accent-top">
                 <div className="absolute inset-0 z-[99999] bg-transparent cursor-grab active:cursor-grabbing" />
-
                 <div id={`recent-app-slot-${win.id}`} className="w-full h-full" />
             </div>
         </motion.div>

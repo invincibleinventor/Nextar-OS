@@ -20,21 +20,6 @@ const AppLibrary = () => {
     const [openfolder, setopenfolder] = useState<string | null>(null);
     const [searchquery, setsearchquery] = useState('');
 
-    const getcategorycolor = (category: string) => {
-        const colors: Record<string, string> = {
-            'Productivity': 'border-pastel-blue',
-            'Utilities': 'border-pastel-peach',
-            'Creative': 'border-pastel-pink',
-            'Social': 'border-pastel-lavender',
-            'Entertainment': 'border-pastel-mauve',
-            'Development': 'border-pastel-green',
-            'System': 'border-pastel-yellow',
-            'Internet': 'border-pastel-peach',
-            'Other': 'border-accent'
-        };
-        return colors[category] || 'border-accent';
-    };
-
     const allApps = useMemo(() => {
         const installedAppFiles = files.filter(f => f.parent === 'root-apps' && f.name.endsWith('.app'));
         const installedApps = installedAppFiles.map(f => {
@@ -78,10 +63,8 @@ const AppLibrary = () => {
     return (
         <div
             className="w-full h-full overflow-y-auto overflow-x-hidden pt-8 px-5 pb-32 scrollbar-hide select-none [&::-webkit-scrollbar]:hidden bg-[--bg-surface]"
-            style={{ touchAction: 'pan-x pan-y', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            style={{ touchAction: 'pan-y', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); }}
-            onTouchStart={(e) => e.stopPropagation()}
-            onTouchMove={(e) => e.stopPropagation()}
         >
             <h1 className="text-2xl font-bold text-[--text-color] mb-4">App Library</h1>
             <div className="relative w-full text-center mb-6">
@@ -110,9 +93,9 @@ const AppLibrary = () => {
                             <div
                                 key={app.id}
                                 onClick={() => openapp(app)}
-                                className="flex items-center gap-4 p-3 bg-overlay border border-[--border-color]  cursor-pointer active:scale-[0.98] transition-transform"
+                                className="flex items-center gap-4 p-3 bg-overlay border border-[--border-color] cursor-pointer active:scale-[0.98] transition-transform"
                             >
-                                <div className="w-12 h-12 shrink-0">
+                                <div className="w-12 h-12 shrink-0 shadow-md">
                                     <TintedAppIcon
                                         appId={app.id}
                                         appName={app.appname}
@@ -122,7 +105,7 @@ const AppLibrary = () => {
                                     />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <div className="text-[--text-color] font-semibold text-base truncate">{app.appname}</div>
+                                    <div className={`font-semibold text-base truncate ${islightbackground ? 'text-black' : 'text-[--text-color]'}`}>{app.appname}</div>
                                     <div className="text-[--text-muted] text-sm">{app.category || 'App'}</div>
                                 </div>
                             </div>
@@ -147,7 +130,7 @@ const AppLibrary = () => {
                         return (
                             <div key={category} className="flex flex-col gap-2 relative">
                                 <div
-                                    className={`bg-overlay border-2 ${getcategorycolor(category)} p-4 w-auto aspect-square shrink-0 h-auto ${hasoverflow ? 'cursor-pointer active:scale-95 transition-transform' : ''}`}
+                                    className={`bg-white/10 dark:bg-white/10 p-4 w-auto aspect-square shrink-0 h-auto shadow-md ${hasoverflow ? 'cursor-pointer active:scale-95 transition-transform' : ''}`}
                                     style={{ aspectRatio: '1/1' }}
                                     onClick={() => hasoverflow && setopenfolder(category)}
                                 >
@@ -163,17 +146,19 @@ const AppLibrary = () => {
                                                 }}
                                                 className={`relative w-full h-full flex items-center justify-center ${!hasoverflow ? 'cursor-pointer active:scale-90' : ''} transition-transform`}
                                             >
-                                                <TintedAppIcon
-                                                    appId={app.id}
-                                                    appName={app.appname}
-                                                    originalIcon={app.icon}
-                                                    size={64}
-                                                    useFill={false}
-                                                />
+                                                <div className="shadow-md">
+                                                    <TintedAppIcon
+                                                        appId={app.id}
+                                                        appName={app.appname}
+                                                        originalIcon={app.icon}
+                                                        size={64}
+                                                        useFill={false}
+                                                    />
+                                                </div>
                                             </div>
                                         ))}
                                         {hasoverflow && (
-                                            <div className="relative w-full h-full flex items-center justify-center bg-overlay ">
+                                            <div className="relative w-full h-full flex items-center justify-center bg-white/10 dark:bg-white/5">
                                                 <span
                                                     className="font-bold text-lg text-[--text-color]"
                                                 >+{overflowcount}</span>
@@ -182,7 +167,7 @@ const AppLibrary = () => {
                                     </div>
                                 </div>
                                 <span
-                                    className={`text-center mt-1 text-[13px] font-semibold leading-none px-1 truncate ${getcategorycolor(category).replace('border-', 'text-')}`}
+                                    className="text-center mt-1 text-[13px] font-semibold leading-none px-1 truncate text-[--text-muted]"
                                 >
                                     {category}
                                 </span>
@@ -206,14 +191,14 @@ const AppLibrary = () => {
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.8, opacity: 0 }}
                             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                            className="bg-surface border border-[--border-color] shadow-pastel-lg  p-6 w-[90%] max-w-sm max-h-[70vh] overflow-y-auto"
+                            className="bg-surface border border-[--border-color] shadow-pastel-lg p-6 w-[90%] max-w-sm max-h-[70vh] overflow-y-auto"
                             onClick={(e) => e.stopPropagation()}
                         >
                             <div className="flex items-center justify-between mb-4">
                                 <h2 className="text-xl font-bold text-[--text-color]">{openfolder}</h2>
                                 <button
                                     onClick={() => setopenfolder(null)}
-                                    className="p-2  bg-overlay active:scale-90 transition-transform"
+                                    className="p-2 bg-overlay active:scale-90 transition-transform"
                                 >
                                     <IoClose size={20} className="text-[--text-color]" />
                                 </button>
@@ -225,7 +210,7 @@ const AppLibrary = () => {
                                         onClick={() => openapp(app)}
                                         className="flex flex-col items-center gap-2 cursor-pointer active:scale-90 transition-transform"
                                     >
-                                        <div className="w-16 h-16 ">
+                                        <div className="w-16 h-16 shadow-md">
                                             <TintedAppIcon
                                                 appId={app.id}
                                                 appName={app.appname}
