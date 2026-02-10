@@ -164,7 +164,7 @@ const Dock = () => {
 
       {contextMenu && (
         <div
-          className="fixed z-[9999] mb-2 origin-bottom"
+          className="fixed z-[600] mb-2 origin-bottom"
           style={{
             bottom: '80px',
             left: contextMenu.x,
@@ -208,8 +208,9 @@ const Dock = () => {
       <motion.div
         data-tour="dock"
         className="fixed bottom-0 mx-auto left-0 right-0 w-max bg-surface px-[8px] pt-[10px] pb-[12px] flex flex-shrink-0 border-t-2 border-accent/40 transition-colors duration-500 anime-glow-sm"
+        onMouseLeave={() => sethoverapp(null)}
         style={{
-          zIndex: 9999,
+          zIndex: 200,
           height: '67px',
           overflow: 'visible',
           display: 'flex',

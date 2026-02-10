@@ -110,7 +110,7 @@ export default function LockScreen() {
 
     if (ismobile) {
         return (
-            <div className="fixed inset-0 z-[99999] flex flex-col items-center bg-[--bg-base] overflow-hidden font-mono">
+            <div className="fixed inset-0 z-[800] flex flex-col items-center bg-[--bg-base] overflow-hidden font-mono">
                 {/* Background with better visibility */}
                 <div className="absolute inset-0 z-0 bg-cover bg-center opacity-25" style={{ backgroundImage: `url('${wallpaperurl}')` }} />
                 <div className="absolute inset-0 z-0 bg-gradient-to-b from-[--bg-base]/70 via-[--bg-base]/50 to-[--bg-base]/80" />
@@ -232,7 +232,7 @@ export default function LockScreen() {
     }
 
     return (
-        <div className="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-[--bg-base] text-[--text-color] font-mono">
+        <div className="fixed inset-0 z-[800] flex flex-col items-center justify-center bg-[--bg-base] text-[--text-color] font-mono">
             {/* Background - more visible with gradient overlay */}
             <div className="absolute inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: `url('${wallpaperurl}')` }}>
                 <div className="absolute inset-0 bg-gradient-to-b from-[--bg-base]/75 via-[--bg-base]/60 to-[--bg-base]/80" />

@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect, useRef, memo, useCallback } from 'react';
+import React, { useState, useEffect, useRef, memo, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { useWindows } from './WindowContext';
@@ -13,6 +13,15 @@ import { ui } from '../utils/constants';
 
 const panelheight = ui.panelHeight;
 const dockheight = ui.dockHeight;
+
+const shallowEqual = (a: Record<string, any> | undefined, b: Record<string, any> | undefined): boolean => {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  const keysA = Object.keys(a);
+  const keysB = Object.keys(b);
+  if (keysA.length !== keysB.length) return false;
+  return keysA.every(key => a[key] === b[key]);
+};
 
 const MemoizedDynamicComponent = memo(
   ({ icon, component, appname, appprops, isFocused, isExternal, externalUrl }: { icon: string, component: string; appname: string, appprops: any; isFocused: boolean, isExternal?: boolean, externalUrl?: string }) => {
@@ -38,7 +47,14 @@ const MemoizedDynamicComponent = memo(
 
     return <DynamicComponent {...appprops} isFocused={isFocused} />;
   },
-  (prevprops, nextprops) => prevprops.isFocused === nextprops.isFocused
+  (prevprops, nextprops) =>
+    prevprops.isFocused === nextprops.isFocused &&
+    prevprops.component === nextprops.component &&
+    prevprops.appname === nextprops.appname &&
+    prevprops.icon === nextprops.icon &&
+    prevprops.isExternal === nextprops.isExternal &&
+    prevprops.externalUrl === nextprops.externalUrl &&
+    shallowEqual(prevprops.appprops, nextprops.appprops)
 );
 MemoizedDynamicComponent.displayName = 'MemoizedDynamicComponent';
 
@@ -72,6 +88,8 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
     }
   }, [isminimized, suspend, resume]);
 
+  const stableAppProps = useMemo(() => ({ ...props, windowId: id }), [props, id]);
+
   const handleCrash = useCallback((error: string) => {
     if (processref.current) {
       crash(processref.current, error);
@@ -79,6 +97,17 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
   }, [crash]);
 
 
+
+  const dragCleanupRef = useRef<(() => void) | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (dragCleanupRef.current) {
+        dragCleanupRef.current();
+        dragCleanupRef.current = null;
+      }
+    };
+  }, []);
 
   const [mounted, setmounted] = useState(false);
   useEffect(() => setmounted(true), []);
@@ -140,7 +169,7 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
   }, [size]);
 
   const myindex = windows ? windows.findIndex((w: any) => w.id === id) : 0;
-  const zindex = activewindow === id ? 1000 : 100 + myindex;
+  const zindex = activewindow === id ? 199 : 100 + myindex;
 
   useEffect(() => {
 
@@ -301,10 +330,6 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
       let newleft = movex - dragoffsetx;
       let newtop = movey - dragoffsety;
 
-      if (!wasmaximized && newtop <= panelheight - 10) {
-
-      }
-
       newleft = Math.max(-size.width / 2.0, Math.min(screenwidth - size.width / 2.0, newleft));
       newtop = Math.max(panelheight - 20, Math.min(screenheight - dockheight - size.height / 4.0, newtop));
 
@@ -315,18 +340,21 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
       lasttop = newtop;
     };
 
-    const onmouseup = () => {
-      setisdragging(false);
+    const cleanup = () => {
       document.removeEventListener('mousemove', onmousemove);
       document.removeEventListener('mouseup', onmouseup);
       document.removeEventListener('touchmove', onmousemove);
       document.removeEventListener('touchend', onmouseup);
+      dragCleanupRef.current = null;
+    };
+
+    const onmouseup = () => {
+      setisdragging(false);
+      cleanup();
 
       if (!wasmaximized && lasttop <= panelheight) {
         previousStateRef.current = { position, size };
         updatewindow(id, { ismaximized: true });
-      } else if (wasmaximized && dragstarted) {
-
       }
     };
 
@@ -334,6 +362,7 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
     document.addEventListener('mouseup', onmouseup);
     document.addEventListener('touchmove', onmousemove);
     document.addEventListener('touchend', onmouseup);
+    dragCleanupRef.current = cleanup;
   };
 
   const handleresizestart = (e: any, direction: any) => {
@@ -388,17 +417,23 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
       });
     };
 
-    const onmouseup = () => {
+    const cleanup = () => {
       document.removeEventListener('mousemove', onmousemove);
       document.removeEventListener('mouseup', onmouseup);
       document.removeEventListener('touchmove', onmousemove);
       document.removeEventListener('touchend', onmouseup);
+      dragCleanupRef.current = null;
+    };
+
+    const onmouseup = () => {
+      cleanup();
     };
 
     document.addEventListener('mousemove', onmousemove);
     document.addEventListener('mouseup', onmouseup);
     document.addEventListener('touchmove', onmousemove);
     document.addEventListener('touchend', onmouseup);
+    dragCleanupRef.current = cleanup;
   };
 
   const content = (
@@ -453,6 +488,7 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
         <div className={`w-full h-[48px] shrink-0 flex items-center border-b border-[--border-color] bg-[--bg-overlay] px-4 z-50 anime-gradient-top ${isdragging ? 'cursor-grabbing' : 'cursor-grab'}`}>
           <div id="buttons" className="flex flex-row items-center space-x-[8px] group shrink-0">
             <button
+              aria-label="Close window"
               className={`w-[12px] h-[12px]  ${activewindow == id ? 'bg-pastel-red' : 'bg-[--border-color]'} window-button flex items-center justify-center`}
               onClick={(e) => {
                 e.preventDefault();
@@ -464,6 +500,7 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
             </button>
 
             <button
+              aria-label="Minimize window"
               className={`w-[12px] h-[12px]  ${activewindow == id ? 'bg-pastel-yellow' : 'bg-[--border-color]'} window-button flex items-center justify-center`}
               onClick={(e) => {
                 e.preventDefault();
@@ -474,6 +511,7 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
               <span className="opacity-0 group-hover:opacity-100 text-[8px] font-bold text-[--bg-base]">−</span>
             </button>
             <button
+              aria-label={ismaximized ? "Restore window" : "Maximize window"}
               className={`w-[12px] h-[12px]  ${activewindow == id ? 'bg-pastel-teal' : 'bg-[--border-color]'} window-button flex items-center justify-center`}
               onClick={(e) => {
                 e.preventDefault();
@@ -492,48 +530,48 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
         className={`w-full h-full flex-1 overflow-hidden ${ismaximized || ismobile ? '' : ''} ${(isminimized || issystemgestureactive || shouldblur || isRecentAppView) ? 'pointer-events-none' : 'pointer-events-auto'} ${isRecentAppView ? 'recent-app-frozen' : ''}`}
       >
         <AppErrorBoundary appId={app?.id || appname} windowId={id} onCrash={handleCrash}>
-          <MemoizedDynamicComponent appname={app ? app.appname : ''} icon={app ? app.icon : ''} component={app?.componentname ? app.componentname : component} appprops={{ ...props, windowId: id }} isFocused={activewindow === id && !shouldblur} isExternal={app?.isExternal} externalUrl={app?.externalUrl} />
+          <MemoizedDynamicComponent appname={app ? app.appname : ''} icon={app ? app.icon : ''} component={app?.componentname ? app.componentname : component} appprops={stableAppProps} isFocused={activewindow === id && !shouldblur} isExternal={app?.isExternal} externalUrl={app?.externalUrl} />
         </AppErrorBoundary>
 
         {((ismobile && shouldblur && !isRecentAppView) || issystemgestureactive) && (
-          <div className="absolute inset-0 z-[9999] bg-transparent w-full h-full pointer-events-auto" />
+          <div className="absolute inset-0 z-[500] bg-transparent w-full h-full pointer-events-auto" />
         )}
       </div>
 
 
-      {!ismobile && (
+      {!ismobile && !ismaximized && (
         <>
           <div
-            className="absolute w-full h-3 -top-[3px] cursor-ns-resize z-50"
-            onMouseDown={(e) => handleresizestart(e, 'top')}
+            className="absolute w-full h-[6px] top-0 left-0 cursor-ns-resize z-50"
+            onMouseDown={(e) => { e.stopPropagation(); handleresizestart(e, 'top'); }}
           />
           <div
-            className="absolute w-full h-3 -bottom-[3px] cursor-ns-resize z-50"
-            onMouseDown={(e) => handleresizestart(e, 'bottom')}
+            className="absolute w-full h-[6px] bottom-0 left-0 cursor-ns-resize z-50"
+            onMouseDown={(e) => { e.stopPropagation(); handleresizestart(e, 'bottom'); }}
           />
           <div
-            className="absolute top-0 left-0 w-[2px] h-full cursor-ew-resize z-50"
-            onMouseDown={(e) => handleresizestart(e, 'left')}
+            className="absolute top-0 left-0 w-[6px] h-full cursor-ew-resize z-50"
+            onMouseDown={(e) => { e.stopPropagation(); handleresizestart(e, 'left'); }}
           />
           <div
-            className="absolute top-0 right-0 w-[2px] h-full cursor-ew-resize z-50"
-            onMouseDown={(e) => handleresizestart(e, 'right')}
+            className="absolute top-0 right-0 w-[6px] h-full cursor-ew-resize z-50"
+            onMouseDown={(e) => { e.stopPropagation(); handleresizestart(e, 'right'); }}
           />
           <div
-            className="absolute w-3 h-3 -left-[3px] -top-[3px] cursor-nwse-resize z-50"
-            onMouseDown={(e) => handleresizestart(e, 'top-left')}
+            className="absolute w-4 h-4 left-0 top-0 cursor-nwse-resize z-[51]"
+            onMouseDown={(e) => { e.stopPropagation(); handleresizestart(e, 'top-left'); }}
           />
           <div
-            className="absolute w-3 h-3 -right-[3px] -top-[3px] cursor-nesw-resize z-50"
-            onMouseDown={(e) => handleresizestart(e, 'top-right')}
+            className="absolute w-4 h-4 right-0 top-0 cursor-nesw-resize z-[51]"
+            onMouseDown={(e) => { e.stopPropagation(); handleresizestart(e, 'top-right'); }}
           />
           <div
-            className="absolute w-3 h-3 -left-[3px] -bottom-[3px] cursor-nesw-resize z-50"
-            onMouseDown={(e) => handleresizestart(e, 'bottom-left')}
+            className="absolute w-4 h-4 left-0 bottom-0 cursor-nesw-resize z-[51]"
+            onMouseDown={(e) => { e.stopPropagation(); handleresizestart(e, 'bottom-left'); }}
           />
           <div
-            className="absolute w-3 h-3 -right-[3px] -bottom-[3px] cursor-nwse-resize z-50"
-            onMouseDown={(e) => handleresizestart(e, 'bottom-right')}
+            className="absolute w-4 h-4 right-0 bottom-0 cursor-nwse-resize z-[51]"
+            onMouseDown={(e) => { e.stopPropagation(); handleresizestart(e, 'bottom-right'); }}
           />
         </>
       )}

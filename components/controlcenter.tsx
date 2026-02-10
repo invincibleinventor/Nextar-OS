@@ -138,7 +138,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-[9999]"
+              className="fixed inset-0 z-[500]"
               onClick={onclose}
               style={{ pointerEvents: isopen ? 'auto' : 'none' }}
             />
@@ -159,7 +159,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
             className={`${ismobile
               ? `fixed inset-0 w-full h-full flex items-center justify-center pt-10`
               : `bg-surface border-2 border-[--border-color] w-[320px] fixed top-14 right-4 block anime-glow`}
-                   font-mono origin-top-right  overflow-y-auto z-[9999]` }
+                   font-mono origin-top-right  overflow-y-auto z-[500]` }
             onClick={(e: React.MouseEvent) => {
               e.stopPropagation();
             }}

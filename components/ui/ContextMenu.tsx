@@ -80,7 +80,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose, classNa
             <AnimatePresence>
                 <motion.div
                     key="context-backdrop"
-                    className="fixed inset-0 z-[99998] bg-[--bg-base]/70"
+                    className="fixed inset-0 z-[599] bg-[--bg-base]/70"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -89,7 +89,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose, classNa
                 <motion.div
                     key="context-sheet"
                     ref={menuRef}
-                    className={`fixed bottom-0 left-0 right-0 z-[99999] bg-surface border-t-2 border-[--border-color] p-2 pb-8 font-mono ${className}`}
+                    className={`fixed bottom-0 left-0 right-0 z-[600] bg-surface border-t-2 border-[--border-color] p-2 pb-8 font-mono ${className}`}
                     initial={{ y: '100%' }}
                     animate={{ y: 0 }}
                     exit={{ y: '100%' }}
@@ -148,7 +148,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose, classNa
     return createPortal(
         <div
             ref={menuRef}
-            className={`fixed z-[99999] min-w-[200px] bg-overlay border border-[--border-color] p-[5px] flex flex-col animate-in fade-in zoom-in-95 duration-100 font-mono anime-glow-sm ${className}`}
+            className={`fixed z-[600] min-w-[200px] bg-overlay border border-[--border-color] p-[5px] flex flex-col animate-in fade-in zoom-in-95 duration-100 font-mono anime-glow-sm ${className}`}
             style={style}
             onClick={(e) => e.stopPropagation()}
             onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); }}

@@ -58,6 +58,8 @@ const Desktop = () => {
   const context = { addwindow, windows, updatewindow, setactivewindow, ismobile, activewindow, files };
   const windowsref = useRef(windows);
   windowsref.current = windows;
+  const activewindowref = useRef(activewindow);
+  activewindowref.current = activewindow;
   const overlayref = useRef({ showcontrolcenter, shownotificationcenter, showrecentapps, shownext, showforcequit, showaboutmac, showappswitcher });
   overlayref.current = { showcontrolcenter, shownotificationcenter, showrecentapps, shownext, showforcequit, showaboutmac, showappswitcher };
   const containerRef = useRef<HTMLDivElement>(null);
@@ -116,6 +118,30 @@ const Desktop = () => {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      const isTyping = target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target.isContentEditable;
+
+      // Window management shortcuts — always active
+      if ((e.metaKey || e.ctrlKey) && e.key === 'q') {
+        e.preventDefault();
+        const aw = activewindowref.current;
+        if (aw && aw !== 'explorer-desktop') {
+          setwindows((prev: any[]) => prev.filter((w: any) => w.id !== aw));
+        }
+        return;
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === 'w') {
+        e.preventDefault();
+        const aw = activewindowref.current;
+        if (aw && aw !== 'explorer-desktop') {
+          setwindows((prev: any[]) => prev.filter((w: any) => w.id !== aw));
+        }
+        return;
+      }
+
+      // Skip remaining shortcuts when user is typing in an input
+      if (isTyping) return;
+
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
         setshownext(prev => !prev);
@@ -134,27 +160,17 @@ const Desktop = () => {
         e.preventDefault();
         setshowforcequit(true);
       }
-      if ((e.metaKey || e.ctrlKey) && e.key === 'q') {
-        e.preventDefault();
-        if (activewindow && activewindow !== 'explorer-desktop') {
-          setwindows(windows.filter((w: any) => w.id !== activewindow));
-        }
-      }
-      if ((e.metaKey || e.ctrlKey) && e.key === 'w') {
-        e.preventDefault();
-        if (activewindow && activewindow !== 'explorer-desktop') {
-          setwindows(windows.filter((w: any) => w.id !== activewindow));
-        }
-      }
       if ((e.metaKey || e.ctrlKey) && e.key === 'm') {
         e.preventDefault();
-        if (activewindow) {
-          updatewindow(activewindow, { isminimized: true });
+        const aw = activewindowref.current;
+        if (aw) {
+          updatewindow(aw, { isminimized: true });
         }
       }
       if ((e.metaKey || e.ctrlKey) && e.key === ',') {
         e.preventDefault();
-        const settingsExists = windows.find((w: any) => w.appname === 'Settings');
+        const currentWindows = windowsref.current;
+        const settingsExists = currentWindows.find((w: any) => w.appname === 'Settings');
         if (!settingsExists) {
           addwindow({
             id: `settings-${Date.now()}`,
@@ -208,7 +224,7 @@ const Desktop = () => {
       window.removeEventListener('tour-ended', handleTourEnded);
       window.removeEventListener('toggle-desktop-effects', handleToggleDesktopEffects);
     };
-  }, [showappswitcher]);
+  }, [showappswitcher, addwindow, updatewindow, setactivewindow]);
 
   useEffect(() => {
     if (!ismobile) return;
@@ -396,7 +412,7 @@ const Desktop = () => {
     return (
       <motion.div
         data-tour="ios-statusbar"
-        className="absolute top-0 left-0 right-0 h-11 z-[10000] flex items-center justify-between px-6 cursor-pointer bg-[--bg-surface] border-b border-[--border-color]"
+        className="absolute top-0 left-0 right-0 h-11 z-[300] flex items-center justify-between px-6 cursor-pointer bg-[--bg-surface] border-b border-[--border-color]"
         drag="y"
         dragConstraints={{ top: 0, bottom: 0 }}
         onDragEnd={(_, info) => {
@@ -570,7 +586,7 @@ const Desktop = () => {
         {ismobile && (
           <div className="relative w-full h-full">
 
-            <div className={`absolute top-0 right-0 z-[10001] visible`}>
+            <div className={`absolute top-0 right-0 z-[500] visible`}>
               <Control isopen={showcontrolcenter} onclose={() => setshowcontrolcenter(false)} ismobile={true} />
             </div>
 
@@ -587,7 +603,7 @@ const Desktop = () => {
             </main>
 
             {windows.length > 0 && (
-              <div className={`absolute inset-0 pointer-events-none ${showrecentapps ? 'z-[9992]' : 'z-40'}`}>
+              <div className={`absolute inset-0 pointer-events-none ${showrecentapps ? 'z-[100]' : 'z-40'}`}>
                 <div id="mobile-desktop" className="w-full h-full pointer-events-none overflow-hidden">
                   {windows.map((window: any) => (
                     <Window
@@ -604,7 +620,7 @@ const Desktop = () => {
 
             <RecentApps isopen={showrecentapps} onclose={() => setshowrecentapps(false)} />
 
-            <div className={`absolute left-0 right-0 h-10 flex items-end justify-center z-[9999] ${(shownotificationcenter || showcontrolcenter) ? 'pointer-events-none' : 'pointer-events-auto'}`} style={{ bottom: 'max(env(safe-area-inset-bottom, 0px), 4px)' }}>
+            <div className={`absolute left-0 right-0 h-10 flex items-end justify-center z-[400] ${(shownotificationcenter || showcontrolcenter) ? 'pointer-events-none' : 'pointer-events-auto'}`} style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)' }}>
               <motion.div
                 className="w-[140px] h-[21px] flex items-center content-center cursor-pointer"
                 whileTap={{ scale: 0.95 }}

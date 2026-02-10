@@ -44,7 +44,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
         <AnimatePresence>
             {isopen && (
                 <motion.div
-                    className="fixed inset-0 z-[9990] flex flex-col pointer-events-auto"
+                    className="fixed inset-0 z-[490] flex flex-col pointer-events-auto"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0, pointerEvents: 'none' }}
@@ -69,7 +69,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                     />
 
                     <motion.div
-                        className="fixed inset-x-0 top-0 z-[9992] pointer-events-none"
+                        className="fixed inset-x-0 top-0 z-[492] pointer-events-none"
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
@@ -168,7 +168,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
 
                     <motion.div
                         ref={containerref}
-                        className={`${searchquery == '' ? '' : 'hidden'} relative w-full h-full flex items-center overflow-x-auto scrollbar-hide px-[10vw] py-8 z-[9991]`}
+                        className={`${searchquery == '' ? '' : 'hidden'} relative w-full h-full flex items-center overflow-x-auto scrollbar-hide px-[10vw] py-8 z-[491]`}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -268,7 +268,7 @@ const AppCard = ({ win, appdata, onkill, onopen, islightbackground }: any) => {
             </div>
 
             <div className="flex-1 w-full bg-surface border-2 border-[--border-color] shadow-pastel overflow-hidden relative group anime-accent-top">
-                <div className="absolute inset-0 z-[99999] bg-transparent cursor-grab active:cursor-grabbing" />
+                <div className="absolute inset-0 z-[500] bg-transparent cursor-grab active:cursor-grabbing" />
                 <div id={`recent-app-slot-${win.id}`} className="w-full h-full" />
             </div>
         </motion.div>

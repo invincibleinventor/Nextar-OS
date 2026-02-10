@@ -172,7 +172,7 @@ export default function Next({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[9999] flex items-start justify-center pt-[15vh]"
+                className="fixed inset-0 z-[500] flex items-start justify-center pt-[15vh]"
                 onClick={onClose}
             >
                 <motion.div

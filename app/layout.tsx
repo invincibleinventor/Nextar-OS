@@ -129,7 +129,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   navigator.serviceWorker.register('/sw.js').catch(function() {});
                 }
                 window.addEventListener('unhandledrejection', function(e) {
-                  e.preventDefault();
+                  if (e.reason && String(e.reason).includes('serviceWorker')) {
+                    e.preventDefault();
+                    return;
+                  }
+                  console.error('[NextarOS] Unhandled rejection:', e.reason);
                 });
               `,
             }}

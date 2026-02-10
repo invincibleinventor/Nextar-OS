@@ -44,7 +44,31 @@ const languageMap: Record<string, string> = {
     'css': 'css',
     'md': 'markdown',
     'txt': 'plaintext',
+    'go': 'go',
+    'rs': 'rust',
+    'cpp': 'cpp',
+    'c': 'c',
+    'java': 'java',
+    'rb': 'ruby',
+    'php': 'php',
+    'sh': 'shell',
 };
+
+const pistonRuntimes: Record<string, { language: string; version: string }> = {
+    'python': { language: 'python', version: '3.10.0' },
+    'javascript': { language: 'javascript', version: '18.15.0' },
+    'typescript': { language: 'typescript', version: '5.0.3' },
+    'go': { language: 'go', version: '1.16.2' },
+    'rust': { language: 'rust', version: '1.68.2' },
+    'cpp': { language: 'c++', version: '10.2.0' },
+    'c': { language: 'c', version: '10.2.0' },
+    'java': { language: 'java', version: '15.0.2' },
+    'ruby': { language: 'ruby', version: '3.0.1' },
+    'php': { language: 'php', version: '8.2.3' },
+    'shell': { language: 'bash', version: '5.2.0' },
+};
+
+const runnableLanguages = new Set(Object.keys(pistonRuntimes));
 
 const fileIcons: Record<string, { icon: React.ReactNode; color: string }> = {
     'py': { icon: <IoPython size={14} />, color: '#3776AB' },
@@ -55,7 +79,15 @@ const fileIcons: Record<string, { icon: React.ReactNode; color: string }> = {
     'json': { icon: <span className="text-[10px] font-bold">{'{}'}</span>, color: '#F5A623' },
     'html': { icon: <span className="text-[10px] font-bold">H</span>, color: '#E34F26' },
     'css': { icon: <span className="text-[10px] font-bold">#</span>, color: '#1572B6' },
-    'md': { icon: <span className="text-[10px] font-bold">M↓</span>, color: '#083FA1' },
+    'md': { icon: <span className="text-[10px] font-bold">M\u2193</span>, color: '#083FA1' },
+    'go': { icon: <span className="text-[10px] font-bold">Go</span>, color: '#00ADD8' },
+    'rs': { icon: <span className="text-[10px] font-bold">Rs</span>, color: '#DEA584' },
+    'cpp': { icon: <span className="text-[10px] font-bold">C+</span>, color: '#00599C' },
+    'c': { icon: <span className="text-[10px] font-bold">C</span>, color: '#A8B9CC' },
+    'java': { icon: <span className="text-[10px] font-bold">Jv</span>, color: '#ED8B00' },
+    'rb': { icon: <span className="text-[10px] font-bold">Rb</span>, color: '#CC342D' },
+    'php': { icon: <span className="text-[10px] font-bold">Php</span>, color: '#777BB4' },
+    'sh': { icon: <span className="text-[10px] font-bold">$</span>, color: '#4EAA25' },
 };
 
 export default function CodeEditor({ isFocused = true, appId = 'python', id }: { isFocused?: boolean, appId?: string, id?: string }) {
@@ -84,7 +116,6 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
         { id: 'welcome', name: 'Welcome.md', content: '# Code Editor\n\n## Keyboard Shortcuts\n- `Cmd/Ctrl + S` - Save file\n- `Cmd/Ctrl + N` - New file\n- `Cmd/Ctrl + F` - Find in file\n- `Cmd/Ctrl + H` - Find and replace\n\n## Supported Languages\nPython, JavaScript, TypeScript, HTML, CSS, JSON, Markdown\n\n## Running Code\nClick "Run" to execute Python or JavaScript files.', language: 'markdown', modified: false }
     ]);
     const [activefile, setactivefile] = useState<string>('welcome');
-    const [output, setoutput] = useState('');
     const [isrunning, setisrunning] = useState(false);
     const [expandedfolders, setexpandedfolders] = useState<Set<string>>(new Set([projectsId]));
     const [showpanel, setshowpanel] = useState(false);
@@ -173,6 +204,24 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
     }, [activefile]);
 
     const currentFile = openfiles.find(f => f.id === activefile);
+
+    const breadcrumb = useMemo(() => {
+        if (!currentFile || currentFile.id === 'welcome') return ['Welcome.md'];
+        const path: string[] = [currentFile.name];
+        let parentId = files.find(f => f.id === currentFile.id)?.parent;
+        while (parentId) {
+            const parent = files.find(f => f.id === parentId);
+            if (!parent) break;
+            path.unshift(parent.name);
+            parentId = parent.parent;
+        }
+        return path;
+    }, [currentFile, files]);
+
+    const wordCount = useMemo(() => {
+        if (!currentFile) return 0;
+        return currentFile.content.split(/\s+/).filter(Boolean).length;
+    }, [currentFile]);
 
     const updateCode = useCallback((value: string | undefined) => {
         if (!value) return;
@@ -324,45 +373,112 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
         updateCode(newContent);
     }, [findquery, replacevalue, casesensitive, useregex, updateCode]);
 
+    const outputRef = useRef<HTMLPreElement>(null);
+    const [outputlines, setoutputlines] = useState<{ text: string; type: 'stdout' | 'stderr' | 'info' }[]>([]);
+    const [panelHeight, setPanelHeight] = useState(160);
+    const panelDragRef = useRef<{ startY: number; startHeight: number } | null>(null);
+
+    const appendOutput = useCallback((text: string, type: 'stdout' | 'stderr' | 'info' = 'stdout') => {
+        const now = new Date();
+        const ts = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+        setoutputlines(prev => [...prev, { text: `[${ts}] ${text}`, type }]);
+    }, []);
+
+    useEffect(() => {
+        if (outputRef.current) {
+            outputRef.current.scrollTop = outputRef.current.scrollHeight;
+        }
+    }, [outputlines]);
+
+    const handlePanelDragStart = useCallback((e: React.MouseEvent) => {
+        e.preventDefault();
+        panelDragRef.current = { startY: e.clientY, startHeight: panelHeight };
+        const onMove = (ev: MouseEvent) => {
+            if (!panelDragRef.current) return;
+            const delta = panelDragRef.current.startY - ev.clientY;
+            setPanelHeight(Math.max(80, Math.min(400, panelDragRef.current.startHeight + delta)));
+        };
+        const onUp = () => {
+            panelDragRef.current = null;
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onUp);
+        };
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+    }, [panelHeight]);
+
     const runcode = useCallback(async () => {
         const file = openfiles.find(f => f.id === activefile);
         if (!file) return;
 
-        const isPython = file.language === 'python';
-        const isJs = file.language === 'javascript';
-
-        if (!isPython && !isJs) {
-            setoutput('Only Python and JavaScript files can be executed.\nNote: TypeScript files must be saved as .js\n');
+        const runtime = pistonRuntimes[file.language];
+        if (!runtime) {
+            appendOutput(`Language "${file.language}" is not supported for execution.`, 'stderr');
+            appendOutput(`Supported: ${Object.keys(pistonRuntimes).join(', ')}`, 'info');
             setshowpanel(true);
             return;
         }
 
         setisrunning(true);
         setshowpanel(true);
-        setoutput('Running...\n');
+        setoutputlines([]);
+        appendOutput(`Running ${file.name} (${runtime.language} ${runtime.version})...`, 'info');
 
         try {
             const response = await fetch(api.pistonExecuteUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    language: isPython ? 'python' : 'javascript',
-                    version: isPython ? '3.10.0' : '18.15.0',
+                    language: runtime.language,
+                    version: runtime.version,
                     files: [{ content: file.content }]
                 })
             });
             const data = await response.json();
             if (data.run) {
-                setoutput(data.run.output || (data.run.stderr ? `Error: ${data.run.stderr}` : 'Program exited with code 0'));
+                if (data.run.stdout) {
+                    data.run.stdout.split('\n').filter((l: string) => l).forEach((line: string) => appendOutput(line, 'stdout'));
+                }
+                if (data.run.stderr) {
+                    data.run.stderr.split('\n').filter((l: string) => l).forEach((line: string) => appendOutput(line, 'stderr'));
+                }
+                if (!data.run.stdout && !data.run.stderr) {
+                    if (data.run.output) {
+                        data.run.output.split('\n').filter((l: string) => l).forEach((line: string) => appendOutput(line, 'stdout'));
+                    } else {
+                        appendOutput(`Exited with code ${data.run.code ?? 0}`, 'info');
+                    }
+                }
             } else {
-                setoutput('Error: Failed to execute');
+                appendOutput('Failed to execute', 'stderr');
             }
         } catch {
-            setoutput('Error: Network request failed');
+            appendOutput('Network request failed', 'stderr');
         } finally {
             setisrunning(false);
         }
-    }, [activefile, openfiles]);
+    }, [activefile, openfiles, appendOutput]);
+
+    const formatCode = useCallback(() => {
+        if (!editorRef.current) return;
+        const editor = editorRef.current;
+        const file = openfiles.find(f => f.id === activefile);
+        if (!file) return;
+
+        if (file.language === 'json') {
+            try {
+                const formatted = JSON.stringify(JSON.parse(editor.getValue()), null, 2);
+                editor.setValue(formatted);
+                updateCode(formatted);
+                addToast('Formatted JSON', 'success');
+            } catch {
+                addToast('Invalid JSON', 'error');
+            }
+            return;
+        }
+
+        editor.getAction('editor.action.formatDocument')?.run();
+    }, [activefile, openfiles, updateCode, addToast]);
 
     const runAsApp = useCallback(() => {
         const file = openfiles.find(f => f.id === activefile);
@@ -617,10 +733,13 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
                             <button onClick={() => setshowfindreplace(!showfindreplace)} className={`p-1.5 ${showfindreplace ? 'text-[--text-color] bg-overlay' : 'text-[--text-muted] hover:text-[--text-color] hover:bg-overlay'}`} title="Find & Replace (Cmd+F)">
                                 <VscReplace size={14} />
                             </button>
+                            <button onClick={formatCode} className="p-1.5 text-[--text-muted] hover:text-[--text-color] hover:bg-overlay" title="Format Document (Shift+Alt+F)">
+                                <VscSettingsGear size={14} />
+                            </button>
                             <button onClick={saveFile} disabled={!currentFile?.modified} className={`flex items-center gap-1 px-2 py-1 text-xs ${currentFile?.modified ? 'text-[--text-color] hover:bg-overlay' : 'text-[--text-muted]'}`} title="Save (Cmd+S)">
                                 <VscSave size={14} />
                             </button>
-                            <button onClick={runcode} disabled={isrunning} className={`flex items-center gap-1 px-2 py-1 text-xs ${isrunning ? 'text-[--text-muted]' : 'text-pastel-green hover:bg-overlay'}`} title="Run Code">
+                            <button onClick={runcode} disabled={isrunning || !currentFile || !runnableLanguages.has(currentFile.language)} className={`flex items-center gap-1 px-2 py-1 text-xs ${isrunning || !currentFile || !runnableLanguages.has(currentFile.language) ? 'text-[--text-muted]' : 'text-pastel-green hover:bg-overlay'}`} title="Run Code">
                                 <VscRunAll size={16} />
                                 Run
                             </button>
@@ -674,6 +793,18 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
                     )}
 
                     <div className="flex-1 flex flex-col min-h-0">
+                        {/* Breadcrumb */}
+                        {!ismobile && currentFile && (
+                            <div className="h-6 flex items-center px-3 bg-[--bg-base] border-b border-[--border-color] text-[11px] text-[--text-muted] gap-1 shrink-0 overflow-hidden">
+                                {breadcrumb.map((seg, i) => (
+                                    <React.Fragment key={i}>
+                                        {i > 0 && <VscChevronRight size={10} className="shrink-0 opacity-50" />}
+                                        <span className={i === breadcrumb.length - 1 ? 'text-[--text-color] truncate' : 'truncate'}>{seg}</span>
+                                    </React.Fragment>
+                                ))}
+                            </div>
+                        )}
+
                         <div className={showpanel ? 'flex-1 min-h-0' : 'flex-1'}>
                             {currentFile && (
                                 <MonacoEditor
@@ -706,19 +837,34 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
                         </div>
 
                         {showpanel && (
-                            <div className="h-40 border-t border-[--border-color] bg-[--bg-base] flex flex-col shrink-0">
-                                <div className="h-8 flex items-center px-4 bg-surface border-b border-[--border-color] gap-4">
-                                    <button className="text-xs text-[--text-color] font-medium border-b-2 border-accent py-1">Output</button>
+                            <div className="flex flex-col shrink-0" style={{ height: panelHeight }}>
+                                {/* Drag handle */}
+                                <div
+                                    className="h-1 cursor-row-resize bg-[--border-color] hover:bg-accent transition-colors shrink-0"
+                                    onMouseDown={handlePanelDragStart}
+                                />
+                                <div className="h-8 flex items-center px-4 bg-[#1a1a2e] border-b border-[#2a2a3e] gap-4 shrink-0">
+                                    <button className="text-xs text-[#cad3f5] font-medium border-b-2 border-accent py-1">Output</button>
                                     <div className="flex-1" />
-                                    <button onClick={() => setoutput('')} className="text-[--text-muted] hover:text-[--text-color] p-1 hover:bg-overlay">
+                                    <button onClick={() => setoutputlines([])} className="text-[#6e738d] hover:text-[#cad3f5] p-1 hover:bg-[#2a2a3e]">
                                         <IoTrashOutline size={14} />
                                     </button>
-                                    <button onClick={() => setshowpanel(false)} className="text-[--text-muted] hover:text-[--text-color] p-1 hover:bg-overlay">
+                                    <button onClick={() => setshowpanel(false)} className="text-[#6e738d] hover:text-[#cad3f5] p-1 hover:bg-[#2a2a3e]">
                                         <VscClose size={14} />
                                     </button>
                                 </div>
-                                <pre className="flex-1 p-3 text-xs font-mono text-[--text-color] overflow-auto whitespace-pre-wrap">
-                                    {output || <span className="text-[--text-muted]">Run your code to see output here...</span>}
+                                <pre ref={outputRef} className="flex-1 p-3 text-xs font-mono overflow-auto whitespace-pre-wrap bg-[#1a1a2e]">
+                                    {outputlines.length === 0 ? (
+                                        <span className="text-[#6e738d]">Run your code to see output here...</span>
+                                    ) : (
+                                        outputlines.map((line, i) => (
+                                            <div key={i} className={
+                                                line.type === 'stderr' ? 'text-[#ed8796]' :
+                                                line.type === 'info' ? 'text-[#8aadf4]' :
+                                                'text-[#cad3f5]'
+                                            }>{line.text}</div>
+                                        ))
+                                    )}
                                 </pre>
                             </div>
                         )}
@@ -744,8 +890,12 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
                     <>
                         <div className="flex items-center gap-4">
                             <span className="opacity-80">Ln {cursorposition.line}, Col {cursorposition.col}</span>
+                            <span className="opacity-60">{wordCount} words</span>
                         </div>
                         <div className="flex items-center gap-4">
+                            {currentFile && runnableLanguages.has(currentFile.language) && (
+                                <span className="opacity-60 flex items-center gap-1"><VscPlay size={10} /> Runnable</span>
+                            )}
                             <span className="opacity-80">{currentFile?.language || 'Plain Text'}</span>
                             <span className="opacity-80">UTF-8</span>
                         </div>
@@ -754,7 +904,7 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
             </div>
 
             {ismobile && mobilefilepanel && (
-                <div className="fixed inset-0 z-[9999] bg-black/50" onClick={() => setmobilefilepanel(false)}>
+                <div className="fixed inset-0 z-50 bg-black/50" onClick={() => setmobilefilepanel(false)}>
                     <div
                         className="absolute bottom-0 left-0 right-0 bg-surface max-h-[70vh] overflow-hidden flex flex-col"
                         onClick={e => e.stopPropagation()}
@@ -782,7 +932,7 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
 
             {contextmenupos && selectedfileforcontext && (
                 <div
-                    className="fixed bg-surface border border-[--border-color] py-1 min-w-[180px] z-[9999]"
+                    className="fixed bg-surface border border-[--border-color] py-1 min-w-[180px] z-50"
                     style={{ left: contextmenupos.x, top: contextmenupos.y }}
                 >
                     <button
