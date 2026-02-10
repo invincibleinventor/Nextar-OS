@@ -924,19 +924,21 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                         )}
                     </div>
                     {/* Row 2: Toolbar - search, view toggle, actions */}
-                    <div className="h-[34px] shrink-0 flex items-center justify-between px-3 border-b border-[--border-color] bg-[--bg-overlay] gap-2">
+                    <div className="h-[34px] shrink-0 flex items-center justify-between px-3 border-b border-[--border-color] bg-[--bg-overlay] gap-2" style={{ color: 'var(--text-muted)' }}>
                         <div className="flex items-center gap-1.5">
                             <div className="flex items-center bg-overlay p-0.5 border border-[--border-color]">
                                 <button
                                     onClick={() => { setviewmode('grid'); localStorage.setItem('nextaros-explorer-viewmode', 'grid'); }}
-                                    className={`p-1 transition-colors ${viewmode === 'grid' ? 'bg-[--bg-base] text-[--text-color]' : 'text-[--text-color] opacity-50 hover:opacity-100'}`}
+                                    className={`p-1 transition-colors ${viewmode === 'grid' ? 'bg-[--bg-base]' : 'hover:bg-[--bg-base]'}`}
+                                    style={viewmode === 'grid' ? { color: 'var(--text-color)' } : undefined}
                                     title="Grid View"
                                 >
                                     <IoGridOutline className="text-sm" />
                                 </button>
                                 <button
                                     onClick={() => { setviewmode('list'); localStorage.setItem('nextaros-explorer-viewmode', 'list'); }}
-                                    className={`p-1 transition-colors ${viewmode === 'list' ? 'bg-[--bg-base] text-[--text-color]' : 'text-[--text-color] opacity-50 hover:opacity-100'}`}
+                                    className={`p-1 transition-colors ${viewmode === 'list' ? 'bg-[--bg-base]' : 'hover:bg-[--bg-base]'}`}
+                                    style={viewmode === 'list' ? { color: 'var(--text-color)' } : undefined}
                                     title="List View"
                                 >
                                     <IoListOutline className="text-sm" />
@@ -946,7 +948,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                 <div className="flex items-center bg-overlay p-0.5 border border-[--border-color]">
                                     <button
                                         onClick={() => setFileModal({ isOpen: true, type: 'create-folder' })}
-                                        className="p-1 hover:bg-[--bg-base] transition-colors text-[--text-color] opacity-50 hover:opacity-100"
+                                        className="p-1 hover:bg-[--bg-base] transition-colors"
                                         title="New Folder"
                                     >
                                         <IoFolderOpenOutline className="text-base" />
@@ -954,7 +956,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                     <div className="w-px h-3.5 bg-[--border-color] mx-1"></div>
                                     <button
                                         onClick={() => setFileModal({ isOpen: true, type: 'create-file' })}
-                                        className="p-1 hover:bg-[--bg-base] transition-colors text-[--text-color] opacity-50 hover:opacity-100"
+                                        className="p-1 hover:bg-[--bg-base] transition-colors"
                                         title="New File"
                                     >
                                         <IoDocumentTextOutline className="text-base" />
@@ -964,9 +966,10 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                         </div>
                         <div className="flex items-center gap-1.5">
                             <div className="relative w-40 sm:w-48">
-                                <IoSearch className="absolute left-2 top-1/2 -translate-y-1/2 text-[--text-muted]" size={12} />
+                                <IoSearch className="absolute left-2 top-1/2 -translate-y-1/2" size={12} />
                                 <input
-                                    className="w-full bg-overlay pl-7 pr-2 py-1 text-xs outline-none focus:ring-1 ring-accent/50 transition-all placeholder-[--text-muted] text-[--text-color]"
+                                    className="w-full bg-overlay pl-7 pr-2 py-1 text-xs outline-none focus:ring-1 ring-accent/50 transition-all placeholder-[--text-muted]"
+                                    style={{ color: 'var(--text-color)' }}
                                     placeholder="Search"
                                     value={searchquery}
                                     onChange={(e) => setsearchquery(e.target.value)}
@@ -974,10 +977,11 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                             </div>
                             <button
                                 onClick={() => setshowpreview(!showpreview)}
-                                className={`p-1 transition-colors ${showpreview ? 'text-[--text-color] bg-overlay text-accent' : 'hover:bg-overlay text-[--text-color] opacity-50 hover:opacity-100'}`}
+                                className={`p-1 transition-colors ${showpreview ? 'bg-overlay' : 'hover:bg-overlay'}`}
+                                style={showpreview ? { color: 'var(--accent-color)' } : undefined}
                                 title="Toggle Preview"
                             >
-                                <IoInformationCircleOutline className="text-base " />
+                                <IoInformationCircleOutline className="text-base" />
                             </button>
                         </div>
                     </div>

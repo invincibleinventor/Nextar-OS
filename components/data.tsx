@@ -40,6 +40,7 @@ export interface appdata {
     externalUrl?: string;
     nativeOnly?: boolean;
     webOnly?: boolean;
+    hidePreview?: boolean;
     manifest?: {
         permissions: {
             fs?: string[];
@@ -462,7 +463,8 @@ export const apps: appdata[] = [
         pinned: true,
         defaultsize: { width: 900, height: 650 },
         category: 'Utilities',
-        webOnly: true
+        webOnly: true,
+        hidePreview: true
     },
     {
         id: 'systemmonitor',

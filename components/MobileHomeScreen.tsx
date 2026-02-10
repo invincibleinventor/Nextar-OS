@@ -316,7 +316,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                                     key={item.id}
                                     layout
                                     layoutId={item.id}
-                                    className="app-icon flex flex-col items-center gap-1 touch-none"
+                                    className="app-icon flex flex-col items-center gap-1 touch-pan-x"
                                     initial={{ opacity: 0, scale: 0.8 }}
                                     animate={editmode ? {
                                         opacity: 1,
