@@ -1132,7 +1132,7 @@ export default function Portfolio({ embedded }: { embedded?: boolean } = {}) {
             {!embedded && <TextureOverlay />}
             {!embedded && <AnimatePresence>{booting && <BootSequence onComplete={handlecomplete} />}</AnimatePresence>}
 
-            <div ref={containerref} className={`portfolio-scroll ${embedded ? 'w-full h-full' : 'fixed inset-0 snap-y snap-mandatory'} overflow-y-auto overflow-x-hidden`} style={{ fontFamily: '"Zen Kaku Gothic New", -apple-system, BlinkMacSystemFont, sans-serif', contain: embedded ? 'layout style paint' : undefined, willChange: embedded ? 'transform' : undefined }}>
+            <div ref={containerref} className={`portfolio-scroll ${embedded ? 'w-full h-full snap-y snap-mandatory' : 'fixed inset-0 snap-y snap-mandatory'} overflow-y-auto overflow-x-hidden`} style={{ fontFamily: '"Zen Kaku Gothic New", -apple-system, BlinkMacSystemFont, sans-serif', contain: embedded ? 'layout style paint' : undefined, willChange: embedded ? 'transform' : undefined }}>
                 <HeroSection onBoot={handleboot} embedded={embedded} />
                 {embedded && <TourCard onTakeTour={handletaketour} onSkip={handleskiptoprojects} />}
                 <ProjectsSection />

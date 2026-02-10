@@ -269,7 +269,16 @@ const AppCard = ({ win, appdata, onkill, onopen, islightbackground }: any) => {
 
             <div className="flex-1 w-full bg-surface border-2 border-[--border-color] shadow-pastel overflow-hidden relative group anime-accent-top">
                 <div className="absolute inset-0 z-[500] bg-transparent cursor-grab active:cursor-grabbing" />
-                <div id={`recent-app-slot-${win.id}`} className="w-full h-full" />
+                {appdata?.hidePreview ? (
+                    <div className="w-full h-full flex flex-col items-center justify-center gap-4 bg-[--bg-base]">
+                        <div className="w-16 h-16 shadow-lg">
+                            <TintedAppIcon appId={appdata.id} appName={appdata.appname} originalIcon={appdata.icon} size={64} useFill={false} />
+                        </div>
+                        <span className="text-sm font-semibold text-[--text-muted]">{win.title}</span>
+                    </div>
+                ) : (
+                    <div id={`recent-app-slot-${win.id}`} className="w-full h-full" />
+                )}
             </div>
         </motion.div>
     );

@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { createPortal } from 'react-dom';
 import { useNotifications } from './NotificationContext';
 import { useDevice } from './DeviceContext';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { IoClose, IoNotificationsOutline, IoTrashOutline } from 'react-icons/io5';
 
 export default function NotificationCenter({ isopen, onclose }: { isopen: boolean; onclose: () => void }) {
@@ -41,6 +41,14 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
     }, [osstate, unviewednotifications, markasviewed]);
 
     const dragControls = useDragControls();
+    const contentscrollref = useRef<HTMLDivElement>(null);
+
+    const handlecontentpointerdown = useCallback((e: React.PointerEvent) => {
+        const el = contentscrollref.current;
+        if (el && el.scrollTop <= 0) {
+            dragControls.start(e);
+        }
+    }, [dragControls]);
 
     if (!mounted) return null;
     if (osstate !== 'unlocked') return null;
@@ -101,7 +109,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                 <div className="text-xl text-[--text-muted] font-medium mt-1">{date}</div>
                             </div>
 
-                            <div className="w-full px-4 flex-1 min-h-0 overflow-y-auto" style={{ touchAction: 'pan-y', overscrollBehavior: 'contain' }}>
+                            <div ref={contentscrollref} onPointerDown={handlecontentpointerdown} className="w-full px-4 flex-1 min-h-0 overflow-y-auto cursor-grab active:cursor-grabbing" style={{ touchAction: 'pan-y', overscrollBehavior: 'contain' }}>
                                 {notifications.length === 0 ? (
                                     <div className="text-center text-[--text-muted] mt-8 mb-4 text-lg font-medium">No Notifications</div>
                                 ) : (

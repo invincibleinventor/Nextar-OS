@@ -572,11 +572,17 @@ export default function ApiDocs({ windowId }: { windowId?: string }) {
                                 For external apps, create an apps.json in your GitHub repo:
                             </p>
                             <CodeTabs
-                                examples={[{ lang: 'JSON', code: `{\n  "apps": [{\n    "id": "my-app",\n    "name": "My App",\n    "description": "Description",\n    "icon": "\ud83c\udfae",\n    "author": "Your Name",\n    "version": "1.0.0",\n    "category": "Utilities",\n    "component": "MyComponent"\n  }]\n}` }]}
+                                examples={[{ lang: 'JSON', code: `{\n  "apps": [{\n    "id": "my-app",\n    "name": "My App",\n    "description": "Description",\n    "icon": "\ud83c\udfae",\n    "author": "Your Name",\n    "version": "1.0.0",\n    "category": "Utilities",\n    "component": "MyComponent",\n    "hidePreview": false\n  }]\n}` }]}
                                 usage=""
                                 copiedtext={copiedtext}
                                 onCopy={copytoClipboard}
                             />
+                            <div className="mt-4 border-t border-[--border-color] pt-4">
+                                <h3 className="text-xs font-bold text-[--text-color] mb-2">hidePreview</h3>
+                                <p className="text-xs text-[--text-muted]">
+                                    <code className="bg-overlay px-1.5 py-0.5 text-accent text-[11px]">boolean</code> — When set to <code className="bg-overlay px-1.5 py-0.5 text-accent text-[11px]">true</code>, the app&apos;s live preview will be hidden in the Recent Apps view. Instead, the app icon and title are shown as a placeholder. Use this for apps with heavy animations or content that doesn&apos;t render well as a frozen preview. Defaults to <code className="bg-overlay px-1.5 py-0.5 text-accent text-[11px]">false</code>.
+                                </p>
+                            </div>
                         </div>
                     </>
                 )}

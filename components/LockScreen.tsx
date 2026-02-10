@@ -111,7 +111,6 @@ export default function LockScreen() {
     if (ismobile) {
         return (
             <div className="fixed inset-0 z-[800] flex flex-col items-center bg-[--bg-base] overflow-hidden font-mono">
-                {/* Background with better visibility */}
                 <div className="absolute inset-0 z-0 bg-cover bg-center opacity-25" style={{ backgroundImage: `url('${wallpaperurl}')` }} />
                 <div className="absolute inset-0 z-0 bg-gradient-to-b from-[--bg-base]/70 via-[--bg-base]/50 to-[--bg-base]/80" />
 
@@ -123,6 +122,10 @@ export default function LockScreen() {
                     animate={{ scaleX: 1 }}
                     transition={{ duration: 0.8, delay: 0.3 }}
                 />
+
+                {/* Corner accents */}
+                <motion.div className="absolute top-4 left-4 z-10" style={{ width: 20, height: 20, borderLeft: '2px solid var(--accent-color)', borderTop: '2px solid var(--accent-color)' }} initial={{ opacity: 0 }} animate={{ opacity: 0.5 }} transition={{ delay: 0.5 }} />
+                <motion.div className="absolute top-4 right-4 z-10" style={{ width: 20, height: 20, borderRight: '2px solid var(--accent-color)', borderTop: '2px solid var(--accent-color)' }} initial={{ opacity: 0 }} animate={{ opacity: 0.5 }} transition={{ delay: 0.6 }} />
 
                 <div className="h-12 w-full z-10" />
 
@@ -139,7 +142,7 @@ export default function LockScreen() {
                     </div>
                 </motion.div>
 
-                {/* Time display - no shimmer, use text-glow */}
+                {/* Time display */}
                 <motion.div
                     className="z-10 flex flex-col items-center mb-6"
                     initial={{ opacity: 0, y: 10 }}
@@ -232,13 +235,13 @@ export default function LockScreen() {
     }
 
     return (
-        <div className="fixed inset-0 z-[800] flex flex-col items-center justify-center bg-[--bg-base] text-[--text-color] font-mono">
-            {/* Background - more visible with gradient overlay */}
+        <div className="fixed inset-0 z-[800] flex flex-col items-center justify-center bg-[--bg-base] text-[--text-color] font-mono overflow-hidden">
+            {/* Background */}
             <div className="absolute inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: `url('${wallpaperurl}')` }}>
                 <div className="absolute inset-0 bg-gradient-to-b from-[--bg-base]/75 via-[--bg-base]/60 to-[--bg-base]/80" />
             </div>
 
-            {/* Decorative accent lines */}
+            {/* Top & bottom accent lines */}
             <motion.div
                 className="absolute top-0 left-0 right-0 h-[2px] z-20"
                 style={{ background: 'linear-gradient(90deg, transparent, var(--accent-color), transparent)' }}
@@ -254,9 +257,37 @@ export default function LockScreen() {
                 transition={{ duration: 1, delay: 0.5 }}
             />
 
-            {/* Time display - no shimmer, use glow effect */}
+            {/* Corner bracket accents */}
+            <motion.div className="absolute top-6 left-6 z-10" style={{ width: 32, height: 32, borderLeft: '2px solid var(--accent-color)', borderTop: '2px solid var(--accent-color)' }} initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 0.4, scale: 1 }} transition={{ delay: 0.6, type: 'spring' }} />
+            <motion.div className="absolute top-6 right-6 z-10" style={{ width: 32, height: 32, borderRight: '2px solid var(--accent-color)', borderTop: '2px solid var(--accent-color)' }} initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 0.4, scale: 1 }} transition={{ delay: 0.7, type: 'spring' }} />
+            <motion.div className="absolute bottom-6 left-6 z-10" style={{ width: 32, height: 32, borderLeft: '2px solid var(--accent-color)', borderBottom: '2px solid var(--accent-color)' }} initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 0.4, scale: 1 }} transition={{ delay: 0.8, type: 'spring' }} />
+            <motion.div className="absolute bottom-6 right-6 z-10" style={{ width: 32, height: 32, borderRight: '2px solid var(--accent-color)', borderBottom: '2px solid var(--accent-color)' }} initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 0.4, scale: 1 }} transition={{ delay: 0.9, type: 'spring' }} />
+
+            {/* Decorative side elements */}
             <motion.div
-                className="z-10 absolute top-20 flex flex-col items-center gap-3"
+                className="absolute left-8 top-1/2 -translate-y-1/2 z-10 hidden lg:flex flex-col items-center gap-3"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 0.3, x: 0 }}
+                transition={{ delay: 0.8 }}
+            >
+                <div style={{ width: 2, height: 60, background: 'var(--accent-color)' }} />
+                <div style={{ width: 8, height: 8, background: 'var(--accent-color)' }} />
+                <div style={{ width: 2, height: 40, background: 'var(--accent-color)' }} />
+            </motion.div>
+            <motion.div
+                className="absolute right-8 top-1/2 -translate-y-1/2 z-10 hidden lg:flex flex-col items-center gap-3"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 0.3, x: 0 }}
+                transition={{ delay: 0.9 }}
+            >
+                <div style={{ width: 2, height: 40, background: 'var(--accent-color)' }} />
+                <div style={{ width: 8, height: 8, background: 'var(--accent-color)' }} />
+                <div style={{ width: 2, height: 60, background: 'var(--accent-color)' }} />
+            </motion.div>
+
+            {/* Time display */}
+            <motion.div
+                className="z-10 absolute top-16 flex flex-col items-center gap-3"
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
