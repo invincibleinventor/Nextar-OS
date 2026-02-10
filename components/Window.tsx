@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect, useRef, memo, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef, memo, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { useWindows } from './WindowContext';
@@ -198,10 +198,11 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
     }
   }, [isminimized, ismaximized, ismobile]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!ismobile || !isRecentAppView) {
       if (ismobile && windowref.current) {
         const el = windowref.current as HTMLElement;
+        el.style.visibility = 'visible';
         el.style.top = '44px';
         el.style.left = '0px';
         el.style.width = window.innerWidth + 'px';
@@ -210,6 +211,12 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
         el.style.transform = 'none';
       }
       return;
+    }
+
+    // Hide immediately before paint to prevent full-screen flash
+    const windowElement = windowref.current as HTMLElement | null;
+    if (windowElement) {
+      windowElement.style.visibility = 'hidden';
     }
 
     let animationFrameId: number;
@@ -225,17 +232,22 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
 
       const slotId = `recent-app-slot-${id}`;
       const slotElement = document.getElementById(slotId);
-      const windowElement = windowref.current as HTMLElement | null;
+      const el = windowref.current as HTMLElement | null;
 
-      if (slotElement && windowElement) {
-        const rect = slotElement.getBoundingClientRect();
-
-        windowElement.style.top = `${rect.top}px`;
-        windowElement.style.left = `${rect.left}px`;
-        windowElement.style.width = `${rect.width}px`;
-        windowElement.style.height = `${rect.height}px`;
-        windowElement.style.borderRadius = '0px';
-        windowElement.style.transform = 'none';
+      if (el) {
+        if (slotElement) {
+          const rect = slotElement.getBoundingClientRect();
+          el.style.top = `${rect.top}px`;
+          el.style.left = `${rect.left}px`;
+          el.style.width = `${rect.width}px`;
+          el.style.height = `${rect.height}px`;
+          el.style.borderRadius = '0px';
+          el.style.transform = 'none';
+          el.style.visibility = 'visible';
+        } else {
+          el.style.visibility = 'hidden';
+          el.style.pointerEvents = 'none';
+        }
       }
 
       animationFrameId = requestAnimationFrame(trackLayout);

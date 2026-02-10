@@ -603,7 +603,7 @@ const Desktop = () => {
             </main>
 
             {windows.length > 0 && (
-              <div className={`absolute inset-0 pointer-events-none ${showrecentapps ? 'z-[100]' : 'z-40'}`}>
+              <div className={`absolute inset-0 pointer-events-none ${showrecentapps ? 'z-[492]' : 'z-40'}`}>
                 <div id="mobile-desktop" className="w-full h-full pointer-events-none overflow-hidden">
                   {windows.map((window: any) => (
                     <Window

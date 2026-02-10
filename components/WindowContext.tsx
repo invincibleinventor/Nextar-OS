@@ -10,10 +10,25 @@ export const WindowProvider = ({ children }: any) => {
   const [activewindow, setactivewindow] = useState<string | null>(null);
 
   const addwindow = useCallback((newwindow: any) => {
-    setactivewindow(newwindow.id);
     setwindows((prevwindows) => {
       const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
+      // For non-multiwindow apps, reuse existing window instead of creating duplicate
+      if (newwindow.multiwindow === false) {
+        const existing = prevwindows.find(w => w.appname === newwindow.appname);
+        if (existing) {
+          setactivewindow(existing.id);
+          return prevwindows.map(w => {
+            if (w.id === existing.id) {
+              return { ...w, isminimized: false, lastInteraction: Date.now() };
+            }
+            if (isMobile) return { ...w, isminimized: true };
+            return w;
+          });
+        }
+      }
+
+      setactivewindow(newwindow.id);
       const filtered = prevwindows.filter(w => w.id !== newwindow.id);
 
       if (isMobile) {
