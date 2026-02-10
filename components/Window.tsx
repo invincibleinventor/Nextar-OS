@@ -202,13 +202,15 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
     if (!ismobile || !isRecentAppView) {
       if (ismobile && windowref.current) {
         const el = windowref.current as HTMLElement;
-        el.style.visibility = 'visible';
-        el.style.top = '44px';
-        el.style.left = '0px';
-        el.style.width = window.innerWidth + 'px';
-        el.style.height = (window.innerHeight - 44) + 'px';
-        el.style.borderRadius = '0px';
-        el.style.transform = 'none';
+        // Clear all inline styles set by the RAF loop so React/Framer Motion regain control
+        el.style.visibility = '';
+        el.style.top = '';
+        el.style.left = '';
+        el.style.width = '';
+        el.style.height = '';
+        el.style.borderRadius = '';
+        el.style.transform = '';
+        el.style.pointerEvents = '';
       }
       return;
     }
@@ -539,7 +541,7 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
       )}
 
       <div
-        className={`w-full h-full flex-1 overflow-hidden ${ismaximized || ismobile ? '' : ''} ${(isminimized || issystemgestureactive || shouldblur || isRecentAppView) ? 'pointer-events-none' : 'pointer-events-auto'} ${isRecentAppView ? 'recent-app-frozen' : ''}`}
+        className={`w-full h-full flex-1 overflow-hidden ${ismaximized || ismobile ? '' : ''} ${(isminimized || issystemgestureactive || shouldblur || isRecentAppView) ? 'pointer-events-none' : 'pointer-events-auto'} ${isRecentAppView && !app?.hidePreview ? 'recent-app-frozen' : ''}`}
       >
         <AppErrorBoundary appId={app?.id || appname} windowId={id} onCrash={handleCrash}>
           <MemoizedDynamicComponent appname={app ? app.appname : ''} icon={app ? app.icon : ''} component={app?.componentname ? app.componentname : component} appprops={stableAppProps} isFocused={activewindow === id && !shouldblur} isExternal={app?.isExternal} externalUrl={app?.externalUrl} />
