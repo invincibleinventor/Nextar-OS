@@ -1654,7 +1654,8 @@ export const openSystemItem = (
         ismaximized: ismaximized,
         position: position,
         size: size,
-        props: props || {}
+        props: props || {},
+        multiwindow: app.multiwindow !== false ? true : false
     });
 };
 

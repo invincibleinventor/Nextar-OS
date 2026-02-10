@@ -267,7 +267,7 @@ const AppCard = ({ win, appdata, onkill, onopen, islightbackground }: any) => {
                     style={{ textShadow: islightbackground ? 'none' : '0 1px 3px rgba(0,0,0,0.6)' }}>{win.title}</span>
             </div>
 
-            <div className="flex-1 w-full bg-surface border-2 border-[--border-color] shadow-pastel overflow-hidden relative group anime-accent-top">
+            <div className="flex-1 w-full border-2 border-[--border-color] shadow-pastel overflow-hidden relative group anime-accent-top">
                 <div className="absolute inset-0 z-[500] bg-transparent cursor-grab active:cursor-grabbing" />
                 {appdata?.hidePreview ? (
                     <div className="w-full h-full flex flex-col items-center justify-center gap-4 bg-[--bg-base]">
