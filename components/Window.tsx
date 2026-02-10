@@ -202,12 +202,12 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
     if (!ismobile || !isRecentAppView) {
       if (ismobile && windowref.current) {
         const el = windowref.current as HTMLElement;
-        // Clear all inline styles set by the RAF loop so React/Framer Motion regain control
+        // Explicitly reset to mobile fullscreen values after RAF loop manipulated them
         el.style.visibility = '';
-        el.style.top = '';
-        el.style.left = '';
-        el.style.width = '';
-        el.style.height = '';
+        el.style.top = '44px';
+        el.style.left = '0px';
+        el.style.width = '100%';
+        el.style.height = 'calc(100% - 44px)';
         el.style.borderRadius = '';
         el.style.transform = '';
         el.style.pointerEvents = '';

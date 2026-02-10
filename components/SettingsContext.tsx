@@ -27,7 +27,18 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [soundeffects, setsoundeffects] = useState(false);
     const [wallpaperurl, setwallpaperurl] = useState('/bg.jpg');
     const [accentcolor, setaccentcolor] = useState('#ed8796');
-    const [islightbackground, setislightbackground] = useState(false);
+    const [islightbackground, setislightbackground] = useState(() => {
+        if (typeof window === 'undefined') return false;
+        try {
+            const cached = localStorage.getItem('bgBrightnessMap');
+            if (cached) {
+                const map = JSON.parse(cached);
+                const val = map['/bg.jpg'];
+                if (val !== undefined) return val;
+            }
+        } catch {}
+        return false;
+    });
     const [inverselabelcolor, setinverselabelcolor] = useState(true);
 
     const { isGuest } = useAuth();
@@ -35,18 +46,16 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const analyzebrightness = useCallback((url: string) => {
         if (typeof window === 'undefined') return;
 
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.onload = () => {
+        const trycanvasanalysis = (imgel: HTMLImageElement): boolean => {
             try {
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
-                if (!ctx) return;
+                if (!ctx) return false;
 
                 const samplesize = 50;
                 canvas.width = samplesize;
                 canvas.height = samplesize;
-                ctx.drawImage(img, 0, 0, samplesize, samplesize);
+                ctx.drawImage(imgel, 0, 0, samplesize, samplesize);
 
                 const imagedata = ctx.getImageData(0, 0, samplesize, samplesize);
                 const data = imagedata.data;
@@ -63,13 +72,64 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
                 }
 
                 const avgbrightness = totalluminance / pixelcount;
-                setislightbackground(avgbrightness > 128);
+                const islight = avgbrightness > 128;
+                setislightbackground(islight);
+                try {
+                    const map = JSON.parse(localStorage.getItem('bgBrightnessMap') || '{}');
+                    map[url] = islight;
+                    localStorage.setItem('bgBrightnessMap', JSON.stringify(map));
+                } catch {}
+                return true;
             } catch {
-                setislightbackground(false);
+                return false;
             }
         };
-        img.onerror = () => setislightbackground(false);
-        img.src = url;
+
+        const usecached = () => {
+            try {
+                const map = JSON.parse(localStorage.getItem('bgBrightnessMap') || '{}');
+                if (map[url] !== undefined) {
+                    setislightbackground(map[url]);
+                    return;
+                }
+            } catch {}
+            setislightbackground(false);
+        };
+
+        // For same-origin images, try without crossOrigin first (works in WebViews)
+        const issameorigin = url.startsWith('/') || url.startsWith(window.location.origin);
+
+        if (issameorigin) {
+            const img = new Image();
+            img.onload = () => {
+                if (!trycanvasanalysis(img)) {
+                    usecached();
+                }
+            };
+            img.onerror = () => usecached();
+            img.src = url;
+        } else {
+            // External URL: try with crossOrigin, fall back to cache
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => {
+                if (!trycanvasanalysis(img)) {
+                    usecached();
+                }
+            };
+            img.onerror = () => {
+                // Retry without crossOrigin - image may load but canvas will be tainted
+                const img2 = new Image();
+                img2.onload = () => {
+                    if (!trycanvasanalysis(img2)) {
+                        usecached();
+                    }
+                };
+                img2.onerror = () => usecached();
+                img2.src = url;
+            };
+            img.src = url;
+        }
     }, []);
 
     useEffect(() => {
