@@ -472,6 +472,20 @@ body {
   visibility: hidden;
 }
 
+/* Rich text editor - contentEditable support */
+.rich-text-editor {
+  -webkit-user-select: text;
+  user-select: text;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+.rich-text-editor div,
+.rich-text-editor p,
+.rich-text-editor br {
+  display: block;
+}
+
 /* Accent button text: light text in light mode, dark text in dark mode */
 .bg-accent {
   color: white !important;

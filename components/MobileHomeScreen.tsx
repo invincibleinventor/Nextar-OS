@@ -407,8 +407,8 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                                         </div>
                                     </div>
                                     <span
-                                        className={`text-[11px] font-semibold text-center leading-tight truncate w-full tracking-tight px-1 font-mono ${islightbackground ? 'text-black' : 'text-white'}`}
-                                        style={{ textShadow: islightbackground ? 'none' : '0 1px 3px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.3)' }}
+                                        className={`text-[11px] font-semibold text-center leading-tight truncate w-full tracking-tight px-1 font-mono ${inverselabelcolor && islightbackground ? 'text-black' : 'text-white'}`}
+                                        style={{ textShadow: (inverselabelcolor && islightbackground) ? 'none' : '0 1px 3px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.3)' }}
                                     >
                                         {item.name}
                                     </span>

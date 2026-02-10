@@ -26,19 +26,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     useEffect(() => {
         const initAuth = async () => {
             try {
-                const users = await getUsers();
-
-                if (users.length === 0) {
-                    const guestUser: User = {
-                        username: 'guest',
-                        passwordHash: '',
-                        name: 'Guest User',
-                        bio: 'Ephemeral Session',
-                        role: 'user',
-                        avatar: '/me.png'
-                    };
-                    setUser(guestUser);
-                }
+                await getUsers();
             } catch {
             } finally {
                 setIsLoading(false);
@@ -47,12 +35,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         initAuth();
     }, []);
-
-    useEffect(() => {
-        if (user?.username === 'guest' && osstate === 'locked') {
-            setosstate('unlocked');
-        }
-    }, [user, osstate, setosstate]);
 
     const login = async (password: string): Promise<boolean> => {
         try {

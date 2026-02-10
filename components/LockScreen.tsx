@@ -108,11 +108,17 @@ export default function LockScreen() {
     const timeStr = currentTime?.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: false }) || '';
     const dateStr = currentTime?.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' }) || '';
 
+    const textColor = islightbackground ? 'text-black/80' : 'text-white';
+    const textMutedColor = islightbackground ? 'text-black/60' : 'text-white/80';
+    const textShadow = islightbackground ? '0 1px 4px rgba(0,0,0,0.08)' : '0 2px 10px rgba(0,0,0,0.5)';
+    const textShadowSm = islightbackground ? 'none' : '0 1px 4px rgba(0,0,0,0.5)';
+
     if (ismobile) {
         return (
-            <div className="fixed inset-0 z-[800] flex flex-col items-center bg-[--bg-base] overflow-hidden font-mono">
-                <div className="absolute inset-0 z-0 bg-cover bg-center opacity-25" style={{ backgroundImage: `url('${wallpaperurl}')` }} />
-                <div className="absolute inset-0 z-0 bg-gradient-to-b from-[--bg-base]/70 via-[--bg-base]/50 to-[--bg-base]/80" />
+            <div className="fixed inset-0 z-[800] flex flex-col items-center overflow-hidden font-mono">
+                {/* Wallpaper background with blur overlay */}
+                <div className="absolute inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: `url('${wallpaperurl}')` }} />
+                <div className="absolute inset-0 z-[1] backdrop-blur-xl" style={{ background: islightbackground ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)' }} />
 
                 {/* Top accent line */}
                 <motion.div
@@ -122,10 +128,6 @@ export default function LockScreen() {
                     animate={{ scaleX: 1 }}
                     transition={{ duration: 0.8, delay: 0.3 }}
                 />
-
-                {/* Corner accents */}
-                <motion.div className="absolute top-4 left-4 z-10" style={{ width: 20, height: 20, borderLeft: '2px solid var(--accent-color)', borderTop: '2px solid var(--accent-color)' }} initial={{ opacity: 0 }} animate={{ opacity: 0.5 }} transition={{ delay: 0.5 }} />
-                <motion.div className="absolute top-4 right-4 z-10" style={{ width: 20, height: 20, borderRight: '2px solid var(--accent-color)', borderTop: '2px solid var(--accent-color)' }} initial={{ opacity: 0 }} animate={{ opacity: 0.5 }} transition={{ delay: 0.6 }} />
 
                 <div className="h-12 w-full z-10" />
 
@@ -137,7 +139,7 @@ export default function LockScreen() {
                     transition={{ delay: 0.1 }}
                 >
                     <div className="w-10 h-10 flex items-center justify-center border border-pastel-red/40 bg-pastel-red/10"
-                        style={{ boxShadow: '0 0 20px rgba(237,135,150,0.3)' }}>
+                        style={{ boxShadow: '0 4px 20px rgba(237,135,150,0.4), 0 0 40px rgba(237,135,150,0.15)' }}>
                         <IoLockClosed className="text-pastel-red text-lg" />
                     </div>
                 </motion.div>
@@ -149,13 +151,13 @@ export default function LockScreen() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
                 >
-                    <h1 className={`text-7xl font-bold tracking-tight ${islightbackground ? 'text-black/80' : 'text-white'}`}
-                        style={{ textShadow: islightbackground ? 'none' : '0 2px 8px rgba(0,0,0,0.5)' }}>
+                    <h1 className={`text-7xl font-bold tracking-tight ${textColor}`}
+                        style={{ textShadow: islightbackground ? '0 2px 8px rgba(0,0,0,0.08)' : '0 2px 16px rgba(0,0,0,0.6), 0 4px 32px rgba(0,0,0,0.3)' }}>
                         {timeStr}
                     </h1>
                     <div className="w-16 h-[2px] mt-3 mb-2" style={{ background: 'linear-gradient(90deg, transparent, var(--accent-color), transparent)' }} />
-                    <p className={`text-base font-medium ${islightbackground ? 'text-black/60' : 'text-white/80'}`}
-                        style={{ textShadow: islightbackground ? 'none' : '0 1px 4px rgba(0,0,0,0.5)' }}>{dateStr}</p>
+                    <p className={`text-base font-medium ${textMutedColor}`}
+                        style={{ textShadow: islightbackground ? 'none' : '0 1px 8px rgba(0,0,0,0.5)' }}>{dateStr}</p>
                 </motion.div>
 
                 {/* User selection and login */}
@@ -173,12 +175,17 @@ export default function LockScreen() {
                                 transition={{ type: 'spring', stiffness: 300, damping: 25 }}
                             >
                                 <div
-                                    className={`relative w-20 h-20 overflow-hidden border-2 transition-all duration-300 ${selectedUser?.username === u.username ? 'border-pastel-red' : 'border-[--border-color]'}`}
-                                    style={selectedUser?.username === u.username ? { boxShadow: '0 0 20px rgba(237,135,150,0.4), 0 0 40px rgba(237,135,150,0.15)' } : {}}
+                                    className={`relative w-20 h-20 overflow-hidden border-2 transition-all duration-300 ${selectedUser?.username === u.username ? 'border-pastel-red' : 'border-white/30'}`}
+                                    style={{
+                                        boxShadow: selectedUser?.username === u.username
+                                            ? '0 8px 32px rgba(237,135,150,0.5), 0 0 60px rgba(237,135,150,0.2)'
+                                            : '0 4px 20px rgba(0,0,0,0.3)'
+                                    }}
                                 >
                                     <Image src={u.avatar || "/pfp.png"} alt={u.name} fill className="object-cover" />
                                 </div>
-                                <span className="text-sm font-medium text-[--text-color]">{u.name}</span>
+                                <span className={`text-sm font-medium ${textColor}`}
+                                    style={{ textShadow: textShadowSm }}>{u.name}</span>
                             </motion.div>
                         ))}
                         <motion.div
@@ -187,10 +194,12 @@ export default function LockScreen() {
                             animate={{ scale: 0.9, opacity: 0.5 }}
                             whileTap={{ scale: 0.85 }}
                         >
-                            <div className="relative w-20 h-20 bg-[--bg-overlay] flex items-center justify-center border-2 border-[--border-color]">
-                                <IoPerson size={32} className="text-[--text-muted]" />
+                            <div className="relative w-20 h-20 bg-black/20 flex items-center justify-center border-2 border-white/20"
+                                style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}>
+                                <IoPerson size={32} className={islightbackground ? 'text-black/50' : 'text-white/70'} />
                             </div>
-                            <span className="text-sm font-medium text-[--text-color]">Guest</span>
+                            <span className={`text-sm font-medium ${textColor}`}
+                                style={{ textShadow: textShadowSm }}>Guest</span>
                         </motion.div>
                     </div>
 
@@ -207,20 +216,34 @@ export default function LockScreen() {
                                 <motion.div
                                     animate={error ? { x: [-5, 5, -5, 5, 0] } : {}}
                                     transition={{ duration: 0.4 }}
+                                    className="relative"
                                 >
                                     <input
                                         type="password"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         placeholder="Password"
-                                        className="w-full bg-[--bg-overlay] border-2 border-[--border-color] focus:border-pastel-red py-3 px-4 outline-none placeholder-[--text-muted] text-[--text-color] transition-all duration-300"
-                                        style={{ WebkitTextFillColor: 'var(--text-color)' }}
+                                        className="w-full bg-black/20 border-2 border-white/20 focus:border-pastel-red py-3 px-4 pr-12 outline-none text-white placeholder-white/50 transition-all duration-300"
+                                        style={{
+                                            WebkitTextFillColor: 'white',
+                                            boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+                                            caretColor: 'white'
+                                        }}
                                     />
+                                    <button
+                                        type="submit"
+                                        disabled={!password || isSubmitting}
+                                        className={`absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center transition-all duration-300
+                                            ${password ? 'bg-pastel-red text-white' : 'bg-transparent text-transparent'}`}
+                                        style={password ? { boxShadow: '0 0 16px rgba(237,135,150,0.5)' } : {}}
+                                    >
+                                        {!isSubmitting && <IoArrowForward size={16} />}
+                                        {isSubmitting && <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent animate-spin" />}
+                                    </button>
                                 </motion.div>
                                 <div className="h-5 mt-2 text-center">
-                                    {error && <span className="text-xs font-medium text-pastel-red">Incorrect password</span>}
+                                    {error && <span className="text-xs font-medium text-pastel-red" style={{ textShadow: '0 1px 4px rgba(0,0,0,0.3)' }}>Incorrect password</span>}
                                 </div>
-                                <button type="submit" className="hidden" />
                             </motion.form>
                         )}
                     </AnimatePresence>
@@ -235,11 +258,10 @@ export default function LockScreen() {
     }
 
     return (
-        <div className="fixed inset-0 z-[800] flex flex-col items-center justify-center bg-[--bg-base] text-[--text-color] font-mono overflow-hidden">
-            {/* Background */}
-            <div className="absolute inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: `url('${wallpaperurl}')` }}>
-                <div className="absolute inset-0 bg-gradient-to-b from-[--bg-base]/75 via-[--bg-base]/60 to-[--bg-base]/80" />
-            </div>
+        <div className="fixed inset-0 z-[800] flex flex-col items-center justify-center text-[--text-color] font-mono overflow-hidden">
+            {/* Wallpaper background with blur overlay */}
+            <div className="absolute inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: `url('${wallpaperurl}')` }} />
+            <div className="absolute inset-0 z-[1] backdrop-blur-xl" style={{ background: islightbackground ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)' }} />
 
             {/* Top & bottom accent lines */}
             <motion.div
@@ -257,22 +279,22 @@ export default function LockScreen() {
                 transition={{ duration: 1, delay: 0.5 }}
             />
 
-            {/* Corner bracket accents */}
-            <motion.div className="absolute top-6 left-6 z-10" style={{ width: 32, height: 32, borderLeft: '2px solid var(--accent-color)', borderTop: '2px solid var(--accent-color)' }} initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 0.4, scale: 1 }} transition={{ delay: 0.6, type: 'spring' }} />
-            <motion.div className="absolute top-6 right-6 z-10" style={{ width: 32, height: 32, borderRight: '2px solid var(--accent-color)', borderTop: '2px solid var(--accent-color)' }} initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 0.4, scale: 1 }} transition={{ delay: 0.7, type: 'spring' }} />
-            <motion.div className="absolute bottom-6 left-6 z-10" style={{ width: 32, height: 32, borderLeft: '2px solid var(--accent-color)', borderBottom: '2px solid var(--accent-color)' }} initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 0.4, scale: 1 }} transition={{ delay: 0.8, type: 'spring' }} />
-            <motion.div className="absolute bottom-6 right-6 z-10" style={{ width: 32, height: 32, borderRight: '2px solid var(--accent-color)', borderBottom: '2px solid var(--accent-color)' }} initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 0.4, scale: 1 }} transition={{ delay: 0.9, type: 'spring' }} />
+            {/* Corner bracket accents with shadows */}
+            <motion.div className="absolute top-6 left-6 z-10" style={{ width: 32, height: 32, borderLeft: '2px solid var(--accent-color)', borderTop: '2px solid var(--accent-color)', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }} initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 0.4, scale: 1 }} transition={{ delay: 0.6, type: 'spring' }} />
+            <motion.div className="absolute top-6 right-6 z-10" style={{ width: 32, height: 32, borderRight: '2px solid var(--accent-color)', borderTop: '2px solid var(--accent-color)', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }} initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 0.4, scale: 1 }} transition={{ delay: 0.7, type: 'spring' }} />
+            <motion.div className="absolute bottom-6 left-6 z-10" style={{ width: 32, height: 32, borderLeft: '2px solid var(--accent-color)', borderBottom: '2px solid var(--accent-color)', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }} initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 0.4, scale: 1 }} transition={{ delay: 0.8, type: 'spring' }} />
+            <motion.div className="absolute bottom-6 right-6 z-10" style={{ width: 32, height: 32, borderRight: '2px solid var(--accent-color)', borderBottom: '2px solid var(--accent-color)', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }} initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 0.4, scale: 1 }} transition={{ delay: 0.9, type: 'spring' }} />
 
-            {/* Decorative side elements */}
+            {/* Decorative side elements with shadows */}
             <motion.div
                 className="absolute left-8 top-1/2 -translate-y-1/2 z-10 hidden lg:flex flex-col items-center gap-3"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 0.3, x: 0 }}
                 transition={{ delay: 0.8 }}
             >
-                <div style={{ width: 2, height: 60, background: 'var(--accent-color)' }} />
-                <div style={{ width: 8, height: 8, background: 'var(--accent-color)' }} />
-                <div style={{ width: 2, height: 40, background: 'var(--accent-color)' }} />
+                <div style={{ width: 2, height: 60, background: 'var(--accent-color)', filter: 'drop-shadow(0 0 6px rgba(237,135,150,0.4))' }} />
+                <div style={{ width: 8, height: 8, background: 'var(--accent-color)', filter: 'drop-shadow(0 0 6px rgba(237,135,150,0.4))' }} />
+                <div style={{ width: 2, height: 40, background: 'var(--accent-color)', filter: 'drop-shadow(0 0 6px rgba(237,135,150,0.4))' }} />
             </motion.div>
             <motion.div
                 className="absolute right-8 top-1/2 -translate-y-1/2 z-10 hidden lg:flex flex-col items-center gap-3"
@@ -280,9 +302,9 @@ export default function LockScreen() {
                 animate={{ opacity: 0.3, x: 0 }}
                 transition={{ delay: 0.9 }}
             >
-                <div style={{ width: 2, height: 40, background: 'var(--accent-color)' }} />
-                <div style={{ width: 8, height: 8, background: 'var(--accent-color)' }} />
-                <div style={{ width: 2, height: 60, background: 'var(--accent-color)' }} />
+                <div style={{ width: 2, height: 40, background: 'var(--accent-color)', filter: 'drop-shadow(0 0 6px rgba(237,135,150,0.4))' }} />
+                <div style={{ width: 8, height: 8, background: 'var(--accent-color)', filter: 'drop-shadow(0 0 6px rgba(237,135,150,0.4))' }} />
+                <div style={{ width: 2, height: 60, background: 'var(--accent-color)', filter: 'drop-shadow(0 0 6px rgba(237,135,150,0.4))' }} />
             </motion.div>
 
             {/* Time display */}
@@ -292,13 +314,13 @@ export default function LockScreen() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
             >
-                <span className={`text-8xl font-bold tracking-tight ${islightbackground ? 'text-black/80' : 'text-white'}`}
-                    style={{ textShadow: islightbackground ? 'none' : '0 2px 10px rgba(0,0,0,0.5)' }}>
+                <span className={`text-8xl font-bold tracking-tight ${textColor}`}
+                    style={{ textShadow: islightbackground ? '0 2px 8px rgba(0,0,0,0.08)' : '0 2px 16px rgba(0,0,0,0.6), 0 4px 32px rgba(0,0,0,0.3)' }}>
                     {timeStr}
                 </span>
-                <div className="w-20 h-[2px]" style={{ background: 'linear-gradient(90deg, transparent, var(--accent-color), transparent)' }} />
-                <span className={`text-xl font-medium ${islightbackground ? 'text-black/60' : 'text-white/80'}`}
-                    style={{ textShadow: islightbackground ? 'none' : '0 1px 4px rgba(0,0,0,0.5)' }}>{dateStr}</span>
+                <div className="w-20 h-[2px]" style={{ background: 'linear-gradient(90deg, transparent, var(--accent-color), transparent)', filter: 'drop-shadow(0 0 4px rgba(237,135,150,0.4))' }} />
+                <span className={`text-xl font-medium ${textMutedColor}`}
+                    style={{ textShadow: islightbackground ? '0 1px 4px rgba(0,0,0,0.08)' : '0 1px 8px rgba(0,0,0,0.5)' }}>{dateStr}</span>
             </motion.div>
 
             {/* User selection */}
@@ -322,13 +344,17 @@ export default function LockScreen() {
                             transition={{ type: 'spring', stiffness: 300, damping: 25 }}
                         >
                             <div
-                                className={`relative w-24 h-24 overflow-hidden border-2 transition-all duration-300 ${selectedUser?.username === u.username ? 'border-pastel-red' : 'border-[--border-color]'}`}
-                                style={selectedUser?.username === u.username ? { boxShadow: '0 0 25px rgba(237,135,150,0.4), 0 0 50px rgba(237,135,150,0.15)' } : {}}
+                                className={`relative w-24 h-24 overflow-hidden border-2 transition-all duration-300 ${selectedUser?.username === u.username ? 'border-pastel-red' : 'border-white/30'}`}
+                                style={{
+                                    boxShadow: selectedUser?.username === u.username
+                                        ? '0 8px 32px rgba(237,135,150,0.5), 0 0 60px rgba(237,135,150,0.2)'
+                                        : '0 4px 20px rgba(0,0,0,0.3)'
+                                }}
                             >
                                 <Image src={u.avatar || "/pfp.png"} alt={u.name} fill className="object-cover" />
                             </div>
-                            <span className={`text-base font-medium ${islightbackground ? 'text-black/70' : 'text-white/90'}`}
-                                style={{ textShadow: islightbackground ? 'none' : '0 1px 3px rgba(0,0,0,0.5)' }}>{u.name}</span>
+                            <span className={`text-base font-medium ${textColor}`}
+                                style={{ textShadow }}>{u.name}</span>
                         </motion.div>
                     ))}
 
@@ -339,11 +365,12 @@ export default function LockScreen() {
                         whileHover={{ opacity: 0.8 }}
                         whileTap={{ scale: 0.85 }}
                     >
-                        <div className="w-24 h-24 bg-[--bg-overlay] flex items-center justify-center border-2 border-[--border-color]">
-                            <IoPerson size={40} className="text-[--text-muted]" />
+                        <div className="w-24 h-24 bg-black/20 flex items-center justify-center border-2 border-white/20"
+                            style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}>
+                            <IoPerson size={40} className={islightbackground ? 'text-black/50' : 'text-white/70'} />
                         </div>
-                        <span className={`text-base font-medium ${islightbackground ? 'text-black/70' : 'text-white/90'}`}
-                            style={{ textShadow: islightbackground ? 'none' : '0 1px 3px rgba(0,0,0,0.5)' }}>Guest User</span>
+                        <span className={`text-base font-medium ${textColor}`}
+                            style={{ textShadow }}>Guest User</span>
                     </motion.div>
                 </div>
 
@@ -369,25 +396,29 @@ export default function LockScreen() {
                                     name="search"
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="Enter Password"
-                                    className="w-full bg-[--bg-overlay] border-2 border-[--border-color] focus:border-pastel-red py-2 outline-none placeholder-[--text-muted] text-sm pl-4 pr-10 appearance-none text-[--text-color] transition-all duration-300"
-                                    style={{ WebkitTextFillColor: 'var(--text-color)' }}
+                                    className="w-full bg-black/20 border-2 border-white/20 focus:border-pastel-red py-2 outline-none text-sm pl-4 pr-10 appearance-none text-white placeholder-white/50 transition-all duration-300"
+                                    style={{
+                                        WebkitTextFillColor: 'white',
+                                        boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+                                        caretColor: 'white'
+                                    }}
                                     autoFocus
                                 />
                                 <button
                                     type="submit"
                                     disabled={!password || isSubmitting}
                                     className={`absolute right-1.5 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center transition-all duration-300
-                                        ${password ? 'bg-pastel-red text-[--bg-base]' : 'bg-transparent text-transparent'}`}
-                                    style={password ? { boxShadow: '0 0 12px rgba(237,135,150,0.4)' } : {}}
+                                        ${password ? 'bg-pastel-red text-white' : 'bg-transparent text-transparent'}`}
+                                    style={password ? { boxShadow: '0 0 16px rgba(237,135,150,0.5)' } : {}}
                                 >
                                     {!isSubmitting && <IoArrowForward size={14} />}
-                                    {isSubmitting && <div className="w-3 h-3 border-2 border-[--bg-base] border-t-transparent animate-spin" />}
+                                    {isSubmitting && <div className="w-3 h-3 border-2 border-white border-t-transparent animate-spin" />}
                                 </button>
                             </motion.div>
 
                             <div className="h-6 mt-2">
-                                {error && <span className="text-xs font-medium text-pastel-red">Incorrect password</span>}
-                                {!error && <span className="text-[10px] text-[--text-muted]">Touch ID or Enter Password</span>}
+                                {error && <span className="text-xs font-medium text-pastel-red" style={{ textShadow: '0 1px 4px rgba(0,0,0,0.3)' }}>Incorrect password</span>}
+                                {!error && <span className="text-[10px]" style={{ color: islightbackground ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.6)', textShadow: textShadowSm }}>Touch ID or Enter Password</span>}
                             </div>
                         </motion.form>
                     )}
@@ -402,24 +433,24 @@ export default function LockScreen() {
                 transition={{ delay: 0.5 }}
             >
                 <div onClick={async () => { if (iselectron) await power.sleep(); }} className="flex flex-col items-center gap-2 cursor-pointer group">
-                    <div className="w-11 h-11 bg-[--bg-overlay] border border-[--border-color] flex items-center justify-center group-hover:border-accent transition-all duration-300"
-                        style={{ transition: 'box-shadow 0.3s, border-color 0.3s' }}
-                        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = '0 0 15px rgba(var(--accent-rgb, 198,160,246),0.3)'; }}
-                        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = 'none'; }}
+                    <div className="w-11 h-11 bg-black/20 border border-white/20 flex items-center justify-center group-hover:border-accent transition-all duration-300"
+                        style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.2)' }}
+                        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 24px rgba(237,135,150,0.4)'; }}
+                        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 16px rgba(0,0,0,0.2)'; }}
                     >
-                        <IoMoon size={18} className="text-[--text-color]" />
+                        <IoMoon size={18} className={islightbackground ? 'text-black/70' : 'text-white/90'} />
                     </div>
-                    <span className="text-[10px] font-medium text-[--text-muted]">Sleep</span>
+                    <span className={`text-[10px] font-medium ${textMutedColor}`} style={{ textShadow: textShadowSm }}>Sleep</span>
                 </div>
                 <div onClick={async () => { if (iselectron) await power.restart(); else window.location.reload(); }} className="flex flex-col items-center gap-2 cursor-pointer group">
-                    <div className="w-11 h-11 bg-[--bg-overlay] border border-[--border-color] flex items-center justify-center group-hover:border-accent transition-all duration-300"
-                        style={{ transition: 'box-shadow 0.3s, border-color 0.3s' }}
-                        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = '0 0 15px rgba(var(--accent-rgb, 198,160,246),0.3)'; }}
-                        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = 'none'; }}
+                    <div className="w-11 h-11 bg-black/20 border border-white/20 flex items-center justify-center group-hover:border-accent transition-all duration-300"
+                        style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.2)' }}
+                        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 24px rgba(237,135,150,0.4)'; }}
+                        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 16px rgba(0,0,0,0.2)'; }}
                     >
-                        <IoRefresh size={18} className="text-[--text-color]" />
+                        <IoRefresh size={18} className={islightbackground ? 'text-black/70' : 'text-white/90'} />
                     </div>
-                    <span className="text-[10px] font-medium text-[--text-muted]">Restart</span>
+                    <span className={`text-[10px] font-medium ${textMutedColor}`} style={{ textShadow: textShadowSm }}>Restart</span>
                 </div>
             </motion.div>
         </div>

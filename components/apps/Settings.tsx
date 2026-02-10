@@ -52,6 +52,9 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
     const [volume, setvolume] = useState(50);
     const [muted, setmuted] = useState(false);
 
+    const [wallpaperinput, setwallpaperinput] = useState(wallpaperurl);
+    useEffect(() => { setwallpaperinput(wallpaperurl); }, [wallpaperurl]);
+
     const fetchwifistatus = useCallback(async () => {
         if (!iselectron) return;
         const status = await wifiapi.getstatus();
@@ -411,10 +414,10 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                                 <div className="p-5 flex justify-center gap-8">
                                     <button onClick={() => theme !== 'light' && toggletheme()} className="flex flex-col items-center gap-2 group">
                                         <div className={`w-32 h-20 border flex overflow-hidden transition-all ${theme === 'light' ? 'border-accent ring-2 ring-accent/20' : 'border-[--border-color] group-hover:border-[--text-muted]'}`}>
-                                            <div className="w-1/3 bg-[--bg-surface]" />
-                                            <div className="w-2/3 bg-[--bg-base] relative">
+                                            <div className="w-1/3 bg-[#e6e9ef]" />
+                                            <div className="w-2/3 bg-[#eff1f5] relative">
                                                 <div className="absolute top-2 left-2 w-10 h-2 bg-accent opacity-20"></div>
-                                                <div className="absolute top-5 left-2 w-6 h-2 bg-[--border-color]"></div>
+                                                <div className="absolute top-5 left-2 w-6 h-2 bg-[#bcc0cc]"></div>
                                             </div>
                                         </div>
                                         <span className={`text-[12px] font-medium ${theme === 'light' ? 'text-accent' : 'text-[--text-muted]'}`}>Light</span>
@@ -456,12 +459,14 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                                 <div className="p-4">
                                     <input
                                         type="text"
-                                        value={wallpaperurl}
-                                        onChange={(e) => setwallpaperurl(e.target.value)}
+                                        value={wallpaperinput}
+                                        onChange={(e) => setwallpaperinput(e.target.value)}
+                                        onBlur={() => setwallpaperurl(wallpaperinput)}
+                                        onKeyDown={(e) => { if (e.key === 'Enter') setwallpaperurl(wallpaperinput); }}
                                         placeholder="https://example.com/wallpaper.jpg"
                                         className="w-full px-3 py-2 bg-overlay outline-none text-[14px] text-[--text-color] border border-[--border-color] focus:border-accent"
                                     />
-                                    <p className="text-[11px] text-[--text-muted] mt-2">Enter a URL to use as your wallpaper</p>
+                                    <p className="text-[11px] text-[--text-muted] mt-2">Enter a URL and press Enter or click away to apply</p>
                                 </div>
                             </SettingsGroup>
 

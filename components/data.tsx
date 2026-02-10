@@ -1273,6 +1273,11 @@ export const generateFullFilesystemForUser = (username: string): filesystemitem[
 
         delete newItem.isReadOnly;
 
+        // Allow user to delete their own desktop app shortcuts and files
+        if (newItem.mimetype !== 'inode/directory') {
+            newItem.isSystem = false;
+        }
+
         return newItem;
     });
 };
