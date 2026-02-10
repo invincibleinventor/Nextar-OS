@@ -65,7 +65,7 @@ export default function AppSwitcher({ isOpen, onClose }: { isOpen: boolean; onCl
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[9999] flex items-center justify-center pointer-events-none"
+                className="fixed inset-0 z-[500] flex items-center justify-center pointer-events-none"
             >
                 <motion.div
                     ref={switcherRef}

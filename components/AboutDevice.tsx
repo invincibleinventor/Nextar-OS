@@ -21,14 +21,14 @@ export default function AboutDevice({ isopen, onclose }: AboutDeviceProps) {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-[--bg-base]/80 z-[99998]"
+                        className="fixed inset-0 bg-[--bg-base]/80 z-[499]"
                         onClick={onclose}
                     />
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        className="fixed left-0 top-0 bottom-0 right-0 h-max my-auto mx-auto w-[300px] bg-surface border border-[--border-color] z-[99999] font-mono overflow-hidden"
+                        className="fixed left-0 top-0 bottom-0 right-0 h-max my-auto mx-auto w-[300px] bg-surface border border-[--border-color] z-[500] font-mono overflow-hidden"
                     >
                         <div className="p-6 flex flex-col items-center text-center">
                             <div className="w-20 h-20 mb-4">

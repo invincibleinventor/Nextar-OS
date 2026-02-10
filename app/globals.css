@@ -29,6 +29,19 @@ body {
   --border-color: #bcc0cc;
   --text-color: #4c4f69;
   --text-muted: #8c8fa1;
+
+  /* Z-index scale */
+  --z-windows: 100;
+  --z-dock: 200;
+  --z-panel: 300;
+  --z-statusbar: 300;
+  --z-homebar: 400;
+  --z-overlay: 500;
+  --z-context-menu: 600;
+  --z-notification: 700;
+  --z-lock: 800;
+  --z-boot: 900;
+  --z-permission: 950;
 }
 
 .dark {

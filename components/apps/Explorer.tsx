@@ -90,6 +90,8 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
     const [sortby, setsortby] = useState<'name' | 'date' | 'size' | 'type'>('name');
     const [sortasc, setsortasc] = useState(true);
     const [showhidden, setshowhidden] = useState(false);
+    const [viewmode, setviewmode] = useState<'grid' | 'list'>('grid');
+    const [quicklook, setquicklook] = useState<filesystemitem | null>(null);
 
     const trashHasItems = useMemo(() => {
         return files.some(f => f.parent === currentUserTrashId);
@@ -145,6 +147,58 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
             }
         }
     }, [currentpath, windowId, updatewindow, isDesktopBackend, windows]);
+
+    // Quick Look: Space key to preview, Escape/Space to close
+    useEffect(() => {
+        if (!windowId || isDesktopBackend || ismobile) return;
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (activewindow !== windowId) return;
+            if (e.key === ' ' && !quicklook) {
+                e.preventDefault();
+                if (selectedFileIds.length === 1) {
+                    const file = files.find(f => f.id === selectedFileIds[0]);
+                    if (file && file.mimetype !== 'inode/directory') setquicklook(file);
+                }
+            } else if ((e.key === ' ' || e.key === 'Escape') && quicklook) {
+                e.preventDefault();
+                setquicklook(null);
+            } else if (e.key === 'ArrowDown' && quicklook) {
+                e.preventDefault();
+                const idx = filesList.findIndex(f => f.id === quicklook.id);
+                for (let i = idx + 1; i < filesList.length; i++) {
+                    if (filesList[i].mimetype !== 'inode/directory') {
+                        setquicklook(filesList[i]);
+                        setSelectedFileIds([filesList[i].id]);
+                        break;
+                    }
+                }
+            } else if (e.key === 'ArrowUp' && quicklook) {
+                e.preventDefault();
+                const idx = filesList.findIndex(f => f.id === quicklook.id);
+                for (let i = idx - 1; i >= 0; i--) {
+                    if (filesList[i].mimetype !== 'inode/directory') {
+                        setquicklook(filesList[i]);
+                        setSelectedFileIds([filesList[i].id]);
+                        break;
+                    }
+                }
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [windowId, isDesktopBackend, ismobile, activewindow, quicklook, selectedFileIds, files, currentpath, searchquery, isTrashView, sortby, sortasc, showhidden]);
+
+    // Persist view mode
+    useEffect(() => {
+        const saved = localStorage.getItem('nextaros-explorer-viewmode');
+        if (saved === 'list' || saved === 'grid') setviewmode(saved);
+    }, []);
+
+    const toggleViewMode = () => {
+        const next = viewmode === 'grid' ? 'list' : 'grid';
+        setviewmode(next);
+        localStorage.setItem('nextaros-explorer-viewmode', next);
+    };
 
     useEffect(() => {
         if (!windowId || isDesktopBackend) return;
@@ -838,44 +892,79 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
             <div className={`flex-1 flex ${isnarrow ? 'flex-col' : 'flex-row'} min-w-0 bg-[--bg-base] relative overflow-hidden`}>
 
                 <div className="flex-1 flex flex-col min-w-0 min-h-0">
-                    <div className={`h-[50px] shrink-0 flex items-center justify-between px-4 border-b border-[--border-color]`}>
-                        <div className="flex items-center gap-2 text-[--text-muted]">
-                            {isnarrow && (
-                                <button onClick={() => setshowsidebar(!showsidebar)} className="p-1 hover:bg-overlay transition-colors mr-2">
-                                    <IoListOutline className="text-xl text-[--text-color]" />
-                                </button>
-                            )}
-                            <div className={(isnarrow && !ismobile) ? "flex items-center gap-1" : "flex items-center gap-1"}>
-                                <IoChevronBack className={`text-xl ${currentpath.length > 1 ? 'text-[--text-color] cursor-pointer' : 'opacity-20'}`} onClick={() => currentpath.length > 1 && setcurrentpath(currentpath.slice(0, -1))} />
-                                <IoChevronForward className="text-xl opacity-20" />
-                            </div>
-                            <span className="text-[14px] font-semibold text-[--text-color] ml-2">
-                                {isTrashView ? 'Trash' : currentpath[currentpath.length - 1]}
-                            </span>
+                    {/* Row 1: Breadcrumb navigation */}
+                    <div className="h-[34px] shrink-0 flex items-center px-3 border-b border-[--border-color] bg-[--bg-overlay] gap-1">
+                        {isnarrow && (
+                            <button onClick={() => setshowsidebar(!showsidebar)} className="p-1 hover:bg-overlay transition-colors mr-1 shrink-0">
+                                <IoListOutline className="text-lg text-[--text-color]" />
+                            </button>
+                        )}
+                        <div className="flex items-center gap-0.5 shrink-0">
+                            <button onClick={() => currentpath.length > 1 && setcurrentpath(currentpath.slice(0, -1))} className={`p-0.5 ${currentpath.length > 1 ? 'text-[--text-color] cursor-pointer hover:bg-overlay' : 'text-[--text-muted] opacity-30'}`}>
+                                <IoChevronBack className="text-lg" />
+                            </button>
+                            <IoChevronForward className="text-lg text-[--text-muted] opacity-30" />
                         </div>
-                        <div className="flex items-center gap-2">
+                        {isTrashView ? (
+                            <span className="text-[13px] font-semibold text-[--text-color] ml-1">Trash</span>
+                        ) : (
+                            <div className="flex items-center gap-0.5 ml-1 min-w-0 overflow-hidden flex-1">
+                                {currentpath.map((seg, i) => (
+                                    <React.Fragment key={i}>
+                                        {i > 0 && <span className="text-[--text-muted] text-xs opacity-40 shrink-0">/</span>}
+                                        <button
+                                            onClick={() => setcurrentpath(currentpath.slice(0, i + 1))}
+                                            className={`text-[12px] shrink-0 px-1 py-0.5 hover:bg-overlay hover:text-accent transition-colors truncate max-w-[120px] ${i === currentpath.length - 1 ? 'font-semibold text-[--text-color]' : 'text-[--text-muted]'}`}
+                                        >
+                                            {seg}
+                                        </button>
+                                    </React.Fragment>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                    {/* Row 2: Toolbar - search, view toggle, actions */}
+                    <div className="h-[34px] shrink-0 flex items-center justify-between px-3 border-b border-[--border-color] bg-[--bg-overlay] gap-2">
+                        <div className="flex items-center gap-1.5">
+                            <div className="flex items-center bg-overlay p-0.5 border border-[--border-color]">
+                                <button
+                                    onClick={() => { setviewmode('grid'); localStorage.setItem('nextaros-explorer-viewmode', 'grid'); }}
+                                    className={`p-1 transition-colors ${viewmode === 'grid' ? 'bg-[--bg-base] text-[--text-color]' : 'text-[--text-color] opacity-50 hover:opacity-100'}`}
+                                    title="Grid View"
+                                >
+                                    <IoGridOutline className="text-sm" />
+                                </button>
+                                <button
+                                    onClick={() => { setviewmode('list'); localStorage.setItem('nextaros-explorer-viewmode', 'list'); }}
+                                    className={`p-1 transition-colors ${viewmode === 'list' ? 'bg-[--bg-base] text-[--text-color]' : 'text-[--text-color] opacity-50 hover:opacity-100'}`}
+                                    title="List View"
+                                >
+                                    <IoListOutline className="text-sm" />
+                                </button>
+                            </div>
                             {!isTrashView && (
                                 <div className="flex items-center bg-overlay p-0.5 border border-[--border-color]">
                                     <button
                                         onClick={() => setFileModal({ isOpen: true, type: 'create-folder' })}
-                                        className="p-1 hover:bg-overlay transition-colors text-[--text-muted]"
+                                        className="p-1 hover:bg-[--bg-base] transition-colors text-[--text-color] opacity-50 hover:opacity-100"
                                         title="New Folder"
                                     >
-                                        <IoFolderOpenOutline className="text-lg" />
+                                        <IoFolderOpenOutline className="text-base" />
                                     </button>
-                                    <div className="w-[1px] h-4 bg-[--border-color] mx-2"></div>
+                                    <div className="w-px h-3.5 bg-[--border-color] mx-1"></div>
                                     <button
                                         onClick={() => setFileModal({ isOpen: true, type: 'create-file' })}
-                                        className="p-1 hover:bg-overlay transition-colors text-[--text-muted]"
+                                        className="p-1 hover:bg-[--bg-base] transition-colors text-[--text-color] opacity-50 hover:opacity-100"
                                         title="New File"
                                     >
-                                        <IoDocumentTextOutline className="text-lg" />
+                                        <IoDocumentTextOutline className="text-base" />
                                     </button>
                                 </div>
                             )}
-
-                            <div className="relative w-40 sm:w-48 ml-2">
-                                <IoSearch className="absolute left-2 top-1/2 -translate-y-1/2 text-[--text-muted]" />
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <div className="relative w-40 sm:w-48">
+                                <IoSearch className="absolute left-2 top-1/2 -translate-y-1/2 text-[--text-muted]" size={12} />
                                 <input
                                     className="w-full bg-overlay pl-7 pr-2 py-1 text-xs outline-none focus:ring-1 ring-accent/50 transition-all placeholder-[--text-muted] text-[--text-color]"
                                     placeholder="Search"
@@ -885,10 +974,10 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                             </div>
                             <button
                                 onClick={() => setshowpreview(!showpreview)}
-                                className={`p-1 transition-colors ${showpreview ? 'bg-overlay text-accent' : 'hover:bg-overlay text-[--text-muted]'}`}
+                                className={`p-1 transition-colors ${showpreview ? 'text-[--text-color] bg-overlay text-accent' : 'hover:bg-overlay text-[--text-color] opacity-50 hover:opacity-100'}`}
                                 title="Toggle Preview"
                             >
-                                <IoInformationCircleOutline className="text-lg" />
+                                <IoInformationCircleOutline className="text-base " />
                             </button>
                         </div>
                     </div>
@@ -925,6 +1014,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                 }
                             }}
                         />
+                        {viewmode === 'grid' ? (
                         <div className="grid grid-cols-2 min-[450px]:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 content-start">
                             {filesList.map((file, i) => {
                                 const isSelected = selectedFileIds.includes(file.id);
@@ -988,6 +1078,62 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                 )
                             })}
                         </div>
+                        ) : (
+                        /* List view */
+                        <div className="w-full">
+                            {/* Sortable column headers */}
+                            <div className="flex items-center border-b border-[--border-color] text-[10px] uppercase tracking-wider text-[--text-muted] font-semibold sticky top-0 bg-[--bg-base] z-[5]">
+                                <button onClick={() => { if (sortby === 'name') setsortasc(!sortasc); else { setsortby('name'); setsortasc(true); }}} className="flex items-center gap-1 flex-1 min-w-0 px-2 py-2 hover:bg-overlay">
+                                    Name {sortby === 'name' && (sortasc ? <IoChevronUp size={10}/> : <IoChevronDown size={10}/>)}
+                                </button>
+                                <button onClick={() => { if (sortby === 'date') setsortasc(!sortasc); else { setsortby('date'); setsortasc(true); }}} className="flex items-center gap-1 w-32 px-2 py-2 hover:bg-overlay shrink-0 hidden sm:flex">
+                                    Date Modified {sortby === 'date' && (sortasc ? <IoChevronUp size={10}/> : <IoChevronDown size={10}/>)}
+                                </button>
+                                <button onClick={() => { if (sortby === 'size') setsortasc(!sortasc); else { setsortby('size'); setsortasc(true); }}} className="flex items-center gap-1 w-20 px-2 py-2 hover:bg-overlay shrink-0">
+                                    Size {sortby === 'size' && (sortasc ? <IoChevronUp size={10}/> : <IoChevronDown size={10}/>)}
+                                </button>
+                                <button onClick={() => { if (sortby === 'type') setsortasc(!sortasc); else { setsortby('type'); setsortasc(true); }}} className="flex items-center gap-1 w-24 px-2 py-2 hover:bg-overlay shrink-0 hidden md:flex">
+                                    Kind {sortby === 'type' && (sortasc ? <IoChevronUp size={10}/> : <IoChevronDown size={10}/>)}
+                                </button>
+                            </div>
+                            {/* File rows */}
+                            {filesList.map((file, i) => {
+                                const isSelected = selectedFileIds.includes(file.id);
+                                return (
+                                    <div
+                                        key={i}
+                                        data-id={file.id}
+                                        className={`explorer-item flex items-center border-b border-[--border-color]/50 cursor-default transition-colors ${isSelected ? 'bg-accent/10' : 'hover:bg-overlay'}`}
+                                        onDoubleClick={() => handlefileopen(file)}
+                                        onContextMenu={(e) => { e.stopPropagation(); handleContextMenu(e, file.id); if (!isSelected) setSelectedFileIds([file.id]); }}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (e.shiftKey) {
+                                                setSelectedFileIds(prev => prev.includes(file.id) ? prev.filter(id => id !== file.id) : [...prev, file.id]);
+                                            } else { setSelectedFileIds([file.id]); }
+                                        }}
+                                        draggable={!isTrashView}
+                                        onDragStart={(e) => handleDragStart(e, file.id)}
+                                        onDragOver={(e) => { if (file.mimetype === 'inode/directory' && !isTrashView) { e.preventDefault(); e.stopPropagation(); }}}
+                                        onDrop={(e) => { if (file.mimetype === 'inode/directory' && !isTrashView) { e.preventDefault(); e.stopPropagation(); handleDrop(e, file.id); }}}
+                                    >
+                                        <div className="flex items-center gap-2.5 flex-1 min-w-0 px-2 py-1.5">
+                                            <div className="w-5 h-5 relative shrink-0 flex items-center justify-center">
+                                                {getFileIcon(file.mimetype, file.name, file.icon, file.id, file.content || file.link)}
+                                            </div>
+                                            <span className={`text-[12px] truncate ${isSelected ? 'text-accent font-medium' : 'text-[--text-color]'}`}>
+                                                {getDisplayName(file)}
+                                            </span>
+                                            {isLocked(file.id) && <IoLockClosed className="text-[8px] text-[--text-muted] shrink-0" />}
+                                        </div>
+                                        <span className="w-32 px-2 text-[11px] text-[--text-muted] truncate shrink-0 hidden sm:block">{file.date || '--'}</span>
+                                        <span className="w-20 px-2 text-[11px] text-[--text-muted] shrink-0">{file.mimetype === 'inode/directory' ? '--' : (file.size || '--')}</span>
+                                        <span className="w-24 px-2 text-[11px] text-[--text-muted] truncate shrink-0 hidden md:block">{file.mimetype === 'inode/directory' ? 'Folder' : (file.mimetype?.split('/').pop() || '--')}</span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        )}
                         {filesList.length === 0 && (
                             <div className="flex flex-col items-center justify-center h-full text-[--text-muted]">
                                 <span className="text-4xl mb-2 opacity-50">¯\_(ツ)_/¯</span>
@@ -1090,6 +1236,93 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                     </div>
                 )}
             </div>
+
+            {/* Quick Look overlay */}
+            <AnimatePresence>
+                {quicklook && (
+                    <motion.div
+                        key="quicklook-overlay"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+                        onClick={() => setquicklook(null)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.92, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.92, opacity: 0 }}
+                            transition={{ duration: 0.15, ease: 'easeOut' }}
+                            className="bg-surface border border-[--border-color] shadow-2xl flex flex-col max-w-[80%] max-h-[80%] min-w-[300px] overflow-hidden"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            {/* Title bar */}
+                            <div className="h-9 shrink-0 flex items-center justify-between px-3 border-b border-[--border-color] bg-[--bg-overlay]">
+                                <span className="text-[12px] font-semibold text-[--text-color] truncate">{quicklook.name}</span>
+                                <button onClick={() => setquicklook(null)} className="p-1 hover:bg-overlay transition-colors text-[--text-muted] hover:text-[--text-color]">
+                                    <IoCloseOutline size={16} />
+                                </button>
+                            </div>
+                            {/* Content */}
+                            <div className="flex-1 overflow-auto flex items-center justify-center p-4 min-h-[200px]">
+                                {quicklook.mimetype?.startsWith('image/') ? (
+                                    quicklook.content?.startsWith('data:') ? (
+                                        <img src={quicklook.content} alt={quicklook.name} className="max-w-full max-h-[60vh] object-contain" />
+                                    ) : (
+                                        <div className="flex flex-col items-center gap-3 text-[--text-muted]">
+                                            <div className="w-20 h-20">{getFileIcon(quicklook.mimetype, quicklook.name, quicklook.icon, quicklook.id, quicklook.content || quicklook.link)}</div>
+                                            <span className="text-xs">Image preview unavailable</span>
+                                        </div>
+                                    )
+                                ) : quicklook.mimetype?.startsWith('audio/') ? (
+                                    quicklook.content?.startsWith('data:') ? (
+                                        <audio controls src={quicklook.content} className="w-full max-w-sm" />
+                                    ) : (
+                                        <div className="flex flex-col items-center gap-3 text-[--text-muted]">
+                                            <div className="w-20 h-20">{getFileIcon(quicklook.mimetype, quicklook.name, quicklook.icon, quicklook.id, quicklook.content || quicklook.link)}</div>
+                                            <span className="text-xs">Audio preview unavailable</span>
+                                        </div>
+                                    )
+                                ) : quicklook.mimetype?.startsWith('video/') ? (
+                                    quicklook.content?.startsWith('data:') ? (
+                                        <video controls src={quicklook.content} className="max-w-full max-h-[60vh]" />
+                                    ) : (
+                                        <div className="flex flex-col items-center gap-3 text-[--text-muted]">
+                                            <div className="w-20 h-20">{getFileIcon(quicklook.mimetype, quicklook.name, quicklook.icon, quicklook.id, quicklook.content || quicklook.link)}</div>
+                                            <span className="text-xs">Video preview unavailable</span>
+                                        </div>
+                                    )
+                                ) : quicklook.mimetype?.startsWith('text/') || quicklook.mimetype === 'application/json' || quicklook.mimetype === 'application/javascript' || quicklook.mimetype === 'application/xml' ? (
+                                    <pre className="w-full h-full overflow-auto bg-[--bg-base] border border-[--border-color] p-3 text-[11px] text-[--text-color] font-mono whitespace-pre-wrap break-words max-h-[60vh]">
+                                        {quicklook.content || '(empty)'}
+                                    </pre>
+                                ) : (
+                                    /* Generic file info card */
+                                    <div className="flex flex-col items-center gap-4 text-center py-4">
+                                        <div className="w-20 h-20">{getFileIcon(quicklook.mimetype, quicklook.name, quicklook.icon, quicklook.id, quicklook.content || quicklook.link)}</div>
+                                        <div>
+                                            <div className="text-sm font-semibold text-[--text-color] mb-1">{quicklook.name}</div>
+                                            <div className="text-[11px] text-[--text-muted]">{quicklook.mimetype || 'Unknown type'}</div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-[11px]">
+                                            <span className="text-[--text-muted] text-right">Size</span>
+                                            <span className="text-[--text-color]">{quicklook.size || '--'}</span>
+                                            <span className="text-[--text-muted] text-right">Modified</span>
+                                            <span className="text-[--text-color]">{quicklook.date || '--'}</span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                            {/* Footer */}
+                            <div className="h-7 shrink-0 flex items-center justify-between px-3 border-t border-[--border-color] bg-[--bg-overlay] text-[10px] text-[--text-muted]">
+                                <span>{quicklook.mimetype || 'Unknown'}</span>
+                                <span>{quicklook.size || '--'}</span>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div >
     );
 }

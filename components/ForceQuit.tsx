@@ -33,14 +33,14 @@ export default function ForceQuit({ isopen, onclose }: ForceQuitProps) {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-[--bg-base]/80 z-[99998]"
+                        className="fixed inset-0 bg-[--bg-base]/80 z-[499]"
                         onClick={onclose}
                     />
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        className="fixed left-0 top-0 bottom-0 right-0 h-max mx-auto my-auto w-[380px] bg-surface border border-[--border-color] z-[99999] font-mono overflow-hidden anime-glow"
+                        className="fixed left-0 top-0 bottom-0 right-0 h-max mx-auto my-auto w-[380px] bg-surface border border-[--border-color] z-[500] font-mono overflow-hidden anime-glow"
                     >
                         <div className="p-4 border-b border-[--border-color]">
                             <h2 className="text-base font-semibold text-center text-[--text-color]">Force Quit Applications</h2>

@@ -281,9 +281,8 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
     return (
         <div>
             <div
-                style={{ zIndex: 99999 }}
                 data-tour="menubar"
-                className="fixed h-[35px] z-[99999] top-0 w-screen py-[6px] flex px-4 justify-between items-center content-center bg-[--bg-surface] border-b border-[--border-color] anime-gradient-top"
+                className="fixed h-[35px] z-[300] top-0 w-screen py-[6px] flex px-4 justify-between items-center content-center bg-[--bg-surface] border-b border-[--border-color] anime-gradient-top"
             >
                 <div className="relative flex flex-row items-center content-center space-x-0">
                     <div className="flex items-center justify-center h-full mr-2" data-tour="dynamic-main-menu">
@@ -375,8 +374,8 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
 
                         {showcontrolcenter && (
                             <>
-                                <div className="fixed inset-0 z-[9998]" onClick={() => setshowcontrolcenter(false)} />
-                                <div className="absolute top-8 right-0 z-[9999]">
+                                <div className="fixed inset-0 z-[499]" onClick={() => setshowcontrolcenter(false)} />
+                                <div className="absolute top-8 right-0 z-[500]">
                                     <Control
                                         isopen={showcontrolcenter}
                                         onclose={() => setshowcontrolcenter(false)}

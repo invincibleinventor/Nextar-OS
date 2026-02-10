@@ -64,7 +64,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                         animate={{ opacity: 0.4 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        style={{ zIndex: 2147483647 }}
+                        style={{ zIndex: 700 }}
                         className="fixed inset-0 bg-black"
                         onClick={onclose}
                         onPointerDown={(e) => dragControls.start(e)}
@@ -86,7 +86,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                 onclose();
                             }
                         }}
-                        style={{ zIndex: 2147483647 }}
+                        style={{ zIndex: 700 }}
                         className="fixed top-0 left-0 right-0 flex flex-col w-full pointer-events-auto min-h-[70vh] max-h-[80vh]"
                     >
                         <div
@@ -163,7 +163,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
         }
 
         return createPortal(
-            <div style={{ zIndex: 2147483647 }} className="fixed top-12 left-2 right-2 flex flex-col items-center space-y-2 pointer-events-none">
+            <div style={{ zIndex: 700 }} className="fixed top-12 left-2 right-2 flex flex-col items-center space-y-2 pointer-events-none">
                 <AnimatePresence>
                     {unviewednotifications.slice(0, 3).map((n) => (
                         <motion.div
@@ -200,7 +200,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
 
     return createPortal(
         <>
-            <div style={{ zIndex: 2147483647 }} className="fixed top-14 right-4 flex flex-col items-end space-y-2 pointer-events-none">
+            <div style={{ zIndex: 700 }} className="fixed top-14 right-4 flex flex-col items-end space-y-2 pointer-events-none">
                 <AnimatePresence>
                     {unviewednotifications.slice(0, 4).map((n) => (
                         <motion.div
@@ -244,7 +244,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 0.3 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 w-screen h-screen z-[999998] pointer-events-auto bg-black"
+                            className="fixed inset-0 w-screen h-screen z-[699] pointer-events-auto bg-black"
                             onClick={onclose}
                         />
                         <motion.div
@@ -252,7 +252,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                             animate={{ x: 0 }}
                             exit={{ x: '100%' }}
                             transition={{ type: "spring", stiffness: 400, damping: 40 }}
-                            className="fixed top-0 right-0 bottom-0 z-[999999] w-[380px] h-full bg-surface border-l-2 border-accent/30 overflow-hidden flex flex-col"
+                            className="fixed top-0 right-0 bottom-0 z-[700] w-[380px] h-full bg-surface border-l-2 border-accent/30 overflow-hidden flex flex-col"
                         >
                             <div className="px-5 pt-12 pb-4  shrink-0">
                                 <div className="flex justify-between items-center">

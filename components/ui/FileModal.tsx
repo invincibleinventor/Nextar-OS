@@ -36,7 +36,7 @@ const FileModal: React.FC<FileModalProps> = ({ isOpen, type, initialValue = '', 
     );
 
     return (
-        <div className="fixed inset-0 z-[100000] flex items-center justify-center bg-[--bg-base]/80" onClick={onCancel}>
+        <div className="fixed inset-0 z-[950] flex items-center justify-center bg-[--bg-base]/80" onClick={onCancel}>
             <div
                 className="w-[320px] bg-surface p-0 border border-[--border-color] overflow-hidden transform transition-all scale-100"
                 onClick={e => e.stopPropagation()}

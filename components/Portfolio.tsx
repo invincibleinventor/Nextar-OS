@@ -180,7 +180,7 @@ const InkSplatter = ({ className = '' }: { className?: string }) => (
     <motion.div
         className={`absolute pointer-events-none ${className}`}
         initial={{ scale: 0, opacity: 0 }}
-        whileInView={{ scale: 1, opacity: 0.03 }}
+        viewport={{ once: true }} whileInView={{ scale: 1, opacity: 0.03 }}
         transition={{ duration: 0.5 }}
     >
         <svg viewBox="0 0 200 200" className="w-full h-full">
@@ -194,7 +194,7 @@ const InkSplatter = ({ className = '' }: { className?: string }) => (
 );
 
 const TextureOverlay = () => (
-    <div className="fixed inset-0 pointer-events-none z-[9999] opacity-[0.04]" style={{
+    <div className="fixed inset-0 pointer-events-none z-50 opacity-[0.04]" style={{
         backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
     }} />
 );
@@ -446,13 +446,13 @@ const ProjectsSection = () => {
                 className="absolute left-[5%] top-20 text-[8rem] md:text-[12rem] font-black leading-none select-none pointer-events-none"
                 style={{ color: `${LIGHTGRAY}15`, writingMode: 'vertical-rl' }}
                 initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }} whileInView={{ opacity: 1 }}
             >
                 作品集
             </motion.div>
 
             <div className="max-w-6xl mx-auto relative z-10">
-                <motion.div className="flex items-center gap-6 mb-20" initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}>
+                <motion.div className="flex items-center gap-6 mb-20" initial={{ opacity: 0, y: 30 }} viewport={{ once: true }} whileInView={{ opacity: 1, y: 0 }}>
                     <div className="flex items-center gap-3">
                         <motion.div className="w-16 h-16 rounded-sm flex items-center justify-center" style={{ background: PINK }} whileHover={{ rotate: 5 }}>
                             <span className="text-3xl font-black" style={{ color: BG }}>壱</span>
@@ -473,7 +473,7 @@ const ProjectsSection = () => {
                             key={i}
                             className="group relative"
                             initial={{ opacity: 0, y: 50, rotate: i % 2 === 0 ? -1 : 1 }}
-                            whileInView={{ opacity: 1, y: 0, rotate: 0 }}
+                            viewport={{ once: true }} whileInView={{ opacity: 1, y: 0, rotate: 0 }}
                             transition={{ delay: i * 0.08, type: 'spring', stiffness: 100 }}
                             onHoverStart={() => sethoveredidx(i)}
                             onHoverEnd={() => sethoveredidx(null)}
@@ -540,7 +540,7 @@ const ProjectsSection = () => {
                                             className="text-[10px] px-2 py-1 uppercase tracking-wider font-bold"
                                             style={{ background: `${INK}08`, color: INK, border: `1px solid ${INK}15` }}
                                             initial={{ opacity: 0, scale: 0 }}
-                                            whileInView={{ opacity: 1, scale: 1 }}
+                                            viewport={{ once: true }} whileInView={{ opacity: 1, scale: 1 }}
                                             transition={{ delay: i * 0.08 + ti * 0.05 }}
                                         >
                                             {tag}
@@ -627,7 +627,7 @@ const SkillsSection = () => {
             </div>
 
             <div className="max-w-5xl mx-auto relative z-10">
-                <motion.div className="flex items-center gap-6 mb-16" initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}>
+                <motion.div className="flex items-center gap-6 mb-16" initial={{ opacity: 0, y: 30 }} viewport={{ once: true }} whileInView={{ opacity: 1, y: 0 }}>
                     <motion.div className="w-16 h-16 rounded-sm flex items-center justify-center" style={{ background: PINK }} whileHover={{ rotate: -5 }}>
                         <span className="text-3xl font-black" style={{ color: BG }}>弐</span>
                     </motion.div>
@@ -692,7 +692,7 @@ const SkillsSection = () => {
                                     className="h-0.5 mt-3 origin-left"
                                     style={{ background: PINK }}
                                     initial={{ scaleX: 0 }}
-                                    whileInView={{ scaleX: 1 }}
+                                    viewport={{ once: true }} whileInView={{ scaleX: 1 }}
                                     transition={{ delay: i * 0.1, duration: 0.5 }}
                                 />
                             </motion.div>
@@ -726,7 +726,7 @@ const AboutSection = () => {
             </motion.div>
 
             <div className="max-w-5xl mx-auto relative z-10">
-                <motion.div className="flex items-center gap-6 mb-16" initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}>
+                <motion.div className="flex items-center gap-6 mb-16" initial={{ opacity: 0, y: 30 }} viewport={{ once: true }} whileInView={{ opacity: 1, y: 0 }}>
                     <motion.div className="w-16 h-16 rounded-sm flex items-center justify-center" style={{ background: PINK }} whileHover={{ rotate: 5 }}>
                         <span className="text-3xl font-black" style={{ color: BG }}>参</span>
                     </motion.div>
@@ -743,7 +743,7 @@ const AboutSection = () => {
                     <motion.div
                         className="relative group"
                         initial={{ opacity: 0, x: -50 }}
-                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }} whileInView={{ opacity: 1, x: 0 }}
                     >
                         <motion.div
                             className="absolute inset-0 -z-10"
@@ -768,7 +768,7 @@ const AboutSection = () => {
                             className="text-xl md:text-2xl font-bold leading-relaxed mb-8"
                             style={{ color: INK }}
                             initial={{ opacity: 0 }}
-                            whileInView={{ opacity: 1 }}
+                            viewport={{ once: true }} whileInView={{ opacity: 1 }}
                         >
                             Engineering undergrad with a passion for building. Started coding in 9th grade, never stopped shipping.
                         </motion.p>
@@ -777,7 +777,7 @@ const AboutSection = () => {
                             className="text-base leading-relaxed mb-10"
                             style={{ color: GRAY }}
                             initial={{ opacity: 0 }}
-                            whileInView={{ opacity: 1 }}
+                            viewport={{ once: true }} whileInView={{ opacity: 1 }}
                             transition={{ delay: 0.1 }}
                         >
                             4+ years of full-stack development experience. Currently seeking software engineering internships where I can contribute to meaningful products and grow as a developer.
@@ -791,7 +791,7 @@ const AboutSection = () => {
                                     className="relative p-5 overflow-hidden group"
                                     style={{ background: exp.current ? `${PINK}08` : `${INK}05`, border: `2px solid ${exp.current ? PINK : INK}20` }}
                                     initial={{ opacity: 0, x: 30 }}
-                                    whileInView={{ opacity: 1, x: 0 }}
+                                    viewport={{ once: true }} whileInView={{ opacity: 1, x: 0 }}
                                     transition={{ delay: i * 0.1 }}
                                     whileHover={{ x: 5 }}
                                 >
@@ -890,7 +890,7 @@ const ContactSection = ({ onBoot, embedded, onGetStarted }: { onBoot: () => void
             </motion.div>
 
             <div className="max-w-4xl mx-auto relative z-10">
-                <motion.div className="flex items-center gap-6 mb-12" initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}>
+                <motion.div className="flex items-center gap-6 mb-12" initial={{ opacity: 0, y: 30 }} viewport={{ once: true }} whileInView={{ opacity: 1, y: 0 }}>
                     <motion.div className="w-16 h-16 rounded-sm flex items-center justify-center" style={{ background: PINK }} whileHover={{ rotate: -5 }}>
                         <span className="text-3xl font-black" style={{ color: BG }}>四</span>
                     </motion.div>
@@ -907,7 +907,7 @@ const ContactSection = ({ onBoot, embedded, onGetStarted }: { onBoot: () => void
                     className="text-xl md:text-2xl font-bold mb-4 max-w-lg"
                     style={{ color: BG }}
                     initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true }} whileInView={{ opacity: 1 }}
                 >
                     Ready to build something amazing together?
                 </motion.p>
@@ -916,7 +916,7 @@ const ContactSection = ({ onBoot, embedded, onGetStarted }: { onBoot: () => void
                     className="text-base mb-10 max-w-lg"
                     style={{ color: LIGHTGRAY }}
                     initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true }} whileInView={{ opacity: 1 }}
                     transition={{ delay: 0.1 }}
                 >
                     Open to internship opportunities and exciting projects. Let&apos;s connect and create something extraordinary.
@@ -925,7 +925,7 @@ const ContactSection = ({ onBoot, embedded, onGetStarted }: { onBoot: () => void
                 <motion.div
                     className="flex flex-wrap gap-4"
                     initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }} whileInView={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
                 >
                     <motion.a
@@ -968,7 +968,7 @@ const ContactSection = ({ onBoot, embedded, onGetStarted }: { onBoot: () => void
                         className="mt-16 pt-8 flex items-center gap-6"
                         style={{ borderTop: `1px solid ${BG}15` }}
                         initial={{ opacity: 0 }}
-                        whileInView={{ opacity: 1 }}
+                        viewport={{ once: true }} whileInView={{ opacity: 1 }}
                         transition={{ delay: 0.3 }}
                     >
                         <motion.button
@@ -989,7 +989,7 @@ const ContactSection = ({ onBoot, embedded, onGetStarted }: { onBoot: () => void
                         className="mt-16 pt-8 flex items-center gap-6"
                         style={{ borderTop: `1px solid ${BG}15` }}
                         initial={{ opacity: 0 }}
-                        whileInView={{ opacity: 1 }}
+                        viewport={{ once: true }} whileInView={{ opacity: 1 }}
                         transition={{ delay: 0.3 }}
                     >
                         <span className="text-xs tracking-widest" style={{ color: GRAY }}>OR EXPLORE</span>
@@ -1022,7 +1022,7 @@ const TourCard = ({ onTakeTour, onSkip }: { onTakeTour: () => void; onSkip: () =
         <motion.div
             className="relative z-10 text-center max-w-lg mx-auto px-6"
             initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }} whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
         >
             <motion.div
@@ -1095,8 +1095,6 @@ const scrollstyles = `
 .portfolio-scroll::-webkit-scrollbar-track { background: ${BG}; }
 .portfolio-scroll::-webkit-scrollbar-thumb { background: ${LIGHTGRAY}; border-radius: 3px; }
 .portfolio-scroll::-webkit-scrollbar-thumb:hover { background: ${PINK}; }
-@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-@import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap');
 `;
 
 export default function Portfolio({ embedded }: { embedded?: boolean } = {}) {
@@ -1108,17 +1106,17 @@ export default function Portfolio({ embedded }: { embedded?: boolean } = {}) {
     const handlecomplete = useCallback(() => { setbooting(false); setosstate('booting'); setappmode('os'); }, [setosstate, setappmode]);
 
     const handlegetstarted = useCallback(() => {
-        if (typeof window !== 'undefined') {
+        if (embedded && typeof window !== 'undefined') {
             window.dispatchEvent(new CustomEvent('close-aboutbala'));
         }
-    }, []);
+    }, [embedded]);
 
     const handletaketour = useCallback(() => {
-        if (typeof window !== 'undefined') {
+        if (embedded && typeof window !== 'undefined') {
             window.dispatchEvent(new CustomEvent('close-aboutbala'));
             setTimeout(() => window.dispatchEvent(new Event('start-tour')), 300);
         }
-    }, []);
+    }, [embedded]);
 
     const handleskiptoprojects = useCallback(() => {
         if (containerref.current) {
@@ -1130,10 +1128,11 @@ export default function Portfolio({ embedded }: { embedded?: boolean } = {}) {
     return (
         <>
             <style>{scrollstyles}</style>
+            <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" />
             {!embedded && <TextureOverlay />}
             {!embedded && <AnimatePresence>{booting && <BootSequence onComplete={handlecomplete} />}</AnimatePresence>}
 
-            <div ref={containerref} className={`portfolio-scroll ${embedded ? 'w-full h-full' : 'fixed inset-0'} overflow-y-auto overflow-x-hidden snap-y snap-mandatory`} style={{ fontFamily: '"Zen Kaku Gothic New", -apple-system, BlinkMacSystemFont, sans-serif' }}>
+            <div ref={containerref} className={`portfolio-scroll ${embedded ? 'w-full h-full' : 'fixed inset-0 snap-y snap-mandatory'} overflow-y-auto overflow-x-hidden`} style={{ fontFamily: '"Zen Kaku Gothic New", -apple-system, BlinkMacSystemFont, sans-serif', contain: embedded ? 'layout style paint' : undefined, willChange: embedded ? 'transform' : undefined }}>
                 <HeroSection onBoot={handleboot} embedded={embedded} />
                 {embedded && <TourCard onTakeTour={handletaketour} onSkip={handleskiptoprojects} />}
                 <ProjectsSection />

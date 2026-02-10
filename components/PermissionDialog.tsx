@@ -87,7 +87,7 @@ export const PermissionDialog: React.FC = () => {
     const permdetails = getPermissionDetails(pendingRequest.permission);
 
     return (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-[--bg-base]/80">
+        <div className="fixed inset-0 z-[950] flex items-center justify-center bg-[--bg-base]/80">
             <div className="bg-surface border border-[--border-color] shadow-pastel-lg w-[340px] overflow-hidden anime-glow">
                 <div className="p-6 flex flex-col items-center text-center">
                     <div className="w-16 h-16 overflow-hidden flex items-center justify-center mb-4">

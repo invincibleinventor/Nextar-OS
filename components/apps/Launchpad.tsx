@@ -113,7 +113,7 @@ export default function Launchpad({ onclose }: { onclose: () => void }) {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.15 }}
-                className="fixed inset-0 z-[99998] bg-[--bg-base]/60"
+                className="fixed inset-0 z-[499] bg-[--bg-base]/60"
                 onClick={onclose}
             />
             <motion.div
@@ -121,7 +121,7 @@ export default function Launchpad({ onclose }: { onclose: () => void }) {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: -20 }}
                 transition={{ duration: 0.2, ease: "easeOut" }}
-                className="fixed z-[99999] inset-0 m-auto w-[90vw] max-w-[680px] h-[75vh] flex flex-col bg-surface border-2 border-[--border-color] shadow-pastel-active overflow-hidden anime-glow-lg"
+                className="fixed z-[500] inset-0 m-auto w-[90vw] max-w-[680px] h-[75vh] flex flex-col bg-surface border-2 border-[--border-color] shadow-pastel-active overflow-hidden anime-glow-lg"
                 onClick={(e) => e.stopPropagation()}
                 onPan={(e, info) => {
                     if (info.offset.x < -50) paginate(1);
