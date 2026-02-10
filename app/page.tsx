@@ -620,7 +620,7 @@ const Desktop = () => {
 
             <RecentApps isopen={showrecentapps} onclose={() => setshowrecentapps(false)} />
 
-            <div className={`absolute left-0 right-0 h-10 flex items-end justify-center z-[400] ${(shownotificationcenter || showcontrolcenter) ? 'pointer-events-none' : 'pointer-events-auto'}`} style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)' }}>
+            <div className={`absolute left-0 right-0 h-10 flex items-end justify-center z-[400] ${(shownotificationcenter || showcontrolcenter) ? 'pointer-events-none' : 'pointer-events-auto'}`} style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 4px)' }}>
               <motion.div
                 className="w-[140px] h-[21px] flex items-center content-center cursor-pointer"
                 whileTap={{ scale: 0.95 }}
