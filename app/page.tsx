@@ -190,19 +190,19 @@ const Desktop = () => {
     const handleToggleNext = () => setshownext(prev => !prev);
     const handleForceQuit = () => setshowforcequit(true);
     const handleAboutMac = () => setshowaboutmac(true);
-    const handleCloseAboutBala = () => {
+    const handleCloseAbout = () => {
       const currentWindows = windowsref.current;
-      const aboutBalaWindow = currentWindows.find((w: any) => w.appname === 'About Bala' || w.id?.startsWith('aboutbala'));
-      if (aboutBalaWindow) {
-        updatewindow(aboutBalaWindow.id, { isminimized: true });
+      const aboutWindow = currentWindows.find((w: any) => w.appname === 'About HackathOS' || w.id?.startsWith('abouthackathos'));
+      if (aboutWindow) {
+        updatewindow(aboutWindow.id, { isminimized: true });
       }
     };
     const handleTourEnded = () => {
       const currentWindows = windowsref.current;
-      const aboutBalaWindow = currentWindows.find((w: any) => w.appname === 'About Bala' || w.id?.startsWith('aboutbala'));
-      if (aboutBalaWindow) {
-        updatewindow(aboutBalaWindow.id, { isminimized: false });
-        setactivewindow(aboutBalaWindow.id);
+      const aboutWindow = currentWindows.find((w: any) => w.appname === 'About HackathOS' || w.id?.startsWith('abouthackathos'));
+      if (aboutWindow) {
+        updatewindow(aboutWindow.id, { isminimized: false });
+        setactivewindow(aboutWindow.id);
       }
     };
     const handleToggleDesktopEffects = () => setshowdesktopeffects((prev: boolean) => !prev);
@@ -211,7 +211,7 @@ const Desktop = () => {
     window.addEventListener('toggle-next', handleToggleNext);
     window.addEventListener('show-force-quit', handleForceQuit);
     window.addEventListener('show-about-mac', handleAboutMac);
-    window.addEventListener('close-aboutbala', handleCloseAboutBala);
+    window.addEventListener('close-about', handleCloseAbout);
     window.addEventListener('tour-ended', handleTourEnded);
     window.addEventListener('toggle-desktop-effects', handleToggleDesktopEffects);
     return () => {
@@ -220,7 +220,7 @@ const Desktop = () => {
       window.removeEventListener('toggle-next', handleToggleNext);
       window.removeEventListener('show-force-quit', handleForceQuit);
       window.removeEventListener('show-about-mac', handleAboutMac);
-      window.removeEventListener('close-aboutbala', handleCloseAboutBala);
+      window.removeEventListener('close-about', handleCloseAbout);
       window.removeEventListener('tour-ended', handleTourEnded);
       window.removeEventListener('toggle-desktop-effects', handleToggleDesktopEffects);
     };
@@ -399,7 +399,7 @@ const Desktop = () => {
 
   useEffect(() => {
     if (osstate === 'unlocked' && user && !haslaunchedwelcome.current) {
-      openSystemItem('aboutbala', context);
+      openSystemItem('abouthackathos', context);
       haslaunchedwelcome.current = true;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

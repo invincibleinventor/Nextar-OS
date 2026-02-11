@@ -590,7 +590,7 @@ export default function AppStore({ appId = 'appstore', id }: { appId?: string, i
                                     <IoLogoGithub size={48} className="mx-auto mb-4 text-[--text-muted]" />
                                     <h3 className="text-xl font-bold mb-2">Repository Management</h3>
                                     <p className="text-[--text-muted] text-sm max-w-md mx-auto mb-6">
-                                        Add custom GitHub repositories to discover community-made apps for NextarOS.
+                                        Add custom GitHub repositories to discover community-made apps for HackathOS.
                                         Repositories must contain an apps.json file in the main branch.
                                     </p>
                                     <div className="bg-surface p-5 max-w-lg mx-auto text-left">

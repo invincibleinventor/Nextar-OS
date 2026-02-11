@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useCallback, useEffect } fr
 import { Permission, PermissionGrant, AppPermissions } from '../types/permissions';
 import { useAuth } from './AuthContext';
 
-const DB_NAME = 'NextarOSSystem';
+const DB_NAME = 'HackathOSSystem';
 const PERMISSIONS_STORE = 'permissions';
 
 interface PermissionsContextType {

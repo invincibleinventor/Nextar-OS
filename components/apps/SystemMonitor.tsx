@@ -152,7 +152,7 @@ export default function SystemMonitor({ isFocused }: SystemMonitorProps) {
                                 className={`px-3 py-1 text-xs transition-colors ${viewmode === 'internal' ? 'bg-accent text-[--text-color]' : 'text-[--text-muted] hover:text-[--text-color]'}`}
                             >
                                 <IoDesktop className="inline mr-1" size={12} />
-                                NextarDE
+                                HackathOS
                             </button>
                             <button
                                 onClick={() => setviewmode('system')}
@@ -379,7 +379,7 @@ export default function SystemMonitor({ isFocused }: SystemMonitorProps) {
                 <span>
                     {viewmode === 'system'
                         ? `${systemprocs.length} host processes`
-                        : `${runningprocesses.length} NextarDE process${runningprocesses.length !== 1 ? 'es' : ''}`
+                        : `${runningprocesses.length} HackathOS process${runningprocesses.length !== 1 ? 'es' : ''}`
                     }
                 </span>
                 {viewmode === 'system' && (
@@ -391,7 +391,7 @@ export default function SystemMonitor({ isFocused }: SystemMonitorProps) {
                         <IoRefresh size={12} className={loading ? 'animate-spin' : ''} />
                     </button>
                 )}
-                <span className="ml-auto">NextarDE System Monitor</span>
+                <span className="ml-auto">HackathOS System Monitor</span>
             </div>
         </div>
     );

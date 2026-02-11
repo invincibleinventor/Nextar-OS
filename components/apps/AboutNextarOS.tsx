@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useAuth } from '../AuthContext';
 import { personal } from '../data';
 
-export default function AboutNextarOS() {
+export default function AboutHackathOS() {
     const { user } = useAuth();
 
     return (
@@ -13,15 +13,15 @@ export default function AboutNextarOS() {
                 <div className="w-20 h-20 mb-4">
                     <Image
                         src="/logo.svg"
-                        alt="NextarOS"
+                        alt="HackathOS"
                         width={80}
                         height={80}
                         className="w-full h-full"
                     />
                 </div>
 
-                <h1 className="text-xl font-bold text-[--text-color] mb-1">NextarOS</h1>
-                <p className="text-xs text-[--text-muted] mb-4">Version 2.0</p>
+                <h1 className="text-xl font-bold text-[--text-color] mb-1">HackathOS</h1>
+                <p className="text-xs text-[--text-muted] mb-4">Version 1.0</p>
 
                 <div className="w-full max-w-[250px] space-y-2 text-sm text-left mb-4">
                     <div className="flex justify-between">

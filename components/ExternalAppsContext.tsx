@@ -61,7 +61,7 @@ interface ExternalAppsContextType {
 
 const ExternalAppsContext = createContext<ExternalAppsContextType | undefined>(undefined);
 
-const DEFAULT_REPO = 'invincibleinventor/nextar-apps';
+const DEFAULT_REPO = 'hackos/hackos-apps';
 const CACHE_KEY = 'nextaros-apps-cache';
 const CACHE_EXPIRY = 5 * 60 * 1000;
 

@@ -42,7 +42,7 @@ const apicategories: ApiCategory[] = [
                 ],
                 examples: [
                     { lang: 'JavaScript', code: `const { addwindow } = useWindows();\n\naddwindow({\n  componentname: 'apps/MyApp',\n  appname: 'My App',\n  icon: '/myapp.png',\n  title: 'Custom Title'\n});` },
-                    { lang: 'Python', code: `# Python equivalent (via Piston API)\n# Window APIs are JS-only in NextarOS\n# Use the Code Editor to write JS apps` },
+                    { lang: 'Python', code: `# Python equivalent (via Piston API)\n# Window APIs are JS-only in HackathOS\n# Use the Code Editor to write JS apps` },
                 ]
             },
             { name: 'removewindow(id)', desc: 'Close a window by its unique ID.', usage: `removewindow('window-123')`, returns: 'void', params: [{ name: 'id', type: 'string', desc: 'Window ID to close' }] },
@@ -489,8 +489,8 @@ export default function ApiDocs({ windowId }: { windowId?: string }) {
                                 <div className="text-xs font-semibold uppercase text-[--text-muted] tracking-wider mb-2">Try this example</div>
                                 <CodeTabs
                                     examples={[
-                                        { lang: 'JavaScript', code: `function greet(name) {\n  console.log('Hello, ' + name + '!');\n  console.log('Welcome to NextarOS');\n}\n\ngreet('Developer');\nconsole.log('2 + 2 =', 2 + 2);` },
-                                        { lang: 'Python', code: `def greet(name):\n    print(f'Hello, {name}!')\n    print('Welcome to NextarOS')\n\ngreet('Developer')\nprint(f'2 + 2 = {2 + 2}')` },
+                                        { lang: 'JavaScript', code: `function greet(name) {\n  console.log('Hello, ' + name + '!');\n  console.log('Welcome to HackathOS');\n}\n\ngreet('Developer');\nconsole.log('2 + 2 =', 2 + 2);` },
+                                        { lang: 'Python', code: `def greet(name):\n    print(f'Hello, {name}!')\n    print('Welcome to HackathOS')\n\ngreet('Developer')\nprint(f'2 + 2 = {2 + 2}')` },
                                     ]}
                                     usage=""
                                     copiedtext={copiedtext}

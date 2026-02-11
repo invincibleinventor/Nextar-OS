@@ -54,7 +54,7 @@ export default function BootScreen() {
                             animate={{ scale: 1, rotate: 0 }}
                             transition={{ type: 'spring', stiffness: 200, damping: 15 }}
                         >
-                            <span className="text-2xl font-black" style={{ color: BG }}>N</span>
+                            <span className="text-2xl font-black" style={{ color: BG }}>H</span>
                         </motion.div>
 
                         <motion.div
@@ -64,7 +64,7 @@ export default function BootScreen() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.2 }}
                         >
-                            NextarOS
+                            HackathOS
                         </motion.div>
 
                         <motion.div

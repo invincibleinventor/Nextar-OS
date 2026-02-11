@@ -245,7 +245,7 @@ export default function TourGuide({ isOpen, onClose }: TourGuideProps) {
         const mobileSteps = [
             {
                 popover: {
-                    title: 'Welcome to NextarOS',
+                    title: 'Welcome to HackathOS',
                     description: 'A full mobile OS experience in your browser.\nLet\'s walk through the key features.',
                     side: 'bottom' as const,
                     align: 'center' as const
@@ -292,7 +292,7 @@ export default function TourGuide({ isOpen, onClose }: TourGuideProps) {
             {
                 popover: {
                     title: 'You\'re All Set',
-                    description: 'Explore the apps, customize settings, and enjoy NextarOS.',
+                    description: 'Explore the apps, customize settings, and enjoy HackathOS.',
                     side: 'bottom' as const
                 }
             }
@@ -301,7 +301,7 @@ export default function TourGuide({ isOpen, onClose }: TourGuideProps) {
         const desktopSteps = [
             {
                 popover: {
-                    title: 'Welcome to NextarOS',
+                    title: 'Welcome to HackathOS',
                     description: 'A web-based desktop experience.\nLet us give you a quick tour of the interface.',
                     side: 'bottom' as const,
                     align: 'center' as const
@@ -355,7 +355,7 @@ export default function TourGuide({ isOpen, onClose }: TourGuideProps) {
             },
             {
                 popover: {
-                    title: 'Enjoy NextarOS',
+                    title: 'Enjoy HackathOS',
                     description: 'Explore Explorer, Browser, Settings, Music, and more.\nBuilt with Next.js, React, and IndexedDB.',
                     side: 'bottom' as const
                 }

@@ -1,6 +1,6 @@
 {
-    "name": "NextarOS Official Apps",
-    "description": "Official external apps repository for NextarOS",
+    "name": "HackathOS Official Apps",
+    "description": "Official external apps repository for HackathOS",
     "version": "1.0.0",
     "author": "invincibleinventor",
     "apps": [
@@ -9,7 +9,7 @@
             "name": "Calculator Pro",
             "description": "Advanced calculator with scientific functions, unit conversion, and history",
             "icon": "🧮",
-            "author": "NextarOS Team",
+            "author": "HackathOS Team",
             "version": "1.0.0",
             "category": "Utilities",
             "component": "CalculatorPro",
@@ -26,7 +26,7 @@
             "name": "Color Picker",
             "description": "Pick colors from screen and convert between formats",
             "icon": "🎨",
-            "author": "NextarOS Team",
+            "author": "HackathOS Team",
             "version": "1.0.0",
             "category": "Developer Tools",
             "component": "ColorPicker",
