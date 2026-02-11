@@ -77,6 +77,7 @@ function NetworkBadge() {
 export default function XTermShell({
     className = '', fontSize = 13, onReady,
 }: XTermShellProps) {
+    const wrapperRef = useRef<HTMLDivElement>(null);
     const termRef = useRef<HTMLDivElement>(null);
     const fitAddonRef = useRef<any>(null);
     const termInstanceRef = useRef<any>(null);
@@ -176,7 +177,7 @@ export default function XTermShell({
                 try { fitAddonRef.current.fit(); } catch { /* ignore */ }
             }
         });
-        if (termRef.current) resizeObs.observe(termRef.current);
+        if (wrapperRef.current) resizeObs.observe(wrapperRef.current);
 
         return () => {
             mounted = false;
@@ -215,10 +216,14 @@ export default function XTermShell({
 
     return (
         <div
-            ref={termRef}
+            ref={wrapperRef}
             className={`w-full h-full ${className}`}
             style={{ background: '#1e2030', position: 'relative' }}
         >
+            <div
+                ref={termRef}
+                className="w-full h-full"
+            />
             {loaded && (
                 <div style={{ position: 'absolute', top: 6, right: 8, zIndex: 10, pointerEvents: 'auto' }}>
                     <NetworkBadge />
