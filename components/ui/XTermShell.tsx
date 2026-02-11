@@ -149,14 +149,16 @@ export default function XTermShell({
     }, []);
 
     useEffect(() => {
-        if (networkLoginUrl && termInstanceRef.current) {
+        if (networkLoginUrl && termInstanceRef.current && loaded) {
             const t = termInstanceRef.current;
             t.writeln('');
             t.writeln('\x1b[33m  Network: Tailscale login required for internet access.\x1b[0m');
-            t.writeln(`\x1b[36m  ${networkLoginUrl}\x1b[0m`);
+            t.writeln('\x1b[33m  Click the URL below to authenticate (free account):\x1b[0m');
+            t.writeln(`\x1b[4;36m  ${networkLoginUrl}\x1b[0m`);
             t.writeln('');
+            console.log('[HackathOS] Tailscale login URL:', networkLoginUrl);
         }
-    }, [networkLoginUrl]);
+    }, [networkLoginUrl, loaded]);
 
     return (
         <div

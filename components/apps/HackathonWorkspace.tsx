@@ -318,7 +318,7 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
     const autoSaveTimer = useRef<NodeJS.Timeout | null>(null);
     const outputRef = useRef<HTMLPreElement>(null);
 
-    const { isBooted, writeProjectFile } = useCheerpX();
+    const { isBooted, writeProjectFile, writeLinuxFile } = useCheerpX();
 
     useEffect(() => {
         if (projectId && (!currentProject || currentProject.id !== projectId)) {
@@ -326,21 +326,24 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
         }
     }, [projectId, currentProject, openProject]);
 
-    // Sync project files to CheerpX /projects so terminal can access them
+    // Sync project files to Linux filesystem so terminal can access them.
+    // DataDevice (/projects) is flat — doesn't support subdirectories.
+    // We write to /home/user/projects/<name>/ on the ext2 filesystem instead.
     const syncedRef = useRef(false);
     useEffect(() => {
         if (!isBooted || !currentProject || syncedRef.current) return;
         syncedRef.current = true;
         const syncFiles = async () => {
+            const projDir = `/home/user/projects/${currentProject.name.replace(/\s+/g, '_')}`;
             for (const file of currentFiles) {
                 if (file.isDirectory) continue;
                 try {
-                    await writeProjectFile(file.path, file.content);
+                    await writeLinuxFile(`${projDir}${file.path}`, file.content);
                 } catch { /* ignore sync errors */ }
             }
         };
         syncFiles();
-    }, [isBooted, currentProject, currentFiles, writeProjectFile]);
+    }, [isBooted, currentProject, currentFiles, writeLinuxFile]);
 
     const fileTree = useMemo(() => buildFileTree(currentFiles), [currentFiles]);
 
@@ -387,21 +390,27 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
         if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
         autoSaveTimer.current = setTimeout(async () => {
             await updateFile(fileId, value);
-            // Also sync to CheerpX so terminal sees updated files
+            // Also sync to Linux filesystem so terminal sees updated files
             const tab = openTabs.find(t => t.fileId === fileId);
-            if (tab) writeProjectFile(tab.path, value).catch(() => {});
+            if (tab && currentProject) {
+                const projDir = `/home/user/projects/${currentProject.name.replace(/\s+/g, '_')}`;
+                writeLinuxFile(`${projDir}${tab.path}`, value).catch(() => {});
+            }
             setOpenTabs(prev => prev.map(t => t.fileId === fileId ? { ...t, modified: false } : t));
         }, 2000);
-    }, [updateFile, openTabs, writeProjectFile]);
+    }, [updateFile, openTabs, writeLinuxFile, currentProject]);
 
     const saveCurrentFile = useCallback(async () => {
         if (!activeTab) return;
         const content = fileContents.get(activeTab);
         if (content !== undefined) {
             await updateFile(activeTab, content);
-            // Sync to CheerpX
+            // Sync to Linux filesystem
             const tab = openTabs.find(t => t.fileId === activeTab);
-            if (tab) writeProjectFile(tab.path, content).catch(() => {});
+            if (tab && currentProject) {
+                const projDir = `/home/user/projects/${currentProject.name.replace(/\s+/g, '_')}`;
+                writeLinuxFile(`${projDir}${tab.path}`, content).catch(() => {});
+            }
             setOpenTabs(prev => prev.map(t => t.fileId === activeTab ? { ...t, modified: false } : t));
             addToast(`Saved ${tab?.name || 'file'}`, 'success');
         }
