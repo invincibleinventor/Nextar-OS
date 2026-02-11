@@ -38,6 +38,8 @@ interface CheerpXContextType {
     mkdirLinux: (path: string) => Promise<void>;
     removeLinux: (path: string) => Promise<void>;
     networkLoginUrl: string | null;
+    networkState: 'disconnected' | 'connecting' | 'login-ready' | 'connected';
+    connectNetwork: () => Promise<void>;
 }
 
 const CheerpXContext = createContext<CheerpXContextType | undefined>(undefined);
@@ -53,7 +55,7 @@ const DISK_IMAGE_URL = 'wss://disks.webvm.io/debian_large_20230522_5044875331_2.
 const IDB_CACHE_ID = 'hackathos-cx';
 
 const BASHRC = `# HackathOS Shell
-export PS1='\\[\\e[1;32m\\]\\u\\[\\e[0m\\]@\\[\\e[1;36m\\]hackathos\\[\\e[0m\\]:\\[\\e[1;34m\\]\\w\\[\\e[0m\\]\\$ '
+export PS1='\\[\\e[1;32m\\]user\\[\\e[0m\\]@\\[\\e[1;36m\\]hackathos\\[\\e[0m\\]:\\[\\e[1;34m\\]\\w\\[\\e[0m\\]$ '
 export EDITOR=vim
 export LANG=en_US.UTF-8
 
@@ -165,6 +167,7 @@ export const CheerpXProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const [isBooting, setIsBooting] = useState(false);
     const [bootError, setBootError] = useState<string | null>(null);
     const [networkLoginUrl, setNetworkLoginUrl] = useState<string | null>(null);
+    const [networkState, setNetworkState] = useState<'disconnected' | 'connecting' | 'login-ready' | 'connected'>('disconnected');
 
     const boot = useCallback(async (initialCols?: number, initialRows?: number) => {
         if (cxInstance) { setIsBooted(true); return cxInstance; }
@@ -198,10 +201,22 @@ export const CheerpXProvider: React.FC<{ children: React.ReactNode }> = ({ child
             const cx = await CheerpX.Linux.create({
                 mounts,
                 networkInterface: {
-                    controlUrl: 'wss://networkinterface.leaningtech.com/',
-                    loginUrlCb: (url: string) => setNetworkLoginUrl(url),
+                    authKey: undefined,
+                    controlUrl: undefined,
+                    loginUrlCb: (url: string) => {
+                        console.log('[HackathOS] Tailscale login URL received:', url);
+                        setNetworkLoginUrl(url);
+                        setNetworkState('login-ready');
+                    },
                     stateUpdateCb: (state: number) => {
-                        if (state === 2) setNetworkLoginUrl(null);
+                        console.log('[HackathOS] Tailscale state:', state);
+                        if (state === 6) {
+                            setNetworkState('connected');
+                            setNetworkLoginUrl(null);
+                        }
+                    },
+                    netmapUpdateCb: (map: any) => {
+                        console.log('[HackathOS] Tailscale netmap:', map?.self?.addresses?.[0]);
                     },
                 },
             });
@@ -275,8 +290,8 @@ export const CheerpXProvider: React.FC<{ children: React.ReactNode }> = ({ child
         const opts = {
             env: ['HOME=/home/user', 'TERM=xterm', 'USER=user', 'SHELL=/bin/bash', 'EDITOR=vim', 'LANG=en_US.UTF-8', 'LC_ALL=C'],
             cwd: '/home/user',
-            uid: 1000,
-            gid: 1000,
+            uid: 0,
+            gid: 0,
         };
         while (cxInstance) {
             await cxInstance.run('/bin/bash', ['--login'], opts);
@@ -315,6 +330,19 @@ export const CheerpXProvider: React.FC<{ children: React.ReactNode }> = ({ child
         await queueCapture(`rm -rf '${path}'`);
     }, []);
 
+    const connectNetwork = useCallback(async () => {
+        if (!cxInstance) return;
+        if (networkState === 'connected' || networkState === 'connecting') return;
+        setNetworkState('connecting');
+        console.log('[HackathOS] Calling cx.networkLogin()...');
+        try {
+            cxInstance.networkLogin();
+        } catch (err) {
+            console.error('[HackathOS] networkLogin error:', err);
+            setNetworkState('disconnected');
+        }
+    }, [networkState]);
+
     const writeProjectFile = useCallback(async (path: string, content: string) => {
         if (!dataDeviceInstance) return;
         await dataDeviceInstance.writeFile(path, content);
@@ -326,7 +354,7 @@ export const CheerpXProvider: React.FC<{ children: React.ReactNode }> = ({ child
             attachTerminal, runShell,
             writeProjectFile, captureCommand,
             listDir, readFile, writeLinuxFile, mkdirLinux, removeLinux,
-            networkLoginUrl,
+            networkLoginUrl, networkState, connectNetwork,
         }}>
             {children}
         </CheerpXContext.Provider>
