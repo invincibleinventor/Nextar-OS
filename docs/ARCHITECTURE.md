@@ -1,6 +1,6 @@
-# NextarOS Architecture
+# HackathOS Architecture
 
-NextarOS is a web-based operating system simulation built with Next.js, implementing proper OS concepts including process management, app isolation, permissions, and a virtual filesystem.
+HackathOS is a web-based hackathon operating system built with Next.js, implementing proper OS concepts including process management, app isolation, permissions, a virtual filesystem, and a full Linux VM via CheerpX.
 
 ## System Overview
 
@@ -21,14 +21,10 @@ NextarOS is a web-based operating system simulation built with Next.js, implemen
 │  │  ProcessContext: spawn, suspend, resume, kill, crash    ││
 │  └─────────────────────────────────────────────────────────┘│
 ├─────────────────────────────────────────────────────────────┤
-│                   Permissions Layer                          │
+│                   CheerpX VM Layer                           │
 │  ┌─────────────────────────────────────────────────────────┐│
-│  │  PermissionsContext: check, request, grant, revoke      ││
-│  └─────────────────────────────────────────────────────────┘│
-├─────────────────────────────────────────────────────────────┤
-│                   App Sandbox Layer                          │
-│  ┌─────────────────────────────────────────────────────────┐│
-│  │  AppSandbox: Capability-based API access per app        ││
+│  │  CheerpXContext: boot, console, shell, FS, networking   ││
+│  │  XTermShell: xterm.js ←→ CheerpX singleton console     ││
 │  └─────────────────────────────────────────────────────────┘│
 ├─────────────────────────────────────────────────────────────┤
 │                  Core Services Layer                         │
@@ -38,10 +34,79 @@ NextarOS is a web-based operating system simulation built with Next.js, implemen
 ├─────────────────────────────────────────────────────────────┤
 │                    Storage Layer                             │
 │  ┌─────────────────────────────────────────────────────────┐│
-│  │  IndexedDB: files, users, permissions                    ││
+│  │  IndexedDB: files, users, permissions, CheerpX overlay  ││
 │  │  LocalStorage: settings, cache                           ││
+│  │  Cloud disk: wss://disks.webvm.io (Debian ext2, cached) ││
 │  └─────────────────────────────────────────────────────────┘│
 └─────────────────────────────────────────────────────────────┘
+```
+
+## CheerpX Linux VM
+
+HackathOS runs a full Debian Linux distribution in the browser via CheerpX (x86-to-WebAssembly JIT compiler).
+
+### Boot Sequence (CheerpX)
+
+```
+1. XTermShell mounts → creates xterm.js Terminal
+   │
+2. fitAddon.fit() → calculates terminal cols/rows
+   │
+3. boot(cols, rows) called on CheerpXContext
+   │
+4. CheerpX.Linux.create({mounts, networkInterface})
+   │  ├── CloudDevice: Debian ext2 image (streamed via WebSocket)
+   │  ├── IDBDevice: IndexedDB overlay (persists writes)
+   │  ├── OverlayDevice: CloudDevice + IDBDevice merged
+   │  ├── DataDevice: flat key-value store at /projects
+   │  └── Tailscale: optional networking
+   │
+5. setCustomConsole(centralOutputHandler, cols, rows) — ONCE
+   │
+6. Write .bashrc via base64 shell command
+   │
+7. attachTerminal() → register write function in broadcast set
+   │
+8. runShell() → cx.run('/bin/bash', ['--login']) — singleton
+```
+
+### Console Architecture
+
+CheerpX supports exactly ONE console. Multiple Terminal windows share it:
+
+```
+Terminal 1 ──┐
+Terminal 2 ──┼──→ centralOutputHandler ──→ broadcast to all terminals
+Terminal 3 ──┘         │
+                       ├── isCapturing=false → terminalWriteFuncs Set
+                       └── isCapturing=true  → captureBuffer (for FS ops)
+```
+
+- **setCustomConsole** called exactly ONCE during boot (never again)
+- **consoleReadFunc** used for both keyboard input and terminal resize
+- **Capture queue** serializes background FS operations to avoid interleaving
+
+### File System Mounts
+
+| Mount | Type | Path | Purpose |
+|-------|------|------|---------|
+| ext2 overlay | OverlayDevice | `/` | Full Debian root filesystem |
+| DataDevice | dir | `/projects` | Flat file store (JS-writable) |
+| devs | devs | `/dev` | Device files |
+| devpts | devpts | `/dev/pts` | Pseudo-terminal devices |
+| proc | proc | `/proc` | Process filesystem |
+| sys | sys | `/sys` | Kernel interface |
+
+### Editor ↔ Terminal File Sync
+
+Project files edited in Monaco are synced to `/home/user/projects/<name>/` on the ext2 filesystem:
+
+```
+Monaco Editor → saveFile() → writeLinuxFile('/home/user/projects/myapp/src/index.js', content)
+                                    │
+                                    └──→ queueCapture("mkdir -p ... && echo '...' | base64 -d > ...")
+                                              │
+                                              └──→ cx.run('/bin/bash', ['-c', command])
 ```
 
 ## Boot Sequence

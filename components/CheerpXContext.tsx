@@ -64,12 +64,12 @@ alias cls='clear'
 alias ..='cd ..'
 alias ...='cd ../..'
 
-# Project files are mounted at /projects
-alias proj='cd /projects'
+# Project files synced from the editor
+alias proj='cd ~/projects'
 
 echo -e "\\e[36m  HackathOS Linux Environment\\e[0m"
 echo -e "\\e[90m  Full Debian Linux in your browser. apt, pip, gcc, python — everything works.\\e[0m"
-echo -e "\\e[90m  Project files are at /projects\\e[0m"
+echo -e "\\e[90m  Project files are at ~/projects\\e[0m"
 echo ""
 `;
 
@@ -216,12 +216,11 @@ export const CheerpXProvider: React.FC<{ children: React.ReactNode }> = ({ child
             );
             consoleAttached = true;
 
-            // Write custom .bashrc via base64 — non-fatal if it fails
-            // (DataDevice rejects filenames starting with '.', so we pipe through shell)
+            // Write custom .bashrc and create projects dir — non-fatal if it fails
             try {
                 const b64 = btoa(unescape(encodeURIComponent(BASHRC)));
                 await cx.run('/bin/bash', ['-c',
-                    `echo '${b64}' | base64 -d > /home/user/.bashrc && chown 1000:1000 /home/user/.bashrc`
+                    `echo '${b64}' | base64 -d > /home/user/.bashrc && mkdir -p /home/user/projects && chown -R 1000:1000 /home/user/.bashrc /home/user/projects`
                 ], { cwd: '/', uid: 0, gid: 0, env: ['HOME=/root', 'TERM=dumb', 'SHELL=/bin/bash'] });
             } catch (e) {
                 console.warn('CheerpX .bashrc setup skipped:', e);
