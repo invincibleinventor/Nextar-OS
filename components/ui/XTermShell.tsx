@@ -34,6 +34,46 @@ const XTERM_THEME = {
     brightWhite: '#cad3f5',
 };
 
+function NetworkBadge() {
+    const { networkLoginUrl, networkState, connectNetwork } = useCheerpX();
+
+    if (networkState === 'disconnected') {
+        return (
+            <button
+                onClick={connectNetwork}
+                className="px-2 py-0.5 text-[10px] rounded bg-[#363a4f] text-[#8bd5ca] hover:bg-[#494d64] transition-colors border border-[#494d64]"
+            >
+                Connect to Internet
+            </button>
+        );
+    }
+    if (networkState === 'connecting') {
+        return (
+            <span className="px-2 py-0.5 text-[10px] rounded bg-[#363a4f] text-[#eed49f] border border-[#494d64]">
+                Connecting...
+            </span>
+        );
+    }
+    if (networkState === 'login-ready') {
+        return (
+            <button
+                onClick={() => networkLoginUrl && window.open(networkLoginUrl, '_blank')}
+                className="px-2 py-0.5 text-[10px] rounded bg-[#363a4f] text-[#eed49f] hover:bg-[#494d64] transition-colors border border-[#494d64] animate-pulse"
+            >
+                Open Tailscale Login
+            </button>
+        );
+    }
+    if (networkState === 'connected') {
+        return (
+            <span className="px-2 py-0.5 text-[10px] rounded bg-[#363a4f] text-[#a6da95] border border-[#494d64]">
+                Online
+            </span>
+        );
+    }
+    return null;
+}
+
 export default function XTermShell({
     className = '', fontSize = 13, onReady,
 }: XTermShellProps) {
@@ -42,7 +82,7 @@ export default function XTermShell({
     const termInstanceRef = useRef<any>(null);
     const [loaded, setLoaded] = useState(false);
 
-    const { boot, attachTerminal, runShell, bootError, networkLoginUrl } = useCheerpX();
+    const { boot, attachTerminal, runShell, bootError, networkLoginUrl, networkState } = useCheerpX();
 
     useEffect(() => {
         let mounted = true;
@@ -148,23 +188,42 @@ export default function XTermShell({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    // When login URL arrives, write it to the terminal and open in new tab
     useEffect(() => {
         if (networkLoginUrl && termInstanceRef.current && loaded) {
             const t = termInstanceRef.current;
             t.writeln('');
             t.writeln('\x1b[33m  Network: Tailscale login required for internet access.\x1b[0m');
-            t.writeln('\x1b[33m  Click the URL below to authenticate (free account):\x1b[0m');
+            t.writeln('\x1b[33m  A login page has been opened in a new tab.\x1b[0m');
+            t.writeln('\x1b[33m  If it didn\'t open, click the URL below (free account):\x1b[0m');
             t.writeln(`\x1b[4;36m  ${networkLoginUrl}\x1b[0m`);
             t.writeln('');
             console.log('[HackathOS] Tailscale login URL:', networkLoginUrl);
+            window.open(networkLoginUrl, '_blank');
         }
     }, [networkLoginUrl, loaded]);
+
+    // Notify when connected
+    useEffect(() => {
+        if (networkState === 'connected' && termInstanceRef.current && loaded) {
+            const t = termInstanceRef.current;
+            t.writeln('');
+            t.writeln('\x1b[32m  Network connected! You can now use apt, curl, pip, etc.\x1b[0m');
+            t.writeln('');
+        }
+    }, [networkState, loaded]);
 
     return (
         <div
             ref={termRef}
             className={`w-full h-full ${className}`}
-            style={{ background: '#1e2030' }}
-        />
+            style={{ background: '#1e2030', position: 'relative' }}
+        >
+            {loaded && (
+                <div style={{ position: 'absolute', top: 6, right: 8, zIndex: 10, pointerEvents: 'auto' }}>
+                    <NetworkBadge />
+                </div>
+            )}
+        </div>
     );
 }

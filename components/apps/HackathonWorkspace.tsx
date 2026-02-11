@@ -318,7 +318,16 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
     const autoSaveTimer = useRef<NodeJS.Timeout | null>(null);
     const outputRef = useRef<HTMLPreElement>(null);
 
-    const { isBooted, writeProjectFile, writeLinuxFile } = useCheerpX();
+    const { isBooted, writeProjectFile, writeLinuxFile, mkdirLinux, removeLinux, captureCommand, readFile } = useCheerpX();
+
+    // Resolve a virtual FS path to an absolute Linux path under the project dir.
+    // file.path may or may not start with '/' depending on depth, so normalize it.
+    const linuxPath = useCallback((filePath: string) => {
+        if (!currentProject) return '';
+        const projDir = `/home/user/projects/${currentProject.name.replace(/\s+/g, '_')}`;
+        const normalized = filePath.startsWith('/') ? filePath : `/${filePath}`;
+        return `${projDir}${normalized}`;
+    }, [currentProject]);
 
     useEffect(() => {
         if (projectId && (!currentProject || currentProject.id !== projectId)) {
@@ -334,16 +343,15 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
         if (!isBooted || !currentProject || syncedRef.current) return;
         syncedRef.current = true;
         const syncFiles = async () => {
-            const projDir = `/home/user/projects/${currentProject.name.replace(/\s+/g, '_')}`;
             for (const file of currentFiles) {
                 if (file.isDirectory) continue;
                 try {
-                    await writeLinuxFile(`${projDir}${file.path}`, file.content);
+                    await writeLinuxFile(linuxPath(file.path), file.content);
                 } catch { /* ignore sync errors */ }
             }
         };
         syncFiles();
-    }, [isBooted, currentProject, currentFiles, writeLinuxFile]);
+    }, [isBooted, currentProject, currentFiles, writeLinuxFile, linuxPath]);
 
     const fileTree = useMemo(() => buildFileTree(currentFiles), [currentFiles]);
 
@@ -383,6 +391,79 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
         setFileContents(prev => { const next = new Map(prev); next.delete(fileId); return next; });
     }, [activeTab]);
 
+    // Reverse sync: pull changes from Linux FS back into the virtual FS.
+    // Handles files created/edited/deleted in the terminal.
+    const [isSyncing, setIsSyncing] = useState(false);
+    const syncFromLinux = useCallback(async () => {
+        if (!currentProject || !isBooted || isSyncing) return;
+        setIsSyncing(true);
+        try {
+            const projDir = `/home/user/projects/${currentProject.name.replace(/\s+/g, '_')}`;
+            const norm = (p: string) => (p.startsWith('/') ? p : `/${p}`);
+
+            // List dirs and files in one shot
+            const raw = await captureCommand(
+                `cd '${projDir}' 2>/dev/null && find . -mindepth 1 -type d | sed 's/^/D:/' && find . -mindepth 1 -type f | sed 's/^/F:/'`
+            );
+
+            const lines = (raw || '').trim().split('\n').filter(l => l.startsWith('D:') || l.startsWith('F:'));
+
+            // Convert ./path → virtual FS path (root items have no leading /)
+            const toVP = (dotRel: string) => {
+                const rel = dotRel.slice(1); // ./foo → /foo
+                const parts = rel.split('/').filter(Boolean);
+                return parts.length === 1 ? parts[0] : rel;
+            };
+
+            // Track all paths found in Linux FS (normalized)
+            const linuxPaths = new Set<string>();
+
+            // Process directories first (sorted by depth so parents come first)
+            const dirs = lines.filter(l => l.startsWith('D:')).map(l => l.slice(2))
+                .sort((a, b) => a.split('/').length - b.split('/').length);
+            for (const d of dirs) {
+                const vp = toVP(d);
+                linuxPaths.add(norm(vp));
+                if (!currentFiles.some(f => norm(f.path) === norm(vp) && f.isDirectory)) {
+                    await createFile(vp, '', true);
+                }
+            }
+
+            // Process files
+            const files = lines.filter(l => l.startsWith('F:')).map(l => l.slice(2));
+            for (const f of files) {
+                const vp = toVP(f);
+                linuxPaths.add(norm(vp));
+                const content = await readFile(`${projDir}${f.slice(1)}`);
+                const existing = currentFiles.find(ef => norm(ef.path) === norm(vp) && !ef.isDirectory);
+                if (!existing) {
+                    await createFile(vp, content, false);
+                } else if (content !== existing.content) {
+                    await updateFile(existing.id, content);
+                    // Update open tab if this file is being edited
+                    if (openTabs.some(t => t.fileId === existing.id)) {
+                        setFileContents(prev => new Map(prev).set(existing.id, content));
+                    }
+                }
+            }
+
+            // Delete files from virtual FS that no longer exist in Linux FS
+            for (const vf of currentFiles) {
+                if (!linuxPaths.has(norm(vf.path))) {
+                    await deleteFileById(vf.id);
+                    const tab = openTabs.find(t => t.fileId === vf.id);
+                    if (tab) closeTab(vf.id);
+                }
+            }
+
+            addToast('Synced from terminal', 'success');
+        } catch {
+            addToast('Sync failed', 'error');
+        } finally {
+            setIsSyncing(false);
+        }
+    }, [currentProject, isBooted, isSyncing, captureCommand, readFile, currentFiles, createFile, updateFile, deleteFileById, openTabs, closeTab, addToast]);
+
     const handleEditorChange = useCallback((value: string | undefined, fileId: string) => {
         if (value === undefined) return;
         setFileContents(prev => new Map(prev).set(fileId, value));
@@ -392,13 +473,12 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
             await updateFile(fileId, value);
             // Also sync to Linux filesystem so terminal sees updated files
             const tab = openTabs.find(t => t.fileId === fileId);
-            if (tab && currentProject) {
-                const projDir = `/home/user/projects/${currentProject.name.replace(/\s+/g, '_')}`;
-                writeLinuxFile(`${projDir}${tab.path}`, value).catch(() => {});
+            if (tab && currentProject && isBooted) {
+                writeLinuxFile(linuxPath(tab.path), value).catch(() => {});
             }
             setOpenTabs(prev => prev.map(t => t.fileId === fileId ? { ...t, modified: false } : t));
         }, 2000);
-    }, [updateFile, openTabs, writeLinuxFile, currentProject]);
+    }, [updateFile, openTabs, writeLinuxFile, currentProject, isBooted, linuxPath]);
 
     const saveCurrentFile = useCallback(async () => {
         if (!activeTab) return;
@@ -407,14 +487,13 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
             await updateFile(activeTab, content);
             // Sync to Linux filesystem
             const tab = openTabs.find(t => t.fileId === activeTab);
-            if (tab && currentProject) {
-                const projDir = `/home/user/projects/${currentProject.name.replace(/\s+/g, '_')}`;
-                writeLinuxFile(`${projDir}${tab.path}`, content).catch(() => {});
+            if (tab && currentProject && isBooted) {
+                writeLinuxFile(linuxPath(tab.path), content).catch(() => {});
             }
             setOpenTabs(prev => prev.map(t => t.fileId === activeTab ? { ...t, modified: false } : t));
             addToast(`Saved ${tab?.name || 'file'}`, 'success');
         }
-    }, [activeTab, fileContents, updateFile, openTabs, addToast]);
+    }, [activeTab, fileContents, updateFile, openTabs, addToast, currentProject, isBooted, writeLinuxFile, linuxPath]);
 
     const handleNewFile = useCallback(async (parentPath: string) => {
         setNewFileParent(parentPath);
@@ -428,6 +507,14 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
         const cleanName = isDir ? newFileName.slice(0, -1) : newFileName;
         const cleanPath = isDir ? path.slice(0, -1) : path;
         await createFile(cleanPath, '', isDir);
+        // Sync to Linux filesystem so terminal sees the new file/folder
+        if (currentProject && isBooted) {
+            if (isDir) {
+                mkdirLinux(linuxPath(cleanPath)).catch(() => {});
+            } else {
+                writeLinuxFile(linuxPath(cleanPath), '').catch(() => {});
+            }
+        }
         setNewFileName('');
         setNewFileParent(null);
         addToast(`Created ${isDir ? 'folder' : 'file'}: ${cleanName}`, 'success');
@@ -435,13 +522,17 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
             const file = currentFiles.find(f => f.path === cleanPath);
             if (file) openFile(file);
         }
-    }, [newFileName, newFileParent, createFile, currentFiles, openFile, addToast]);
+    }, [newFileName, newFileParent, createFile, currentFiles, openFile, addToast, isBooted, mkdirLinux, writeLinuxFile, linuxPath]);
 
     const handleDeleteFile = useCallback(async (file: ProjectFile) => {
         await deleteFileById(file.id);
         if (openTabs.find(t => t.fileId === file.id)) closeTab(file.id);
+        // Remove from Linux filesystem too
+        if (currentProject && isBooted) {
+            removeLinux(linuxPath(file.path)).catch(() => {});
+        }
         addToast(`Deleted ${file.name}`, 'success');
-    }, [deleteFileById, openTabs, closeTab, addToast]);
+    }, [deleteFileById, openTabs, closeTab, addToast, isBooted, removeLinux, linuxPath]);
 
     // Auto-scroll output
     useEffect(() => {
@@ -640,7 +731,8 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                             <span className="text-[10px] uppercase tracking-wider text-[--text-muted] font-medium">Explorer</span>
                             <div className="flex items-center gap-0.5">
                                 <button onClick={() => handleNewFile('/')} className="p-0.5 hover:bg-overlay" title="New file"><VscNewFile size={12} /></button>
-                                <button onClick={() => createFile('untitled/', '', true)} className="p-0.5 hover:bg-overlay" title="New folder"><VscNewFolder size={12} /></button>
+                                <button onClick={() => { setNewFileParent('/'); setNewFileName(''); }} className="p-0.5 hover:bg-overlay" title="New folder"><VscNewFolder size={12} /></button>
+                                <button onClick={syncFromLinux} disabled={isSyncing} className={`p-0.5 hover:bg-overlay ${isSyncing ? 'animate-spin text-accent' : ''}`} title="Sync from terminal"><VscRefresh size={12} /></button>
                             </div>
                         </div>
                         <div className="flex-1 overflow-y-auto py-1">
