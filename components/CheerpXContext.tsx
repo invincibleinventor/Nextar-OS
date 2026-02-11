@@ -209,9 +209,18 @@ export const CheerpXProvider: React.FC<{ children: React.ReactNode }> = ({ child
                         setNetworkState('login-ready');
                     },
                     stateUpdateCb: (state: number) => {
+                        // Tailscale states: 0=NoState, 1=InUseOtherUser, 2=NeedsLogin,
+                        // 3=NeedsMachineAuth, 4=Stopped, 5=Starting, 6=Running
                         console.log('[HackathOS] Tailscale state:', state);
                         if (state === 6) {
                             setNetworkState('connected');
+                            setNetworkLoginUrl(null);
+                        } else if (state === 2) {
+                            // NeedsLogin — loginUrlCb should fire shortly
+                            setNetworkState('connecting');
+                        } else if (state === 1 || state === 4) {
+                            // InUseOtherUser or Stopped — network unavailable
+                            setNetworkState('disconnected');
                             setNetworkLoginUrl(null);
                         }
                     },
@@ -274,9 +283,10 @@ export const CheerpXProvider: React.FC<{ children: React.ReactNode }> = ({ child
                     consoleReadFunc(data.charCodeAt(i));
                 }
             },
-            resize: (newCols: number, newRows: number) => {
-                if (!consoleReadFunc) return;
-                (consoleReadFunc as any)(newCols, newRows);
+            resize: (_newCols: number, _newRows: number) => {
+                // No-op: CheerpX setCustomConsole dimensions are fixed at boot.
+                // Calling consoleReadFunc here would feed cols/rows as character
+                // codes, typing random characters into the shell.
             },
             detach: () => {
                 terminalWriteFuncs.delete(writeFunc);
@@ -335,6 +345,14 @@ export const CheerpXProvider: React.FC<{ children: React.ReactNode }> = ({ child
         if (networkState === 'connected' || networkState === 'connecting') return;
         setNetworkState('connecting');
         console.log('[HackathOS] Calling cx.networkLogin()...');
+
+        // Safety timeout: reset if stuck in 'connecting' for too long.
+        // Do NOT clear this in a finally block — networkLogin() may be
+        // fire-and-forget (void), and await on void resolves immediately.
+        setTimeout(() => {
+            setNetworkState(prev => prev === 'connecting' ? 'disconnected' : prev);
+        }, 30000);
+
         try {
             cxInstance.networkLogin();
         } catch (err) {
