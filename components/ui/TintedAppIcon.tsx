@@ -5,11 +5,12 @@ import { IconType } from 'react-icons';
 import {
     IoFolderOutline, IoSettingsOutline, IoCodeSlashOutline,
     IoMailOutline, IoCalendarOutline, IoDocumentTextOutline,
-    IoMusicalNotesOutline, IoCalculatorOutline, IoAppsOutline,
+    IoMusicalNotesOutline, IoCalculatorOutline,
     IoTerminalOutline, IoImagesOutline, IoInformationCircleOutline,
     IoGlobeOutline, IoReaderOutline, IoStatsChartOutline,
     IoStorefrontOutline, IoBookOutline, IoHomeOutline, IoTrashOutline,
-    IoGridOutline, IoDownloadOutline
+    IoGridOutline, IoDownloadOutline, IoRocketOutline,
+    IoBulbOutline, IoCheckboxOutline, IoLayersOutline
 } from 'react-icons/io5';
 
 interface TintedAppIconProps {
@@ -24,7 +25,7 @@ interface TintedAppIconProps {
 const appIconMap: Record<string, { icon: IconType; bg: string }> = {
     'explorer': { icon: IoFolderOutline, bg: '#8aadf4' },
     'settings': { icon: IoSettingsOutline, bg: '#6e738d' },
-    'python': { icon: IoCodeSlashOutline, bg: '#a6da95' },
+    'code': { icon: IoCodeSlashOutline, bg: '#a6da95' },
     'mail': { icon: IoMailOutline, bg: '#8aadf4' },
     'calendar': { icon: IoCalendarOutline, bg: '#ed8796' },
     'textedit': { icon: IoDocumentTextOutline, bg: '#eed49f' },
@@ -39,15 +40,17 @@ const appIconMap: Record<string, { icon: IconType; bg: string }> = {
     'fileviewer': { icon: IoDocumentTextOutline, bg: '#b7bdf8' },
     'apidocs': { icon: IoBookOutline, bg: '#8bd5ca' },
     'systemmonitor': { icon: IoStatsChartOutline, bg: '#f5a97f' },
-    'baladev': { icon: IoCodeSlashOutline, bg: '#c6a0f6' },
     'launchpad-item': { icon: IoGridOutline, bg: '#b7bdf8' },
     'trash-folder': { icon: IoTrashOutline, bg: '#6e738d' },
-    'aboutbala': { icon: IoInformationCircleOutline, bg: '#8aadf4' },
     'aboutnextaros': { icon: IoHomeOutline, bg: '#f5bde6' },
     'getinfo': { icon: IoInformationCircleOutline, bg: '#6e738d' },
+    'projectdashboard': { icon: IoRocketOutline, bg: '#a6da95' },
+    'hackathonworkspace': { icon: IoLayersOutline, bg: '#8aadf4' },
+    'ideaboard': { icon: IoBulbOutline, bg: '#eed49f' },
+    'shipchecklist': { icon: IoCheckboxOutline, bg: '#8bd5ca' },
 };
 
-const excludedApps: string[] = ['aboutbala'];
+const excludedApps: string[] = [];
 
 export default function TintedAppIcon({ appId, appName, originalIcon, size = 40, className = '', useFill = true }: TintedAppIconProps) {
     if (excludedApps.includes(appId)) {

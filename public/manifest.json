@@ -1,6 +1,6 @@
 {
-    "name": "NextarDE",
-    "short_name": "NextarDE",
+    "name": "HackathOS",
+    "short_name": "HackathOS",
     "description": "A modern cross-platform desktop environment",
     "start_url": "/",
     "display": "standalone",

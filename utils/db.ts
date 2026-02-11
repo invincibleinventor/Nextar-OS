@@ -1,6 +1,6 @@
 import { filesystemitem } from '../components/data';
 
-const DB_NAME = 'NextarOSSystem';
+const DB_NAME = 'HackathOSSystem';
 const DB_VERSION = 6;
 const STORE_NAME = 'files';
 const USERS_STORE_NAME = 'users';

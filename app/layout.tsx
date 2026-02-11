@@ -18,30 +18,23 @@ import { ProcessProvider } from '@/components/ProcessContext';
 import { PermissionsProvider } from '@/components/PermissionsContext';
 import { ElectronProvider } from '@/components/ElectronContext';
 
-import { personal as portfoliodata } from '@/components/data';
-
 export const metadata: Metadata = {
   title: {
-    default: portfoliodata.personal.name,
-    template: `%s | ${portfoliodata.personal.name}`,
+    default: 'HackathOS',
+    template: '%s | HackathOS',
   },
-  description: portfoliodata.personal.bio,
-  applicationName: 'BalaTBR - NextarOS',
-  authors: [{ name: portfoliodata.personal.name, url: 'https://baladev.in' }],
+  description: 'Hackathon Operating Workspace — From idea to deploy in minutes.',
+  applicationName: 'HackathOS',
+  authors: [{ name: 'HackathOS' }],
   generator: 'Next.js',
-  keywords: [...portfoliodata.skills, 'Next.js', 'React', 'TailwindCSS', 'Portfolio', 'macOS Web', 'System Simulator', 'WebOS'],
+  keywords: ['hackathon', 'workspace', 'IDE', 'Next.js', 'React', 'TypeScript', 'WebOS', 'developer tools'],
   referrer: 'origin-when-cross-origin',
-  creator: portfoliodata.personal.name,
-  publisher: portfoliodata.personal.name,
-  metadataBase: new URL('https://baladev.in'),
-  alternates: {
-    canonical: '/',
-  },
+  creator: 'HackathOS',
+  publisher: 'HackathOS',
   openGraph: {
-    title: portfoliodata.personal.name,
-    description: portfoliodata.personal.bio,
-    url: 'https://baladev.in',
-    siteName: 'BalaTBR - NextarOS',
+    title: 'HackathOS',
+    description: 'Hackathon Operating Workspace — From idea to deploy in minutes.',
+    siteName: 'HackathOS',
     locale: 'en_US',
     type: 'website',
     images: [
@@ -49,15 +42,14 @@ export const metadata: Metadata = {
         url: '/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: `${portfoliodata.personal.name} Portfolio`,
+        alt: 'HackathOS - Hackathon Workspace',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: portfoliodata.personal.name,
-    description: portfoliodata.personal.role,
-    creator: '@invincibleinventor',
+    title: 'HackathOS',
+    description: 'Hackathon Operating Workspace — From idea to deploy in minutes.',
     images: ['/og-image.jpg'],
   },
   robots: {
@@ -75,26 +67,16 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'BalaTBR - NextarOS',
+    title: 'HackathOS',
   },
 };
 
 const jsonLd = {
   '@context': 'https://schema.org',
-  '@type': 'Person',
-  name: portfoliodata.personal.name,
-  url: 'https://baladev.in',
-  sameAs: [
-    portfoliodata.personal.socials.github,
-    portfoliodata.personal.socials.linkedin,
-    portfoliodata.personal.socials.threads,
-  ],
-  jobTitle: portfoliodata.personal.role,
-  worksFor: {
-    '@type': 'Organization',
-    name: 'Self-Employed',
-  },
-  description: portfoliodata.personal.bio,
+  '@type': 'WebApplication',
+  name: 'HackathOS',
+  description: 'Hackathon Operating Workspace — From idea to deploy in minutes.',
+  applicationCategory: 'DeveloperApplication',
 };
 
 export const viewport: Viewport = {
@@ -111,6 +93,8 @@ import { NotificationProvider } from '@/components/NotificationContext';
 import { AuthProvider } from '@/components/AuthContext';
 import { ExternalAppsProvider } from '@/components/ExternalAppsContext';
 import { MusicProvider } from '@/components/MusicContext';
+import { ProjectProvider } from '@/components/ProjectContext';
+import { CheerpXProvider } from '@/components/CheerpXContext';
 import PermissionDialog from '@/components/PermissionDialog';
 import Script from 'next/script';
 
@@ -125,15 +109,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             strategy="afterInteractive"
             dangerouslySetInnerHTML={{
               __html: `
-                if ('serviceWorker' in navigator && '${process.env.NODE_ENV}' !== 'development') {
-                  navigator.serviceWorker.register('/sw.js').catch(function() {});
+                if ('serviceWorker' in navigator) {
+                  // Register COI service worker for CheerpX support (COOP/COEP headers)
+                  navigator.serviceWorker.register('/coi-serviceworker.js').catch(function() {});
+                  if ('${process.env.NODE_ENV}' !== 'development') {
+                    navigator.serviceWorker.register('/sw.js').catch(function() {});
+                  }
                 }
                 window.addEventListener('unhandledrejection', function(e) {
                   if (e.reason && String(e.reason).includes('serviceWorker')) {
                     e.preventDefault();
                     return;
                   }
-                  console.error('[NextarOS] Unhandled rejection:', e.reason);
+                  console.error('[HackathOS] Unhandled rejection:', e.reason);
                 });
               `,
             }}
@@ -153,8 +141,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                                 <AppMenuProvider>
                                   <ExternalAppsProvider>
                                     <MusicProvider>
-                                      {children}
-                                      <PermissionDialog />
+                                      <CheerpXProvider>
+                                        <ProjectProvider>
+                                          {children}
+                                          <PermissionDialog />
+                                        </ProjectProvider>
+                                      </CheerpXProvider>
                                     </MusicProvider>
                                   </ExternalAppsProvider>
                                 </AppMenuProvider>

@@ -1107,13 +1107,13 @@ export default function Portfolio({ embedded }: { embedded?: boolean } = {}) {
 
     const handlegetstarted = useCallback(() => {
         if (embedded && typeof window !== 'undefined') {
-            window.dispatchEvent(new CustomEvent('close-aboutbala'));
+            window.dispatchEvent(new CustomEvent('close-about'));
         }
     }, [embedded]);
 
     const handletaketour = useCallback(() => {
         if (embedded && typeof window !== 'undefined') {
-            window.dispatchEvent(new CustomEvent('close-aboutbala'));
+            window.dispatchEvent(new CustomEvent('close-about'));
             setTimeout(() => window.dispatchEvent(new Event('start-tour')), 300);
         }
     }, [embedded]);

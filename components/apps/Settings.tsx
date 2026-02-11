@@ -188,14 +188,14 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                                 <div className="w-14 h-14 bg-accent mb-3 flex items-center justify-center text-[--bg-base]">
                                     <IoSettingsOutline size={28} />
                                 </div>
-                                <h2 className="text-lg font-bold text-[--text-color]">NextarOS</h2>
+                                <h2 className="text-lg font-bold text-[--text-color]">HackathOS</h2>
                                 <p className="text-[12px] text-[--text-muted] mt-0.5">Version 14.5 (23A5212a)</p>
                             </div>
 
                             <div className="space-y-4">
                                 <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3">About</div>
                                 <SettingsGroup>
-                                    <SettingsRow label="Name" value="Nextar PC" onClick={() => { }} />
+                                    <SettingsRow label="Name" value="HackathOS" onClick={() => { }} />
                                     <SettingsRow label="Software Update" value="Up to date" onClick={() => { }} />
                                     <SettingsRow label="Storage" value="256 GB" onClick={() => { }} last />
                                 </SettingsGroup>

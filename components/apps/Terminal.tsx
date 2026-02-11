@@ -1,5 +1,6 @@
 'use client';
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import { useDevice } from '../DeviceContext';
 import { filesystemitem } from '../data';
 import { useFileSystem } from '../FileSystemContext';
@@ -8,7 +9,9 @@ import { useMenuRegistration } from '../AppMenuContext';
 import { useAuth } from '../AuthContext';
 import { iselectron, terminal as nativeterminal, getsysteminfo } from '@/utils/platform';
 
-const DEFAULT_ZSHRC = `# NextarOS Shell Configuration (.zshrc)
+const XTermShell = dynamic(() => import('../ui/XTermShell'), { ssr: false });
+
+const DEFAULT_ZSHRC = `# HackathOS Shell Configuration (.zshrc)
 # Edit this file to customize your terminal experience
 # Changes apply on next terminal launch
 
@@ -118,11 +121,12 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
     const [nativecwd, setnativecwd] = useState('');
     const [fontSize, setFontSize] = useState(13);
     const [isrunning, setisrunning] = useState(false);
-    const [hostname, sethostname] = useState('nextardev');
+    const [hostname, sethostname] = useState('hackathos');
     const [cmdhistory, setcmdhistory] = useState<string[]>([]);
     const [historyindex, sethistoryindex] = useState(-1);
     const [zshconfig, setzshconfig] = useState<ZshConfig>({ promptStyle: 'powerline', showMotd: true, aliases: {}, startupCommands: [] });
     const [initialized, setinitialized] = useState(false);
+    const initRef = useRef(false);
 
     const appendHistory = useCallback((newLines: TerminalLine[]) => {
         sethistory(prev => {
@@ -138,7 +142,8 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
 
     // Load .zshrc from filesystem
     useEffect(() => {
-        if (initialized || iselectron) return;
+        if (initRef.current || iselectron) return;
+        initRef.current = true;
 
         const zshrcFile = files.find(f => f.name === '.zshrc' && f.parent === userhomeid);
 
@@ -159,7 +164,7 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
             buildWelcome({ promptStyle: 'powerline', showMotd: true, aliases: {}, startupCommands: [] });
         }
         setinitialized(true);
-    }, [files, userhomeid, isGuest, initialized]);
+    }, [files, userhomeid, isGuest]);
 
     const buildWelcome = useCallback((config: ZshConfig) => {
         const lines: TerminalLine[] = [];
@@ -168,10 +173,10 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
             // Neofetch-style banner
             const sysInfo = [
                 '',
-                `  \u2588 OS      NextarOS v2.0`,
+                `  \u2588 OS      HackathOS v1.0`,
                 `  \u2588 Shell   zsh 5.9`,
                 `  \u2588 User    ${username}@${hostname}`,
-                `  \u2588 Term    NextarOS Terminal`,
+                `  \u2588 Term    HackathOS Terminal`,
                 `  \u2588 Theme   ${document?.documentElement?.classList?.contains('dark') ? 'Dark' : 'Light'}`,
                 `  \u2588 Uptime  just now`,
                 '',
@@ -182,7 +187,7 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
             NEOFETCH_ART.forEach(l => lines.push({ text: l.replace(/\x1b\[[0-9;]*m/g, ''), type: 'neofetch' }));
             sysInfo.forEach(l => lines.push({ text: l, type: 'info' }));
         } else {
-            lines.push({ text: 'NextarOS Terminal v2.0', type: 'info' });
+            lines.push({ text: 'HackathOS Terminal v1.0', type: 'info' });
             lines.push({ text: 'Type "help" for available commands.', type: 'muted' });
             lines.push({ text: '', type: 'output' });
         }
@@ -206,7 +211,7 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
             if (info?.hostname) sethostname(info.hostname);
         });
         sethistory([
-            { text: 'NextarDE Terminal \u2022 Native Shell Mode', type: 'info' },
+            { text: 'HackathOS Terminal \u2022 Native Shell Mode', type: 'info' },
             { text: 'Running real bash commands on host system', type: 'muted' },
             { text: '', type: 'output' }
         ]);
@@ -401,11 +406,11 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
                 const lines: TerminalLine[] = [];
                 NEOFETCH_ART.forEach(l => lines.push({ text: l.replace(/\x1b\[[0-9;]*m/g, ''), type: 'neofetch' }));
                 lines.push({ text: '', type: 'output' });
-                lines.push({ text: `  \u2588 OS      NextarOS v2.0`, type: 'info' });
+                lines.push({ text: `  \u2588 OS      HackathOS v1.0`, type: 'info' });
                 lines.push({ text: `  \u2588 Shell   zsh 5.9`, type: 'info' });
                 lines.push({ text: `  \u2588 User    ${username}@${hostname}`, type: 'info' });
                 lines.push({ text: `  \u2588 Theme   ${document?.documentElement?.classList?.contains('dark') ? 'Dark' : 'Light'}`, type: 'info' });
-                lines.push({ text: `  \u2588 Term    NextarOS Terminal`, type: 'info' });
+                lines.push({ text: `  \u2588 Term    HackathOS Terminal`, type: 'info' });
                 lines.push({ text: '', type: 'output' });
                 lines.push({ text: `  \u2588\u2588\u2588 \u2588\u2588\u2588 \u2588\u2588\u2588 \u2588\u2588\u2588 \u2588\u2588\u2588 \u2588\u2588\u2588 \u2588\u2588\u2588 \u2588\u2588\u2588`, type: 'accent' });
                 lines.push({ text: '', type: 'output' });
@@ -465,7 +470,7 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
             case 'projects':
                 return [{ text: 'Visit the Explorer app to browse my projects.', type: 'info' }, { text: '', type: 'output' }];
             case 'contact':
-                return [{ text: 'Email: invincibleinventor@gmail.com', type: 'info' }, { text: '', type: 'output' }];
+                return [{ text: 'HackathOS — Hackathon Operating Workspace', type: 'info' }, { text: '', type: 'output' }];
             case 'whoami':
                 return [
                     { text: '', type: 'output' },
@@ -631,6 +636,12 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
         return <span className={colorClass}>{line.text}</span>;
     };
 
+    // Web mode: use XTermShell with proper xterm.js rendering
+    if (!iselectron) {
+        return <XTermShell fontSize={fontSize} />;
+    }
+
+    // Electron mode: keep the existing native terminal UI
     return (
         <div
             ref={containerref}

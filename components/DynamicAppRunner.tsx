@@ -54,18 +54,34 @@ export default function DynamicAppRunner({ code, appname, appicon, fileid, codeH
     }, [windowsctx, notifctx, fsctx, settingsctx, themectx, devicectx, authctx, externalctx]);
 
     useEffect(() => {
-        if (typeof window !== 'undefined' && !window.Babel) {
-            const script = document.createElement('script');
-            script.src = 'https://unpkg.com/@babel/standalone/babel.min.js';
-            script.onload = () => setbabelloaded(true);
-            script.onerror = () => {
-                seterror({ message: 'Failed to load Babel transpiler' });
-                setisbuilding(false);
-            };
-            document.head.appendChild(script);
-        } else if (window.Babel) {
+        if (typeof window === 'undefined') return;
+        if (window.Babel) {
             setbabelloaded(true);
+            return;
         }
+        // Check if script is already being loaded by another instance
+        const existing = document.querySelector('script[data-babel-standalone]');
+        if (existing) {
+            const check = setInterval(() => {
+                if (window.Babel) { clearInterval(check); setbabelloaded(true); }
+            }, 100);
+            return () => clearInterval(check);
+        }
+        const script = document.createElement('script');
+        script.src = 'https://unpkg.com/@babel/standalone/babel.min.js';
+        script.setAttribute('data-babel-standalone', 'true');
+        script.onload = () => {
+            // Poll until window.Babel is actually available
+            const check = setInterval(() => {
+                if (window.Babel) { clearInterval(check); setbabelloaded(true); }
+            }, 50);
+            setTimeout(() => { clearInterval(check); if (!window.Babel) { seterror({ message: 'Babel failed to initialize' }); setisbuilding(false); } }, 5000);
+        };
+        script.onerror = () => {
+            seterror({ message: 'Failed to load Babel transpiler. Check your network connection.' });
+            setisbuilding(false);
+        };
+        document.head.appendChild(script);
     }, []);
 
     useEffect(() => {
@@ -99,9 +115,11 @@ export default function DynamicAppRunner({ code, appname, appicon, fileid, codeH
                     throw new Error('Babel not loaded');
                 }
 
+                const hasTs = code.includes(': string') || code.includes(': number') || code.includes(': boolean') || code.includes('<string>') || code.includes('<number>') || code.includes('interface ') || code.includes(': React.');
+                const presets = hasTs ? ['react', 'typescript'] : ['react'];
                 const result = babel.transform(code, {
-                    presets: ['react'],
-                    filename: 'app.jsx'
+                    presets,
+                    filename: hasTs ? 'app.tsx' : 'app.jsx'
                 });
 
                 const transpiledcode = result.code;

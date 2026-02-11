@@ -89,7 +89,7 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
     ];
 
     const defaultHelpMenu = [
-        { title: "NextarOS Help", disabled: false },
+        { title: "HackathOS Help", disabled: false },
         { title: "About " + activeappname, disabled: false }
     ];
 
@@ -130,7 +130,7 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
     }, [isGuest, addToast]);
 
     const dynamicmainmenu = [
-        { title: `About Nextar`, actionId: 'about' },
+        { title: `About HackathOS`, actionId: 'about' },
         { separator: true },
         { title: 'System Settings...', actionId: 'settings' },
         { title: 'App Store...', actionId: 'appstore' },
@@ -150,8 +150,8 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
         switch (action) {
             case 'about':
                 addwindow({
-                    id: `aboutnextaros-${Date.now()}`,
-                    appname: 'About NextarOS',
+                    id: `abouthackathos-${Date.now()}`,
+                    appname: 'About HackathOS',
                     component: 'apps/AboutNextarOS',
                     props: {},
                     isminimized: false,
@@ -332,7 +332,7 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
                                 onClick={() => setappmode('portfolio')}
                                 className="px-2 py-1 text-xs font-medium bg-pastel-red/15 hover:bg-pastel-red/25 text-pastel-red border border-pastel-red/30 transition-colors"
                             >
-                                Exit NextarOS
+                                Exit HackathOS
                             </button>
                         )}
                         <button

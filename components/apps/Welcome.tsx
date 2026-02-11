@@ -161,7 +161,7 @@ export default function Welcome(props: any) {
                         <IoDownloadOutline size={40} className="text-[--text-color]" />
                     </div>
                     <div>
-                        <h2 className="text-2xl font-semibold mb-2">NextarOS Installer</h2>
+                        <h2 className="text-2xl font-semibold mb-2">HackathOS Setup</h2>
                         <p className="text-sm text-[--text-muted] max-w-sm mx-auto">
                             A web-based operating system interface built with Next.js, featuring window management, file operations, and native-like interactions.
                         </p>
@@ -439,7 +439,7 @@ export default function Welcome(props: any) {
                         </button>
                     </div>
                     <a
-                        href="https://github.com/invincibleinventor/nextar-os"
+                        href="https://github.com/hackos/hackos"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-2 text-sm text-[--text-muted] hover:text-[--text-color] transition-colors"

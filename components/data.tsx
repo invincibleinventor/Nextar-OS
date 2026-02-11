@@ -18,7 +18,8 @@ import {
     IoCodeOutline, IoMailOutline, IoPersonCircleOutline, IoFlagOutline, IoSchoolOutline, IoConstructOutline, IoFolderOpenOutline, IoLogoGithub, IoHeartOutline,
     IoDesktopOutline,
     IoDownloadOutline,
-    IoImageOutline
+    IoImageOutline,
+    IoRocketOutline
 } from "react-icons/io5";
 
 export interface appdata {
@@ -84,7 +85,7 @@ export const componentmap: { [key: string]: any } = {
     'apps/Photos': dynamic(() => import('./apps/Photos')),
     'apps/Terminal': dynamic(() => import('./apps/Terminal')),
     'apps/Launchpad': dynamic(() => import('./apps/Launchpad')),
-    'apps/Python': dynamic(() => import('./apps/Python')),
+    'apps/Python': dynamic(() => import('./apps/Python')), // kept for DynamicAppRunner compat
     'apps/FileViewer': dynamic(() => import('./apps/FileViewer')),
     'apps/Notes': dynamic(() => import('./apps/Notes')),
     'apps/Music': dynamic(() => import('./apps/Music')),
@@ -101,6 +102,10 @@ export const componentmap: { [key: string]: any } = {
     'apps/AppLauncher': dynamic(() => import('./apps/AppLauncher')),
     'apps/AboutNextarOS': dynamic(() => import('./apps/AboutNextarOS')),
     'DynamicAppRunner': dynamic(() => import('./DynamicAppRunner')),
+    'apps/ProjectDashboard': dynamic(() => import('./apps/ProjectDashboard')),
+    'apps/HackathonWorkspace': dynamic(() => import('./apps/HackathonWorkspace')),
+    'apps/IdeaBoard': dynamic(() => import('./apps/IdeaBoard')),
+    'apps/ShipChecklist': dynamic(() => import('./apps/ShipChecklist')),
 };
 
 
@@ -108,102 +113,24 @@ export const componentmap: { [key: string]: any } = {
 
 export const personal = {
     personal: {
-        name: "Bala TBR",
-        role: "Second Year Comp Sci Student - Next.JS Full Stack Developer",
-        bio: "Second-year Computer Science undergraduate at SASTRA Deemed to be University with hands-on experience building and deploying full-stack web applications used by real users. Strong in Next.js, PostgreSQL, and document processing systems. Actively seeking software engineering internships.",
-        location: "India",
-        username: "invincibleinventor",
-        email: "invincibleinventor@gmail.com",
+        name: "HackathOS",
+        role: "Hackathon Operating Workspace",
+        bio: "A zero-setup, offline-first, shareable project workspace for hackathon teams and startup builders. Go from idea to deploy in minutes.",
+        location: "Everywhere",
+        username: "hackos",
+        email: "hello@hackos.dev",
         socials: {
-            github: "https://github.com/invincibleinventor",
-            threads: "https://threads.com/balatbr",
-            linkedin: "https://www.linkedin.com/in/balasubramaniantbr/"
+            github: "https://github.com/hackos",
+            threads: "",
+            linkedin: ""
         }
     },
-    education: [
-        {
-            degree: "Bachelor Of Technology - Computer Science",
-            institution: "SASTRA Deemed To Be University",
-            year: "2024 - 2028",
-            grade: "CGPA: 7.64"
-        }
-    ],
-    projects: [
-        {
-            title: "NextarOS",
-            date: 2025,
-            type: "Open Source",
-            desc: "A local-first Web Operating System with multi-user support, offline execution, virtual filesystem, and a permissioned app ecosystem - built entirely frontend-only using Next.js 15 and React 19.",
-            stack: ["Next.js", "React", "TailwindCSS", "Framer Motion"],
-            link: "https://baladev.in",
-            github: "https://github.com/invincibleinventor/nextar-os",
-            icon: <FaReact className="text-pastel-blue" />
-        },
-        {
-            title: "SASTracker",
-            date: 2025,
-            type: "Open Source",
-            desc: "Built a system used by 500+ students to convert question paper PDFs into a structured, searchable database, handling multi-page and inconsistent formats. Implemented LLM-assisted extraction with fallbacks, fast search, AI-assisted solving, and community-contributed answers.",
-            stack: ["Next.js", "Supabase", "LLMs", "TailwindCSS", "FastAPI"],
-            link: "https://sastracker.vercel.app",
-            github: "https://github.com/invincibleinventor/sastracker",
-            icon: <SiNextdotjs className="text-[--text-color]" />
-        },
-        {
-            title: "SquadSearch",
-            date: 2025,
-            type: "Open Source",
-            desc: "Anonymous-first hiring platform generating candidate summaries using AI from resumes and GitHub data to reduce bias. Built swipe-based shortlisting and a secure invite-only contact reveal workflow.",
-            stack: ["Next.js", "Supabase", "GSAP", "TailwindCSS", "LLMs", "FastAPI", "Python"],
-            link: "https://squadsearch.vercel.app",
-            github: "https://github.com/invincibleinventor/squadsearch",
-            icon: <SiNextdotjs className="text-[--text-color]" />
-        },
-        {
-            title: "Falar",
-            type: "Open Source",
-            date: 2024,
-            desc: "A social media platform with posts, stories, real-time messaging, and content discovery. Built with Next.js and Supabase.",
-            stack: ["Next.js", "Supabase", "TailwindCSS", "Amazon S3"],
-            link: "https://falarapp.vercel.app",
-            github: "https://github.com/invincibleinventor/falarapp",
-            icon: <SiNextdotjs className="text-[--text-color]" />
-        },
-        {
-            title: "CleanMyLinkedIn",
-            date: 2025,
-            type: "Open Source",
-            desc: "A Chrome extension that helps clean up your LinkedIn feed by scoring and filtering posts using AI-powered analysis.",
-            stack: ["JavaScript", "Chrome Extension", "Gemini API"],
-            link: "https://github.com/invincibleinventor/cleanmylinkedin",
-            github: "https://github.com/invincibleinventor/cleanmylinkedin",
-            icon: <FaLinkedin className="text-pastel-blue" />
-        },
-        {
-            title: "AIButton",
-            date: 2025,
-            type: "Open Source",
-            desc: "A Chrome extension that adds AI-powered voting buttons to LinkedIn posts for community-driven content moderation.",
-            stack: ["JavaScript", "Chrome Extension", "Supabase"],
-            link: "https://github.com/invincibleinventor/aibutton",
-            github: "https://github.com/invincibleinventor/aibutton",
-            icon: <FaLinkedin className="text-pastel-blue" />
-        },
-        {
-            title: "EzyPing",
-            date: 2025,
-            type: "Open Source",
-            desc: "A lightweight uptime monitor for tracking website status and to quickly notify subscribed users of website changes through SMTP.",
-            stack: ["Next.js", "TypeScript", "Node.js", "CRON"],
-            link: "https://ezyping.vercel.app",
-            github: "https://github.com/invincibleinventor/ezyping",
-            icon: <SiTypescript className="text-pastel-blue" />
-        }
-    ],
+    education: [] as { degree: string; institution: string; year: string; grade: string }[],
+    projects: [] as { title: string; date: number; type: string; desc: string; stack: string[]; link: string; github: string; icon: React.ReactNode }[],
     skills: [
-        "HTML/CSS (Fluent)", "TailwindCSS (Fluent)", "React/Next.js (Fluent)", "TypeScript (Fluent)",
-        "Node.js/Express (Fluent)", "Python (Fluent)", "C/C++ (Decent)", "Linux (Arch, Ubuntu)",
-        "Git", "Docker", "Figma", "Firebase/Supabase"
+        "Next.js", "React", "TypeScript", "Tailwind CSS",
+        "Node.js", "Python", "Express", "Flask",
+        "WebContainers", "IndexedDB", "Monaco Editor", "WASM"
     ]
 };
 
@@ -249,18 +176,7 @@ export const apps: appdata[] = [
             }
         }
     },
-    {
-        id: 'python',
-        appname: 'Code Editor',
-        icon: '/code.png',
-        maximizeable: true,
-        componentname: 'apps/Python',
-        additionaldata: {},
-        multiwindow: true,
-        titlebarblurred: false,
-        pinned: true,
-        category: 'Creativity'
-    },
+    // Python/Code Editor removed — functionality merged into HackathonWorkspace
     {
         id: 'mail',
         appname: 'Mail',
@@ -452,21 +368,6 @@ export const apps: appdata[] = [
         defaultsize: { width: 300, height: 450 }
     },
     {
-        id: 'aboutbala',
-        appname: 'About Bala',
-        icon: '/bala.jpeg',
-        maximizeable: true,
-        componentname: 'apps/AboutBala',
-        additionaldata: {},
-        multiwindow: false,
-        titlebarblurred: false,
-        pinned: true,
-        defaultsize: { width: 900, height: 650 },
-        category: 'Utilities',
-        webOnly: true,
-        hidePreview: true
-    },
-    {
         id: 'systemmonitor',
         appname: 'System Monitor',
         icon: '/terminal.webp',
@@ -525,8 +426,8 @@ export const apps: appdata[] = [
         }
     },
     {
-        id: 'aboutnextaros',
-        appname: 'About NextarOS',
+        id: 'abouthackathos',
+        appname: 'About HackathOS',
         icon: '/info.png',
         maximizeable: false,
         componentname: 'apps/AboutNextarOS',
@@ -536,6 +437,59 @@ export const apps: appdata[] = [
         pinned: false,
         defaultsize: { width: 300, height: 400 },
         category: 'Utilities'
+    },
+    {
+        id: 'projectdashboard',
+        appname: 'Projects',
+        icon: '/code.png',
+        maximizeable: true,
+        componentname: 'apps/ProjectDashboard',
+        additionaldata: {},
+        multiwindow: false,
+        titlebarblurred: false,
+        pinned: true,
+        defaultsize: { width: 1000, height: 650 },
+        category: 'Creativity',
+    },
+    {
+        id: 'hackathonworkspace',
+        appname: 'Workspace',
+        icon: '/code.png',
+        maximizeable: true,
+        componentname: 'apps/HackathonWorkspace',
+        additionaldata: {},
+        multiwindow: true,
+        titlebarblurred: false,
+        pinned: false,
+        defaultsize: { width: 1200, height: 700 },
+        category: 'Creativity',
+        hidePreview: true,
+    },
+    {
+        id: 'ideaboard',
+        appname: 'Idea Board',
+        icon: '/notes.png',
+        maximizeable: true,
+        componentname: 'apps/IdeaBoard',
+        additionaldata: {},
+        multiwindow: false,
+        titlebarblurred: false,
+        pinned: true,
+        defaultsize: { width: 900, height: 550 },
+        category: 'Productivity',
+    },
+    {
+        id: 'shipchecklist',
+        appname: 'Ship Checklist',
+        icon: '/info.png',
+        maximizeable: true,
+        componentname: 'apps/ShipChecklist',
+        additionaldata: {},
+        multiwindow: false,
+        titlebarblurred: false,
+        pinned: false,
+        defaultsize: { width: 500, height: 600 },
+        category: 'Productivity',
     }
 ];
 
@@ -594,7 +548,7 @@ export const menus = [
                 { title: "Enclosing Folder", disabled: false },
                 { separator: true },
                 { title: "Recent Folders", disabled: false },
-                { title: "iCloud Drive", disabled: false },
+                { title: "Projects", disabled: false },
                 { title: "Applications", disabled: false },
                 { title: "Desktop", disabled: false },
                 { title: "Documents", disabled: false },
@@ -644,25 +598,17 @@ export const sidebaritems = [
     {
         title: 'Favorites',
         items: [
-            { name: 'Projects', icon: IoFolderOutline, path: ['System', 'Users', 'Guest', 'Projects'] },
-            { name: 'Applications', icon: IoAppsOutline, path: ['System', 'Applications'] },
-            { name: 'About Me', icon: IoDocumentTextOutline, path: ['System', 'Users', 'Guest', 'About Me'] },
             { name: 'Desktop', icon: IoDesktopOutline, path: ['System', 'Users', 'Guest', 'Desktop'] },
             { name: 'Documents', icon: IoDocumentTextOutline, path: ['System', 'Users', 'Guest', 'Documents'] },
             { name: 'Downloads', icon: IoDownloadOutline, path: ['System', 'Users', 'Guest', 'Downloads'] },
-        ]
-    },
-    {
-        title: 'iCloud',
-        items: [
-            { name: 'iCloud Drive', icon: IoFolderOutline, path: ['iCloud Drive'] },
+            { name: 'Projects', icon: IoFolderOutline, path: ['System', 'Users', 'Guest', 'Projects'] },
         ]
     },
     {
         title: 'Locations',
         items: [
+            { name: 'Applications', icon: IoAppsOutline, path: ['System', 'Applications'] },
             { name: 'System', icon: IoAppsOutline, path: ['System'] },
-            { name: 'Network', icon: IoGlobeOutline, path: ['Network'] },
         ]
     }
 ];
@@ -684,60 +630,27 @@ export interface MailItem {
 
 export const ALL_MAILS: MailItem[] = [
     {
-        id: 'about-welcome',
-        folder: 'about',
-        category: 'About',
-        sender: 'Bala TBR',
-        senderEmail: 'me@baladev.in',
-        subject: 'Welcome to my Portfolio OS!',
+        id: 'hackos-welcome',
+        folder: 'inbox',
+        category: 'System',
+        sender: 'HackathOS Team',
+        senderEmail: 'hello@hackos.dev',
+        subject: 'Welcome to HackathOS!',
         date: 'Just Now',
-        iconType: 'image' as const,
-        iconSrc: `pfp.png`,
-        preview: 'Thanks for stopping by. I am a Second-year Computer Science undergraduate...',
+        iconType: 'icon' as const,
+        icon: IoRocketOutline,
+        preview: 'Welcome to the Hackathon Operating Workspace. Build, ship, and demo in minutes.',
         content: (
             <div className="space-y-4 text-sm leading-relaxed text-[--text-color]">
-                <p>Hi there,</p>
-                <p>Welcome to <strong>NextarOS</strong>! I built this &quot;Portfolio OS&quot; to demonstrate the power of modern web technologies.</p>
-                <p><strong>About Me:</strong></p>
-                <p>{personal.personal.bio}</p>
-                <p>Feel free to explore the apps, check out my projects in the &quot;Projects&quot; folder, or read my latest thoughts in &quot;Blog&quot;.</p>
-                <p>Best,<br />Bala</p>
+                <p>Welcome to <strong>HackathOS</strong>!</p>
+                <p>Your hackathon operating workspace is ready. Here&apos;s how to get started:</p>
+                <p><strong>1.</strong> Open the <strong>Hackathon Workspace</strong> app to create a new project from a template.</p>
+                <p><strong>2.</strong> Use the <strong>Idea Board</strong> to track your tasks and progress.</p>
+                <p><strong>3.</strong> When you&apos;re ready, use the <strong>Ship Checklist</strong> to validate before deploying.</p>
+                <p>Happy hacking!</p>
             </div>
         )
     },
-    ...personal.projects.map(proj => ({
-        id: `proj - ${proj.title} `,
-        folder: 'projects',
-        category: 'Projects',
-        sender: 'GitHub',
-        senderEmail: 'notifications@github.com',
-        subject: `Project Update: ${proj.title} `,
-        date: 'Yesterday',
-        iconType: 'image' as const,
-        iconSrc: `/appimages/${proj.title.toLowerCase()}.png`,
-        preview: `Repository update for ${proj.title}.${proj.desc}`,
-        content: (
-            <div className="space-y-4 text-sm leading-relaxed text-[--text-color]">
-                <div className="flex items-center gap-4 p-4 bg-overlay border border-[--border-color]">
-                    <div className="w-16 flex  shrink-0 h-16 bg-surface flex items-center justify-center overflow-hidden border border-[--border-color]">
-                        <Image src={`/appimages/${proj.title.toLowerCase()}.png`} width={64} height={64} alt={proj.title} className="w-full flex shrink-0 h-full object-cover" />
-                    </div>
-                    <div>
-                        <h3 className="font-bold text-lg">{proj.title}</h3>
-                        <p className="text-xs text-[--text-muted]">{proj.stack.join(' • ')}</p>
-                    </div>
-                </div>
-                <p><strong>Description:</strong></p>
-                <p>{proj.desc}</p>
-                <p><strong>Tech Stack:</strong> {proj.stack.join(', ')}</p>
-                <div className="pt-4 flex gap-3">
-                    <a href={proj.link || '#'} target="_blank" rel="noreferrer" className="inline-block px-4 py-2 bg-accent text-center line-clamp-2 mx-auto text-[--bg-base] text-xs font-semibold hover:opacity-90 transition">
-                        View Project
-                    </a>
-                </div>
-            </div>
-        )
-    })),
 ];
 
 export const getMails = (): MailItem[] => {
@@ -873,32 +786,8 @@ export const generateGuestFilesystem = (): filesystemitem[] => {
         mimetype: 'inode/directory',
         date: 'Today',
         size: '--',
-        isSystem: true,
-        isReadOnly: true,
-        owner: 'guest'
-    });
-
-    fs.push({
-        id: 'guest-about',
-        name: 'About Me',
-        parent: 'user-guest',
-        mimetype: 'inode/directory',
-        date: 'Today',
-        size: '--',
-        isSystem: true,
-        isReadOnly: true,
-        owner: 'guest'
-    });
-
-    fs.push({
-        id: 'guest-icloud',
-        name: 'iCloud Drive',
-        parent: 'root',
-        mimetype: 'inode/directory',
-        date: 'Today',
-        size: '--',
-        isSystem: true,
-        isReadOnly: true,
+        isSystem: false,
+        isReadOnly: false,
         owner: 'guest'
     });
 
@@ -915,98 +804,18 @@ export const generateGuestFilesystem = (): filesystemitem[] => {
         owner: 'guest'
     });
 
-    personal.projects.forEach(p => {
-        const pid = `guest-project-${p.title}`;
-
-        fs.push({
-            id: pid,
-            name: p.title,
-            parent: 'guest-projects',
-            mimetype: 'inode/directory',
-            date: 'Today',
-            size: '--',
-            description: p.desc,
-            isSystem: true,
-            isReadOnly: true,
-            projectPath: p.title,
-            projectLink: p.link,
-            owner: 'guest'
-        });
-
-        fs.push({
-            id: `${pid}-source`,
-            name: 'Source Code',
-            parent: pid,
-            mimetype: 'text/x-uri',
-            date: 'Today',
-            size: '--',
-            icon: <IoLogoGithub className="w-full h-full text-[--text-color]" />,
-            link: p.github,
-            description: `View source code for ${p.title} on GitHub.`,
-            isReadOnly: true,
-            owner: 'guest'
-        });
-
-        fs.push({
-            id: `${pid}-demo`,
-            name: 'Live Preview',
-            parent: pid,
-            mimetype: 'text/x-uri',
-            date: 'Today',
-            icon: <IoGlobeOutline className="w-full h-full text-pastel-blue" />,
-            size: '--',
-            link: p.link,
-            description: `Open live demo of ${p.title}.`,
-            isReadOnly: true,
-            owner: 'guest'
-        });
-
-        const projectPhotoBase: Partial<filesystemitem> = {
-            name: `${p.title}.png`,
-            mimetype: 'image/png',
-            date: 'Today',
-            icon: `/appimages/${p.title.toLowerCase()}.png`,
-            size: '2.5 MB',
-            description: p.desc,
-            link: `/appimages/${p.title.toLowerCase()}.png`,
-            content: `/appimages/${p.title.toLowerCase()}.png`,
-            projectPath: p.title,
-            projectLink: p.link,
-            isReadOnly: true,
-            owner: 'guest'
-        };
-
-        fs.push({ ...projectPhotoBase, id: `${pid}-photo`, parent: pid } as filesystemitem);
-        fs.push({ ...projectPhotoBase, id: `${pid}-photo-icloud`, parent: 'guest-icloud' } as filesystemitem);
-
-        fs.push({
-            id: `${pid}-readme`,
-            name: 'README.md',
-            parent: pid,
-            mimetype: 'text/markdown',
-            date: 'Today',
-            size: '1 KB',
-            description: `Read more about ${p.title}.`,
-            content: `# ${p.title}\n\n**Type:** ${p.type}\n\n**Date:** ${p.date}\n\n**Stack:** ${p.stack.join(', ')}\n\n## Description\n\n${p.desc}\n\nCheck out the [Live Demo](${p.link}) or view the [Source Code](${p.github}).`,
-            isReadOnly: true,
-            owner: 'guest'
-        });
-    });
-
-    const resumeBase: Partial<filesystemitem> = {
-        name: 'RESUME.pdf',
-        mimetype: 'application/pdf',
+    // Add a welcome README to Documents
+    fs.push({
+        id: 'guest-welcome-readme',
+        name: 'Welcome.md',
+        parent: 'guest-docs',
+        mimetype: 'text/markdown',
         date: 'Today',
-        icon: <IoDocumentTextOutline className="w-full h-full text-pastel-red" />,
-        size: 'PDF',
-        link: '/Balasubramanian TBR.pdf',
-        content: '/Balasubramanian TBR.pdf',
-        description: "My Resume",
+        size: '1 KB',
+        content: '# Welcome to HackathOS\n\nYour hackathon operating workspace.\n\n## Getting Started\n\n1. Open **Hackathon Workspace** to create a project from a template\n2. Use the **Idea Board** to track tasks\n3. Use the **Ship Checklist** before deploying\n\nHappy hacking!',
         isReadOnly: true,
         owner: 'guest'
-    };
-
-    fs.push({ ...resumeBase, id: 'guest-resume', parent: 'guest-docs' } as filesystemitem);
+    });
 
     apps.forEach(a => {
         if (a.id !== 'explorer' && a.id !== 'launchpad' && !a.nativeOnly) {
@@ -1025,46 +834,6 @@ export const generateGuestFilesystem = (): filesystemitem[] => {
                 owner: 'guest'
             });
         }
-    });
-
-    fs.push({ ...resumeBase, id: 'guest-desktop-resume', parent: 'guest-desktop' } as filesystemitem);
-
-    const socialLinks = [
-        { id: 'guest-about-github', name: 'Github', link: personal.personal.socials.github, icon: <FaGithub className="w-full h-full text-[--text-color]" />, desc: "My Github Profile" },
-        { id: 'guest-about-linkedin', name: 'LinkedIn', link: personal.personal.socials.linkedin, icon: <FaLinkedin className="w-full h-full text-[#0077b5]" />, desc: "My LinkedIn Profile" },
-        { id: 'guest-about-threads', name: 'Threads', link: personal.personal.socials.threads, icon: <PiThreadsLogo className="w-full h-full text-[--text-color]" />, desc: "My Threads Profile" }
-    ];
-
-    socialLinks.forEach(s => {
-        fs.push({
-            id: s.id,
-            name: s.name,
-            parent: 'guest-about',
-            mimetype: 'text/x-uri',
-            date: 'Today',
-            size: 'Web Link',
-            link: s.link,
-            icon: s.icon,
-            description: s.desc,
-            isReadOnly: true,
-            owner: 'guest'
-        });
-    });
-
-
-
-    fs.push({
-        id: 'guest-shortcut-nextar-os',
-        name: 'NextarOS',
-        parent: 'guest-desktop',
-        mimetype: 'inode/shortcut',
-        date: 'Today',
-        size: '4 KB',
-        linkPath: 'guest-project-NextarOS',
-        isSystem: false,
-        isReadOnly: true,
-        icon: <IoFolderOutline className="w-full h-full text-pastel-lavender drop-shadow-md" />,
-        owner: 'guest'
     });
 
     return fs;
@@ -1118,16 +887,6 @@ export const generateUserFolders = (username: string): filesystemitem[] => {
         owner: username
     });
 
-    fs.push({
-        id: `${uid}-icloud`,
-        name: 'iCloud Drive',
-        parent: 'root',
-        mimetype: 'inode/directory',
-        date: 'Today',
-        size: '--',
-        isSystem: true,
-        owner: username
-    });
 
     fs.push({
         id: `${uid}-trash`,
@@ -1192,16 +951,6 @@ export const generateUserFilesystem = (username: string): filesystemitem[] => {
         owner: username
     });
 
-    fs.push({
-        id: `${uid}-icloud`,
-        name: 'iCloud Drive',
-        parent: 'root',
-        mimetype: 'inode/directory',
-        date: 'Today',
-        size: '--',
-        isSystem: true,
-        owner: username
-    });
 
     fs.push({
         id: `${uid}-trash`,
@@ -1418,25 +1167,21 @@ export const getFileIcon = (mimetype: string, name: string, itemicon?: React.Rea
 };
 
 const FolderPathMap: Record<string, string[]> = {
-    'user-projects': ['System', 'Users', 'Bala', 'Projects'],
+    'user-projects': ['System', 'Users', 'Guest', 'Projects'],
     'root-apps': ['System', 'Applications'],
-    'root-icloud': ['iCloud Drive'],
-    'user-docs': ['System', 'Users', 'Bala', 'Documents'],
-    'user-downloads': ['System', 'Users', 'Bala', 'Downloads'],
+    'user-docs': ['System', 'Users', 'Guest', 'Documents'],
+    'user-downloads': ['System', 'Users', 'Guest', 'Downloads'],
     'root-network': ['Network'],
     'root-hd': ['System'],
-    'user-desktop': ['System', 'Users', 'Bala', 'Desktop'],
-    'user-about': ['System', 'Users', 'Bala', 'About Me'],
+    'user-desktop': ['System', 'Users', 'Guest', 'Desktop'],
 };
 
 const ParentFolderMap: Record<string, string> = {
     'user-projects': 'Projects',
-    'root-icloud': 'iCloud Drive',
     'root-apps': 'Applications',
     'user-docs': 'Documents',
     'user-downloads': 'Downloads',
     'user-desktop': 'Desktop',
-    'user-about': 'About Me'
 };
 
 
@@ -1496,7 +1241,7 @@ const resolveTarget = (itemOrId: string | filesystemitem, currentFiles?: filesys
 
         if (itemOrId.startsWith('project-')) {
             const projectName = itemOrId.replace('project-', '');
-            return { appId: 'explorer', props: { initialpath: ['System', 'Users', 'Bala', 'Projects', projectName] }, title: projectName };
+            return { appId: 'explorer', props: { initialpath: ['System', 'Users', 'Projects', projectName] }, title: projectName };
         }
 
         return null;

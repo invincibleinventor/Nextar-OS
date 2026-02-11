@@ -14,11 +14,11 @@ export const initialnotifications: Notification[] = [
 
     {
         id: 'n4',
-        appname: 'Installer',
-        title: 'Welcome to NextarOS!',
-        description: 'Hi! This is Bala! Welcome to NextarOS - my convergent web OS simulation! Please feel free to explore it!',
+        appname: 'HackathOS',
+        title: 'Welcome to HackathOS!',
+        description: 'Your hackathon operating workspace is ready. Create a project, track tasks, and ship!',
         time: '2h ago',
-        icon: '/pfp.png',
-        appid: 'welcome'
+        icon: '/code.png',
+        appid: 'projectdashboard'
     }
 ];
