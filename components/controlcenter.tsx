@@ -7,6 +7,7 @@ import { FiBatteryCharging, FiBattery } from 'react-icons/fi'
 import { IoPlay, IoPause, IoPlaySkipForward, IoPlaySkipBack, IoFlashlight, IoCamera, IoCalculator, IoStopwatch, IoExpand, IoContract, IoPower, IoRefresh } from 'react-icons/io5'
 import { BiSignal5 } from "react-icons/bi";
 import { useSettings } from './SettingsContext'
+import { useCheerpXSafe } from './CheerpXContext'
 import { useTheme } from './ThemeContext'
 import { useAuth } from './AuthContext'
 import { useMusic } from './MusicContext'
@@ -25,6 +26,11 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
   const { reducemotion, reducetransparency } = useSettings()
   const { user, logout } = useAuth()
   const { currenttrack, isplaying, toggle, next, prev } = useMusic()
+
+  const cheerpx = useCheerpXSafe();
+  const tailscalestate = cheerpx?.networkState || 'disconnected';
+  const tailscaleloginurl = cheerpx?.networkLoginUrl || null;
+  const tailscaleconnect = cheerpx?.connectNetwork;
 
   const [wifistatus, setwifistatus] = useState({ enabled: false, connected: false, ssid: null as string | null })
   const [bluetoothstatus, setbluetoothstatus] = useState({ enabled: false, available: false })
@@ -82,12 +88,25 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
     } catch { }
   }
 
+  const wifienabled = iselectron ? wifistatus.enabled : tailscalestate === 'connected';
+  const wificonnecting = !iselectron && (tailscalestate === 'connecting' || tailscalestate === 'login-ready');
+  const wifilabel = iselectron
+    ? (wifistatus.enabled ? (wifistatus.ssid || 'On') : 'Off')
+    : tailscalestate === 'connected' ? 'Tailscale' : tailscalestate === 'login-ready' ? 'Login Required' : tailscalestate === 'connecting' ? 'Connecting...' : 'Off';
+
   const togglewifi = async () => {
-    if (!iselectron) return;
-    const newstate = !wifistatus.enabled;
-    setwifistatus(prev => ({ ...prev, enabled: newstate }));
-    await wifi.setenabled(newstate);
-    setTimeout(fetchsystemstatus, 1000);
+    if (iselectron) {
+      const newstate = !wifistatus.enabled;
+      setwifistatus(prev => ({ ...prev, enabled: newstate }));
+      await wifi.setenabled(newstate);
+      setTimeout(fetchsystemstatus, 1000);
+    } else if (tailscaleconnect) {
+      if (tailscalestate === 'login-ready' && tailscaleloginurl) {
+        window.open(tailscaleloginurl, '_blank');
+      } else if (tailscalestate !== 'connected' && tailscalestate !== 'connecting') {
+        await tailscaleconnect();
+      }
+    }
   };
 
   const togglebluetooth = async () => {
@@ -190,9 +209,9 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
                       </div>
                       <div
                         onClick={togglewifi}
-                        className={`flex items-center justify-center aspect-square cursor-pointer active:scale-95 transition-all ${wifistatus.enabled ? 'bg-pastel-blue' : 'bg-[--border-color]'}`}
+                        className={`flex items-center justify-center aspect-square cursor-pointer active:scale-95 transition-all ${wifienabled ? 'bg-pastel-blue' : wificonnecting ? 'bg-pastel-yellow' : 'bg-[--border-color]'}`}
                       >
-                        <FaWifi className={wifistatus.enabled ? 'text-[--bg-base]' : 'text-[--text-color]'} size={18} />
+                        <FaWifi className={wifienabled ? 'text-[--bg-base]' : wificonnecting ? 'text-[--bg-base]' : 'text-[--text-color]'} size={18} />
                       </div>
                       <div
                         onClick={togglebluetooth}
@@ -294,15 +313,15 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
                     <div className='grid h-max grid-rows-3 gap-2' onPointerDown={(e) => e.stopPropagation()}>
                       <div
                         onClick={togglewifi}
-                        className={`p-3 ${wifistatus.enabled ? 'bg-pastel-blue/20' : 'bg-overlay'} border border-[--border-color] flex space-x-2 items-center cursor-pointer active:scale-95 transition-all`}
+                        className={`p-3 ${wifienabled ? 'bg-pastel-blue/20' : wificonnecting ? 'bg-pastel-yellow/20' : 'bg-overlay'} border border-[--border-color] flex space-x-2 items-center cursor-pointer active:scale-95 transition-all`}
                       >
-                        <div className={`p-[10px] ${wifistatus.enabled ? 'bg-pastel-blue' : 'bg-[--border-color]'}`}>
-                          <FaWifi className={wifistatus.enabled ? 'text-[--bg-base]' : 'text-[--text-color]'} size={16} />
+                        <div className={`p-[10px] ${wifienabled ? 'bg-pastel-blue' : wificonnecting ? 'bg-pastel-yellow' : 'bg-[--border-color]'}`}>
+                          <FaWifi className={wifienabled ? 'text-[--bg-base]' : wificonnecting ? 'text-[--bg-base]' : 'text-[--text-color]'} size={16} />
                         </div>
                         <div>
                           <p className="text-sm font-semibold text-[--text-color]">Wi-Fi</p>
                           <p className="text-[12px] text-[--text-muted] truncate">
-                            {wifistatus.enabled ? (wifistatus.ssid || 'On') : 'Off'}
+                            {wifilabel}
                           </p>
                         </div>
                       </div>

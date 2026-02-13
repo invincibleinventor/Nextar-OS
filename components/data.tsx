@@ -106,6 +106,10 @@ export const componentmap: { [key: string]: any } = {
     'apps/HackathonWorkspace': dynamic(() => import('./apps/HackathonWorkspace')),
     'apps/IdeaBoard': dynamic(() => import('./apps/IdeaBoard')),
     'apps/ShipChecklist': dynamic(() => import('./apps/ShipChecklist')),
+    'apps/LinuxDisplay': dynamic(() => import('./apps/LinuxDisplay')),
+    'apps/LabSubmit': dynamic(() => import('./apps/LabSubmit')),
+    'apps/ApiPlayground': dynamic(() => import('./apps/ApiPlayground')),
+    'apps/LabManager': dynamic(() => import('./apps/LabManager')),
 };
 
 
@@ -490,7 +494,60 @@ export const apps: appdata[] = [
         pinned: false,
         defaultsize: { width: 500, height: 600 },
         category: 'Productivity',
-    }
+    },
+    {
+        id: 'linuxdisplay',
+        appname: 'Linux Desktop',
+        icon: '/terminal.webp',
+        maximizeable: true,
+        componentname: 'apps/LinuxDisplay',
+        additionaldata: {},
+        multiwindow: false,
+        titlebarblurred: false,
+        pinned: false,
+        defaultsize: { width: 1050, height: 820 },
+        category: 'Developer Tools',
+        webOnly: true,
+    },
+    {
+        id: 'lab-submit',
+        appname: 'Lab Submission',
+        icon: '/classroom.png',
+        maximizeable: true,
+        componentname: 'apps/LabSubmit',
+        additionaldata: {},
+        multiwindow: false,
+        titlebarblurred: false,
+        pinned: true,
+        defaultsize: { width: 900, height: 600 },
+        category: 'Education',
+    },
+    {
+        id: 'apiplayground',
+        appname: 'API Playground',
+        icon: '/terminal.png',
+        maximizeable: true,
+        componentname: 'apps/ApiPlayground',
+        additionaldata: {},
+        multiwindow: false,
+        titlebarblurred: false,
+        pinned: false,
+        defaultsize: { width: 1000, height: 600 },
+        category: 'Developer Tools',
+    },
+    {
+        id: 'labmanager',
+        appname: 'Lab Manager',
+        icon: '/classroom.png',
+        maximizeable: true,
+        componentname: 'apps/LabManager',
+        additionaldata: {},
+        multiwindow: false,
+        titlebarblurred: false,
+        pinned: false,
+        defaultsize: { width: 1000, height: 650 },
+        category: 'Education',
+    },
 ];
 
 export function getfilteredapps(iselectron: boolean): appdata[] {
@@ -609,6 +666,14 @@ export const sidebaritems = [
         items: [
             { name: 'Applications', icon: IoAppsOutline, path: ['System', 'Applications'] },
             { name: 'System', icon: IoAppsOutline, path: ['System'] },
+        ]
+    },
+    {
+        title: 'Linux',
+        items: [
+            { name: 'Root (/)', icon: IoFolderOutline, path: ['Linux', '/'] },
+            { name: 'Home', icon: IoFolderOutline, path: ['Linux', '/home/user'] },
+            { name: 'Shared', icon: IoFolderOutline, path: ['Linux', '/shared'] },
         ]
     }
 ];

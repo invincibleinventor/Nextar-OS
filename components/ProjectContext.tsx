@@ -19,6 +19,7 @@ interface ProjectContextType {
     isLoading: boolean;
 
     createProject: (name: string, templateId: string, description?: string) => Promise<Project>;
+    createProjectFromRawFiles: (name: string, files: Record<string, string>, description?: string, stack?: string[]) => Promise<Project>;
     openProject: (id: string) => Promise<void>;
     closeProject: () => void;
     deleteProjectById: (id: string) => Promise<void>;
@@ -254,6 +255,50 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
         return project;
     }, [persistProject, persistFiles, persistSnapshot, syncProjectToFS]);
 
+    const createProjectFromRawFiles = useCallback(async (
+        name: string, files: Record<string, string>, description?: string, stack?: string[]
+    ): Promise<Project> => {
+        const projectId = generateId();
+        const now = Date.now();
+        const project: Project = {
+            id: projectId, name, templateId: 'custom', createdAt: now, updatedAt: now,
+            members: [], layoutState: { ...DEFAULT_LAYOUT }, description, stack: stack || [], status: 'active',
+        };
+        const projectFiles: ProjectFile[] = Object.entries(files).map(([path, content]) => {
+            const parts = path.split('/');
+            return {
+                id: generateId(), projectId, path, name: parts[parts.length - 1], content,
+                mimeType: getMimeType(parts[parts.length - 1]), isDirectory: false,
+                parentPath: parts.length > 1 ? parts.slice(0, -1).join('/') : '/',
+                createdAt: now, updatedAt: now,
+            };
+        });
+        const dirs = new Set<string>();
+        projectFiles.forEach(f => { const parts = f.path.split('/'); for (let i = 1; i < parts.length; i++) dirs.add(parts.slice(0, i).join('/')); });
+        const dirFiles: ProjectFile[] = Array.from(dirs).map(dirPath => {
+            const parts = dirPath.split('/');
+            return {
+                id: generateId(), projectId, path: dirPath, name: parts[parts.length - 1], content: '',
+                mimeType: 'directory', isDirectory: true,
+                parentPath: parts.length > 1 ? parts.slice(0, -1).join('/') : '/',
+                createdAt: now, updatedAt: now,
+            };
+        });
+        await persistProject(project);
+        await persistFiles([...dirFiles, ...projectFiles]);
+        setCurrentProject(project);
+        setCurrentFiles([...dirFiles, ...projectFiles]);
+        setProjects(prev => [project, ...prev]);
+        const snapshot: Snapshot = {
+            id: generateId(), projectId, timestamp: now, files: [...dirFiles, ...projectFiles],
+            layoutState: project.layoutState, metadata: { label: 'Initial', auto: true },
+        };
+        await persistSnapshot(snapshot);
+        setSnapshots([snapshot]);
+        await syncProjectToFS(project, projectFiles);
+        return project;
+    }, [persistProject, persistFiles, persistSnapshot, syncProjectToFS]);
+
     const openProject = useCallback(async (id: string) => {
         setIsLoading(true);
         try {
@@ -427,7 +472,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return (
         <ProjectContext.Provider value={{
             projects, currentProject, currentFiles, snapshots, isLoading,
-            createProject, openProject, closeProject, deleteProjectById, updateProject,
+            createProject, createProjectFromRawFiles, openProject, closeProject, deleteProjectById, updateProject,
             createFile, updateFile, deleteFileById, renameFile, getFileByPath,
             createSnapshot, restoreSnapshot, deleteSnapshotById,
             updateLayout, refreshProjects,

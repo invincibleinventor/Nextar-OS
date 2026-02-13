@@ -2,9 +2,9 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import {
     VscFiles, VscClose, VscTerminal, VscNewFile, VscNewFolder, VscSave,
-    VscChevronDown, VscChevronRight, VscTrash, VscPlay, VscRunAll,
+    VscChevronDown, VscChevronRight, VscTrash, VscRunAll,
     VscHistory, VscEye, VscEyeClosed, VscSplitHorizontal,
-    VscRefresh, VscSaveAll,
+    VscRefresh, VscSaveAll, VscGitMerge, VscGitCommit, VscGitPullRequest,
 } from 'react-icons/vsc';
 import { FaFolder, FaFolderOpen } from 'react-icons/fa';
 import {
@@ -20,8 +20,13 @@ import { useMenuRegistration } from '../AppMenuContext';
 import { ProjectFile } from '../../types/project';
 import { api } from '../../utils/constants';
 import { useCheerpX } from '../CheerpXContext';
+import { useRuntimeSafe } from '../RuntimeContext';
+import { preloadForProject } from '../../lib/runtimes/preloader';
+import { CheckpointManager } from '../../lib/checkpoints';
+import { SkillAnalyzer } from '../../lib/skillAnalytics';
 
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false });
+const WebContainerTerminal = dynamic(() => import('../ui/WebContainerTerminal'), { ssr: false });
 
 const languageMap: Record<string, string> = {
     'py': 'python', 'js': 'javascript', 'ts': 'typescript', 'tsx': 'typescriptreact',
@@ -47,7 +52,7 @@ const pistonRuntimes: Record<string, { language: string; version: string }> = {
     'shell': { language: 'bash', version: '5.2.0' },
 };
 
-const runnableLanguages = new Set(Object.keys(pistonRuntimes));
+const runnableLanguages = new Set([...Object.keys(pistonRuntimes), 'c', 'cpp', 'java', 'ruby', 'php']);
 
 function getLanguage(filename: string): string {
     const ext = filename.split('.').pop()?.toLowerCase() || '';
@@ -109,7 +114,7 @@ function buildFileTree(files: ProjectFile[]): TreeNode[] {
     return root;
 }
 
-// --- File Tree Item ---
+// --- File Tree Item (OPT: wrapped in React.memo to prevent full tree re-renders) ---
 const FileTreeItem: React.FC<{
     node: TreeNode;
     depth: number;
@@ -119,7 +124,7 @@ const FileTreeItem: React.FC<{
     onFileClick: (file: ProjectFile) => void;
     onDelete: (file: ProjectFile) => void;
     onNewFile: (parentPath: string) => void;
-}> = ({ node, depth, expandedDirs, toggleDir, activeFile, onFileClick, onDelete, onNewFile }) => {
+}> = React.memo(({ node, depth, expandedDirs, toggleDir, activeFile, onFileClick, onDelete, onNewFile }) => {
     const isExpanded = expandedDirs.has(node.path);
     const isActive = activeFile === node.path;
 
@@ -173,14 +178,23 @@ const FileTreeItem: React.FC<{
             ))}
         </div>
     );
-};
+});
+FileTreeItem.displayName = 'FileTreeItem';
 
 // --- Terminal Panel ---
 const XTermShell = dynamic(() => import('../ui/XTermShell'), { ssr: false });
 
-const TerminalPanel: React.FC = () => {
+const TerminalPanel: React.FC<{
+    mode: 'linux' | 'node';
+    files?: Record<string, string>;
+    onServerReady?: (url: string, port: number) => void;
+}> = ({ mode, files, onServerReady }) => {
+    if (mode === 'node') {
+        return <WebContainerTerminal fontSize={12} files={files} onServerReady={onServerReady} />;
+    }
     return <XTermShell fontSize={12} />;
 };
+TerminalPanel.displayName = 'TerminalPanel';
 
 // --- Snapshot Panel ---
 const SnapshotPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
@@ -304,6 +318,7 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [terminalOpen, setTerminalOpen] = useState(true);
     const [previewOpen, setPreviewOpen] = useState(false);
+    const [terminalMode, setTerminalMode] = useState<'linux' | 'node'>('linux');
     const [snapshotPanelOpen, setSnapshotPanelOpen] = useState(false);
     const [focusMode, setFocusMode] = useState(false);
     const [newFileName, setNewFileName] = useState('');
@@ -313,12 +328,38 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
     const [outputLines, setOutputLines] = useState<{ text: string; type: 'stdout' | 'stderr' | 'info' }[]>([]);
     const [outputOpen, setOutputOpen] = useState(false);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [gitPanelOpen, setGitPanelOpen] = useState(false);
+    const [commitMsg, setCommitMsg] = useState('');
+    const [gitChanges, setGitChanges] = useState<{ filepath: string; status: string }[]>([]);
+    const [gitBranch, setGitBranch] = useState<string>('');
+    const [gitLoading, setGitLoading] = useState(false);
 
     const editorRef = useRef<any>(null);
     const autoSaveTimer = useRef<NodeJS.Timeout | null>(null);
-    const outputRef = useRef<HTMLPreElement>(null);
+    const outputContainerRef = useRef<HTMLDivElement>(null);
+    const [outputScrollTop, setOutputScrollTop] = useState(0);
 
-    const { isBooted, writeProjectFile, writeLinuxFile, mkdirLinux, removeLinux, captureCommand, readFile } = useCheerpX();
+    const { isBooted, writeProjectFile, writeLinuxFile, mkdirLinux, removeLinux, captureCommand, readFile, batchReadFiles } = useCheerpX();
+    const runtime = useRuntimeSafe();
+
+    // --- Micro-Checkpoints (Coding DVR) ---
+    const checkpointMgr = useRef<CheckpointManager | null>(null);
+    useEffect(() => {
+        if (!currentProject) return;
+        const mgr = new CheckpointManager(currentProject.id, async () =>
+            currentFiles.filter(f => !f.isDirectory).map(f => ({ path: f.path, content: f.content }))
+        );
+        mgr.startAutoCheckpoint(30);
+        checkpointMgr.current = mgr;
+        return () => { mgr.stopAutoCheckpoint(); mgr.destroy(); };
+    }, [currentProject?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // --- Skill Analytics ---
+    const skillAnalyzer = useRef<SkillAnalyzer | null>(null);
+    useEffect(() => {
+        if (!currentProject) return;
+        skillAnalyzer.current = new SkillAnalyzer(currentProject.id);
+    }, [currentProject?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Resolve a virtual FS path to an absolute Linux path under the project dir.
     // file.path may or may not start with '/' depending on depth, so normalize it.
@@ -328,6 +369,99 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
         const normalized = filePath.startsWith('/') ? filePath : `/${filePath}`;
         return `${projDir}${normalized}`;
     }, [currentProject]);
+
+    // --- Git operations ---
+    const gitDir = currentProject ? `/projects/${currentProject.name.replace(/\s+/g, '_')}` : '';
+
+    const refreshGitStatus = useCallback(async () => {
+        if (!runtime?.git || !gitDir) return;
+        try {
+            const branch = await runtime.git.currentBranch(gitDir);
+            setGitBranch(branch || 'main');
+            const entries = await runtime.git.status(gitDir);
+            const changed = entries
+                .filter(e => e.headStatus !== 1 || e.workdirStatus !== 1 || e.stageStatus !== 1)
+                .map(e => ({
+                    filepath: e.filepath,
+                    status: e.headStatus === 0 ? 'new' : e.workdirStatus === 2 ? 'modified' : e.workdirStatus === 0 ? 'deleted' : 'unknown',
+                }));
+            setGitChanges(changed);
+        } catch {
+            // Not a git repo yet — that's fine
+            setGitChanges([]);
+            setGitBranch('');
+        }
+    }, [runtime, gitDir]);
+
+    useEffect(() => {
+        if (gitPanelOpen) refreshGitStatus();
+    }, [gitPanelOpen, refreshGitStatus]);
+
+    const handleGitInit = useCallback(async () => {
+        if (!runtime?.git || !gitDir) return;
+        setGitLoading(true);
+        try {
+            await runtime.git.init(gitDir);
+            // Write project files to git FS
+            for (const f of currentFiles) {
+                if (!f.isDirectory) {
+                    const { writeGitFile } = await import('../../lib/runtimes/git');
+                    await writeGitFile(`${gitDir}/${f.path}`, f.content);
+                }
+            }
+            await refreshGitStatus();
+            addToast('Git repository initialized', 'success');
+        } catch (err: any) {
+            addToast('Git init failed: ' + err.message, 'error');
+        }
+        setGitLoading(false);
+    }, [runtime, gitDir, currentFiles, refreshGitStatus, addToast]);
+
+    const handleGitCommit = useCallback(async () => {
+        if (!runtime?.git || !gitDir || !commitMsg.trim()) return;
+        setGitLoading(true);
+        try {
+            // Sync current files to git FS before commit
+            for (const f of currentFiles) {
+                if (!f.isDirectory) {
+                    const { writeGitFile } = await import('../../lib/runtimes/git');
+                    await writeGitFile(`${gitDir}/${f.path}`, f.content);
+                }
+            }
+            const oid = await runtime.git.commit({ dir: gitDir, message: commitMsg, author: { name: 'HackathOS User', email: 'user@hackathos.dev' } });
+            setCommitMsg('');
+            await refreshGitStatus();
+            addToast('Committed: ' + oid.slice(0, 7), 'success');
+        } catch (err: any) {
+            addToast('Commit failed: ' + err.message, 'error');
+        }
+        setGitLoading(false);
+    }, [runtime, gitDir, commitMsg, currentFiles, refreshGitStatus, addToast]);
+
+    const handleGitPull = useCallback(async () => {
+        if (!runtime?.git || !gitDir) return;
+        setGitLoading(true);
+        try {
+            await runtime.git.pull(gitDir);
+            await refreshGitStatus();
+            addToast('Pulled — up to date', 'success');
+        } catch (err: any) {
+            addToast('Pull failed: ' + err.message, 'error');
+        }
+        setGitLoading(false);
+    }, [runtime, gitDir, refreshGitStatus, addToast]);
+
+    const handleGitPush = useCallback(async () => {
+        if (!runtime?.git || !gitDir) return;
+        setGitLoading(true);
+        try {
+            await runtime.git.push({ dir: gitDir, token: '' });
+            addToast('Pushed to remote', 'success');
+        } catch (err: any) {
+            addToast('Push failed: ' + err.message, 'error');
+        }
+        setGitLoading(false);
+    }, [runtime, gitDir, addToast]);
 
     useEffect(() => {
         if (projectId && (!currentProject || currentProject.id !== projectId)) {
@@ -358,6 +492,13 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
     useEffect(() => {
         const rootDirs = currentFiles.filter(f => f.isDirectory && f.parentPath === '/').map(f => f.path);
         setExpandedDirs(new Set(rootDirs));
+    }, [currentFiles]);
+
+    // Predictive preloading: analyze project files and preload the appropriate runtime
+    useEffect(() => {
+        if (currentFiles.length > 0) {
+            preloadForProject(currentFiles.map(f => f.path));
+        }
     }, [currentFiles]);
 
     const toggleDir = useCallback((path: string) => {
@@ -429,18 +570,23 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                 }
             }
 
-            // Process files
+            // OPT: Batch read ALL files in one shell command (kills N+1 pattern)
             const files = lines.filter(l => l.startsWith('F:')).map(l => l.slice(2));
-            for (const f of files) {
+            const filePaths = files.map(f => `${projDir}${f.slice(1)}`);
+            const fileContentsMap = filePaths.length > 0
+                ? await batchReadFiles(filePaths)
+                : new Map<string, string>();
+
+            for (let idx = 0; idx < files.length; idx++) {
+                const f = files[idx];
                 const vp = toVP(f);
                 linuxPaths.add(norm(vp));
-                const content = await readFile(`${projDir}${f.slice(1)}`);
+                const content = fileContentsMap.get(filePaths[idx]) ?? '';
                 const existing = currentFiles.find(ef => norm(ef.path) === norm(vp) && !ef.isDirectory);
                 if (!existing) {
                     await createFile(vp, content, false);
                 } else if (content !== existing.content) {
                     await updateFile(existing.id, content);
-                    // Update open tab if this file is being edited
                     if (openTabs.some(t => t.fileId === existing.id)) {
                         setFileContents(prev => new Map(prev).set(existing.id, content));
                     }
@@ -462,7 +608,7 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
         } finally {
             setIsSyncing(false);
         }
-    }, [currentProject, isBooted, isSyncing, captureCommand, readFile, currentFiles, createFile, updateFile, deleteFileById, openTabs, closeTab, addToast]);
+    }, [currentProject, isBooted, isSyncing, captureCommand, readFile, batchReadFiles, currentFiles, createFile, updateFile, deleteFileById, openTabs, closeTab, addToast]);
 
     const handleEditorChange = useCallback((value: string | undefined, fileId: string) => {
         if (value === undefined) return;
@@ -536,7 +682,9 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
 
     // Auto-scroll output
     useEffect(() => {
-        if (outputRef.current) outputRef.current.scrollTop = outputRef.current.scrollHeight;
+        if (outputContainerRef.current) {
+            outputContainerRef.current.scrollTop = outputContainerRef.current.scrollHeight;
+        }
     }, [outputLines]);
 
     const appendOutput = useCallback((text: string, type: 'stdout' | 'stderr' | 'info' = 'stdout') => {
@@ -545,6 +693,29 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
         setOutputLines(prev => [...prev, { text: `[${ts}] ${text}`, type }]);
     }, []);
 
+    // Gather all companion files matching the same language family for multi-file execution
+    const gatherCompanionFiles = useCallback((activeFileId: string, lang: string): Record<string, string> => {
+        const langFamily: Record<string, string[]> = {
+            'python': ['py'],
+            'javascript': ['js', 'mjs'],
+            'typescript': ['ts'],
+            'typescriptreact': ['tsx'],
+            'javascriptreact': ['jsx'],
+        };
+        const exts = langFamily[lang] || [];
+        const companions: Record<string, string> = {};
+        for (const f of currentFiles) {
+            if (f.isDirectory || f.id === activeFileId) continue;
+            const ext = f.name.split('.').pop()?.toLowerCase() || '';
+            if (exts.includes(ext)) {
+                // Use the latest content from editor if open, otherwise from project state
+                const content = fileContents.get(f.id) ?? f.content;
+                companions[f.name] = content;
+            }
+        }
+        return companions;
+    }, [currentFiles, fileContents]);
+
     const runCode = useCallback(async () => {
         if (!activeTab) return;
         const tab = openTabs.find(t => t.fileId === activeTab);
@@ -552,26 +723,62 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
         if (!tab || content === undefined) return;
 
         const lang = getLanguage(tab.name);
-        const runtime = pistonRuntimes[lang];
-        if (!runtime) {
-            appendOutput(`Language "${lang}" is not supported for execution.`, 'stderr');
-            appendOutput(`Supported: ${Object.keys(pistonRuntimes).join(', ')}`, 'info');
-            setOutputOpen(true);
-            return;
-        }
+        const companions = gatherCompanionFiles(activeTab, lang);
 
         setIsRunning(true);
         setOutputOpen(true);
         setOutputLines([]);
-        appendOutput(`Running ${tab.name} (${runtime.language} ${runtime.version})...`, 'info');
+
+        const execStart = performance.now();
+
+        // Try RuntimeContext first (supports Pyodide, WebContainers, Piston)
+        if (runtime) {
+            appendOutput(`Running ${tab.name} via ${runtime.resolveRuntime(lang)}...`, 'info');
+            try {
+                const result = await runtime.execute({ language: lang, code: content, files: companions });
+                if (result.stdout) result.stdout.split('\n').filter((l: string) => l).forEach((line: string) => appendOutput(line, 'stdout'));
+                if (result.stderr) result.stderr.split('\n').filter((l: string) => l).forEach((line: string) => appendOutput(line, 'stderr'));
+                if (!result.stdout && !result.stderr) {
+                    appendOutput(`Exited with code ${result.exitCode} (${result.durationMs?.toFixed(0)}ms)`, 'info');
+                }
+                // Track skills
+                const dur = performance.now() - execStart;
+                if (result.exitCode === 0) skillAnalyzer.current?.recordSuccess(`run:${lang}`, dur);
+                else skillAnalyzer.current?.recordFailure(`run:${lang}`, result.stderr || 'non-zero exit', dur);
+            } catch (err: any) {
+                appendOutput(err.message || 'Execution failed', 'stderr');
+                skillAnalyzer.current?.recordFailure(`run:${lang}`, err.message, performance.now() - execStart);
+            } finally {
+                setIsRunning(false);
+            }
+            return;
+        }
+
+        // Fallback: direct Piston API (when RuntimeContext not available)
+        const pistonRuntime = pistonRuntimes[lang];
+        if (!pistonRuntime) {
+            appendOutput(`Language "${lang}" is not supported for execution.`, 'stderr');
+            appendOutput(`Supported: ${Object.keys(pistonRuntimes).join(', ')}`, 'info');
+            setOutputOpen(true);
+            setIsRunning(false);
+            return;
+        }
+        appendOutput(`Running ${tab.name} (${pistonRuntime.language} ${pistonRuntime.version})...`, 'info');
 
         try {
+            // Build files array: active file first, then companions
+            const pistonFiles: { name?: string; content: string }[] = [{ name: tab.name, content }];
+            for (const [name, code] of Object.entries(companions)) {
+                pistonFiles.push({ name, content: code });
+            }
+
             const response = await fetch(api.pistonExecuteUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ language: runtime.language, version: runtime.version, files: [{ content }] })
+                body: JSON.stringify({ language: pistonRuntime.language, version: pistonRuntime.version, files: pistonFiles })
             });
             const data = await response.json();
+            const dur = performance.now() - execStart;
             if (data.run) {
                 if (data.run.stdout) data.run.stdout.split('\n').filter((l: string) => l).forEach((line: string) => appendOutput(line, 'stdout'));
                 if (data.run.stderr) data.run.stderr.split('\n').filter((l: string) => l).forEach((line: string) => appendOutput(line, 'stderr'));
@@ -579,15 +786,20 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                     if (data.run.output) data.run.output.split('\n').filter((l: string) => l).forEach((line: string) => appendOutput(line, 'stdout'));
                     else appendOutput(`Exited with code ${data.run.code ?? 0}`, 'info');
                 }
+                const code = data.run.code ?? 0;
+                if (code === 0) skillAnalyzer.current?.recordSuccess(`run:${lang}`, dur);
+                else skillAnalyzer.current?.recordFailure(`run:${lang}`, data.run.stderr || '', dur);
             } else {
                 appendOutput('Failed to execute', 'stderr');
+                skillAnalyzer.current?.recordFailure(`run:${lang}`, 'Failed to execute', dur);
             }
         } catch {
             appendOutput('Network request failed', 'stderr');
+            skillAnalyzer.current?.recordFailure(`run:${lang}`, 'Network error', performance.now() - execStart);
         } finally {
             setIsRunning(false);
         }
-    }, [activeTab, openTabs, fileContents, appendOutput]);
+    }, [activeTab, openTabs, fileContents, appendOutput, runtime, gatherCompanionFiles]);
 
     const runAsApp = useCallback(() => {
         if (!activeTab) return;
@@ -693,6 +905,9 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                     <button onClick={() => setSidebarOpen(p => !p)} className={`p-1 hover:bg-overlay ${sidebarOpen ? 'text-[--text-color]' : 'text-[--text-muted]'}`} title="Toggle sidebar (Cmd+B)">
                         <VscFiles size={14} />
                     </button>
+                    <button onClick={() => setGitPanelOpen(p => !p)} className={`p-1 hover:bg-overlay ${gitPanelOpen ? 'text-[--text-color]' : 'text-[--text-muted]'}`} title="Git panel">
+                        <VscGitMerge size={14} />
+                    </button>
                     <span className="text-[--text-color] font-medium">{currentProject.name}</span>
                     {currentProject.stack && (
                         <div className="flex items-center gap-1 ml-2">
@@ -765,6 +980,94 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                     </div>
                 )}
 
+                {/* Git Panel */}
+                {gitPanelOpen && !focusMode && (
+                    <div className="w-56 bg-surface border-r border-[--border-color] flex flex-col shrink-0">
+                        <div className="flex items-center justify-between px-2 py-1.5 border-b border-[--border-color]">
+                            <span className="text-[10px] uppercase tracking-wider text-[--text-muted] font-medium flex items-center gap-1">
+                                <VscGitMerge size={10} /> Source Control
+                                {gitBranch && <span className="text-pastel-blue normal-case tracking-normal">({gitBranch})</span>}
+                            </span>
+                            <button onClick={() => setGitPanelOpen(false)} className="p-0.5 hover:bg-overlay">
+                                <VscClose size={12} className="text-[--text-muted]" />
+                            </button>
+                        </div>
+                        <div className="flex-1 overflow-y-auto">
+                            {!gitBranch && (
+                                <div className="px-2 py-3 text-center">
+                                    <p className="text-[10px] text-[--text-muted] mb-2">No git repository</p>
+                                    <button onClick={handleGitInit} disabled={gitLoading}
+                                        className="w-full py-1 text-[10px] rounded bg-pastel-blue text-white font-medium hover:opacity-90 disabled:opacity-50 transition-opacity">
+                                        {gitLoading ? 'Initializing...' : 'Initialize Repository'}
+                                    </button>
+                                </div>
+                            )}
+                            {gitBranch && (
+                                <>
+                                    <div className="px-2 py-2 border-b border-[--border-color]">
+                                        <div className="flex items-center gap-1 mb-2">
+                                            <VscGitCommit size={11} className="text-pastel-green" />
+                                            <span className="text-[10px] font-medium text-[--text-color]">Commit</span>
+                                        </div>
+                                        <input
+                                            type="text"
+                                            value={commitMsg}
+                                            onChange={e => setCommitMsg(e.target.value)}
+                                            onKeyDown={e => { if (e.key === 'Enter') handleGitCommit(); }}
+                                            placeholder="Commit message..."
+                                            className="w-full bg-[--bg-base] border border-[--border-color] rounded px-2 py-1 text-[10px] text-[--text-color] outline-none focus:border-pastel-blue placeholder:text-[--text-muted] mb-1.5"
+                                        />
+                                        <button onClick={handleGitCommit} disabled={gitLoading || !commitMsg.trim()}
+                                            className="w-full py-1 text-[10px] rounded bg-pastel-green text-[--bg-base] font-medium hover:opacity-90 disabled:opacity-50 transition-opacity">
+                                            {gitLoading ? 'Committing...' : 'Commit All'}
+                                        </button>
+                                    </div>
+                                    <div className="px-2 py-2 border-b border-[--border-color]">
+                                        <div className="flex items-center gap-1 mb-1.5">
+                                            <VscGitPullRequest size={11} className="text-pastel-blue" />
+                                            <span className="text-[10px] font-medium text-[--text-color]">Actions</span>
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                            <button onClick={handleGitPull} disabled={gitLoading}
+                                                className="flex items-center gap-1.5 px-2 py-1 text-[10px] rounded hover:bg-overlay text-[--text-muted] hover:text-[--text-color] disabled:opacity-50 transition-colors">
+                                                <VscRefresh size={10} /> Pull
+                                            </button>
+                                            <button onClick={handleGitPush} disabled={gitLoading}
+                                                className="flex items-center gap-1.5 px-2 py-1 text-[10px] rounded hover:bg-overlay text-[--text-muted] hover:text-[--text-color] disabled:opacity-50 transition-colors">
+                                                <VscGitPullRequest size={10} /> Push
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className="px-2 py-2">
+                                        <div className="flex items-center justify-between mb-1.5">
+                                            <span className="text-[10px] text-[--text-muted] font-medium">Changes</span>
+                                            <button onClick={refreshGitStatus} className="p-0.5 hover:bg-overlay rounded">
+                                                <VscRefresh size={10} className="text-[--text-muted]" />
+                                            </button>
+                                        </div>
+                                        {gitChanges.length === 0 ? (
+                                            <div className="text-[10px] text-[--text-muted] opacity-60 text-center py-3">
+                                                No changes detected
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-0.5">
+                                                {gitChanges.map(c => (
+                                                    <div key={c.filepath} className="flex items-center gap-1.5 px-1 py-0.5 text-[10px] rounded hover:bg-overlay">
+                                                        <span className={`font-bold ${c.status === 'new' ? 'text-pastel-green' : c.status === 'deleted' ? 'text-pastel-red' : 'text-pastel-yellow'}`}>
+                                                            {c.status === 'new' ? 'A' : c.status === 'deleted' ? 'D' : 'M'}
+                                                        </span>
+                                                        <span className="text-[--text-muted] truncate">{c.filepath}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                )}
+
                 {/* Editor Area */}
                 <div className="flex-1 flex flex-col overflow-hidden">
                     {/* Tabs */}
@@ -818,10 +1121,10 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                         <div className="flex-1 overflow-hidden">
                             {activeTab && activeFileContent !== undefined ? (
                                 <MonacoEditor
-                                    key={activeTab}
                                     height="100%"
                                     language={getLanguage(activeFileName)}
                                     value={activeFileContent}
+                                    path={activeTab}
                                     theme={theme === 'dark' ? 'vs-dark' : 'light'}
                                     onChange={(value) => handleEditorChange(value, activeTab)}
                                     onMount={(editor) => { editorRef.current = editor; }}
@@ -855,7 +1158,7 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                             )}
                         </div>
 
-                        {/* Preview Panel */}
+                        {/* Preview Panel — supports WebContainer dev server URL, static HTML blob, or manual URL */}
                         {previewOpen && (
                             <div className="w-96 border-l border-[--border-color] bg-[--bg-base] flex flex-col shrink-0">
                                 <div className="flex items-center justify-between px-2 py-1 bg-surface border-b border-[--border-color]">
@@ -863,8 +1166,23 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                                         {previewUrl ? `Preview — ${previewUrl}` : 'Preview'}
                                     </span>
                                     <div className="flex items-center gap-0.5">
+                                        {/* Preview current HTML file as blob */}
+                                        {activeFileName.endsWith('.html') && (
+                                            <button
+                                                onClick={() => {
+                                                    const content = activeTab ? fileContents.get(activeTab) : undefined;
+                                                    if (content) {
+                                                        const blob = new Blob([content], { type: 'text/html' });
+                                                        setPreviewUrl(URL.createObjectURL(blob));
+                                                    }
+                                                }}
+                                                className="p-0.5 hover:bg-overlay" title="Preview current HTML"
+                                            >
+                                                <VscEye size={12} className="text-pastel-green" />
+                                            </button>
+                                        )}
                                         {previewUrl && (
-                                            <button onClick={() => setPreviewUrl(previewUrl)} className="p-0.5 hover:bg-overlay" title="Refresh">
+                                            <button onClick={() => setPreviewUrl(previewUrl + (previewUrl.includes('?') ? '&' : '?') + '_t=' + Date.now())} className="p-0.5 hover:bg-overlay" title="Refresh">
                                                 <VscRefresh size={12} className="text-[--text-muted]" />
                                             </button>
                                         )}
@@ -878,14 +1196,18 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                                         src={previewUrl}
                                         className="flex-1 w-full border-0 bg-white"
                                         title="Live Preview"
-                                        sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                                        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
                                     />
                                 ) : (
                                     <div className="flex-1 flex items-center justify-center text-[--text-muted]">
-                                        <div className="text-center space-y-2 p-4">
-                                            <IoRocketOutline size={24} className="mx-auto" />
-                                            <div className="text-xs">Run a dev server to see live preview</div>
-                                            <div className="text-[10px] opacity-60">e.g. npm run dev</div>
+                                        <div className="text-center space-y-3 p-4">
+                                            <IoRocketOutline size={24} className="mx-auto opacity-50" />
+                                            <div className="text-xs font-medium">Live Preview</div>
+                                            <div className="text-[10px] opacity-60 space-y-1">
+                                                <p>Open an .html file and click the preview button</p>
+                                                <p>Or run a dev server in the terminal</p>
+                                                <p className="text-pastel-teal">WebContainer preview auto-attaches</p>
+                                            </div>
                                         </div>
                                     </div>
                                 )}
@@ -893,49 +1215,99 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                         )}
                     </div>
 
-                    {/* Terminal */}
-                    {terminalOpen && !focusMode && (
-                        <div className="h-44 border-t border-[--border-color] shrink-0">
-                            <div className="flex items-center justify-between px-2 py-1 bg-surface border-b border-[--border-color]">
-                                <span className="text-[10px] text-[--text-muted] flex items-center gap-1">
-                                    <VscTerminal size={11} /> Terminal
-                                </span>
-                                <button onClick={() => setTerminalOpen(false)} className="p-0.5 hover:bg-overlay">
-                                    <VscClose size={12} className="text-[--text-muted]" />
-                                </button>
-                            </div>
-                            <div className="h-[calc(100%-24px)]">
-                                <TerminalPanel />
-                            </div>
-                        </div>
-                    )}
+                    {/* Bottom Panels: Terminal + Output share a fixed container to prevent overflow */}
+                    {(terminalOpen || outputOpen) && !focusMode && (
+                        <div className="flex flex-col border-t border-[--border-color] shrink-0" style={{ height: terminalOpen && outputOpen ? '50%' : '40%', maxHeight: '50%', minHeight: 120 }}>
+                            {/* Terminal */}
+                            {terminalOpen && (
+                                <div className={`flex flex-col ${outputOpen ? 'flex-1 min-h-0 border-b border-[--border-color]' : 'flex-1 min-h-0'}`}>
+                                    <div className="flex items-center justify-between px-2 py-1 bg-surface border-b border-[--border-color] shrink-0">
+                                        <div className="flex items-center gap-1">
+                                            <VscTerminal size={11} className="text-[--text-muted]" />
+                                            <button
+                                                onClick={() => setTerminalMode('linux')}
+                                                className={`px-1.5 py-0.5 text-[10px] rounded ${terminalMode === 'linux' ? 'bg-overlay text-[--text-color]' : 'text-[--text-muted] hover:text-[--text-color]'}`}
+                                            >Linux</button>
+                                            <button
+                                                onClick={() => setTerminalMode('node')}
+                                                className={`px-1.5 py-0.5 text-[10px] rounded ${terminalMode === 'node' ? 'bg-overlay text-pastel-green' : 'text-[--text-muted] hover:text-[--text-color]'}`}
+                                            >Node</button>
+                                        </div>
+                                        <button onClick={() => setTerminalOpen(false)} className="p-0.5 hover:bg-overlay">
+                                            <VscClose size={12} className="text-[--text-muted]" />
+                                        </button>
+                                    </div>
+                                    <div className="flex-1 min-h-0">
+                                        <TerminalPanel
+                                            mode={terminalMode}
+                                            files={terminalMode === 'node' ? Object.fromEntries(
+                                                currentFiles.filter(f => !f.isDirectory).map(f => [f.path, f.content])
+                                            ) : undefined}
+                                            onServerReady={(url) => { setPreviewUrl(url); setPreviewOpen(true); }}
+                                        />
+                                    </div>
+                                </div>
+                            )}
 
-                    {/* Output Panel */}
-                    {outputOpen && !focusMode && (
-                        <div className="h-40 border-t border-[--border-color] shrink-0 flex flex-col">
-                            <div className="h-8 flex items-center px-3 bg-surface border-b border-[--border-color] gap-4 shrink-0">
-                                <button className="text-xs text-[--text-color] font-medium border-b-2 border-accent py-1">Output</button>
-                                <div className="flex-1" />
-                                <button onClick={() => setOutputLines([])} className="text-[--text-muted] hover:text-[--text-color] p-1 hover:bg-overlay">
-                                    <IoTrashOutline size={14} />
-                                </button>
-                                <button onClick={() => setOutputOpen(false)} className="text-[--text-muted] hover:text-[--text-color] p-1 hover:bg-overlay">
-                                    <VscClose size={14} />
-                                </button>
-                            </div>
-                            <pre ref={outputRef} className="flex-1 p-3 text-xs font-mono overflow-auto whitespace-pre-wrap bg-[--bg-base]">
-                                {outputLines.length === 0 ? (
-                                    <span className="text-[--text-muted] opacity-50">Run your code to see output here...</span>
-                                ) : (
-                                    outputLines.map((line, i) => (
-                                        <div key={i} className={
-                                            line.type === 'stderr' ? 'text-pastel-red' :
-                                            line.type === 'info' ? 'text-accent' :
-                                            'text-[--text-color]'
-                                        }>{line.text}</div>
-                                    ))
-                                )}
-                            </pre>
+                            {/* Output Panel */}
+                            {outputOpen && (
+                                <div className={`flex flex-col ${terminalOpen ? 'flex-1 min-h-0' : 'flex-1 min-h-0'}`}>
+                                    <div className="h-7 flex items-center px-3 bg-surface border-b border-[--border-color] gap-4 shrink-0">
+                                        <button className="text-[10px] text-[--text-color] font-medium border-b border-accent py-0.5">Output</button>
+                                        <div className="flex-1" />
+                                        <button onClick={() => setOutputLines([])} className="text-[--text-muted] hover:text-[--text-color] p-0.5 hover:bg-overlay">
+                                            <IoTrashOutline size={12} />
+                                        </button>
+                                        <button onClick={() => setOutputOpen(false)} className="text-[--text-muted] hover:text-[--text-color] p-0.5 hover:bg-overlay">
+                                            <VscClose size={12} />
+                                        </button>
+                                    </div>
+                                    {(() => {
+                                        const OUTPUT_LINE_HEIGHT = 16;
+                                        const OUTPUT_BUFFER = 10;
+                                        return (
+                                            <div
+                                                ref={outputContainerRef}
+                                                className="flex-1 min-h-0 overflow-auto bg-[--bg-base]"
+                                                onScroll={(e) => setOutputScrollTop((e.target as HTMLDivElement).scrollTop)}
+                                            >
+                                                {outputLines.length === 0 ? (
+                                                    <div className="p-3 text-xs font-mono text-[--text-muted] opacity-50">
+                                                        Run your code to see output here...
+                                                    </div>
+                                                ) : (() => {
+                                                    const containerHeight = outputContainerRef.current?.clientHeight || 300;
+                                                    const totalHeight = outputLines.length * OUTPUT_LINE_HEIGHT;
+                                                    const startIdx = Math.max(0, Math.floor(outputScrollTop / OUTPUT_LINE_HEIGHT) - OUTPUT_BUFFER);
+                                                    const endIdx = Math.min(outputLines.length, Math.ceil((outputScrollTop + containerHeight) / OUTPUT_LINE_HEIGHT) + OUTPUT_BUFFER);
+                                                    const visibleLines = outputLines.slice(startIdx, endIdx);
+
+                                                    return (
+                                                        <div style={{ height: totalHeight, position: 'relative' }}>
+                                                            <div
+                                                                style={{ position: 'absolute', top: startIdx * OUTPUT_LINE_HEIGHT, left: 0, right: 0 }}
+                                                                className="p-3 text-xs font-mono whitespace-pre-wrap"
+                                                            >
+                                                                {visibleLines.map((line, i) => (
+                                                                    <div
+                                                                        key={startIdx + i}
+                                                                        style={{ height: OUTPUT_LINE_HEIGHT }}
+                                                                        className={
+                                                                            line.type === 'stderr' ? 'text-pastel-red' :
+                                                                            line.type === 'info' ? 'text-accent' :
+                                                                            'text-[--text-color]'
+                                                                        }
+                                                                    >{line.text}</div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })()}
+                                            </div>
+                                        );
+                                    })()}
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>

@@ -1,5 +1,6 @@
 'use client';
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import JSZip from 'jszip';
 import {
     IoCloseOutline, IoFolderOutline, IoDocumentTextOutline, IoAppsOutline,
     IoGridOutline, IoListOutline, IoChevronBack, IoChevronForward,
@@ -23,6 +24,7 @@ import FileModal from '../ui/FileModal';
 import { SelectionArea } from '../ui/SelectionArea';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../AuthContext';
+import { useCheerpXSafe, LinuxFileEntry } from '../CheerpXContext';
 
 export default function Explorer({ windowId, initialpath, istrash, openPath, selectItem, isDesktopBackend }: { windowId?: string, initialpath?: string[], istrash?: boolean, openPath?: string, selectItem?: string, isDesktopBackend?: boolean }) {
     const [selected, setselected] = useState(istrash ? 'Trash' : 'Desktop');
@@ -34,6 +36,10 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
     const { files, deleteItem, createFolder, createFile, uploadFile, moveToTrash, emptyTrash, restoreFromTrash, moveItem, copyItem, cutItem, pasteItem, clipboard, renameItem, isLoading, currentUserDesktopId, currentUserDocsId, currentUserDownloadsId, currentUserTrashId, isLocked } = useFileSystem();
     const { user, isGuest } = useAuth();
     const { launchApp } = useExternalApps();
+
+    const cheerpx = useCheerpXSafe();
+    const [linuxfiles, setlinuxfiles] = useState<filesystemitem[]>([]);
+    const [linuxloading, setlinuxloading] = useState(false);
 
     const username = user?.username || 'guest';
     const userhome = isGuest ? 'Guest' : (username.charAt(0).toUpperCase() + username.slice(1));
@@ -64,6 +70,14 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                 { name: 'System', icon: IoAppsOutline, path: ['System'] },
                 { name: 'Network', icon: IoGlobeOutline, path: ['Network'] },
             ]
+        },
+        {
+            title: 'Linux',
+            items: [
+                { name: 'Root (/)', icon: IoFolderOutline, path: ['Linux', '/'] },
+                { name: 'Home', icon: IoFolderOutline, path: ['Linux', '/home/user'] },
+                { name: 'Shared', icon: IoFolderOutline, path: ['Linux', '/shared'] },
+            ]
         }
     ], [userhome, isGuest]);
 
@@ -82,6 +96,38 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
     const initialPathFromOpen = openPath ? getPathFromId(openPath) : null;
     const [currentpath, setcurrentpath] = useState<string[]>(initialPathFromOpen || initialpath || ['System', 'Users', userhome, 'Desktop']);
     const [searchquery, setsearchquery] = useState("");
+
+    const islinuxpath = currentpath[0] === 'Linux';
+    const linuxdirpath = islinuxpath ? (currentpath.length > 1 ? currentpath.slice(1).join('/').replace(/\/\//g, '/') : '/') : '';
+
+    useEffect(() => {
+        if (!islinuxpath || !cheerpx?.listDir || !cheerpx?.isBooted) return;
+        let cancelled = false;
+        setlinuxloading(true);
+        const fetchdir = async () => {
+            try {
+                const entries: LinuxFileEntry[] = await cheerpx.listDir(linuxdirpath || '/');
+                if (cancelled) return;
+                const mapped: filesystemitem[] = entries.map((e: LinuxFileEntry) => ({
+                    id: `linux-${e.path}`,
+                    name: e.name,
+                    parent: null,
+                    mimetype: e.isDirectory ? 'inode/directory' : 'application/octet-stream',
+                    date: e.modifiedAt ? new Date(e.modifiedAt * 1000).toLocaleDateString() : '',
+                    size: e.isDirectory ? '--' : String(e.size),
+                    isSystem: false,
+                    isReadOnly: false,
+                    owner: 'linux',
+                }));
+                setlinuxfiles(mapped);
+            } catch {
+                setlinuxfiles([]);
+            }
+            setlinuxloading(false);
+        };
+        fetchdir();
+        return () => { cancelled = true; };
+    }, [islinuxpath, linuxdirpath, cheerpx?.isBooted]);
 
     const [isnarrow, setisnarrow] = useState(false);
     const containerref = useRef<HTMLDivElement>(null);
@@ -228,7 +274,12 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
     const getcurrentfiles = (): filesystemitem[] => {
         let result: filesystemitem[] = [];
 
-        if (isTrashView) {
+        if (islinuxpath) {
+            result = [...linuxfiles];
+            if (searchquery) {
+                result = result.filter(f => f.name.toLowerCase().includes(searchquery.toLowerCase()));
+            }
+        } else if (isTrashView) {
             result = files.filter(f => f.parent === currentUserTrashId && f.id !== currentUserTrashId);
         } else {
             let currentparentid = 'root';
@@ -286,7 +337,12 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
 
     const handlefileopen = (file: filesystemitem) => {
         if (file.mimetype === 'inode/directory') {
-            setcurrentpath([...currentpath, file.name]);
+            if (islinuxpath && file.id.startsWith('linux-')) {
+                const linuxpath = file.id.replace('linux-', '');
+                setcurrentpath(['Linux', linuxpath]);
+            } else {
+                setcurrentpath([...currentpath, file.name]);
+            }
             setsearchquery("");
             setSelectedFileIds([]);
         } else if (file.mimetype === 'inode/shortcut') {
@@ -315,6 +371,74 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
         }
         return file.name;
     };
+
+    const extractZipToVfs = useCallback(async (zipFileItem: filesystemitem, parentId: string) => {
+        if (!zipFileItem.content) return;
+        try {
+            let arrayBuf: ArrayBuffer;
+            if (zipFileItem.content.startsWith('data:')) {
+                const resp = await fetch(zipFileItem.content);
+                arrayBuf = await resp.arrayBuffer();
+            } else {
+                const enc = new TextEncoder();
+                arrayBuf = enc.encode(zipFileItem.content).buffer as ArrayBuffer;
+            }
+            const zip = await JSZip.loadAsync(arrayBuf);
+            const folderMap: Record<string, string> = { '': parentId };
+
+            const entries = Object.entries(zip.files).sort((a, b) => a[0].localeCompare(b[0]));
+            for (const [path, entry] of entries) {
+                const parts = path.replace(/\/$/, '').split('/');
+                const name = parts[parts.length - 1];
+                if (!name) continue;
+                const parentPath = parts.slice(0, -1).join('/');
+                const parentFolderId = folderMap[parentPath] || parentId;
+
+                if (entry.dir) {
+                    const folderId = `folder-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+                    await createFolder(name, parentFolderId);
+                    const created = files.find(f => f.name === name && f.parent === parentFolderId);
+                    folderMap[path.replace(/\/$/, '')] = created?.id || folderId;
+                } else {
+                    const blob = await entry.async('blob');
+                    const file = new File([blob], name);
+                    await uploadFile(file, parentFolderId);
+                }
+            }
+        } catch {
+        }
+    }, [createFolder, uploadFile, files]);
+
+    const compressToZip = useCallback(async (itemIds: string[]) => {
+        const zip = new JSZip();
+
+        const addToZip = (folder: JSZip, itemId: string) => {
+            const item = files.find(f => f.id === itemId);
+            if (!item) return;
+            if (item.mimetype === 'inode/directory' || item.mimetype === 'folder') {
+                const subFolder = folder.folder(item.name);
+                if (!subFolder) return;
+                files.filter(f => f.parent === itemId && !f.isTrash).forEach(child => addToZip(subFolder, child.id));
+            } else if (item.content) {
+                if (item.content.startsWith('data:')) {
+                    const base64 = item.content.split(',')[1];
+                    zip.file(item.name, base64, { base64: true });
+                } else {
+                    folder.file(item.name, item.content);
+                }
+            }
+        };
+
+        itemIds.forEach(id => addToZip(zip, id));
+        const blob = await zip.generateAsync({ type: 'blob' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const firstName = files.find(f => f.id === itemIds[0])?.name || 'archive';
+        a.href = url;
+        a.download = itemIds.length === 1 ? `${firstName}.zip` : 'archive.zip';
+        a.click();
+        URL.revokeObjectURL(url);
+    }, [files]);
 
     const [fileModal, setFileModal] = useState<{ isOpen: boolean, type: 'create-folder' | 'create-file' | 'rename', initialValue?: string }>({ isOpen: false, type: 'create-folder' });
 
@@ -511,6 +635,23 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
             baseItems.push({ label: isMulti ? `Copy ${targets.length} Items` : 'Copy', action: () => copyItem(targets) });
             baseItems.push({ label: isMulti ? `Cut ${targets.length} Items` : 'Cut', action: () => cutItem(targets), disabled: hasReadOnly });
 
+            baseItems.push({ separator: true, label: '' });
+
+            if (!isMulti && activeFileItem.name.match(/\.(zip|jar|war)$/i) && activeFileItem.content) {
+                baseItems.push({
+                    label: 'Extract Here',
+                    action: () => {
+                        const pid = getcurrentparentid();
+                        extractZipToVfs(activeFileItem, pid);
+                    }
+                });
+            }
+
+            baseItems.push({
+                label: isMulti ? `Compress ${targets.length} Items` : 'Compress',
+                action: () => compressToZip(targets)
+            });
+
             return [
                 ...baseItems,
                 { separator: true, label: '' },
@@ -523,6 +664,37 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                 { label: 'New Folder', action: () => setFileModal({ isOpen: true, type: 'create-folder', initialValue: '' }), disabled: isReadOnlyDir },
                 { label: 'New File', action: () => setFileModal({ isOpen: true, type: 'create-file', initialValue: '' }), disabled: isReadOnlyDir },
                 { label: 'Upload File', action: () => fileinputref.current?.click(), disabled: isReadOnlyDir },
+                { separator: true, label: '' },
+                {
+                    label: 'Upload & Extract Zip',
+                    action: () => {
+                        const input = document.createElement('input');
+                        input.type = 'file';
+                        input.accept = '.zip';
+                        input.onchange = async (ev: any) => {
+                            const f = ev.target?.files?.[0];
+                            if (!f) return;
+                            const arrayBuf = await f.arrayBuffer();
+                            const zip = await JSZip.loadAsync(arrayBuf);
+                            const pid = getcurrentparentid();
+                            const entries = Object.entries(zip.files).sort((a, b) => a[0].localeCompare(b[0]));
+                            for (const [path, entry] of entries) {
+                                const parts = path.replace(/\/$/, '').split('/');
+                                const name = parts[parts.length - 1];
+                                if (!name) continue;
+                                if (entry.dir) {
+                                    await createFolder(name, pid);
+                                } else {
+                                    const blob = await entry.async('blob');
+                                    const file = new File([blob], name);
+                                    await uploadFile(file, pid);
+                                }
+                            }
+                        };
+                        input.click();
+                    },
+                    disabled: isReadOnlyDir
+                },
                 { separator: true, label: '' },
                 {
                     label: 'Paste', action: () => {
@@ -1019,124 +1191,124 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                             }}
                         />
                         {viewmode === 'grid' ? (
-                        <div className="grid grid-cols-2 min-[450px]:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 content-start">
-                            {filesList.map((file, i) => {
-                                const isSelected = selectedFileIds.includes(file.id);
-                                return (
-                                    <div
-                                        key={i}
-                                        data-id={file.id}
-                                        className={`explorer-item group flex flex-col items-center gap-2 p-2 transition-colors cursor-default
+                            <div className="grid grid-cols-2 min-[450px]:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 content-start">
+                                {filesList.map((file, i) => {
+                                    const isSelected = selectedFileIds.includes(file.id);
+                                    return (
+                                        <div
+                                            key={i}
+                                            data-id={file.id}
+                                            className={`explorer-item group flex flex-col items-center gap-2 p-2 transition-colors cursor-default
                                         ${isSelected
-                                                ? 'bg-overlay'
-                                                : 'hover:bg-overlay'}`}
-                                        onDoubleClick={() => handlefileopen(file)}
-                                        onContextMenu={(e) => {
-                                            e.stopPropagation();
-                                            handleContextMenu(e, file.id);
-                                            if (!isSelected) {
-                                                setSelectedFileIds([file.id]);
-                                            }
-                                        }}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            if (e.shiftKey) {
-                                                if (selectedFileIds.includes(file.id)) {
-                                                    setSelectedFileIds(prev => prev.filter(id => id !== file.id));
-                                                } else {
-                                                    setSelectedFileIds(prev => [...prev, file.id]);
+                                                    ? 'bg-overlay'
+                                                    : 'hover:bg-overlay'}`}
+                                            onDoubleClick={() => handlefileopen(file)}
+                                            onContextMenu={(e) => {
+                                                e.stopPropagation();
+                                                handleContextMenu(e, file.id);
+                                                if (!isSelected) {
+                                                    setSelectedFileIds([file.id]);
                                                 }
-                                            } else {
-                                                setSelectedFileIds([file.id]);
-                                            }
-                                        }}
-                                        draggable={!isTrashView}
-                                        onDragStart={(e) => handleDragStart(e, file.id)}
-                                        onDragOver={(e) => {
-                                            if (file.mimetype === 'inode/directory' && !isTrashView) {
-                                                e.preventDefault();
+                                            }}
+                                            onClick={(e) => {
                                                 e.stopPropagation();
-                                            }
-                                        }}
-                                        onDrop={(e) => {
-                                            if (file.mimetype === 'inode/directory' && !isTrashView) {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                handleDrop(e, file.id);
-                                            }
-                                        }}
-                                    >
-                                        <div className="w-12 h-12 sm:w-16 sm:h-16 relative flex items-center justify-center">
-                                            {getFileIcon(file.mimetype, file.name, file.icon, file.id, file.content || file.link)}
-                                        </div>
-                                        <span className={`text-[12px] text-center leading-tight px-2 py-0.5 break-words w-full line-clamp-2
-                                        ${isSelected ? 'bg-accent text-[--bg-base] font-medium' : 'text-[--text-muted]'}`}>
-                                            {getDisplayName(file)}
-                                        </span>
-                                        {isLocked(file.id) && (
-                                            <div className="absolute top-1 right-1 bg-surface p-0.5">
-                                                <IoLockClosed className="text-[8px] text-[--text-muted]" />
-                                            </div>
-                                        )}
-                                    </div>
-                                )
-                            })}
-                        </div>
-                        ) : (
-                        /* List view */
-                        <div className="w-full">
-                            {/* Sortable column headers */}
-                            <div className="flex items-center border-b border-[--border-color] text-[10px] uppercase tracking-wider text-[--text-muted] font-semibold sticky top-0 bg-[--bg-base] z-[5]">
-                                <button onClick={() => { if (sortby === 'name') setsortasc(!sortasc); else { setsortby('name'); setsortasc(true); }}} className="flex items-center gap-1 flex-1 min-w-0 px-2 py-2 hover:bg-overlay">
-                                    Name {sortby === 'name' && (sortasc ? <IoChevronUp size={10}/> : <IoChevronDown size={10}/>)}
-                                </button>
-                                <button onClick={() => { if (sortby === 'date') setsortasc(!sortasc); else { setsortby('date'); setsortasc(true); }}} className="flex items-center gap-1 w-32 px-2 py-2 hover:bg-overlay shrink-0 hidden sm:flex">
-                                    Date Modified {sortby === 'date' && (sortasc ? <IoChevronUp size={10}/> : <IoChevronDown size={10}/>)}
-                                </button>
-                                <button onClick={() => { if (sortby === 'size') setsortasc(!sortasc); else { setsortby('size'); setsortasc(true); }}} className="flex items-center gap-1 w-20 px-2 py-2 hover:bg-overlay shrink-0">
-                                    Size {sortby === 'size' && (sortasc ? <IoChevronUp size={10}/> : <IoChevronDown size={10}/>)}
-                                </button>
-                                <button onClick={() => { if (sortby === 'type') setsortasc(!sortasc); else { setsortby('type'); setsortasc(true); }}} className="flex items-center gap-1 w-24 px-2 py-2 hover:bg-overlay shrink-0 hidden md:flex">
-                                    Kind {sortby === 'type' && (sortasc ? <IoChevronUp size={10}/> : <IoChevronDown size={10}/>)}
-                                </button>
-                            </div>
-                            {/* File rows */}
-                            {filesList.map((file, i) => {
-                                const isSelected = selectedFileIds.includes(file.id);
-                                return (
-                                    <div
-                                        key={i}
-                                        data-id={file.id}
-                                        className={`explorer-item flex items-center border-b border-[--border-color]/50 cursor-default transition-colors ${isSelected ? 'bg-accent/10' : 'hover:bg-overlay'}`}
-                                        onDoubleClick={() => handlefileopen(file)}
-                                        onContextMenu={(e) => { e.stopPropagation(); handleContextMenu(e, file.id); if (!isSelected) setSelectedFileIds([file.id]); }}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            if (e.shiftKey) {
-                                                setSelectedFileIds(prev => prev.includes(file.id) ? prev.filter(id => id !== file.id) : [...prev, file.id]);
-                                            } else { setSelectedFileIds([file.id]); }
-                                        }}
-                                        draggable={!isTrashView}
-                                        onDragStart={(e) => handleDragStart(e, file.id)}
-                                        onDragOver={(e) => { if (file.mimetype === 'inode/directory' && !isTrashView) { e.preventDefault(); e.stopPropagation(); }}}
-                                        onDrop={(e) => { if (file.mimetype === 'inode/directory' && !isTrashView) { e.preventDefault(); e.stopPropagation(); handleDrop(e, file.id); }}}
-                                    >
-                                        <div className="flex items-center gap-2.5 flex-1 min-w-0 px-2 py-1.5">
-                                            <div className="w-5 h-5 relative shrink-0 flex items-center justify-center">
+                                                if (e.shiftKey) {
+                                                    if (selectedFileIds.includes(file.id)) {
+                                                        setSelectedFileIds(prev => prev.filter(id => id !== file.id));
+                                                    } else {
+                                                        setSelectedFileIds(prev => [...prev, file.id]);
+                                                    }
+                                                } else {
+                                                    setSelectedFileIds([file.id]);
+                                                }
+                                            }}
+                                            draggable={!isTrashView}
+                                            onDragStart={(e) => handleDragStart(e, file.id)}
+                                            onDragOver={(e) => {
+                                                if (file.mimetype === 'inode/directory' && !isTrashView) {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                }
+                                            }}
+                                            onDrop={(e) => {
+                                                if (file.mimetype === 'inode/directory' && !isTrashView) {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    handleDrop(e, file.id);
+                                                }
+                                            }}
+                                        >
+                                            <div className="w-12 h-12 sm:w-16 sm:h-16 relative flex items-center justify-center">
                                                 {getFileIcon(file.mimetype, file.name, file.icon, file.id, file.content || file.link)}
                                             </div>
-                                            <span className={`text-[12px] truncate ${isSelected ? 'text-accent font-medium' : 'text-[--text-color]'}`}>
+                                            <span className={`text-[12px] text-center leading-tight px-2 py-0.5 break-words w-full line-clamp-2
+                                        ${isSelected ? 'bg-accent text-[--bg-base] font-medium' : 'text-[--text-muted]'}`}>
                                                 {getDisplayName(file)}
                                             </span>
-                                            {isLocked(file.id) && <IoLockClosed className="text-[8px] text-[--text-muted] shrink-0" />}
+                                            {isLocked(file.id) && (
+                                                <div className="absolute top-1 right-1 bg-surface p-0.5">
+                                                    <IoLockClosed className="text-[8px] text-[--text-muted]" />
+                                                </div>
+                                            )}
                                         </div>
-                                        <span className="w-32 px-2 text-[11px] text-[--text-muted] truncate shrink-0 hidden sm:block">{file.date || '--'}</span>
-                                        <span className="w-20 px-2 text-[11px] text-[--text-muted] shrink-0">{file.mimetype === 'inode/directory' ? '--' : (file.size || '--')}</span>
-                                        <span className="w-24 px-2 text-[11px] text-[--text-muted] truncate shrink-0 hidden md:block">{file.mimetype === 'inode/directory' ? 'Folder' : (file.mimetype?.split('/').pop() || '--')}</span>
-                                    </div>
-                                );
-                            })}
-                        </div>
+                                    )
+                                })}
+                            </div>
+                        ) : (
+                            /* List view */
+                            <div className="w-full">
+                                {/* Sortable column headers */}
+                                <div className="flex items-center border-b border-[--border-color] text-[10px] uppercase tracking-wider text-[--text-muted] font-semibold sticky top-0 bg-[--bg-base] z-[5]">
+                                    <button onClick={() => { if (sortby === 'name') setsortasc(!sortasc); else { setsortby('name'); setsortasc(true); } }} className="flex items-center gap-1 flex-1 min-w-0 px-2 py-2 hover:bg-overlay">
+                                        Name {sortby === 'name' && (sortasc ? <IoChevronUp size={10} /> : <IoChevronDown size={10} />)}
+                                    </button>
+                                    <button onClick={() => { if (sortby === 'date') setsortasc(!sortasc); else { setsortby('date'); setsortasc(true); } }} className="flex items-center gap-1 w-32 px-2 py-2 hover:bg-overlay shrink-0 hidden sm:flex">
+                                        Date Modified {sortby === 'date' && (sortasc ? <IoChevronUp size={10} /> : <IoChevronDown size={10} />)}
+                                    </button>
+                                    <button onClick={() => { if (sortby === 'size') setsortasc(!sortasc); else { setsortby('size'); setsortasc(true); } }} className="flex items-center gap-1 w-20 px-2 py-2 hover:bg-overlay shrink-0">
+                                        Size {sortby === 'size' && (sortasc ? <IoChevronUp size={10} /> : <IoChevronDown size={10} />)}
+                                    </button>
+                                    <button onClick={() => { if (sortby === 'type') setsortasc(!sortasc); else { setsortby('type'); setsortasc(true); } }} className="flex items-center gap-1 w-24 px-2 py-2 hover:bg-overlay shrink-0 hidden md:flex">
+                                        Kind {sortby === 'type' && (sortasc ? <IoChevronUp size={10} /> : <IoChevronDown size={10} />)}
+                                    </button>
+                                </div>
+                                {/* File rows */}
+                                {filesList.map((file, i) => {
+                                    const isSelected = selectedFileIds.includes(file.id);
+                                    return (
+                                        <div
+                                            key={i}
+                                            data-id={file.id}
+                                            className={`explorer-item flex items-center border-b border-[--border-color]/50 cursor-default transition-colors ${isSelected ? 'bg-accent/10' : 'hover:bg-overlay'}`}
+                                            onDoubleClick={() => handlefileopen(file)}
+                                            onContextMenu={(e) => { e.stopPropagation(); handleContextMenu(e, file.id); if (!isSelected) setSelectedFileIds([file.id]); }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (e.shiftKey) {
+                                                    setSelectedFileIds(prev => prev.includes(file.id) ? prev.filter(id => id !== file.id) : [...prev, file.id]);
+                                                } else { setSelectedFileIds([file.id]); }
+                                            }}
+                                            draggable={!isTrashView}
+                                            onDragStart={(e) => handleDragStart(e, file.id)}
+                                            onDragOver={(e) => { if (file.mimetype === 'inode/directory' && !isTrashView) { e.preventDefault(); e.stopPropagation(); } }}
+                                            onDrop={(e) => { if (file.mimetype === 'inode/directory' && !isTrashView) { e.preventDefault(); e.stopPropagation(); handleDrop(e, file.id); } }}
+                                        >
+                                            <div className="flex items-center gap-2.5 flex-1 min-w-0 px-2 py-1.5">
+                                                <div className="w-5 h-5 relative shrink-0 flex items-center justify-center">
+                                                    {getFileIcon(file.mimetype, file.name, file.icon, file.id, file.content || file.link)}
+                                                </div>
+                                                <span className={`text-[12px] truncate ${isSelected ? 'text-accent font-medium' : 'text-[--text-color]'}`}>
+                                                    {getDisplayName(file)}
+                                                </span>
+                                                {isLocked(file.id) && <IoLockClosed className="text-[8px] text-[--text-muted] shrink-0" />}
+                                            </div>
+                                            <span className="w-32 px-2 text-[11px] text-[--text-muted] truncate shrink-0 hidden sm:block">{file.date || '--'}</span>
+                                            <span className="w-20 px-2 text-[11px] text-[--text-muted] shrink-0">{file.mimetype === 'inode/directory' ? '--' : (file.size || '--')}</span>
+                                            <span className="w-24 px-2 text-[11px] text-[--text-muted] truncate shrink-0 hidden md:block">{file.mimetype === 'inode/directory' ? 'Folder' : (file.mimetype?.split('/').pop() || '--')}</span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         )}
                         {filesList.length === 0 && (
                             <div className="flex flex-col items-center justify-center h-full text-[--text-muted]">
