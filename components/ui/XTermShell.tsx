@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import '@xterm/xterm/css/xterm.css';
 import { useCheerpX } from '../CheerpXContext';
 
@@ -41,7 +41,7 @@ function NetworkBadge() {
         return (
             <button
                 onClick={connectNetwork}
-                className="px-2 py-0.5 text-[10px] rounded bg-[#363a4f] text-[#8bd5ca] hover:bg-[#494d64] transition-colors border border-[#494d64]"
+                className="px-2 py-0.5 text-[10px] rounded bg-[--bg-overlay] text-pastel-teal hover:bg-[--border-color] transition-colors border border-[--border-color]"
             >
                 Connect to Internet
             </button>
@@ -49,7 +49,7 @@ function NetworkBadge() {
     }
     if (networkState === 'connecting') {
         return (
-            <span className="px-2 py-0.5 text-[10px] rounded bg-[#363a4f] text-[#eed49f] border border-[#494d64]">
+            <span className="px-2 py-0.5 text-[10px] rounded bg-[--bg-overlay] text-pastel-yellow border border-[--border-color]">
                 Connecting...
             </span>
         );
@@ -58,7 +58,7 @@ function NetworkBadge() {
         return (
             <button
                 onClick={() => networkLoginUrl && window.open(networkLoginUrl, '_blank')}
-                className="px-2 py-0.5 text-[10px] rounded bg-[#363a4f] text-[#eed49f] hover:bg-[#494d64] transition-colors border border-[#494d64] animate-pulse"
+                className="px-2 py-0.5 text-[10px] rounded bg-[--bg-overlay] text-pastel-yellow hover:bg-[--border-color] transition-colors border border-[--border-color] animate-pulse"
             >
                 Open Tailscale Login
             </button>
@@ -66,12 +66,65 @@ function NetworkBadge() {
     }
     if (networkState === 'connected') {
         return (
-            <span className="px-2 py-0.5 text-[10px] rounded bg-[#363a4f] text-[#a6da95] border border-[#494d64]">
+            <span className="px-2 py-0.5 text-[10px] rounded bg-[--bg-overlay] text-pastel-green border border-[--border-color]">
                 Online
             </span>
         );
     }
     return null;
+}
+
+function TmuxSessionBar({ termhandleref, loaded }: { termhandleref: React.RefObject<any>, loaded: boolean }) {
+    const [sessions, setsessions] = useState<string[]>(['main']);
+    const [activesession, setactivesession] = useState(0);
+
+    const sendtmuxkey = useCallback((cmd: string) => {
+        const handle = termhandleref.current;
+        if (!handle?.sendInput) return;
+        handle.sendInput('\x02');
+        setTimeout(() => {
+            handle.sendInput(cmd);
+        }, 50);
+    }, [termhandleref]);
+
+    const addsession = useCallback(() => {
+        const name = `s${sessions.length}`;
+        setsessions(prev => [...prev, name]);
+        setactivesession(sessions.length);
+        sendtmuxkey('c');
+    }, [sessions, sendtmuxkey]);
+
+    const switchsession = useCallback((index: number) => {
+        if (index === activesession) return;
+        setactivesession(index);
+        sendtmuxkey(String(index));
+    }, [activesession, sendtmuxkey]);
+
+    if (!loaded) return null;
+
+    return (
+        <div className="flex items-center gap-1 px-2 py-1 bg-[--bg-surface] border-b border-[--border-color] text-[11px] font-mono">
+            {sessions.map((name, i) => (
+                <button
+                    key={i}
+                    onClick={() => switchsession(i)}
+                    className={`px-2 py-0.5 rounded transition-all cursor-pointer border-none ${
+                        i === activesession
+                            ? 'bg-[--bg-overlay] text-[--text-color]'
+                            : 'bg-transparent text-[--text-muted] hover:text-[--text-color]'
+                    }`}
+                >
+                    {i + 1}: {name}
+                </button>
+            ))}
+            <button
+                onClick={addsession}
+                className="px-1.5 py-0.5 rounded bg-transparent text-pastel-teal border border-[--border-color] cursor-pointer text-[11px] hover:bg-[--bg-overlay] transition-colors"
+            >
+                +
+            </button>
+        </div>
+    );
 }
 
 export default function XTermShell({
@@ -81,6 +134,7 @@ export default function XTermShell({
     const termRef = useRef<HTMLDivElement>(null);
     const fitAddonRef = useRef<any>(null);
     const termInstanceRef = useRef<any>(null);
+    const termHandleRef = useRef<any>(null);
     const [loaded, setLoaded] = useState(false);
 
     const { boot, attachTerminal, runShell, bootError, networkLoginUrl, networkState } = useCheerpX();
@@ -117,10 +171,8 @@ export default function XTermShell({
             fitAddon.fit();
             fitAddonRef.current = fitAddon;
 
-            // Loading indicator
             term.writeln('\x1b[33m  Booting Linux environment...\x1b[0m');
 
-            // Boot CheerpX
             try {
                 await boot(term.cols, term.rows);
             } catch (err: any) {
@@ -135,46 +187,35 @@ export default function XTermShell({
 
             if (!mounted) return;
 
-            // Clear loading text and ensure cursor is at home position
             term.clear();
             term.write('\x1b[H');
 
-            // Re-fit to ensure correct dimensions after clear
             fitAddon.fit();
 
-            // Attach console with correct fitted dimensions
             const handle = attachTerminal(
                 (buf: Uint8Array) => { if (mounted) term.write(buf); },
                 term.cols,
                 term.rows,
             );
             detach = handle.detach;
+            termHandleRef.current = handle;
 
-            // Forward input
             term.onData((str: string) => handle.sendInput(str));
-
-            // Forward resize — re-fit first, then notify CheerpX
             term.onResize((dim: { cols: number; rows: number }) => handle.resize(dim.cols, dim.rows));
 
             setLoaded(true);
             onReady?.();
 
-            // Start interactive shell — blocks forever for the first terminal.
-            // For additional terminals, runShell() returns immediately (shell
-            // is already running as a singleton), so we send a carriage return
-            // to trigger a fresh prompt display in this terminal.
             await runShell();
 
-            // If we reach here, shell was already running from another terminal
             if (mounted) handle.sendInput('\r');
         };
 
         init();
 
-        // Resize observer for fit
         const resizeObs = new ResizeObserver(() => {
             if (fitAddonRef.current) {
-                try { fitAddonRef.current.fit(); } catch { /* ignore */ }
+                try { fitAddonRef.current.fit(); } catch { }
             }
         });
         if (wrapperRef.current) resizeObs.observe(wrapperRef.current);
@@ -185,11 +226,11 @@ export default function XTermShell({
             resizeObs.disconnect();
             if (term) term.dispose();
             termInstanceRef.current = null;
+            termHandleRef.current = null;
         };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // When login URL arrives, write it to the terminal and open in new tab
     useEffect(() => {
         if (networkLoginUrl && termInstanceRef.current && loaded) {
             const t = termInstanceRef.current;
@@ -204,7 +245,6 @@ export default function XTermShell({
         }
     }, [networkLoginUrl, loaded]);
 
-    // Notify when connected
     useEffect(() => {
         if (networkState === 'connected' && termInstanceRef.current && loaded) {
             const t = termInstanceRef.current;
@@ -217,15 +257,16 @@ export default function XTermShell({
     return (
         <div
             ref={wrapperRef}
-            className={`w-full h-full ${className}`}
-            style={{ background: '#1e2030', position: 'relative' }}
+            className={`w-full h-full bg-[--bg-surface] relative flex flex-col ${className}`}
         >
+            <TmuxSessionBar termhandleref={termHandleRef} loaded={loaded} />
+
             <div
                 ref={termRef}
-                className="w-full h-full"
+                className="flex-1 min-h-0"
             />
             {loaded && (
-                <div style={{ position: 'absolute', top: 6, right: 8, zIndex: 10, pointerEvents: 'auto' }}>
+                <div className="absolute top-[30px] right-2 z-10 pointer-events-auto">
                     <NetworkBadge />
                 </div>
             )}

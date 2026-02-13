@@ -10,7 +10,7 @@ import {
     IoGlobeOutline, IoReaderOutline, IoStatsChartOutline,
     IoStorefrontOutline, IoBookOutline, IoHomeOutline, IoTrashOutline,
     IoGridOutline, IoDownloadOutline, IoRocketOutline,
-    IoBulbOutline, IoCheckboxOutline, IoLayersOutline
+    IoBulbOutline, IoCheckboxOutline, IoLayersOutline, IoSchoolOutline
 } from 'react-icons/io5';
 
 interface TintedAppIconProps {
@@ -48,6 +48,10 @@ const appIconMap: Record<string, { icon: IconType; bg: string }> = {
     'hackathonworkspace': { icon: IoLayersOutline, bg: '#8aadf4' },
     'ideaboard': { icon: IoBulbOutline, bg: '#eed49f' },
     'shipchecklist': { icon: IoCheckboxOutline, bg: '#8bd5ca' },
+    'lab-submit': { icon: IoSchoolOutline, bg: '#f5a97f' },
+    'linuxdisplay': { icon: IoTerminalOutline, bg: '#a6da95' },
+    'apiplayground': { icon: IoCodeSlashOutline, bg: '#8bd5ca' },
+    'labmanager': { icon: IoSchoolOutline, bg: '#f5a97f' },
 };
 
 const excludedApps: string[] = [];

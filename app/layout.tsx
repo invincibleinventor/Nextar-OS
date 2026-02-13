@@ -95,6 +95,7 @@ import { ExternalAppsProvider } from '@/components/ExternalAppsContext';
 import { MusicProvider } from '@/components/MusicContext';
 import { ProjectProvider } from '@/components/ProjectContext';
 import { CheerpXProvider } from '@/components/CheerpXContext';
+import { RuntimeProvider } from '@/components/RuntimeContext';
 import PermissionDialog from '@/components/PermissionDialog';
 import Script from 'next/script';
 
@@ -110,8 +111,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             dangerouslySetInnerHTML={{
               __html: `
                 if ('serviceWorker' in navigator) {
-                  // Register COI service worker for CheerpX support (COOP/COEP headers)
-                  navigator.serviceWorker.register('/coi-serviceworker.js').catch(function() {});
+                  // UNREGISTER coi-serviceworker (it breaks CheerpX BYOB streams)
+                  // Next.js headers in next.config.ts already handle COOP/COEP
+                  navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                    for(let registration of registrations) {
+                      if (registration.active && registration.active.scriptURL.includes('coi-serviceworker')) {
+                        console.log('[HackathOS] Unregistering conflicting COI Service Worker');
+                        registration.unregister();
+                      }
+                    }
+                  });
+
+                  // Only register our custom caching SW in production
                   if ('${process.env.NODE_ENV}' !== 'development') {
                     navigator.serviceWorker.register('/sw.js').catch(function() {});
                   }
@@ -142,10 +153,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                                   <ExternalAppsProvider>
                                     <MusicProvider>
                                       <CheerpXProvider>
-                                        <ProjectProvider>
-                                          {children}
-                                          <PermissionDialog />
-                                        </ProjectProvider>
+                                        <RuntimeProvider>
+                                          <ProjectProvider>
+                                            {children}
+                                            <PermissionDialog />
+                                          </ProjectProvider>
+                                        </RuntimeProvider>
                                       </CheerpXProvider>
                                     </MusicProvider>
                                   </ExternalAppsProvider>
