@@ -44,6 +44,7 @@ const appIconMap: Record<string, { icon: IconType; bg: string }> = {
     'systemmonitor': { icon: IoStatsChartOutline, bg: '#f5a97f' },
     'launchpad-item': { icon: IoGridOutline, bg: '#b7bdf8' },
     'trash-folder': { icon: IoTrashOutline, bg: '#6e738d' },
+    'aboutbala': { icon: IoInformationCircleOutline, bg: '#8aadf4' },
     'aboutnextaros': { icon: IoHelpCircleOutline, bg: '#f5bde6' },
     'getinfo': { icon: IoInformationCircleOutline, bg: '#6e738d' },
     'projectdashboard': { icon: IoRocketOutline, bg: '#a6da95' },
@@ -60,7 +61,7 @@ const appIconMap: Record<string, { icon: IconType; bg: string }> = {
     'contacts': { icon: IoPeopleOutline, bg: '#8bd5ca' },
 };
 
-const excludedApps: string[] = [];
+const excludedApps: string[] = ['aboutbala'];
 
 export default function TintedAppIcon({ appId, appName, originalIcon, size = 40, className = '', useFill = true }: TintedAppIconProps) {
     if (excludedApps.includes(appId)) {

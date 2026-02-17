@@ -192,14 +192,14 @@ const Desktop = () => {
     const handleAboutMac = () => setshowaboutmac(true);
     const handleCloseAbout = () => {
       const currentWindows = windowsref.current;
-      const aboutWindow = currentWindows.find((w: any) => w.appname === 'About NextarOS' || w.id?.startsWith('aboutnextaros'));
+      const aboutWindow = currentWindows.find((w: any) => w.appname === 'About Bala' || w.id?.startsWith('aboutbala'));
       if (aboutWindow) {
         updatewindow(aboutWindow.id, { isminimized: true });
       }
     };
     const handleTourEnded = () => {
       const currentWindows = windowsref.current;
-      const aboutWindow = currentWindows.find((w: any) => w.appname === 'About NextarOS' || w.id?.startsWith('aboutnextaros'));
+      const aboutWindow = currentWindows.find((w: any) => w.appname === 'About Bala' || w.id?.startsWith('aboutbala'));
       if (aboutWindow) {
         updatewindow(aboutWindow.id, { isminimized: false });
         setactivewindow(aboutWindow.id);
@@ -405,7 +405,7 @@ const Desktop = () => {
         openSystemItem('welcome', context);
       } else {
         // Prod/deployed: open About (portfolio)
-        openSystemItem('aboutnextaros', context);
+        openSystemItem('aboutbala', context);
       }
       haslaunchedwelcome.current = true;
     }
