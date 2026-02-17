@@ -98,6 +98,7 @@ export const componentmap: { [key: string]: any } = {
     'apps/SystemMonitor': dynamic(() => import('./apps/SystemMonitor')),
     'apps/NativeFileBrowser': dynamic(() => import('./apps/NativeFileBrowser')),
     'apps/AppLauncher': dynamic(() => import('./apps/AppLauncher')),
+    'apps/AboutBala': dynamic(() => import('./apps/AboutBala')),
     'apps/AboutNextarOS': dynamic(() => import('./apps/AboutNextarOS')),
     'DynamicAppRunner': dynamic(() => import('./DynamicAppRunner')),
     'apps/ProjectDashboard': dynamic(() => import('./apps/ProjectDashboard')),
@@ -429,6 +430,21 @@ export const apps: appdata[] = [
                 system: ['system.apps']
             }
         }
+    },
+    {
+        id: 'aboutbala',
+        appname: 'About Bala',
+        icon: '/bala.jpeg',
+        maximizeable: true,
+        componentname: 'apps/AboutBala',
+        additionaldata: {},
+        multiwindow: false,
+        titlebarblurred: false,
+        pinned: true,
+        defaultsize: { width: 900, height: 650 },
+        category: 'Utilities',
+        webOnly: true,
+        hidePreview: true
     },
     {
         id: 'aboutnextaros',
