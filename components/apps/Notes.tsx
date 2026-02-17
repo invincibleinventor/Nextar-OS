@@ -1,11 +1,20 @@
 'use client';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useDevice } from '../DeviceContext';
 import { useWindows } from '../WindowContext';
 import { useAppPreferences } from '../AppPreferencesContext';
-import { IoAdd, IoTrashOutline, IoSearchOutline } from 'react-icons/io5';
+import { IoAdd, IoTrashOutline, IoSearchOutline, IoPin, IoListOutline } from 'react-icons/io5';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMenuAction } from '../hooks/useMenuAction';
+
+const NOTE_COLORS = [
+    { id: 'default', label: 'Default', bg: 'transparent', dot: 'bg-[--text-muted]' },
+    { id: 'yellow', label: 'Yellow', bg: 'rgba(238,212,159,0.15)', dot: 'bg-[#eed49f]' },
+    { id: 'green', label: 'Green', bg: 'rgba(166,218,149,0.15)', dot: 'bg-[#a6da95]' },
+    { id: 'blue', label: 'Blue', bg: 'rgba(138,173,244,0.15)', dot: 'bg-[#8aadf4]' },
+    { id: 'pink', label: 'Pink', bg: 'rgba(245,189,230,0.15)', dot: 'bg-[#f5bde6]' },
+    { id: 'red', label: 'Red', bg: 'rgba(237,135,150,0.15)', dot: 'bg-[#ed8796]' },
+];
 
 interface Note {
     id: string;
@@ -13,6 +22,72 @@ interface Note {
     content: string;
     createdAt: number;
     updatedAt: number;
+    pinned?: boolean;
+    color?: string;
+}
+
+function getInnerText(html: string): string {
+    if (typeof document === 'undefined') return html;
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    return tmp.innerText || '';
+}
+
+function FormatToolbar({ onExecCommand, contentRef }: { onExecCommand: (cmd: string, value?: string) => void, contentRef: React.RefObject<HTMLDivElement | null> }) {
+    const [activeFormats, setActiveFormats] = useState<Set<string>>(new Set());
+
+    const checkFormats = useCallback(() => {
+        const formats = new Set<string>();
+        try {
+            if (document.queryCommandState('bold')) formats.add('bold');
+            if (document.queryCommandState('italic')) formats.add('italic');
+            if (document.queryCommandState('underline')) formats.add('underline');
+            if (document.queryCommandState('insertUnorderedList')) formats.add('list');
+            const block = document.queryCommandValue('formatBlock');
+            if (block === 'h2') formats.add('heading');
+        } catch (_) {}
+        setActiveFormats(formats);
+    }, []);
+
+    useEffect(() => {
+        document.addEventListener('selectionchange', checkFormats);
+        return () => document.removeEventListener('selectionchange', checkFormats);
+    }, [checkFormats]);
+
+    const btnClass = (key: string) =>
+        `p-1 text-[11px] font-semibold transition-colors hover:bg-overlay ${activeFormats.has(key) ? 'text-accent' : 'text-[--text-muted]'}`;
+
+    return (
+        <div className="flex items-center gap-0.5 px-2 py-1 border-b border-[--border-color] bg-transparent select-none shrink-0">
+            <button onClick={() => onExecCommand('bold')} className={btnClass('bold')} title="Bold">
+                <span className="font-bold">B</span>
+            </button>
+            <button onClick={() => onExecCommand('italic')} className={btnClass('italic')} title="Italic">
+                <span className="italic">I</span>
+            </button>
+            <button onClick={() => onExecCommand('underline')} className={btnClass('underline')} title="Underline">
+                <span className="underline">U</span>
+            </button>
+            <div className="w-[1px] h-3 bg-[--border-color] mx-1" />
+            <button
+                onClick={() => {
+                    const block = document.queryCommandValue('formatBlock');
+                    if (block === 'h2') {
+                        onExecCommand('formatBlock', 'p');
+                    } else {
+                        onExecCommand('formatBlock', 'h2');
+                    }
+                }}
+                className={btnClass('heading')}
+                title="Heading"
+            >
+                H
+            </button>
+            <button onClick={() => onExecCommand('insertUnorderedList')} className={btnClass('list')} title="Bullet List">
+                <IoListOutline size={13} />
+            </button>
+        </div>
+    );
 }
 
 export default function Notes({ isFocused = true, appId = 'notes', windowId }: { isFocused?: boolean, appId?: string, windowId?: string }) {
@@ -24,6 +99,9 @@ export default function Notes({ isFocused = true, appId = 'notes', windowId }: {
     const [selectedNote, setSelectedNote] = useState<Note | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [showSidebar, setShowSidebar] = useState(true);
+
+    const contentRef = useRef<HTMLDivElement>(null);
+    const mobileContentRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const saved = getPreference('notes', 'notes', []);
@@ -44,11 +122,21 @@ export default function Notes({ isFocused = true, appId = 'notes', windowId }: {
             title: 'New Note',
             content: '',
             createdAt: Date.now(),
-            updatedAt: Date.now()
+            updatedAt: Date.now(),
+            pinned: false,
+            color: 'default',
         };
         const newNotes = [newNote, ...notes];
         saveNotes(newNotes);
         setSelectedNote(newNote);
+    };
+
+    const togglePin = (id: string) => {
+        updateNote(id, { pinned: !notes.find(n => n.id === id)?.pinned });
+    };
+
+    const setNoteColor = (id: string, color: string) => {
+        updateNote(id, { color });
     };
 
     const updateNote = (id: string, updates: Partial<Note>) => {
@@ -68,6 +156,46 @@ export default function Notes({ isFocused = true, appId = 'notes', windowId }: {
             setSelectedNote(newNotes[0] || null);
         }
     };
+
+    // Sync contentEditable div when selected note changes (desktop)
+    useEffect(() => {
+        if (contentRef.current && selectedNote) {
+            if (contentRef.current.innerHTML !== selectedNote.content) {
+                contentRef.current.innerHTML = selectedNote.content;
+            }
+        } else if (contentRef.current && !selectedNote) {
+            contentRef.current.innerHTML = '';
+        }
+    }, [selectedNote?.id]);
+
+    // Sync contentEditable div when selected note changes (mobile)
+    useEffect(() => {
+        if (mobileContentRef.current && selectedNote) {
+            if (mobileContentRef.current.innerHTML !== selectedNote.content) {
+                mobileContentRef.current.innerHTML = selectedNote.content;
+            }
+        } else if (mobileContentRef.current && !selectedNote) {
+            mobileContentRef.current.innerHTML = '';
+        }
+    }, [selectedNote?.id]);
+
+    const handleContentInput = useCallback((ref: React.RefObject<HTMLDivElement | null>) => {
+        if (ref.current && selectedNote) {
+            const html = ref.current.innerHTML;
+            updateNote(selectedNote.id, { content: html });
+        }
+    }, [selectedNote?.id, notes]);
+
+    const execCommand = useCallback((command: string, value?: string) => {
+        document.execCommand(command, false, value);
+        // Update content after command
+        const ref = ismobile ? mobileContentRef : contentRef;
+        if (ref.current && selectedNote) {
+            const html = ref.current.innerHTML;
+            updateNote(selectedNote.id, { content: html });
+        }
+        if (ref.current) ref.current.focus();
+    }, [selectedNote?.id, ismobile, notes]);
 
     useEffect(() => {
         if (!windowId || !ismobile) return;
@@ -108,10 +236,16 @@ export default function Notes({ isFocused = true, appId = 'notes', windowId }: {
 
     useMenuAction('notes', menuActions, windowId);
 
-    const filteredNotes = notes.filter(n =>
-        n.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        n.content.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filteredNotes = notes
+        .filter(n =>
+            n.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            getInnerText(n.content).toLowerCase().includes(searchQuery.toLowerCase())
+        )
+        .sort((a, b) => {
+            if (a.pinned && !b.pinned) return -1;
+            if (!a.pinned && b.pinned) return 1;
+            return b.updatedAt - a.updatedAt;
+        });
 
     const formatDate = (timestamp: number) => {
         const date = new Date(timestamp);
@@ -132,6 +266,10 @@ export default function Notes({ isFocused = true, appId = 'notes', windowId }: {
         observer.observe(containerRef.current);
         return () => observer.disconnect();
     }, []);
+
+    const getPreviewText = (content: string) => {
+        return getInnerText(content);
+    };
 
     if (ismobile) {
         return (
@@ -154,7 +292,7 @@ export default function Notes({ isFocused = true, appId = 'notes', windowId }: {
                                         placeholder="Search"
                                         value={searchQuery}
                                         onChange={e => setSearchQuery(e.target.value)}
-                                        className="flex-1 bg-transparent outline-none text-sm text-[--text-color]"
+                                        className="flex-1 bg-transparent outline-none text-[13px] text-[--text-color]"
                                     />
                                 </div>
                             </div>
@@ -168,7 +306,7 @@ export default function Notes({ isFocused = true, appId = 'notes', windowId }: {
                                         <div className="font-semibold truncate">{note.title || 'Untitled'}</div>
                                         <div className="text-xs text-[--text-muted] mt-1 flex items-center gap-2">
                                             <span>{formatDate(note.updatedAt)}</span>
-                                            <span className="truncate">{note.content.slice(0, 50) || 'No content'}</span>
+                                            <span className="truncate">{getPreviewText(note.content).slice(0, 50) || 'No content'}</span>
                                         </div>
                                     </div>
                                 ))}
@@ -206,20 +344,28 @@ export default function Notes({ isFocused = true, appId = 'notes', windowId }: {
                                     <IoTrashOutline size={20} />
                                 </button>
                             </div>
-                            <div className="flex-1 p-4 flex flex-col gap-2">
-                                <input
-                                    type="text"
-                                    value={selectedNote.title}
-                                    onChange={e => updateNote(selectedNote.id, { title: e.target.value })}
-                                    placeholder="Title"
-                                    className="text-2xl font-bold bg-transparent outline-none"
-                                />
-                                <textarea
-                                    value={selectedNote.content}
-                                    onChange={e => updateNote(selectedNote.id, { content: e.target.value })}
-                                    placeholder="Start typing..."
-                                    className="flex-1 bg-transparent outline-none resize-none text-base leading-relaxed"
-                                />
+                            <div className="flex-1 flex flex-col">
+                                <div className="px-4 pt-4 pb-2">
+                                    <input
+                                        type="text"
+                                        value={selectedNote.title}
+                                        onChange={e => updateNote(selectedNote.id, { title: e.target.value })}
+                                        placeholder="Title"
+                                        className="text-2xl font-bold bg-transparent outline-none w-full"
+                                    />
+                                </div>
+                                <FormatToolbar onExecCommand={execCommand} contentRef={mobileContentRef} />
+                                <div className="flex-1 overflow-y-auto px-4 py-2">
+                                    <div
+                                        ref={mobileContentRef}
+                                        contentEditable
+                                        suppressContentEditableWarning
+                                        onInput={() => handleContentInput(mobileContentRef)}
+                                        className="outline-none text-base leading-relaxed min-h-[300px] w-full rich-text-editor"
+                                        data-placeholder="Start typing..."
+                                        style={{ minHeight: '300px' }}
+                                    />
+                                </div>
                             </div>
                         </motion.div>
                     )}
@@ -253,22 +399,30 @@ export default function Notes({ isFocused = true, appId = 'notes', windowId }: {
                                 </div>
                             </div>
                             <div className="flex-1 overflow-auto bg-transparent">
-                                {filteredNotes.map(note => (
-                                    <div
-                                        key={note.id}
-                                        onClick={() => setSelectedNote(note)}
-                                        className={`mx-2 my-1 px-3 py-2.5 cursor-pointer transition-all ${selectedNote?.id === note.id
-                                            ? 'bg-accent text-[--bg-base]'
-                                            : 'hover:bg-overlay'
-                                            }`}
-                                    >
-                                        <div className="font-semibold text-sm truncate">{note.title || 'New Note'}</div>
-                                        <div className={`text-xs mt-0.5 flex gap-2 ${selectedNote?.id === note.id ? 'text-[--bg-base]/80' : 'text-[--text-muted]'}`}>
-                                            <span className="shrink-0">{formatDate(note.updatedAt)}</span>
-                                            <span className="truncate opacity-80">{note.content.slice(0, 30) || 'No additional text'}</span>
+                                {filteredNotes.map(note => {
+                                    const noteColor = NOTE_COLORS.find(c => c.id === note.color) || NOTE_COLORS[0];
+                                    return (
+                                        <div
+                                            key={note.id}
+                                            onClick={() => setSelectedNote(note)}
+                                            className={`mx-2 my-1 px-3 py-2.5 cursor-pointer transition-all ${selectedNote?.id === note.id
+                                                ? 'bg-accent text-[--bg-base]'
+                                                : 'hover:bg-overlay'
+                                                }`}
+                                            style={selectedNote?.id !== note.id && note.color && note.color !== 'default' ? { background: noteColor.bg } : {}}
+                                        >
+                                            <div className="flex items-center gap-1.5">
+                                                {note.pinned && <IoPin size={11} className="shrink-0 opacity-60" />}
+                                                {note.color && note.color !== 'default' && <span className={`w-2 h-2 rounded-full shrink-0 ${noteColor.dot}`} />}
+                                                <span className="font-semibold text-[13px] truncate">{note.title || 'New Note'}</span>
+                                            </div>
+                                            <div className={`text-xs mt-0.5 flex gap-2 ${selectedNote?.id === note.id ? 'text-[--bg-base]/80' : 'text-[--text-muted]'}`}>
+                                                <span className="shrink-0">{formatDate(note.updatedAt)}</span>
+                                                <span className="truncate opacity-80">{getPreviewText(note.content).slice(0, 30) || 'No additional text'}</span>
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                                 {filteredNotes.length === 0 && (
                                     <div className="p-4 text-center text-[--text-muted] text-xs">
                                         {notes.length === 0 ? 'No notes' : 'No results'}
@@ -298,7 +452,24 @@ export default function Notes({ isFocused = true, appId = 'notes', windowId }: {
                                     {new Date(selectedNote.updatedAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
                                 </span>
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1">
+                                <div className="flex items-center gap-0.5 mr-1">
+                                    {NOTE_COLORS.map(c => (
+                                        <button
+                                            key={c.id}
+                                            onClick={() => setNoteColor(selectedNote.id, c.id)}
+                                            className={`w-4 h-4 rounded-full ${c.dot} ${selectedNote.color === c.id || (!selectedNote.color && c.id === 'default') ? 'ring-1 ring-accent ring-offset-1 ring-offset-[--bg-base]' : ''} hover:opacity-80 transition-all`}
+                                            title={c.label}
+                                        />
+                                    ))}
+                                </div>
+                                <button
+                                    onClick={() => togglePin(selectedNote.id)}
+                                    className={`p-1.5 transition-colors hover:bg-overlay ${selectedNote.pinned ? 'text-accent' : 'text-[--text-muted] hover:text-accent'}`}
+                                    title={selectedNote.pinned ? 'Unpin' : 'Pin'}
+                                >
+                                    <IoPin size={16} />
+                                </button>
                                 <button
                                     onClick={createNote}
                                     className="p-1.5 text-[--text-muted] hover:text-accent transition-colors hover:bg-overlay"
@@ -316,7 +487,7 @@ export default function Notes({ isFocused = true, appId = 'notes', windowId }: {
                             </div>
                         </div>
                         <div className="flex-1 overflow-y-auto">
-                            <div className="max-w-3xl mx-auto p-8 flex flex-col gap-4">
+                            <div className="max-w-3xl mx-auto px-8 pt-8 pb-4 flex flex-col gap-4">
                                 <input
                                     type="text"
                                     value={selectedNote.title}
@@ -324,11 +495,18 @@ export default function Notes({ isFocused = true, appId = 'notes', windowId }: {
                                     placeholder="Title"
                                     className="text-3xl font-bold bg-transparent outline-none w-full placeholder-[--text-muted] text-[--text-color]"
                                 />
-                                <textarea
-                                    value={selectedNote.content}
-                                    onChange={e => updateNote(selectedNote.id, { content: e.target.value })}
-                                    placeholder="Start typing..."
-                                    className="flex-1 bg-transparent outline-none resize-none text-base leading-relaxed w-full min-h-[500px] placeholder-[--text-muted] text-[--text-color]"
+                            </div>
+                            <div className="max-w-3xl mx-auto px-8">
+                                <FormatToolbar onExecCommand={execCommand} contentRef={contentRef} />
+                            </div>
+                            <div className="max-w-3xl mx-auto px-8 pb-8">
+                                <div
+                                    ref={contentRef}
+                                    contentEditable
+                                    suppressContentEditableWarning
+                                    onInput={() => handleContentInput(contentRef)}
+                                    className="outline-none text-[13px] leading-relaxed w-full min-h-[500px] py-4 rich-text-editor text-[--text-color]"
+                                    data-placeholder="Start typing..."
                                 />
                             </div>
                         </div>
@@ -350,7 +528,7 @@ export default function Notes({ isFocused = true, appId = 'notes', windowId }: {
                             <div className="text-lg mb-4 opacity-50">No Note Selected</div>
                             <button
                                 onClick={createNote}
-                                className="px-4 py-2 bg-accent text-[--bg-base] text-sm font-medium hover:bg-accent/90 transition"
+                                className="px-4 py-2 bg-accent text-[--bg-base] text-[13px] font-medium hover:bg-accent/90 transition"
                             >
                                 Create New Note
                             </button>

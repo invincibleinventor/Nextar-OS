@@ -194,14 +194,14 @@ export default function Calendar({ windowId }: { windowId?: string }) {
                             placeholder="Event title"
                             value={neweventtitle}
                             onChange={e => setneweventtitle(e.target.value)}
-                            className="w-full px-3 py-2 bg-overlay border border-[--border-color] mb-3 outline-none text-sm text-[--text-color] placeholder:text-[--text-muted]"
+                            className="w-full px-3 py-2 bg-overlay border border-[--border-color] mb-3 outline-none text-[13px] text-[--text-color] placeholder:text-[--text-muted]"
                             autoFocus
                         />
                         <input
                             type="time"
                             value={neweventtime}
                             onChange={e => setneweventtime(e.target.value)}
-                            className="w-full px-3 py-2 bg-overlay border border-[--border-color] mb-3 outline-none text-sm text-[--text-color]"
+                            className="w-full px-3 py-2 bg-overlay border border-[--border-color] mb-3 outline-none text-[13px] text-[--text-color]"
                         />
                         <div className="flex gap-2 mb-4">
                             {eventcolors.map(c => (
@@ -217,14 +217,14 @@ export default function Calendar({ windowId }: { windowId?: string }) {
                             {editingevent && (
                                 <button
                                     onClick={() => deleteEvent(editingevent.id)}
-                                    className="px-3 py-2 bg-pastel-red/10 text-pastel-red text-sm font-medium flex items-center gap-1"
+                                    className="px-3 py-2 bg-pastel-red/10 text-pastel-red text-[13px] font-medium flex items-center gap-1"
                                 >
                                     <IoTrash size={16} /> Delete
                                 </button>
                             )}
                             <button
                                 onClick={editingevent ? updateEvent : addEvent}
-                                className="flex-1 px-3 py-2 bg-accent text-[--bg-base] text-sm font-medium"
+                                className="flex-1 px-3 py-2 bg-accent text-[--bg-base] text-[13px] font-medium"
                             >
                                 {editingevent ? 'Update' : 'Add Event'}
                             </button>

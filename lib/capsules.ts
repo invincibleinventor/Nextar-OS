@@ -6,7 +6,7 @@
 import type { CapsuleManifest, CapsuleExport, CapsuleFile } from '../types/capsule';
 import { computeEnvironmentDNA } from './environmentDNA';
 
-const DB_NAME = 'hackathos-capsules';
+const DB_NAME = 'nextaros-capsules';
 const STORE_NAME = 'capsules';
 
 function openDB(): Promise<IDBDatabase> {
@@ -95,7 +95,7 @@ export async function exportCapsule(capsuleId: string): Promise<Blob> {
 
     const payload = await compress(JSON.stringify(manifest.files));
     const capsuleExport: CapsuleExport = {
-        magic: 'HACKOS_CAPSULE_V1',
+        magic: 'NEXTAROS_CAPSULE_V1',
         manifest: { ...manifest, files: [] }, // files are in payload
         payload,
     };
@@ -107,7 +107,7 @@ export async function exportCapsule(capsuleId: string): Promise<Blob> {
 export async function importCapsule(file: File): Promise<CapsuleManifest> {
     const text = await file.text();
     const data: CapsuleExport = JSON.parse(text);
-    if (data.magic !== 'HACKOS_CAPSULE_V1') throw new Error('Invalid capsule file');
+    if (data.magic !== 'NEXTAROS_CAPSULE_V1') throw new Error('Invalid capsule file');
 
     const filesJson = await decompress(data.payload);
     const files: CapsuleFile[] = JSON.parse(filesJson);

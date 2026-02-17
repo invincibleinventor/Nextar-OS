@@ -28,7 +28,7 @@ interface FileState {
     hash: string;
 }
 
-const DB_NAME = 'hackathos-checkpoints';
+const DB_NAME = 'nextaros-checkpoints';
 const STORE_NAME = 'checkpoints';
 
 function openDB(): Promise<IDBDatabase> {

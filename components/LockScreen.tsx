@@ -184,7 +184,7 @@ export default function LockScreen() {
                                 >
                                     <Image src={u.avatar || "/pfp.png"} alt={u.name} fill className="object-cover" />
                                 </div>
-                                <span className={`text-sm font-medium ${textColor}`}
+                                <span className={`text-[13px] font-medium ${textColor}`}
                                     style={{ textShadow: textShadowSm }}>{u.name}</span>
                             </motion.div>
                         ))}
@@ -198,7 +198,7 @@ export default function LockScreen() {
                                 style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}>
                                 <IoPerson size={32} className={islightbackground ? 'text-black/50' : 'text-white/70'} />
                             </div>
-                            <span className={`text-sm font-medium ${textColor}`}
+                            <span className={`text-[13px] font-medium ${textColor}`}
                                 style={{ textShadow: textShadowSm }}>Guest</span>
                         </motion.div>
                     </div>
@@ -396,7 +396,7 @@ export default function LockScreen() {
                                     name="search"
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="Enter Password"
-                                    className="w-full bg-black/20 border-2 border-white/20 focus:border-pastel-red py-2 outline-none text-sm pl-4 pr-10 appearance-none text-white placeholder-white/50 transition-all duration-300"
+                                    className="w-full bg-black/20 border-2 border-white/20 focus:border-pastel-red py-2 outline-none text-[13px] pl-4 pr-10 appearance-none text-white placeholder-white/50 transition-all duration-300"
                                     style={{
                                         WebkitTextFillColor: 'white',
                                         boxShadow: '0 4px 20px rgba(0,0,0,0.2)',

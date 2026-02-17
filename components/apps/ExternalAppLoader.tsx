@@ -33,12 +33,12 @@ export default function ExternalAppLoader({ externalUrl, appname, icon }: Extern
             <div className="flex flex-col items-center justify-center h-full w-full bg-[--bg-base] font-mono">
                 <IoAlertCircleOutline size={48} className="text-pastel-red mb-4" />
                 <h3 className="text-lg font-semibold mb-2">Failed to Load App</h3>
-                <p className="text-sm text-[--text-muted] mb-4 text-center max-w-xs">
+                <p className="text-[13px] text-[--text-muted] mb-4 text-center max-w-xs">
                     Could not load {appname} from external source.
                 </p>
                 <button
                     onClick={reload}
-                    className="flex items-center gap-2 px-4 py-2 bg-accent text-[--text-color] text-sm font-medium hover:opacity-90 transition-opacity"
+                    className="flex items-center gap-2 px-4 py-2 bg-accent text-[--text-color] text-[13px] font-medium hover:opacity-90 transition-opacity"
                 >
                     <IoRefreshOutline size={16} />
                     Try Again
@@ -55,7 +55,7 @@ export default function ExternalAppLoader({ externalUrl, appname, icon }: Extern
                         <div className="w-12 h-12 bg-overlay flex items-center justify-center animate-pulse">
                             <img src={icon} alt={appname} className="w-8 h-8" />
                         </div>
-                        <span className="text-sm text-[--text-muted]">Loading {appname}...</span>
+                        <span className="text-[13px] text-[--text-muted]">Loading {appname}...</span>
                     </div>
                 </div>
             )}

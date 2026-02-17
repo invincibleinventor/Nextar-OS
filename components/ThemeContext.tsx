@@ -6,41 +6,35 @@ interface Props {
 }
 
 const ThemeContext = createContext({
-  theme: 'light',
+  theme: 'dark',
   toggletheme: () => { },
 });
 
 export const useTheme = () => useContext(ThemeContext);
 
-const setapptheme = (theme: string) => {
-  const html = document.documentElement;
-
-  html.classList.remove('light', 'dark');
-  html.classList.add(theme);
-
-  html.classList.remove('light', 'dark');
-  html.classList.add(theme);
-};
-
 export const ThemeProvider = ({ children }: Props) => {
-  const [theme, settheme] = useState('light');
+  const [theme, settheme] = useState('dark');
+  const [mounted, setmounted] = useState(false);
 
   useEffect(() => {
     const storedtheme = localStorage.getItem('theme');
     const prefersdarkmode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
 
     if (storedtheme) {
       settheme(storedtheme);
     } else if (prefersdarkmode) {
       settheme('dark');
     }
+    setmounted(true);
   }, []);
 
   useEffect(() => {
-    setapptheme(theme);
+    if (!mounted) return;
+    const html = document.documentElement;
+    html.classList.remove('light', 'dark');
+    html.classList.add(theme);
     localStorage.setItem('theme', theme);
-  }, [theme]);
+  }, [theme, mounted]);
 
   const toggletheme = () => {
     const newtheme = theme === 'dark' ? 'light' : 'dark';

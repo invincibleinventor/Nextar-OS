@@ -17,7 +17,8 @@ interface NotificationContextType {
     addnotification: (n: Notification) => void;
     hidetoast: () => void;
     markasviewed: (id: string) => void;
-    addToast: (message: string, type?: 'info' | 'success' | 'error' | 'warning') => void;
+    addToast: (message: string, type?: 'info' | 'success' | 'error' | 'warning', actions?: { label: string; actionId: string }[]) => void;
+    handleactionclick: (notif: Notification, actionId: string) => void;
     version: number;
 }
 
@@ -59,7 +60,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         setTimeout(() => settoast(null), 3000);
     };
 
-    const addToast = (message: string, type: 'info' | 'success' | 'error' | 'warning' = 'info') => {
+    const addToast = (message: string, type: 'info' | 'success' | 'error' | 'warning' = 'info', actions?: { label: string; actionId: string }[]) => {
         if (type === 'error') playSound('error');
         else if (type === 'success') playSound('success');
         else playSound('notification');
@@ -72,10 +73,17 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
             type: 'system',
             appname: 'System',
             icon: '/icons/system.png',
-            appid: 'system'
+            appid: 'system',
+            actions,
         });
     };
 
+    const handleactionclick = (notif: Notification, actionId: string) => {
+        if (actionId === 'open-help') {
+            openSystemItem('aboutnextaros', { addwindow, windows, updatewindow, setactivewindow, ismobile });
+        }
+        markasviewed(notif.id);
+    };
 
     const hidetoast = () => settoast(null);
 
@@ -121,6 +129,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
             hidetoast,
             markasviewed,
             addToast,
+            handleactionclick,
             version
         }}>
             {children}

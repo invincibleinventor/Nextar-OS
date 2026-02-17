@@ -1,6 +1,6 @@
 import { Project, ProjectFile, Snapshot } from '../types/project';
 
-const DB_NAME = 'HackathonWorkspace';
+const DB_NAME = 'NextarOSWorkspace';
 const DB_VERSION = 1;
 const PROJECTS_STORE = 'projects';
 const PROJECT_FILES_STORE = 'projectFiles';
@@ -15,7 +15,7 @@ const openDB = (): Promise<IDBDatabase> => {
 
         const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-        request.onerror = () => reject('Error opening HackathonWorkspace DB');
+        request.onerror = () => reject('Error opening NextarOSWorkspace DB');
 
         request.onupgradeneeded = (event) => {
             const db = (event.target as IDBOpenDBRequest).result;

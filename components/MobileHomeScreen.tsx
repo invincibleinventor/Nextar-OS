@@ -421,7 +421,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                         <motion.button
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="absolute bottom-[165px] left-0 right-0 mx-auto w-max z-30 px-6 py-2 bg-pastel-red/20 text-pastel-red border border-pastel-red/30 font-medium text-sm"
+                            className="absolute bottom-[165px] left-0 right-0 mx-auto w-max z-30 px-6 py-2 bg-pastel-red/20 text-pastel-red border border-pastel-red/30 font-medium text-[13px]"
                             onClick={(e) => {
                                 e.stopPropagation();
                                 seteditmode(false);

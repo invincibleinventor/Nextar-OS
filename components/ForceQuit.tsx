@@ -51,7 +51,7 @@ export default function ForceQuit({ isopen, onclose }: ForceQuitProps) {
                             {activewindows.length === 0 ? (
                                 <div className="p-8 text-center text-[--text-muted]">
                                     <IoWarning size={32} className="mx-auto mb-2 opacity-50" />
-                                    <p className="text-sm">No applications running</p>
+                                    <p className="text-[13px]">No applications running</p>
                                 </div>
                             ) : (
                                 activewindows.map((win: any) => {
@@ -74,7 +74,7 @@ export default function ForceQuit({ isopen, onclose }: ForceQuitProps) {
                                                 />
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <div className="font-medium text-sm text-[--text-color] truncate flex items-center gap-2">
+                                                <div className="font-medium text-[13px] text-[--text-color] truncate flex items-center gap-2">
                                                     {win.appname}
                                                     {iscrashed && (
                                                         <span className="text-[10px] px-1.5 py-0.5 bg-pastel-red text-[--bg-base]">Not Responding</span>
@@ -98,7 +98,7 @@ export default function ForceQuit({ isopen, onclose }: ForceQuitProps) {
                             <span className="text-xs text-[--text-muted]">{activewindows.length} app{activewindows.length !== 1 ? 's' : ''} running</span>
                             <button
                                 onClick={onclose}
-                                className="px-4 py-1.5 text-sm font-medium bg-overlay border border-[--border-color] hover:bg-overlay transition-colors text-[--text-color]"
+                                className="px-4 py-1.5 text-[13px] font-medium bg-overlay border border-[--border-color] hover:bg-overlay transition-colors text-[--text-color]"
                             >
                                 Cancel
                             </button>

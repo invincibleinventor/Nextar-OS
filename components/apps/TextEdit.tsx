@@ -1,7 +1,37 @@
 'use client';
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useFileSystem } from '../FileSystemContext';
-import { IoSaveOutline, IoText, IoSearchOutline, IoClose, IoFolderOpenOutline, IoPlay, IoStop } from 'react-icons/io5';
+import { IoSaveOutline, IoSearchOutline, IoClose, IoFolderOpenOutline, IoListOutline, IoCodeOutline, IoEyeOutline, IoDownloadOutline, IoPrintOutline } from 'react-icons/io5';
+
+function parseMarkdown(md: string): string {
+    let html = md;
+    html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_m: string, _l: string, code: string) => {
+        const escaped = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return `<pre style="background:var(--bg-overlay);padding:12px;overflow-x:auto;border:1px solid var(--border-color);margin:8px 0"><code>${escaped.trimEnd()}</code></pre>`;
+    });
+    html = html.replace(/^(?:---|\*\*\*|___)\s*$/gm, '<hr style="border:none;border-top:1px solid var(--border-color);margin:16px 0">');
+    html = html.replace(/^######\s+(.+)$/gm, '<h6 style="font-size:11px;font-weight:600;margin:12px 0 4px">$1</h6>');
+    html = html.replace(/^#####\s+(.+)$/gm, '<h5 style="font-size:12px;font-weight:600;margin:12px 0 4px">$1</h5>');
+    html = html.replace(/^####\s+(.+)$/gm, '<h4 style="font-size:13px;font-weight:600;margin:14px 0 4px">$1</h4>');
+    html = html.replace(/^###\s+(.+)$/gm, '<h3 style="font-size:15px;font-weight:600;margin:16px 0 6px">$1</h3>');
+    html = html.replace(/^##\s+(.+)$/gm, '<h2 style="font-size:18px;font-weight:600;margin:18px 0 6px">$1</h2>');
+    html = html.replace(/^#\s+(.+)$/gm, '<h1 style="font-size:22px;font-weight:700;margin:20px 0 8px">$1</h1>');
+    html = html.replace(/^(?:[-*+])\s+(.+)$/gm, '<li style="margin-left:20px;list-style:disc">$1</li>');
+    html = html.replace(/((?:<li style="margin-left:20px;list-style:disc">.*<\/li>\n?)+)/g, '<ul style="margin:8px 0">$1</ul>');
+    html = html.replace(/^\d+\.\s+(.+)$/gm, '<li style="margin-left:20px;list-style:decimal">$1</li>');
+    html = html.replace(/((?:<li style="margin-left:20px;list-style:decimal">.*<\/li>\n?)+)/g, '<ol style="margin:8px 0">$1</ol>');
+    html = html.replace(/`([^`]+)`/g, '<code style="background:var(--bg-overlay);padding:1px 4px;font-family:monospace;font-size:12px">$1</code>');
+    html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" style="color:var(--accent);text-decoration:underline" target="_blank" rel="noopener noreferrer">$1</a>');
+    html = html.replace(/^>\s+(.+)$/gm, '<blockquote style="border-left:3px solid var(--border-color);padding-left:12px;margin:8px 0;color:var(--text-muted)">$1</blockquote>');
+    html = html.replace(/\n{2,}/g, '</p><p style="margin:8px 0">');
+    html = html.replace(/\n/g, '<br>');
+    html = '<p style="margin:8px 0">' + html + '</p>';
+    html = html.replace(/<p style="margin:8px 0"><\/p>/g, '');
+    return html;
+}
 import { useAuth } from '../AuthContext';
 import ContextMenu from '../ui/ContextMenu';
 import FilePicker from '../ui/FilePicker';
@@ -24,6 +54,7 @@ export default function TextEdit({ id, content: initialContent, title, isFocused
     const [content, setContent] = useState(initialContent || '');
     const [isSaved, setIsSaved] = useState(true);
     const contentRef = useRef<HTMLDivElement>(null);
+    const previewRef = useRef<HTMLDivElement>(null);
 
     const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
     const [showFindReplace, setShowFindReplace] = useState(false);
@@ -34,6 +65,9 @@ export default function TextEdit({ id, content: initialContent, title, isFocused
 
     const [showPicker, setShowPicker] = useState<boolean>(false);
     const [pickerMode, setPickerMode] = useState<'open' | 'save'>('open');
+    const [wordCount, setWordCount] = useState(0);
+    const [charCount, setCharCount] = useState(0);
+    const [showPreview, setShowPreview] = useState(false);
 
     const { user } = useAuth();
     const username = user?.username || 'Guest';
@@ -96,12 +130,22 @@ export default function TextEdit({ id, content: initialContent, title, isFocused
         }
     }, [initialContent]);
 
+    const updateCounts = useCallback(() => {
+        if (contentRef.current) {
+            const text = contentRef.current.innerText || '';
+            const trimmed = text.trim();
+            setCharCount(trimmed.length);
+            setWordCount(trimmed ? trimmed.split(/\s+/).length : 0);
+        }
+    }, []);
+
     const handleInput = useCallback(() => {
         if (contentRef.current) {
             setContent(contentRef.current.innerHTML);
             setIsSaved(false);
+            updateCounts();
         }
-    }, []);
+    }, [updateCounts]);
 
     const handleSave = useCallback(async () => {
         if (currentFileId && contentRef.current) {
@@ -138,6 +182,48 @@ export default function TextEdit({ id, content: initialContent, title, isFocused
         handleInput();
         if (contentRef.current) contentRef.current.focus();
     }, [handleInput]);
+
+    const handleExportPDF = useCallback(() => {
+        const contentEl = showPreview ? previewRef.current : contentRef.current;
+        if (!contentEl) return;
+        const printStyle = document.createElement('style');
+        printStyle.id = 'textedit-print-style';
+        printStyle.textContent = `@media print { body > *:not(#textedit-print-container) { display: none !important; } #textedit-print-container { display: block !important; position: fixed !important; top: 0; left: 0; right: 0; bottom: 0; background: white !important; color: black !important; padding: 40px !important; font-family: system-ui, -apple-system, sans-serif; font-size: 13px; z-index: 999999; overflow: visible !important; } }`;
+        document.head.appendChild(printStyle);
+        const printContainer = document.createElement('div');
+        printContainer.id = 'textedit-print-container';
+        printContainer.innerHTML = contentEl.innerHTML;
+        document.body.appendChild(printContainer);
+        window.print();
+        document.head.removeChild(printStyle);
+        document.body.removeChild(printContainer);
+    }, [showPreview]);
+
+    const handleExportHTML = useCallback(() => {
+        const contentEl = showPreview ? previewRef.current : contentRef.current;
+        if (!contentEl) return;
+        const currentFile = files.find(f => f.id === currentFileId);
+        const fileName = currentFile?.name?.replace(/\.[^.]+$/, '') || 'document';
+        const htmlContent = `<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="UTF-8">\n<title>${fileName}</title>\n<style>\nbody { font-family: system-ui, -apple-system, sans-serif; font-size: 13px; max-width: 800px; margin: 40px auto; padding: 0 20px; line-height: 1.6; }\npre { background: #f4f4f4; padding: 12px; overflow-x: auto; border: 1px solid #ddd; }\ncode { background: #f4f4f4; padding: 1px 4px; font-family: monospace; font-size: 12px; }\n</style>\n</head>\n<body>\n${contentEl.innerHTML}\n</body>\n</html>`;
+        const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName + '.html';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }, [showPreview, files, currentFileId]);
+
+    const previewHTML = useMemo(() => {
+        if (!showPreview) return '';
+        if (typeof document === 'undefined') return '';
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = content;
+        const plainText = tempDiv.innerText || tempDiv.textContent || '';
+        return parseMarkdown(plainText);
+    }, [showPreview, content]);
 
     const menuActions = useMemo(() => ({
         'new-file': () => {
@@ -213,7 +299,7 @@ export default function TextEdit({ id, content: initialContent, title, isFocused
     };
 
     return (
-        <div className="flex flex-col w-full h-full bg-[--bg-base] text-[--text-color] font-mono text-sm relative" onContextMenu={handleContextMenu}>
+        <div className="flex flex-col w-full h-full bg-[--bg-base] text-[--text-color] font-mono text-[13px] relative" onContextMenu={handleContextMenu}>
             <div className="h-[50px] flex items-center px-4 pl-[80px] bg-surface border-b border-[--border-color] select-none gap-2 draggable-area">
                 <button onClick={handleOpen} className="p-1 hover:bg-overlay" title="Open">
                     <IoFolderOpenOutline />
@@ -228,7 +314,23 @@ export default function TextEdit({ id, content: initialContent, title, isFocused
                 <div className="w-[1px] h-4 bg-[--border-color] mx-1"></div>
                 <button onClick={() => execCmd('justifyLeft')} className="p-1 hover:bg-overlay">Left</button>
                 <button onClick={() => execCmd('justifyCenter')} className="p-1 hover:bg-overlay">Center</button>
-
+                <div className="w-[1px] h-4 bg-[--border-color] mx-1"></div>
+                <select
+                    onChange={(e) => { if (e.target.value === 'p') execCmd('formatBlock', 'p'); else execCmd('formatBlock', e.target.value); }}
+                    className="bg-overlay text-xs px-1 py-0.5 border border-[--border-color] outline-none text-[--text-color]"
+                    defaultValue="p"
+                >
+                    <option value="p">Body</option>
+                    <option value="h1">Heading 1</option>
+                    <option value="h2">Heading 2</option>
+                    <option value="h3">Heading 3</option>
+                </select>
+                <button onClick={() => execCmd('insertUnorderedList')} className="p-1 hover:bg-overlay" title="Bullet List"><IoListOutline size={14} /></button>
+                <button onClick={() => execCmd('insertOrderedList')} className="p-1 hover:bg-overlay" title="Numbered List"><IoCodeOutline size={14} /></button>
+                <div className="w-[1px] h-4 bg-[--border-color] mx-1"></div>
+                <button onClick={() => setShowPreview(!showPreview)} className={`p-1 ${showPreview ? 'bg-accent text-[--bg-base]' : 'hover:bg-overlay'}`} title={showPreview ? 'Edit Mode' : 'Markdown Preview'}><IoEyeOutline size={14} /></button>
+                <button onClick={handleExportPDF} className="p-1 hover:bg-overlay" title="Export as PDF"><IoPrintOutline size={14} /></button>
+                <button onClick={handleExportHTML} className="p-1 hover:bg-overlay" title="Export as HTML"><IoDownloadOutline size={14} /></button>
                 <div className="flex-1"></div>
                 {files.find(f => f.id === currentFileId)?.isReadOnly && (
                     <div className="flex items-center gap-1 text-xs text-[--text-muted] mr-2">
@@ -236,6 +338,8 @@ export default function TextEdit({ id, content: initialContent, title, isFocused
                         Locked
                     </div>
                 )}
+                {showPreview && <span className="text-[11px] text-[--text-muted] mr-1">Preview</span>}
+                <span className="text-xs text-[--text-muted]">{wordCount} words · {charCount} chars</span>
                 <span className="text-xs text-[--text-muted]">{isSaved ? 'Saved' : 'Unsaved'}</span>
             </div>
 
@@ -259,15 +363,24 @@ export default function TextEdit({ id, content: initialContent, title, isFocused
                 </div>
             )}
 
-            <div
-                ref={contentRef}
-                className="flex-1 w-full h-full p-6 outline-none overflow-y-auto rich-text-editor bg-transparent"
-                contentEditable={!files.find(f => f.id === currentFileId)?.isReadOnly}
-                onInput={handleInput}
-                onKeyDown={handleKeyDown}
-                suppressContentEditableWarning={true}
-                style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
-            />
+            {showPreview ? (
+                <div
+                    ref={previewRef}
+                    className="flex-1 w-full h-full p-6 overflow-y-auto bg-transparent"
+                    style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
+                    dangerouslySetInnerHTML={{ __html: previewHTML }}
+                />
+            ) : (
+                <div
+                    ref={contentRef}
+                    className="flex-1 w-full h-full p-6 outline-none overflow-y-auto rich-text-editor bg-transparent"
+                    contentEditable={!files.find(f => f.id === currentFileId)?.isReadOnly}
+                    onInput={handleInput}
+                    onKeyDown={handleKeyDown}
+                    suppressContentEditableWarning={true}
+                    style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
+                />
+            )}
 
             {contextMenu && (
                 <ContextMenu

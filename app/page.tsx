@@ -192,14 +192,14 @@ const Desktop = () => {
     const handleAboutMac = () => setshowaboutmac(true);
     const handleCloseAbout = () => {
       const currentWindows = windowsref.current;
-      const aboutWindow = currentWindows.find((w: any) => w.appname === 'About HackathOS' || w.id?.startsWith('abouthackathos'));
+      const aboutWindow = currentWindows.find((w: any) => w.appname === 'About NextarOS' || w.id?.startsWith('aboutnextaros'));
       if (aboutWindow) {
         updatewindow(aboutWindow.id, { isminimized: true });
       }
     };
     const handleTourEnded = () => {
       const currentWindows = windowsref.current;
-      const aboutWindow = currentWindows.find((w: any) => w.appname === 'About HackathOS' || w.id?.startsWith('abouthackathos'));
+      const aboutWindow = currentWindows.find((w: any) => w.appname === 'About NextarOS' || w.id?.startsWith('aboutnextaros'));
       if (aboutWindow) {
         updatewindow(aboutWindow.id, { isminimized: false });
         setactivewindow(aboutWindow.id);
@@ -399,15 +399,31 @@ const Desktop = () => {
 
   useEffect(() => {
     if (osstate === 'unlocked' && user && !haslaunchedwelcome.current) {
-      openSystemItem('abouthackathos', context);
+      const mode = process.env.NEXT_PUBLIC_NEXTAROS_MODE || 'prod';
+      if (mode === 'local') {
+        // Local/self-hosted: open Installer for setup
+        openSystemItem('welcome', context);
+      } else {
+        // Prod/deployed: open About (portfolio)
+        openSystemItem('aboutnextaros', context);
+      }
       haslaunchedwelcome.current = true;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [osstate, addwindow, user]);
 
   const StatusBar = () => {
-    const now = new Date();
-    const timestr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: false });
+    const [timestr, settimestr] = useState('');
+
+    useEffect(() => {
+      const update = () => {
+        const now = new Date();
+        settimestr(now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: false }));
+      };
+      update();
+      const interval = setInterval(update, 1000);
+      return () => clearInterval(interval);
+    }, []);
 
     return (
       <motion.div

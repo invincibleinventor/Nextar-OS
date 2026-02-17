@@ -84,7 +84,7 @@ export default function FilePicker({ mode, initialPath, onSelect, onCancel, acce
                                 <IoChevronBack />
                             </button>
                         </div>
-                        <span className="font-semibold text-sm ml-2">{currentPath[currentPath.length - 1] || 'Home'}</span>
+                        <span className="font-semibold text-[13px] ml-2">{currentPath[currentPath.length - 1] || 'Home'}</span>
                     </div>
                     <span className="text-xs font-medium text-[--text-muted]">{mode === 'open' ? 'Open File' : 'Save File'}</span>
                 </div>
@@ -162,7 +162,7 @@ export default function FilePicker({ mode, initialPath, onSelect, onCancel, acce
                         <div className="flex-1 flex items-center gap-2">
                             <span className="text-xs font-medium">Name:</span>
                             <input
-                                className="flex-1 bg-overlay border border-[--border-color] px-2 py-1 text-sm outline-none focus:border-accent"
+                                className="flex-1 bg-overlay border border-[--border-color] px-2 py-1 text-[13px] outline-none focus:border-accent"
                                 value={saveFileName}
                                 onChange={e => setSaveFileName(e.target.value)}
                                 placeholder="Untitled"

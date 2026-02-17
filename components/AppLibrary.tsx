@@ -106,7 +106,7 @@ const AppLibrary = () => {
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <div className={`font-semibold text-base truncate ${islightbackground ? 'text-black' : 'text-[--text-color]'}`}>{app.appname}</div>
-                                    <div className="text-[--text-muted] text-sm">{app.category || 'App'}</div>
+                                    <div className="text-[--text-muted] text-[13px]">{app.category || 'App'}</div>
                                 </div>
                             </div>
                         ))}

@@ -257,7 +257,7 @@ const Dock = () => {
               >
                 {ishover && (
                   <motion.div
-                    className="absolute bottom-full mb-4 text-sm bg-overlay text-[--text-color] px-2 py-1 border border-[--border-color] anime-glow-sm"
+                    className="absolute bottom-full mb-4 text-[13px] bg-overlay text-[--text-color] px-2 py-1 border border-[--border-color] anime-glow-sm"
                     style={{ whiteSpace: 'nowrap' }}
                     initial={{ opacity: 0, y: 10, scale: 0.8 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}

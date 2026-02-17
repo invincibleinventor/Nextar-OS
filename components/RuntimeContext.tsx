@@ -9,7 +9,6 @@ import type {
 } from '../types/runtime';
 import { api } from '../utils/constants';
 
-// Lazy-loaded runtime modules (not imported at build time)
 type PyodideModule = typeof import('../lib/runtimes/pyodide');
 type GitModule = typeof import('../lib/runtimes/git');
 type WebContainerModule = typeof import('../lib/runtimes/webcontainer');
@@ -29,15 +28,12 @@ const pistonRuntimes: Record<string, { language: string; version: string }> = {
 };
 
 interface RuntimeContextType {
-    // Runtime status
     runtimes: Map<RuntimeId, RuntimeCapability>;
     getStatus: (id: RuntimeId) => RuntimeStatus;
 
-    // Universal execution
     execute: (request: ExecutionRequest) => Promise<ExecutionResult>;
     resolveRuntime: (language: string) => RuntimeId;
 
-    // Git operations (via isomorphic-git)
     git: {
         clone: (options: GitCloneOptions) => Promise<void>;
         commit: (options: GitCommitOptions) => Promise<string>;
@@ -51,7 +47,6 @@ interface RuntimeContextType {
         checkout: (dir: string, branch: string) => Promise<void>;
     };
 
-    // Python (via Pyodide)
     python: {
         run: (code: string, stdin?: string) => Promise<ExecutionResult>;
         installPackage: (name: string) => Promise<void>;
@@ -59,7 +54,6 @@ interface RuntimeContextType {
         boot: () => Promise<void>;
     };
 
-    // Node.js (via WebContainers)
     node: {
         mountFiles: (files: Record<string, string>) => Promise<void>;
         run: (command: string, args?: string[]) => Promise<ExecutionResult>;
@@ -84,15 +78,13 @@ export const useRuntimeSafe = () => {
 
 export const RuntimeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [pyodideStatus, setPyodideStatus] = useState<RuntimeStatus>('idle');
-    const [gitStatus, setGitStatus] = useState<RuntimeStatus>('ready'); // isomorphic-git is always ready (no boot)
+    const [gitStatus, setGitStatus] = useState<RuntimeStatus>('ready');
     const [wcStatus, setWcStatus] = useState<RuntimeStatus>('idle');
 
-    // Lazy module refs
     const pyodideModRef = useRef<PyodideModule | null>(null);
     const gitModRef = useRef<GitModule | null>(null);
     const wcModRef = useRef<WebContainerModule | null>(null);
 
-    // Lazy load git module immediately (it's lightweight)
     useEffect(() => {
         import('../lib/runtimes/git').then(mod => { gitModRef.current = mod; });
     }, []);
@@ -134,30 +126,22 @@ export const RuntimeProvider: React.FC<{ children: React.ReactNode }> = ({ child
         return mod;
     }, []);
 
-    // Smart runtime resolution — picks the fastest available runtime for a language
     const resolveRuntime = useCallback((language: string): RuntimeId => {
         const lang = language.toLowerCase();
 
-        // Python → Pyodide first
-        if (lang === 'python') {
-            if (pyodideStatus === 'ready') return 'pyodide';
-            if (pistonRuntimes[lang]) return 'piston';
-            return 'cheerpx';
-        }
+        // Python: always use Pyodide (local WASM) — auto-boots on first use
+        if (lang === 'python') return 'pyodide';
 
-        // JavaScript/TypeScript/Node → WebContainers first
         if (['javascript', 'typescript', 'node'].includes(lang)) {
             if (wcStatus === 'ready') return 'webcontainer';
             if (pistonRuntimes[lang]) return 'piston';
             return 'cheerpx';
         }
 
-        // Everything else → Piston first, CheerpX fallback
         if (pistonRuntimes[lang]) return 'piston';
         return 'cheerpx';
-    }, [pyodideStatus, wcStatus]);
+    }, [wcStatus]);
 
-    // Execute code through the best available runtime
     const execute = useCallback(async (request: ExecutionRequest): Promise<ExecutionResult> => {
         const runtime = request.preferredRuntime || resolveRuntime(request.language);
         const startTime = performance.now();
@@ -166,7 +150,6 @@ export const RuntimeProvider: React.FC<{ children: React.ReactNode }> = ({ child
             switch (runtime) {
                 case 'pyodide': {
                     const mod = await loadPyodide();
-                    // Write companion files to Pyodide's virtual FS so imports work
                     if (request.files && Object.keys(request.files).length > 0) {
                         const pyodide = await mod.bootPyodide();
                         for (const [name, content] of Object.entries(request.files)) {
@@ -178,13 +161,11 @@ export const RuntimeProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
                 case 'webcontainer': {
                     const mod = await loadWebContainer();
-                    // Write companion files first
                     if (request.files) {
                         for (const [name, content] of Object.entries(request.files)) {
                             await mod.writeFile(name, content);
                         }
                     }
-                    // Write main file and execute
                     const ext = request.language === 'typescript' ? 'ts' : 'js';
                     const filename = `__run.${ext}`;
                     await mod.writeFile(filename, request.code);
@@ -203,7 +184,6 @@ export const RuntimeProvider: React.FC<{ children: React.ReactNode }> = ({ child
                         };
                     }
 
-                    // Build files array: main file first, then companions
                     const pistonFiles: { name?: string; content: string }[] = [{ content: request.code }];
                     if (request.files) {
                         for (const [name, content] of Object.entries(request.files)) {
@@ -238,6 +218,38 @@ export const RuntimeProvider: React.FC<{ children: React.ReactNode }> = ({ child
                     };
             }
         } catch (err: any) {
+            // If Pyodide failed, fall back to Piston for Python
+            if (runtime === 'pyodide' && pistonRuntimes[request.language.toLowerCase()]) {
+                try {
+                    const pistonConfig = pistonRuntimes[request.language.toLowerCase()];
+                    const pistonFiles: { name?: string; content: string }[] = [{ content: request.code }];
+                    if (request.files) {
+                        for (const [name, content] of Object.entries(request.files)) {
+                            pistonFiles.push({ name, content });
+                        }
+                    }
+                    const response = await fetch(api.pistonExecuteUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            language: pistonConfig.language,
+                            version: pistonConfig.version,
+                            files: pistonFiles,
+                            stdin: request.stdin,
+                        }),
+                    });
+                    const data = await response.json();
+                    return {
+                        stdout: data.run?.stdout || data.run?.output || '',
+                        stderr: data.run?.stderr || '',
+                        exitCode: data.run?.code ?? 1,
+                        runtime: 'piston',
+                        durationMs: performance.now() - startTime,
+                    };
+                } catch {
+                    // Both runtimes failed
+                }
+            }
             return {
                 stdout: '', stderr: err.message || 'Execution failed',
                 exitCode: 1, runtime, durationMs: performance.now() - startTime,
@@ -245,7 +257,6 @@ export const RuntimeProvider: React.FC<{ children: React.ReactNode }> = ({ child
         }
     }, [resolveRuntime, loadPyodide, loadWebContainer]);
 
-    // Build capabilities map
     const runtimes = new Map<RuntimeId, RuntimeCapability>([
         ['pyodide', {
             id: 'pyodide', name: 'Pyodide (Python)', status: pyodideStatus,
@@ -273,7 +284,6 @@ export const RuntimeProvider: React.FC<{ children: React.ReactNode }> = ({ child
         return runtimes.get(id)?.status || 'idle';
     }, [pyodideStatus, gitStatus, wcStatus]);
 
-    // Git operations
     const gitOps = {
         clone: async (options: GitCloneOptions) => { const mod = await loadGit(); await mod.gitClone(options); },
         commit: async (options: GitCommitOptions) => { const mod = await loadGit(); return mod.gitCommit(options); },
@@ -287,7 +297,6 @@ export const RuntimeProvider: React.FC<{ children: React.ReactNode }> = ({ child
         checkout: async (dir: string, branch: string) => { const mod = await loadGit(); await mod.gitCheckout(dir, branch); },
     };
 
-    // Python operations
     const pythonOps = {
         run: async (code: string, stdin?: string) => { const mod = await loadPyodide(); return mod.runPython(code, stdin); },
         installPackage: async (name: string) => { const mod = await loadPyodide(); await mod.installPyPackage(name); },
@@ -295,7 +304,6 @@ export const RuntimeProvider: React.FC<{ children: React.ReactNode }> = ({ child
         boot: async () => { await loadPyodide(); },
     };
 
-    // Node operations
     const nodeOps = {
         mountFiles: async (files: Record<string, string>) => { const mod = await loadWebContainer(); await mod.mountFiles(files); },
         run: async (command: string, args?: string[]) => { const mod = await loadWebContainer(); return mod.runNodeCommand(command, args); },

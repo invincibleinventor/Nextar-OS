@@ -97,10 +97,10 @@ export async function preloadRuntime(target: PreloadTarget): Promise<void> {
             }
         }
         preloadState.set(target, 'ready');
-        console.log(`[HackathOS] Preloaded runtime: ${target}`);
+        console.log(`[NextarOS] Preloaded runtime: ${target}`);
     } catch (err) {
         preloadState.set(target, 'error');
-        console.warn(`[HackathOS] Failed to preload runtime: ${target}`, err);
+        console.warn(`[NextarOS] Failed to preload runtime: ${target}`, err);
     }
 }
 

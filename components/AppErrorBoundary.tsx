@@ -44,7 +44,7 @@ class AppErrorBoundary extends Component<Props, State> {
                         Application Crashed
                     </h2>
 
-                    <p className="text-sm text-[--text-muted] text-center mb-4 max-w-xs">
+                    <p className="text-[13px] text-[--text-muted] text-center mb-4 max-w-xs">
                         The application encountered an unexpected error and had to stop.
                     </p>
 
@@ -57,7 +57,7 @@ class AppErrorBoundary extends Component<Props, State> {
                     <div className="flex gap-3">
                         <button
                             onClick={this.handleRestart}
-                            className="px-4 py-2 bg-accent text-[--bg-base] text-sm font-medium hover:bg-accent/80 transition-colors"
+                            className="px-4 py-2 bg-accent text-[--bg-base] text-[13px] font-medium hover:bg-accent/80 transition-colors"
                         >
                             Try Again
                         </button>

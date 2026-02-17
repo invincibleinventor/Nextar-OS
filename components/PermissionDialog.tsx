@@ -110,14 +110,14 @@ export const PermissionDialog: React.FC = () => {
                         &quot;{app?.appname || pendingRequest.appId}&quot; Would Like to {permdetails.title}
                     </h2>
 
-                    <p className="text-sm text-[--text-muted] mb-1">
+                    <p className="text-[13px] text-[--text-muted] mb-1">
                         {permdetails.description}
                     </p>
 
                     <div className="mt-3 px-3 py-2 bg-overlay w-full">
                         <div className="flex items-center gap-2 justify-center">
                             <span className="text-xl">{permdetails.icon}</span>
-                            <span className="text-sm font-medium text-[--text-muted]">
+                            <span className="text-[13px] font-medium text-[--text-muted]">
                                 {pendingRequest.permission}
                             </span>
                         </div>

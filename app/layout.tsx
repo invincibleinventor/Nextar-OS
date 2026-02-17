@@ -17,24 +17,25 @@ import { AppMenuProvider } from '@/components/AppMenuContext';
 import { ProcessProvider } from '@/components/ProcessContext';
 import { PermissionsProvider } from '@/components/PermissionsContext';
 import { ElectronProvider } from '@/components/ElectronContext';
+import { HostProvider } from '@/components/HostContext';
 
 export const metadata: Metadata = {
   title: {
-    default: 'HackathOS',
-    template: '%s | HackathOS',
+    default: 'NextarOS',
+    template: '%s | NextarOS',
   },
-  description: 'Hackathon Operating Workspace — From idea to deploy in minutes.',
-  applicationName: 'HackathOS',
-  authors: [{ name: 'HackathOS' }],
+  description: 'Your personal cloud OS. Deploy on your server, access from anywhere.',
+  applicationName: 'NextarOS',
+  authors: [{ name: 'NextarOS' }],
   generator: 'Next.js',
-  keywords: ['hackathon', 'workspace', 'IDE', 'Next.js', 'React', 'TypeScript', 'WebOS', 'developer tools'],
+  keywords: ['cloud OS', 'personal cloud', 'self-hosted', 'web desktop', 'browser OS', 'server OS', 'Next.js', 'React', 'TypeScript'],
   referrer: 'origin-when-cross-origin',
-  creator: 'HackathOS',
-  publisher: 'HackathOS',
+  creator: 'NextarOS',
+  publisher: 'NextarOS',
   openGraph: {
-    title: 'HackathOS',
-    description: 'Hackathon Operating Workspace — From idea to deploy in minutes.',
-    siteName: 'HackathOS',
+    title: 'NextarOS',
+    description: 'Your personal cloud OS. Deploy on your server, access from anywhere.',
+    siteName: 'NextarOS',
     locale: 'en_US',
     type: 'website',
     images: [
@@ -42,14 +43,14 @@ export const metadata: Metadata = {
         url: '/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'HackathOS - Hackathon Workspace',
+        alt: 'NextarOS - Your personal cloud OS',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'HackathOS',
-    description: 'Hackathon Operating Workspace — From idea to deploy in minutes.',
+    title: 'NextarOS',
+    description: 'Your personal cloud OS. Deploy on your server, access from anywhere.',
     images: ['/og-image.jpg'],
   },
   robots: {
@@ -67,16 +68,16 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'HackathOS',
+    title: 'NextarOS',
   },
 };
 
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebApplication',
-  name: 'HackathOS',
-  description: 'Hackathon Operating Workspace — From idea to deploy in minutes.',
-  applicationCategory: 'DeveloperApplication',
+  name: 'NextarOS',
+  description: 'Your personal cloud OS. Deploy on your server, access from anywhere.',
+  applicationCategory: 'DesktopEnhancementApplication',
 };
 
 export const viewport: Viewport = {
@@ -101,10 +102,16 @@ import Script from 'next/script';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ThemeProvider>
-      <html className={`bg-black ${jetbrainsMono.variable}`} lang="en" suppressHydrationWarning>
-        <head />
-        <body className="font-mono w-screen h-screen overflow-hidden bg-black antialiased">
+    <html className={`bg-black ${jetbrainsMono.variable}`} lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('theme');if(t){document.documentElement.classList.add(t)}else{document.documentElement.classList.add('dark')}}catch(e){document.documentElement.classList.add('dark')}})()`,
+          }}
+        />
+      </head>
+      <body className="font-mono w-screen h-screen overflow-hidden bg-black antialiased" suppressHydrationWarning>
+        <ThemeProvider>
           <Script
             id="service-worker"
             strategy="afterInteractive"
@@ -116,7 +123,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   navigator.serviceWorker.getRegistrations().then(function(registrations) {
                     for(let registration of registrations) {
                       if (registration.active && registration.active.scriptURL.includes('coi-serviceworker')) {
-                        console.log('[HackathOS] Unregistering conflicting COI Service Worker');
+                        console.log('[NextarOS] Unregistering conflicting COI Service Worker');
                         registration.unregister();
                       }
                     }
@@ -132,7 +139,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     e.preventDefault();
                     return;
                   }
-                  console.error('[HackathOS] Unhandled rejection:', e.reason);
+                  console.error('[NextarOS] Unhandled rejection:', e.reason);
                 });
               `,
             }}
@@ -141,6 +148,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <div className="fixed inset-0 bg-black h-[100dvh] w-screen overflow-hidden transition-colors duration-500">
 
               <ElectronProvider>
+                <HostProvider>
                 <DeviceProvider>
                   <AuthProvider>
                     <ProcessProvider>
@@ -171,6 +179,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     </ProcessProvider>
                   </AuthProvider>
                 </DeviceProvider>
+                </HostProvider>
               </ElectronProvider>
             </div>
             <script
@@ -178,8 +187,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
             />
           </WindowProvider>
+        </ThemeProvider>
         </body>
       </html>
-    </ThemeProvider>
   );
 }

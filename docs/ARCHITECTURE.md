@@ -1,6 +1,6 @@
-# HackathOS Architecture
+# NextarOS Architecture
 
-HackathOS is a web-based hackathon operating system built with Next.js, implementing proper OS concepts including process management, app isolation, permissions, a virtual filesystem, and a full Linux VM via CheerpX.
+NextarOS is a web-based hackathon operating system built with Next.js, implementing proper OS concepts including process management, app isolation, permissions, a virtual filesystem, and a full Linux VM via CheerpX.
 
 ## System Overview
 
@@ -43,7 +43,7 @@ HackathOS is a web-based hackathon operating system built with Next.js, implemen
 
 ## CheerpX Linux VM
 
-HackathOS runs a full Debian Linux distribution in the browser via CheerpX (x86-to-WebAssembly JIT compiler).
+NextarOS runs a full Debian Linux distribution in the browser via CheerpX (x86-to-WebAssembly JIT compiler).
 
 ### Boot Sequence (CheerpX)
 

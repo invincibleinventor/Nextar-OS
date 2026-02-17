@@ -77,13 +77,12 @@ export default function ApiPlayground() {
 
     return (
         <div className="flex h-full bg-[--bg-base] text-[--text-color]">
-            {/* Sidebar */}
-            <div className="w-56 border-r border-[--border-color] bg-[--bg-surface] flex flex-col">
+            <div className="w-56 border-r border-[--border-color] bg-surface flex flex-col">
                 <div className="p-2 text-xs font-medium text-[--text-muted] uppercase tracking-wider">Saved</div>
                 <div className="flex-1 overflow-y-auto">
                     {saved.map(req => (
                         <button key={req.id} onClick={() => loadRequest(req)}
-                            className="w-full text-left px-3 py-1.5 text-xs hover:bg-[--bg-overlay] truncate transition-colors">
+                            className="w-full text-left px-3 py-1.5 text-xs hover:bg-overlay truncate transition-colors">
                             <span className={`font-mono font-bold mr-1 ${METHOD_COLORS[req.method] || ''}`}>{req.method}</span>
                             <span className="text-[--text-muted]">{req.url.replace(/^https?:\/\//, '')}</span>
                         </button>
@@ -96,7 +95,7 @@ export default function ApiPlayground() {
                 <div className="flex-1 overflow-y-auto max-h-40">
                     {history.slice(0, 20).map(req => (
                         <button key={req.id} onClick={() => loadRequest(req)}
-                            className="w-full text-left px-3 py-1 text-xs hover:bg-[--bg-overlay] truncate transition-colors text-[--text-muted]">
+                            className="w-full text-left px-3 py-1 text-xs hover:bg-overlay truncate transition-colors text-[--text-muted]">
                             <span className={`font-mono font-bold mr-1 ${METHOD_COLORS[req.method] || ''}`}>{req.method}</span>
                             {req.url.replace(/^https?:\/\//, '').slice(0, 30)}
                         </button>
@@ -104,28 +103,25 @@ export default function ApiPlayground() {
                 </div>
             </div>
 
-            {/* Main */}
             <div className="flex-1 flex flex-col min-w-0">
-                {/* URL bar */}
-                <div className="flex items-center gap-2 p-3 border-b border-[--border-color] bg-[--bg-surface]">
+                <div className="flex items-center gap-2 p-3 border-b border-[--border-color] bg-surface">
                     <select value={method} onChange={e => setMethod(e.target.value)}
-                        className={`bg-[--bg-overlay] border border-[--border-color] rounded px-2 py-1.5 text-xs font-mono font-bold ${METHOD_COLORS[method] || ''}`}>
+                        className={`bg-overlay border border-[--border-color] px-2 py-1.5 text-xs font-mono font-bold ${METHOD_COLORS[method] || ''}`}>
                         {METHODS.map(m => <option key={m} value={m}>{m}</option>)}
                     </select>
                     <input value={url} onChange={e => setUrl(e.target.value)} placeholder="https://api.example.com/endpoint"
                         onKeyDown={e => e.key === 'Enter' && send()}
-                        className="flex-1 bg-[--bg-overlay] border border-[--border-color] rounded px-3 py-1.5 text-sm font-mono placeholder:text-[--text-muted] focus:outline-none focus:border-pastel-blue" />
+                        className="flex-1 bg-overlay border border-[--border-color] px-3 py-1.5 text-[13px] font-mono placeholder:text-[--text-muted] focus:outline-none focus:border-pastel-blue" />
                     <button onClick={send} disabled={loading}
-                        className="flex items-center gap-1 px-3 py-1.5 bg-pastel-blue text-white rounded text-xs font-medium hover:opacity-90 disabled:opacity-50 transition-opacity">
+                        className="flex items-center gap-1 px-3 py-1.5 bg-pastel-blue text-white text-xs font-medium hover:opacity-90 disabled:opacity-50 transition-opacity">
                         <VscSend className="w-3 h-3" /> {loading ? 'Sending...' : 'Send'}
                     </button>
-                    <button onClick={saveRequest} className="p-1.5 hover:bg-[--bg-overlay] rounded" title="Save">
+                    <button onClick={saveRequest} className="p-1.5 hover:bg-overlay" title="Save">
                         <VscSave className="w-4 h-4 text-[--text-muted]" />
                     </button>
                 </div>
 
-                {/* Tabs */}
-                <div className="flex border-b border-[--border-color] bg-[--bg-surface]">
+                <div className="flex border-b border-[--border-color] bg-surface">
                     {(['headers', 'body', 'response'] as const).map(tab => (
                         <button key={tab} onClick={() => setActiveTab(tab)}
                             className={`px-4 py-2 text-xs font-medium capitalize ${activeTab === tab ? 'border-b-2 border-pastel-blue text-pastel-blue' : 'text-[--text-muted] hover:text-[--text-color]'}`}>
@@ -141,7 +137,6 @@ export default function ApiPlayground() {
                     )}
                 </div>
 
-                {/* Content */}
                 <div className="flex-1 overflow-auto p-3">
                     {activeTab === 'headers' && (
                         <div className="space-y-2">
@@ -150,10 +145,10 @@ export default function ApiPlayground() {
                                     <input type="checkbox" checked={h.enabled} onChange={e => updateHeader(i, 'enabled', e.target.checked)}
                                         className="accent-pastel-blue" />
                                     <input value={h.key} onChange={e => updateHeader(i, 'key', e.target.value)} placeholder="Key"
-                                        className="flex-1 bg-[--bg-overlay] border border-[--border-color] rounded px-2 py-1 text-xs font-mono" />
+                                        className="flex-1 bg-overlay border border-[--border-color] px-2 py-1 text-xs font-mono" />
                                     <input value={h.value} onChange={e => updateHeader(i, 'value', e.target.value)} placeholder="Value"
-                                        className="flex-1 bg-[--bg-overlay] border border-[--border-color] rounded px-2 py-1 text-xs font-mono" />
-                                    <button onClick={() => removeHeader(i)} className="p-1 hover:bg-[--bg-overlay] rounded text-[--text-muted]">
+                                        className="flex-1 bg-overlay border border-[--border-color] px-2 py-1 text-xs font-mono" />
+                                    <button onClick={() => removeHeader(i)} className="p-1 hover:bg-overlay text-[--text-muted]">
                                         <VscTrash className="w-3 h-3" />
                                     </button>
                                 </div>
@@ -166,14 +161,14 @@ export default function ApiPlayground() {
 
                     {activeTab === 'body' && (
                         <textarea value={body} onChange={e => setBody(e.target.value)} placeholder='{"key": "value"}'
-                            className="w-full h-full bg-[--bg-overlay] border border-[--border-color] rounded p-3 text-xs font-mono resize-none focus:outline-none" />
+                            className="w-full h-full bg-overlay border border-[--border-color] p-3 text-xs font-mono resize-none focus:outline-none" />
                     )}
 
                     {activeTab === 'response' && response && (
                         <div className="space-y-3">
                             <div className="text-xs text-[--text-muted]">
                                 Response Headers:
-                                <div className="mt-1 bg-[--bg-overlay] rounded p-2 font-mono space-y-0.5">
+                                <div className="mt-1 bg-overlay p-2 font-mono space-y-0.5">
                                     {Object.entries(response.headers).map(([k, v]) => (
                                         <div key={k}><span className="text-pastel-blue">{k}</span>: {v}</div>
                                     ))}
@@ -181,7 +176,7 @@ export default function ApiPlayground() {
                             </div>
                             <div className="text-xs text-[--text-muted]">
                                 Body:
-                                <pre className="mt-1 bg-[--bg-overlay] rounded p-3 font-mono text-[--text-color] overflow-auto max-h-[60vh] whitespace-pre-wrap">
+                                <pre className="mt-1 bg-overlay p-3 font-mono text-[--text-color] overflow-auto max-h-[60vh] whitespace-pre-wrap">
                                     {(() => { try { return JSON.stringify(JSON.parse(response.body), null, 2); } catch { return response.body; } })()}
                                 </pre>
                             </div>
@@ -191,7 +186,7 @@ export default function ApiPlayground() {
                     {activeTab === 'response' && !response && (
                         <div className="flex flex-col items-center justify-center h-full text-[--text-muted]">
                             <IoCodeOutline className="w-12 h-12 mb-2 opacity-30" />
-                            <p className="text-sm">Send a request to see the response</p>
+                            <p className="text-[13px]">Send a request to see the response</p>
                         </div>
                     )}
                 </div>

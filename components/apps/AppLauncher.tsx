@@ -62,15 +62,15 @@ export default function AppLauncher({ isFocused }: AppLauncherProps) {
                 <IoGrid size={64} className="text-[--text-muted] mb-4" />
                 <p className="text-xl font-medium mb-2">Linux App Launcher</p>
                 <p className="text-[--text-muted]">Only available in Electron mode</p>
-                <p className="text-[--text-muted] text-sm mt-4">Run with: npm run electron:dev</p>
+                <p className="text-[--text-muted] text-[13px] mt-4">Run with: npm run electron:dev</p>
             </div>
         );
     }
 
     return (
         <div className="h-full flex flex-col bg-[--bg-base] text-[--text-color]">
-            <div className="h-12 bg-[--bg-surface] border-b border-[--border-color] flex items-center px-4 shrink-0 gap-3">
-                <div className="ml-16 text-sm font-medium">Applications</div>
+            <div className="h-12 bg-surface border-b border-[--border-color] flex items-center px-4 shrink-0 gap-3">
+                <div className="ml-16 text-[13px] font-medium">Applications</div>
                 <div className="flex-1 flex justify-center">
                     <div className="relative w-full max-w-md">
                         <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[--text-muted]" size={16} />
@@ -79,7 +79,7 @@ export default function AppLauncher({ isFocused }: AppLauncherProps) {
                             value={searchquery}
                             onChange={(e) => setsearchquery(e.target.value)}
                             placeholder="Search installed apps..."
-                            className="w-full bg-overlay border border-[--border-color] pl-9 pr-4 py-1.5 text-sm outline-none placeholder-[--text-muted]"
+                            className="w-full bg-overlay border border-[--border-color] pl-9 pr-4 py-1.5 text-[13px] outline-none placeholder-[--text-muted]"
                             autoFocus
                         />
                     </div>
@@ -88,20 +88,20 @@ export default function AppLauncher({ isFocused }: AppLauncherProps) {
                     <button
                         onClick={loadapps}
                         disabled={loading}
-                        className="p-1.5 rounded hover:bg-overlay"
+                        className="p-1.5 hover:bg-overlay"
                     >
                         <IoRefresh size={16} className={loading ? 'animate-spin' : ''} />
                     </button>
                     <div className="flex bg-overlay border border-[--border-color] p-0.5">
                         <button
                             onClick={() => setviewmode('grid')}
-                            className={`p-1.5 rounded ${viewmode === 'grid' ? 'bg-accent' : ''}`}
+                            className={`p-1.5 ${viewmode === 'grid' ? 'bg-accent' : ''}`}
                         >
                             <IoGrid size={14} />
                         </button>
                         <button
                             onClick={() => setviewmode('list')}
-                            className={`p-1.5 rounded ${viewmode === 'list' ? 'bg-accent' : ''}`}
+                            className={`p-1.5 ${viewmode === 'list' ? 'bg-accent' : ''}`}
                         >
                             <IoList size={14} />
                         </button>
@@ -183,7 +183,7 @@ export default function AppLauncher({ isFocused }: AppLauncherProps) {
                 )}
             </div>
 
-            <div className="h-8 bg-[--bg-surface] border-t border-[--border-color] flex items-center px-4 text-xs text-[--text-muted]">
+            <div className="h-8 bg-surface border-t border-[--border-color] flex items-center px-4 text-xs text-[--text-muted]">
                 <span>{filteredapps.length} applications</span>
                 <span className="ml-auto">Click to launch • Double-click to run in terminal</span>
             </div>

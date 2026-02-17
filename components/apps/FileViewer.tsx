@@ -187,7 +187,7 @@ export default function FileViewer({ content: initialContent, title: initialTitl
                 <div className="h-[50px] border-b border-[--border-color] flex items-center justify-between px-4 bg-surface draggable-region">
                     <div className={`flex items-center gap-2 `}>
                         <IoDocumentTextOutline className="text-[--text-muted]" />
-                        <span className="text-sm font-semibold truncate">{viewingTitle}</span>
+                        <span className="text-[13px] font-semibold truncate">{viewingTitle}</span>
                     </div>
                     <button
                         onClick={handleOpenClick}
@@ -281,7 +281,7 @@ export default function FileViewer({ content: initialContent, title: initialTitl
                         </button>
                     </div>
 
-                    <div className="flex-1 font-semibold text-sm text-center truncate px-2">
+                    <div className="flex-1 font-semibold text-[13px] text-center truncate px-2">
                         {currentPath[currentPath.length - 1]}
                     </div>
                     <div className="w-[60px]"></div>
@@ -298,7 +298,7 @@ export default function FileViewer({ content: initialContent, title: initialTitl
                         {currentFiles.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-20 text-[--text-muted]">
                                 <span className="text-4xl mb-2 opacity-50">folder_open</span>
-                                <span className="text-sm">Empty Folder</span>
+                                <span className="text-[13px]">Empty Folder</span>
                             </div>
                         ) : (
                             currentFiles.map((item) => {

@@ -42,7 +42,7 @@ const apicategories: ApiCategory[] = [
                 ],
                 examples: [
                     { lang: 'JavaScript', code: `const { addwindow } = useWindows();\n\naddwindow({\n  componentname: 'apps/MyApp',\n  appname: 'My App',\n  icon: '/myapp.png',\n  title: 'Custom Title'\n});` },
-                    { lang: 'Python', code: `# Python equivalent (via Piston API)\n# Window APIs are JS-only in HackathOS\n# Use the Code Editor to write JS apps` },
+                    { lang: 'Python', code: `# Python equivalent (via Piston API)\n# Window APIs are JS-only in NextarOS\n# Use the Code Editor to write JS apps` },
                 ]
             },
             { name: 'removewindow(id)', desc: 'Close a window by its unique ID.', usage: `removewindow('window-123')`, returns: 'void', params: [{ name: 'id', type: 'string', desc: 'Window ID to close' }] },
@@ -425,7 +425,7 @@ export default function ApiDocs({ windowId }: { windowId?: string }) {
                                 {selectedCat && <span className="text-[10px] text-[--text-muted]">{selectedCat}</span>}
                             </div>
                             <h2 className="text-xl font-bold font-mono select-text text-[--text-color]">{selectedapi.name}</h2>
-                            <p className="text-sm text-[--text-muted] mt-2 leading-relaxed">{selectedapi.desc}</p>
+                            <p className="text-[13px] text-[--text-muted] mt-2 leading-relaxed">{selectedapi.desc}</p>
                         </div>
 
                         {selectedapi.params && selectedapi.params.length > 0 && (
@@ -446,7 +446,7 @@ export default function ApiDocs({ windowId }: { windowId?: string }) {
                         {selectedapi.returns && (
                             <div>
                                 <h3 className="text-xs font-semibold uppercase text-[--text-muted] tracking-wider mb-2">Returns</h3>
-                                <code className="text-sm bg-overlay px-2 py-1 select-text text-[--text-color]">{selectedapi.returns}</code>
+                                <code className="text-[13px] bg-overlay px-2 py-1 select-text text-[--text-color]">{selectedapi.returns}</code>
                             </div>
                         )}
 
@@ -478,7 +478,7 @@ export default function ApiDocs({ windowId }: { windowId?: string }) {
                                     <div key={s.step} className="flex items-start gap-3">
                                         <div className="w-6 h-6 bg-accent flex items-center justify-center text-xs font-bold text-[--bg-base] shrink-0">{s.step}</div>
                                         <div>
-                                            <div className="text-sm font-medium text-[--text-color]">{s.title}</div>
+                                            <div className="text-[13px] font-medium text-[--text-color]">{s.title}</div>
                                             <div className="text-xs text-[--text-muted]">{s.desc}</div>
                                         </div>
                                     </div>
@@ -489,8 +489,8 @@ export default function ApiDocs({ windowId }: { windowId?: string }) {
                                 <div className="text-xs font-semibold uppercase text-[--text-muted] tracking-wider mb-2">Try this example</div>
                                 <CodeTabs
                                     examples={[
-                                        { lang: 'JavaScript', code: `function greet(name) {\n  console.log('Hello, ' + name + '!');\n  console.log('Welcome to HackathOS');\n}\n\ngreet('Developer');\nconsole.log('2 + 2 =', 2 + 2);` },
-                                        { lang: 'Python', code: `def greet(name):\n    print(f'Hello, {name}!')\n    print('Welcome to HackathOS')\n\ngreet('Developer')\nprint(f'2 + 2 = {2 + 2}')` },
+                                        { lang: 'JavaScript', code: `function greet(name) {\n  console.log('Hello, ' + name + '!');\n  console.log('Welcome to NextarOS');\n}\n\ngreet('Developer');\nconsole.log('2 + 2 =', 2 + 2);` },
+                                        { lang: 'Python', code: `def greet(name):\n    print(f'Hello, {name}!')\n    print('Welcome to NextarOS')\n\ngreet('Developer')\nprint(f'2 + 2 = {2 + 2}')` },
                                     ]}
                                     usage=""
                                     copiedtext={copiedtext}
@@ -530,7 +530,7 @@ export default function ApiDocs({ windowId }: { windowId?: string }) {
                                                     className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-overlay transition-colors"
                                                 >
                                                     <MethodBadge name={api.returns || ''} />
-                                                    <code className="text-sm font-medium text-[--text-color] flex-1">{api.name}</code>
+                                                    <code className="text-[13px] font-medium text-[--text-color] flex-1">{api.name}</code>
                                                     {api.returns && <code className="text-[10px] text-[--text-muted] hidden sm:block">{api.returns}</code>}
                                                     {isExpanded ? <IoChevronDown size={14} className="text-[--text-muted]" /> : <IoChevronForward size={14} className="text-[--text-muted]" />}
                                                 </button>
@@ -622,7 +622,7 @@ export default function ApiDocs({ windowId }: { windowId?: string }) {
                         <IoBook className="text-[--bg-base]" size={16} />
                     </div>
                     <div className="flex-1 min-w-0">
-                        <h1 className="font-bold text-sm text-[--text-color]">API Docs</h1>
+                        <h1 className="font-bold text-[13px] text-[--text-color]">API Docs</h1>
                         <p className="text-[10px] text-[--text-muted]">{totalapis} APIs</p>
                     </div>
                 </div>
@@ -641,7 +641,7 @@ export default function ApiDocs({ windowId }: { windowId?: string }) {
                         <IoBook className="text-[--bg-base]" size={16} />
                     </div>
                     <div>
-                        <h1 className="font-bold text-sm text-[--text-color]">API Documentation</h1>
+                        <h1 className="font-bold text-[13px] text-[--text-color]">API Documentation</h1>
                         <p className="text-[10px] text-[--text-muted]">{totalapis} APIs across {apicategories.length} categories</p>
                     </div>
                 </div>

@@ -26,11 +26,19 @@ interface UpdateInfo {
     progress?: number;
 }
 
+interface ShellInfo {
+    isShellMode: boolean;
+    isLowMem: boolean;
+    totalMemMB: number;
+    disableGPU: boolean;
+}
+
 interface ElectronContextType {
     iselectron: boolean;
     platforminfo: PlatformInfo | null;
     nativetheme: 'light' | 'dark';
     updateinfo: UpdateInfo;
+    shellinfo: ShellInfo;
     checkforupdates: () => Promise<void>;
     installupdates: () => void;
     minimizewindow: () => void;
@@ -54,11 +62,19 @@ const defaultplatform: PlatformInfo = {
     freemem: 0
 };
 
+const defaultshellinfo: ShellInfo = {
+    isShellMode: false,
+    isLowMem: false,
+    totalMemMB: 0,
+    disableGPU: false
+};
+
 const ElectronContext = createContext<ElectronContextType>({
     iselectron: false,
     platforminfo: defaultplatform,
     nativetheme: 'dark',
     updateinfo: { available: false },
+    shellinfo: defaultshellinfo,
     checkforupdates: async () => { },
     installupdates: () => { },
     minimizewindow: () => { },
@@ -71,6 +87,7 @@ export function ElectronProvider({ children }: { children: React.ReactNode }) {
     const [platforminfo, setplatforminfo] = useState<PlatformInfo | null>(null);
     const [nativetheme, setnativetheme] = useState<'light' | 'dark'>('dark');
     const [updateinfo, setupdateinfo] = useState<UpdateInfo>({ available: false });
+    const [shellinfo, setshellinfo] = useState<ShellInfo>(defaultshellinfo);
     const [iswindowmaximized, setiswindowmaximized] = useState(false);
 
     useEffect(() => {
@@ -83,6 +100,15 @@ export function ElectronProvider({ children }: { children: React.ReactNode }) {
 
             const theme = await getnativetheme();
             setnativetheme(theme);
+
+            // Load shell/performance info
+            if (iselectron && electronapi?.shellinfo) {
+                try {
+                    const si = await electronapi.shellinfo.get();
+                    setshellinfo(si);
+                } catch { }
+                electronapi.shellinfo.oninfo((si: ShellInfo) => setshellinfo(si));
+            }
         }
         init();
     }, []);
@@ -104,14 +130,14 @@ export function ElectronProvider({ children }: { children: React.ReactNode }) {
 
         electronapi.events.onglobalshortcut((action: string) => {
             if (action === 'search') {
-                window.dispatchEvent(new CustomEvent('nextarde:spotlight'));
+                window.dispatchEvent(new CustomEvent('nextaros:spotlight'));
             } else if (action === 'app-switcher') {
-                window.dispatchEvent(new CustomEvent('nextarde:appswitcher'));
+                window.dispatchEvent(new CustomEvent('nextaros:appswitcher'));
             }
         });
 
         electronapi.events.onpowerevent((event: string) => {
-            window.dispatchEvent(new CustomEvent('nextarde:power', { detail: { event } }));
+            window.dispatchEvent(new CustomEvent('nextaros:power', { detail: { event } }));
         });
     }, []);
 
@@ -154,6 +180,7 @@ export function ElectronProvider({ children }: { children: React.ReactNode }) {
             platforminfo,
             nativetheme,
             updateinfo,
+            shellinfo,
             checkforupdates: handlecheckforupdates,
             installupdates: handleinstallupdates,
             minimizewindow: handleminimize,

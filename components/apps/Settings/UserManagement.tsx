@@ -174,7 +174,7 @@ export default function UserManagement() {
                 </div>
                 <div className="flex-1">
                     <div className="font-bold text-lg">{currentUser?.name}</div>
-                    <div className="text-sm text-[--text-muted]">@{currentUser?.username}</div>
+                    <div className="text-[13px] text-[--text-muted]">@{currentUser?.username}</div>
                     <div className={`text-xs mt-1 px-2 py-0.5 inline-block ${currentUser?.role === 'admin'
                         ? 'bg-overlay text-pastel-blue'
                         : 'bg-overlay text-[--text-muted]'
@@ -184,7 +184,7 @@ export default function UserManagement() {
                 </div>
                 <button
                     onClick={() => currentUser && handleSelectUser(currentUser)}
-                    className="px-3 py-1.5 text-sm text-accent hover:bg-overlay transition-colors"
+                    className="px-3 py-1.5 text-[13px] text-accent hover:bg-overlay transition-colors"
                 >
                     Edit
                 </button>
@@ -199,7 +199,7 @@ export default function UserManagement() {
                                     <Image src={u.avatar || "/pfp.png"} alt="Profile" width={40} height={40} className="object-cover" />
                                 </div>
                                 <div>
-                                    <div className="font-medium text-sm">{u.name}</div>
+                                    <div className="font-medium text-[13px]">{u.name}</div>
                                     <div className="text-xs text-[--text-muted]">{u.role === 'admin' ? 'Admin' : 'Standard'}</div>
                                 </div>
                             </div>
@@ -215,7 +215,7 @@ export default function UserManagement() {
                     className="flex items-center gap-2 px-4 py-3 mt-4 bg-surface text-accent border border-[--border-color] transition-colors w-full"
                 >
                     <IoAdd size={20} />
-                    <span className="text-sm font-medium">Add Account...</span>
+                    <span className="text-[13px] font-medium">Add Account...</span>
                 </button>
             )}
         </div>
@@ -264,7 +264,7 @@ export default function UserManagement() {
                                         <div>
                                             <label className="text-xs font-semibold text-[--text-muted] mb-1 block">Full Name</label>
                                             <input
-                                                className="w-full bg-overlay border border-[--border-color] px-3 py-1.5 text-sm"
+                                                className="w-full bg-overlay border border-[--border-color] px-3 py-1.5 text-[13px]"
                                                 value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })}
                                                 placeholder="John Doe" required
                                             />
@@ -272,7 +272,7 @@ export default function UserManagement() {
                                         <div>
                                             <label className="text-xs font-semibold text-[--text-muted] mb-1 block">Account Name</label>
                                             <input
-                                                className="w-full bg-overlay border border-[--border-color] px-3 py-1.5 text-sm"
+                                                className="w-full bg-overlay border border-[--border-color] px-3 py-1.5 text-[13px]"
                                                 value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value.toLowerCase() })}
                                                 placeholder="john" required pattern="[a-z0-9_]+"
                                             />
@@ -285,7 +285,7 @@ export default function UserManagement() {
                                         <label className="text-xs font-semibold text-[--text-muted] mb-1 block">Name</label>
                                         <input
                                             disabled={!canEdit}
-                                            className="w-full bg-transparent border-b border-[--border-color] py-1 text-sm text-[--text-color] focus:border-accent outline-none"
+                                            className="w-full bg-transparent border-b border-[--border-color] py-1 text-[13px] text-[--text-color] focus:border-accent outline-none"
                                             value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })}
                                         />
                                     </div>
@@ -300,7 +300,7 @@ export default function UserManagement() {
                                     <input
                                         type="password"
                                         disabled={!canEdit}
-                                        className="w-full bg-overlay border border-[--border-color] px-3 py-1.5 text-sm"
+                                        className="w-full bg-overlay border border-[--border-color] px-3 py-1.5 text-[13px]"
                                         value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })}
                                         placeholder={!isCreating ? "New password" : "Required"}
                                         required={isCreating}
@@ -311,7 +311,7 @@ export default function UserManagement() {
                                         <label className="text-xs font-semibold text-[--text-muted] mb-1 block">Confirm Password</label>
                                         <input
                                             type="password"
-                                            className="w-full bg-overlay border border-[--border-color] px-3 py-1.5 text-sm"
+                                            className="w-full bg-overlay border border-[--border-color] px-3 py-1.5 text-[13px]"
                                             value={formData.confirmPassword} onChange={e => setFormData({ ...formData, confirmPassword: e.target.value })}
                                             placeholder="Confirm password"
                                             required
@@ -320,7 +320,7 @@ export default function UserManagement() {
                                 )}
                                 {isAdmin && (
                                     <div className="flex items-center justify-between pt-2">
-                                        <span className="text-sm">Allow user to administer this computer</span>
+                                        <span className="text-[13px]">Allow user to administer this computer</span>
                                         <input
                                             type="checkbox"
                                             checked={formData.role === 'admin'}
@@ -349,7 +349,7 @@ export default function UserManagement() {
                         )}
 
                         {isAdmin && !isEditingSelf && !isCreating && (
-                            <button type="button" onClick={handleDelete} className="w-full text-pastel-red text-sm hover:underline">
+                            <button type="button" onClick={handleDelete} className="w-full text-pastel-red text-[13px] hover:underline">
                                 Delete User...
                             </button>
                         )}
@@ -375,7 +375,7 @@ export default function UserManagement() {
                         <div className="w-16 h-16 mt-auto bg-overlay  flex items-center justify-center mb-4">
                             <IoPerson size={32} className="opacity-20" />
                         </div>
-                        <p className="text-sm mb-auto">Select a user to view details</p>
+                        <p className="text-[13px] mb-auto">Select a user to view details</p>
                     </div>
                 )}
             </div>

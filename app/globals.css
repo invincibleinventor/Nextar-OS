@@ -536,6 +536,11 @@ body {
 .rich-text-editor br {
   display: block;
 }
+.rich-text-editor:empty::before {
+  content: attr(data-placeholder);
+  color: var(--text-muted);
+  pointer-events: none;
+}
 
 /* Accent button text: light text in light mode, dark text in dark mode */
 .bg-accent {

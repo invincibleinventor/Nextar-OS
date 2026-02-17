@@ -46,7 +46,7 @@ const TemplateCard: React.FC<{
                     <span style={{ color: categoryColors[template.category] }}>{categoryIcons[template.category]}</span> {template.category}
                 </div>
             </div>
-            <h3 className="text-sm font-semibold text-[--text-color] mb-1">{template.name}</h3>
+            <h3 className="text-[13px] font-semibold text-[--text-color] mb-1">{template.name}</h3>
             <p className="text-[11px] text-[--text-muted] mb-3 line-clamp-2">{template.description}</p>
             <div className="flex flex-wrap gap-1">
                 {template.stack.map(s => (
@@ -80,7 +80,7 @@ const ProjectCard: React.FC<{
                     </button>
                 </div>
             </div>
-            <h3 className="text-sm font-semibold text-[--text-color] mb-0.5">{project.name}</h3>
+            <h3 className="text-[13px] font-semibold text-[--text-color] mb-0.5">{project.name}</h3>
             {project.description && (
                 <p className="text-[11px] text-[--text-muted] mb-2 line-clamp-1">{project.description}</p>
             )}
@@ -146,8 +146,8 @@ const CreateProjectDialog: React.FC<{
                         <input
                             value={name}
                             onChange={e => setName(e.target.value)}
-                            placeholder="my-hackathon-project"
-                            className="w-full bg-overlay border border-transparent px-3 py-2 text-sm text-[--text-color] outline-none focus:border-accent"
+                            placeholder="my-project"
+                            className="w-full bg-overlay border border-transparent px-3 py-2 text-[13px] text-[--text-color] outline-none focus:border-accent"
                             autoFocus
                         />
                     </div>
@@ -157,7 +157,7 @@ const CreateProjectDialog: React.FC<{
                             value={description}
                             onChange={e => setDescription(e.target.value)}
                             placeholder="What are you building?"
-                            className="w-full bg-overlay border border-transparent px-3 py-2 text-sm text-[--text-color] outline-none focus:border-accent"
+                            className="w-full bg-overlay border border-transparent px-3 py-2 text-[13px] text-[--text-color] outline-none focus:border-accent"
                         />
                     </div>
                 </div>
@@ -170,13 +170,13 @@ const CreateProjectDialog: React.FC<{
                 </div>
 
                 <div className="flex gap-2">
-                    <button onClick={onClose} className="flex-1 py-2 bg-overlay hover:bg-[--border-color] text-[--text-muted] text-sm transition">
+                    <button onClick={onClose} className="flex-1 py-2 bg-overlay hover:bg-[--border-color] text-[--text-muted] text-[13px] transition">
                         Cancel
                     </button>
                     <button
                         onClick={() => { if (name.trim()) onCreate(name.trim(), description.trim()); }}
                         disabled={!name.trim()}
-                        className="flex-1 py-2 bg-accent hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-[--bg-base] text-sm font-medium flex items-center justify-center gap-1.5 transition"
+                        className="flex-1 py-2 bg-accent hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-[--bg-base] text-[13px] font-medium flex items-center justify-center gap-1.5 transition"
                     >
                         <IoRocketOutline size={14} /> Create Project
                     </button>
@@ -274,9 +274,9 @@ export default function ProjectDashboard({ windowId, appId = 'projectdashboard',
                 <div className="flex items-center justify-between mb-4">
                     <div>
                         <h1 className="text-xl font-bold flex items-center gap-2">
-                            <IoRocketOutline size={22} /> Hackathon Workspace
+                            <IoRocketOutline size={22} /> Project Workspace
                         </h1>
-                        <p className="text-xs text-[--text-muted] mt-0.5">From idea to deploy in minutes</p>
+                        <p className="text-xs text-[--text-muted] mt-0.5">Build, code, and ship</p>
                     </div>
                     <div className="flex items-center gap-0 border border-[--border-color]">
                         <button
@@ -301,7 +301,7 @@ export default function ProjectDashboard({ windowId, appId = 'projectdashboard',
                         value={searchQuery}
                         onChange={e => setSearchQuery(e.target.value)}
                         placeholder={view === 'projects' ? 'Search projects...' : 'Search templates...'}
-                        className="w-full bg-overlay border border-transparent pl-9 pr-3 py-2 text-sm text-[--text-color] outline-none focus:border-accent placeholder:text-[--text-muted]"
+                        className="w-full bg-overlay border border-transparent pl-9 pr-3 py-2 text-[13px] text-[--text-color] outline-none focus:border-accent placeholder:text-[--text-muted]"
                     />
                 </div>
 
@@ -327,7 +327,7 @@ export default function ProjectDashboard({ windowId, appId = 'projectdashboard',
                     <>
                         {isLoading ? (
                             <div className="flex items-center justify-center py-20">
-                                <div className="text-[--text-muted] text-sm">Loading projects...</div>
+                                <div className="text-[--text-muted] text-[13px]">Loading projects...</div>
                             </div>
                         ) : filteredProjects.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -336,7 +336,7 @@ export default function ProjectDashboard({ windowId, appId = 'projectdashboard',
                                 <div className="text-xs text-[--text-muted] opacity-60 mb-4">Create your first project from a template</div>
                                 <button
                                     onClick={() => setView('templates')}
-                                    className="px-4 py-2 bg-accent text-[--bg-base] text-sm font-medium flex items-center gap-1.5 transition hover:opacity-90"
+                                    className="px-4 py-2 bg-accent text-[--bg-base] text-[13px] font-medium flex items-center gap-1.5 transition hover:opacity-90"
                                 >
                                     <IoAddOutline size={14} /> New Project
                                 </button>
@@ -344,7 +344,7 @@ export default function ProjectDashboard({ windowId, appId = 'projectdashboard',
                         ) : (
                             <>
                                 <div className="flex items-center justify-between mb-4">
-                                    <span className="text-sm text-[--text-muted]">{filteredProjects.length} project{filteredProjects.length !== 1 ? 's' : ''}</span>
+                                    <span className="text-[13px] text-[--text-muted]">{filteredProjects.length} project{filteredProjects.length !== 1 ? 's' : ''}</span>
                                     <button
                                         onClick={() => setView('templates')}
                                         className="px-3 py-1.5 bg-accent text-[--bg-base] text-xs font-medium flex items-center gap-1 transition hover:opacity-90"
@@ -368,7 +368,7 @@ export default function ProjectDashboard({ windowId, appId = 'projectdashboard',
                 ) : (
                     <>
                         <div className="mb-4">
-                            <span className="text-sm text-[--text-muted]">{filteredTemplates.length} template{filteredTemplates.length !== 1 ? 's' : ''}</span>
+                            <span className="text-[13px] text-[--text-muted]">{filteredTemplates.length} template{filteredTemplates.length !== 1 ? 's' : ''}</span>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                             {filteredTemplates.map(template => (

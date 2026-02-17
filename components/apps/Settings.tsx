@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
-import { IoChevronForward, IoChevronBack, IoColorPaletteOutline, IoNotificationsOutline, IoSettingsOutline, IoWifi, IoBluetooth, IoGlobeOutline, IoMoon, IoAccessibilityOutline, IoSearch, IoImageOutline, IoVolumeHigh, IoCheckmark, IoRefresh } from 'react-icons/io5';
+import { IoChevronForward, IoChevronBack, IoColorPaletteOutline, IoNotificationsOutline, IoSettingsOutline, IoWifi, IoBluetooth, IoGlobeOutline, IoMoon, IoAccessibilityOutline, IoSearch, IoImageOutline, IoVolumeHigh, IoCheckmark, IoRefresh, IoServerOutline, IoCloudOutline } from 'react-icons/io5';
 import { useSettings } from '../SettingsContext';
 import { useTheme } from '../ThemeContext';
 import { useWindows } from '../WindowContext';
@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import UserManagement from './Settings/UserManagement';
 import { IoPeopleOutline } from 'react-icons/io5';
 import { iselectron, wifi as wifiapi, bluetooth as bluetoothapi, audio as audioapi } from '@/utils/platform';
+import { useCheerpXSafe } from '../CheerpXContext';
 
 const sidebaritems = [
     { id: 'wifi', label: 'Wi-Fi', icon: IoWifi, color: '#8aadf4' },
@@ -26,6 +27,8 @@ const sidebaritems = [
     { id: 'appearance', label: 'Appearance', icon: IoColorPaletteOutline, color: '#f5a97f' },
     { id: 'accessibility', label: 'Accessibility', icon: IoAccessibilityOutline, color: '#8bd5ca' },
     { id: 'wallpaper', label: 'Wallpaper', icon: IoImageOutline, color: '#8aadf4' },
+    { type: 'spacer' },
+    { id: 'storage', label: 'Storage', icon: IoServerOutline, color: '#a6da95' },
 ];
 
 export default function Settings({ initialPage, windowId }: { initialPage?: string, windowId?: string }) {
@@ -38,6 +41,9 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
     const { user } = useAuth();
     const containerref = useRef<HTMLDivElement>(null);
     const [isnarrow, setisnarrow] = useState(false);
+    const cheerpx = useCheerpXSafe();
+    const [storageInfo, setStorageInfo] = useState<{ projectCount: number; cxCacheSize: string } | null>(null);
+    const [clearingCache, setClearingCache] = useState(false);
 
     const [wifienabled, setwifienabled] = useState(false);
     const [wificonnected, setwificonnected] = useState(false);
@@ -105,6 +111,25 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
             fetchbtdevices();
         } else if (activetab === 'sound') {
             fetchaudiostatus();
+        } else if (activetab === 'storage') {
+            (async () => {
+                try {
+                    const { getAllProjects } = await import('../../utils/projectDB');
+                    const projects = await getAllProjects();
+                    let cxSize = 'Not cached';
+                    try {
+                        const estimate = await navigator.storage?.estimate();
+                        if (estimate?.usage) {
+                            const mb = (estimate.usage / (1024 * 1024)).toFixed(1);
+                            cxSize = `~${mb} MB total`;
+                        }
+                    } catch {
+                    }
+                    setStorageInfo({ projectCount: projects.length, cxCacheSize: cxSize });
+                } catch {
+                    setStorageInfo({ projectCount: 0, cxCacheSize: 'Unknown' });
+                }
+            })();
         }
     }, [activetab, fetchwifistatus, fetchwifinetworks, fetchbtstatus, fetchbtdevices, fetchaudiostatus]);
 
@@ -188,14 +213,14 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                                 <div className="w-14 h-14 bg-accent mb-3 flex items-center justify-center text-[--bg-base]">
                                     <IoSettingsOutline size={28} />
                                 </div>
-                                <h2 className="text-lg font-bold text-[--text-color]">HackathOS</h2>
+                                <h2 className="text-lg font-bold text-[--text-color]">NextarOS</h2>
                                 <p className="text-[12px] text-[--text-muted] mt-0.5">Version 14.5 (23A5212a)</p>
                             </div>
 
                             <div className="space-y-4">
                                 <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3">About</div>
                                 <SettingsGroup>
-                                    <SettingsRow label="Name" value="HackathOS" onClick={() => { }} />
+                                    <SettingsRow label="Name" value="NextarOS" onClick={() => { }} />
                                     <SettingsRow label="Software Update" value="Up to date" onClick={() => { }} />
                                     <SettingsRow label="Storage" value="256 GB" onClick={() => { }} last />
                                 </SettingsGroup>
@@ -528,9 +553,9 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                                     </div>
                                     <SettingsGroup>
                                         {wifiloading ? (
-                                            <div className="p-4 text-center text-[--text-muted] text-sm">Scanning...</div>
+                                            <div className="p-4 text-center text-[--text-muted] text-[13px]">Scanning...</div>
                                         ) : wifinetworks.length === 0 ? (
-                                            <div className="p-4 text-center text-[--text-muted] text-sm">No networks found</div>
+                                            <div className="p-4 text-center text-[--text-muted] text-[13px]">No networks found</div>
                                         ) : (
                                             wifinetworks.map((net, i) => (
                                                 <SettingsRow
@@ -553,7 +578,7 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                             )}
 
                             {!iselectron && (
-                                <div className="mt-4 p-4 bg-pastel-yellow/10 border border-pastel-yellow/30 text-sm text-pastel-yellow">
+                                <div className="mt-4 p-4 bg-pastel-yellow/10 border border-pastel-yellow/30 text-[13px] text-pastel-yellow">
                                     Wi-Fi controls require native mode (Electron)
                                 </div>
                             )}
@@ -586,9 +611,9 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                                     </div>
                                     <SettingsGroup>
                                         {btloading ? (
-                                            <div className="p-4 text-center text-[--text-muted] text-sm">Scanning...</div>
+                                            <div className="p-4 text-center text-[--text-muted] text-[13px]">Scanning...</div>
                                         ) : btdevices.length === 0 ? (
-                                            <div className="p-4 text-center text-[--text-muted] text-sm">No devices found</div>
+                                            <div className="p-4 text-center text-[--text-muted] text-[13px]">No devices found</div>
                                         ) : (
                                             btdevices.map((dev, i) => (
                                                 <SettingsRow
@@ -604,7 +629,7 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                             )}
 
                             {!iselectron && (
-                                <div className="mt-4 p-4 bg-pastel-yellow/10 border border-pastel-yellow/30 text-sm text-pastel-yellow">
+                                <div className="mt-4 p-4 bg-pastel-yellow/10 border border-pastel-yellow/30 text-[13px] text-pastel-yellow">
                                     Bluetooth controls require native mode (Electron)
                                 </div>
                             )}
@@ -617,8 +642,8 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                             <SettingsGroup>
                                 <div className="p-4">
                                     <div className="flex items-center justify-between mb-3">
-                                        <span className="text-sm font-medium text-[--text-color]">Volume</span>
-                                        <span className="text-sm text-[--text-muted]">{volume}%</span>
+                                        <span className="text-[13px] font-medium text-[--text-color]">Volume</span>
+                                        <span className="text-[13px] text-[--text-muted]">{volume}%</span>
                                     </div>
                                     <input
                                         type="range"
@@ -657,18 +682,194 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                             </SettingsGroup>
 
                             {!iselectron && (
-                                <div className="mt-4 p-4 bg-pastel-yellow/10 border border-pastel-yellow/30 text-sm text-pastel-yellow">
+                                <div className="mt-4 p-4 bg-pastel-yellow/10 border border-pastel-yellow/30 text-[13px] text-pastel-yellow">
                                     System volume controls require native mode (Electron)
                                 </div>
                             )}
                         </>
                     )}
 
-                    {activetab !== 'general' && activetab !== 'appearance' && activetab !== 'users' && activetab !== 'wallpaper' && activetab !== 'wifi' && activetab !== 'bluetooth' && activetab !== 'sound' && (
+                    {activetab === 'network' && (
+                        <>
+                            {!iselectron && (
+                                <>
+                                    <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">CheerpX Network (Tailscale)</div>
+                                    <SettingsGroup>
+                                        <SettingsRow
+                                            label="Status"
+                                            value={
+                                                !cheerpx ? 'VM not running' :
+                                                cheerpx.networkState === 'connected' ? 'Connected' :
+                                                cheerpx.networkState === 'connecting' ? 'Connecting...' :
+                                                cheerpx.networkState === 'login-ready' ? 'Login Required' :
+                                                'Disconnected'
+                                            }
+                                        />
+                                        {cheerpx && cheerpx.networkState === 'disconnected' && (
+                                            <div className="px-4 py-3 border-t border-[--border-color]">
+                                                <button
+                                                    onClick={() => cheerpx.connectNetwork()}
+                                                    className="w-full py-2 text-xs font-medium bg-accent text-[--bg-base] hover:opacity-90 transition-opacity"
+                                                >
+                                                    Connect to Tailscale
+                                                </button>
+                                            </div>
+                                        )}
+                                        {cheerpx && cheerpx.networkState === 'connecting' && (
+                                            <div className="px-4 py-3 border-t border-[--border-color] text-center">
+                                                <div className="flex items-center justify-center gap-2 text-xs text-[--text-muted]">
+                                                    <IoRefresh className="animate-spin" size={14} />
+                                                    Establishing connection...
+                                                </div>
+                                            </div>
+                                        )}
+                                        {cheerpx && cheerpx.networkState === 'login-ready' && cheerpx.networkLoginUrl && (
+                                            <div className="px-4 py-3 border-t border-[--border-color] space-y-2">
+                                                <p className="text-xs text-[--text-muted]">
+                                                    Tailscale requires authentication. Click below to open the login page.
+                                                </p>
+                                                <button
+                                                    onClick={() => window.open(cheerpx.networkLoginUrl!, '_blank')}
+                                                    className="w-full py-2 text-xs font-medium bg-pastel-blue text-white hover:opacity-90 transition-opacity"
+                                                >
+                                                    Open Tailscale Login
+                                                </button>
+                                            </div>
+                                        )}
+                                        {cheerpx && cheerpx.networkState === 'connected' && (
+                                            <SettingsRow label="Network" value="Tailscale VPN" last />
+                                        )}
+                                    </SettingsGroup>
+
+                                    {!cheerpx && (
+                                        <div className="mt-4 p-4 bg-pastel-yellow/10 border border-pastel-yellow/30 text-xs text-pastel-yellow">
+                                            CheerpX network requires the Linux VM to be running. Open Terminal first.
+                                        </div>
+                                    )}
+                                </>
+                            )}
+
+                            {iselectron && (
+                                <div className="flex flex-col items-center justify-center py-20 text-center opacity-50">
+                                    <IoGlobeOutline size={48} className="mb-4" />
+                                    <h3 className="text-lg font-semibold">Network</h3>
+                                    <p className="text-[13px]">Network settings available in web mode via CheerpX Tailscale.</p>
+                                </div>
+                            )}
+                        </>
+                    )}
+
+                    {activetab === 'storage' && (
+                        <>
+                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Storage Overview</div>
+                            <SettingsGroup>
+                                <SettingsRow label="Projects" value={storageInfo?.projectCount !== undefined ? `${storageInfo.projectCount} projects` : 'Loading...'} />
+                                <SettingsRow label="CheerpX Cache" value={storageInfo?.cxCacheSize || 'Unknown'} />
+                                <SettingsRow label="Git Data" value="IndexedDB (nextaros-git)" />
+                                <SettingsRow label="Secure Storage" value="IndexedDB (nextaros-secure)" last />
+                            </SettingsGroup>
+
+                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2 mt-4">Manage</div>
+                            <SettingsGroup>
+                                <div className="px-4 py-3 border-b border-[--border-color]">
+                                    <div className="flex items-center justify-between mb-1">
+                                        <span className={`text-[--text-color] ${ismobile ? 'text-[16px]' : 'text-[13px] font-medium'}`}>Clear CheerpX Cache</span>
+                                    </div>
+                                    <p className="text-[10px] text-[--text-muted] mb-2">Deletes the CheerpX disk image cache. The VM will re-download on next boot.</p>
+                                    <button
+                                        onClick={async () => {
+                                            if (!confirm('Clear CheerpX cache? The VM will need to re-download files on next boot.')) return;
+                                            setClearingCache(true);
+                                            try {
+                                                await new Promise<void>((resolve, reject) => {
+                                                    const req = indexedDB.deleteDatabase('nextaros-cx');
+                                                    req.onsuccess = () => resolve();
+                                                    req.onerror = () => reject(req.error);
+                                                });
+                                                alert('CheerpX cache cleared');
+                                            } catch (e) {
+                                                alert('Failed to clear cache: ' + e);
+                                            } finally {
+                                                setClearingCache(false);
+                                            }
+                                        }}
+                                        disabled={clearingCache}
+                                        className="px-3 py-1.5 text-xs bg-pastel-red text-white hover:opacity-90 disabled:opacity-50 transition-opacity"
+                                    >
+                                        {clearingCache ? 'Clearing...' : 'Clear Cache'}
+                                    </button>
+                                </div>
+                                <div className="px-4 py-3 border-b border-[--border-color]">
+                                    <div className="flex items-center justify-between mb-1">
+                                        <span className={`text-[--text-color] ${ismobile ? 'text-[16px]' : 'text-[13px] font-medium'}`}>Export All Projects</span>
+                                    </div>
+                                    <p className="text-[10px] text-[--text-muted] mb-2">Download all project files as a single zip archive.</p>
+                                    <button
+                                        onClick={async () => {
+                                            try {
+                                                const { getAllProjects, getProjectFiles } = await import('../../utils/projectDB');
+                                                const JSZip = (await import('jszip')).default;
+                                                const zip = new JSZip();
+                                                const projects = await getAllProjects();
+                                                for (const proj of projects) {
+                                                    const folder = zip.folder(proj.name);
+                                                    if (folder) {
+                                                        const files = await getProjectFiles(proj.id);
+                                                        for (const f of files) {
+                                                            if (!f.isDirectory) folder.file(f.path, f.content);
+                                                        }
+                                                    }
+                                                }
+                                                const blob = await zip.generateAsync({ type: 'blob' });
+                                                const url = URL.createObjectURL(blob);
+                                                const a = document.createElement('a');
+                                                a.href = url;
+                                                a.download = `nextaros-projects-${new Date().toISOString().split('T')[0]}.zip`;
+                                                document.body.appendChild(a);
+                                                a.click();
+                                                document.body.removeChild(a);
+                                                URL.revokeObjectURL(url);
+                                            } catch (e) {
+                                                alert('Export failed: ' + e);
+                                            }
+                                        }}
+                                        className="px-3 py-1.5 text-xs bg-accent text-[--bg-base] hover:opacity-90 transition-opacity"
+                                    >
+                                        Export Projects
+                                    </button>
+                                </div>
+                                <div className="px-4 py-3">
+                                    <div className="flex items-center justify-between mb-1">
+                                        <span className={`text-[--text-color] ${ismobile ? 'text-[16px]' : 'text-[13px] font-medium'}`}>Clear Saved Tokens</span>
+                                    </div>
+                                    <p className="text-[10px] text-[--text-muted] mb-2">Removes all saved Google OAuth tokens and Git PATs from secure storage.</p>
+                                    <button
+                                        onClick={async () => {
+                                            if (!confirm('Clear all saved authentication tokens?')) return;
+                                            try {
+                                                const { deleteSecret } = await import('../../utils/secureStorage');
+                                                await deleteSecret('google-access-token');
+                                                await deleteSecret('google-user-info');
+                                                await deleteSecret('git-pat');
+                                                alert('All tokens cleared');
+                                            } catch (e) {
+                                                alert('Failed: ' + e);
+                                            }
+                                        }}
+                                        className="px-3 py-1.5 text-xs bg-pastel-peach text-[--bg-base] hover:opacity-90 transition-opacity"
+                                    >
+                                        Clear Tokens
+                                    </button>
+                                </div>
+                            </SettingsGroup>
+                        </>
+                    )}
+
+                    {activetab !== 'general' && activetab !== 'appearance' && activetab !== 'users' && activetab !== 'wallpaper' && activetab !== 'wifi' && activetab !== 'bluetooth' && activetab !== 'sound' && activetab !== 'network' && activetab !== 'storage' && (
                         <div className="flex flex-col items-center justify-center py-20 text-center opacity-50">
                             <IoSettingsOutline size={48} className="mb-4" />
                             <h3 className="text-lg font-semibold">Settings for {sidebaritems.find(i => i.id === activetab)?.label}</h3>
-                            <p className="text-sm">This section is under development.</p>
+                            <p className="text-[13px]">This section is under development.</p>
                         </div>
                     )}
                 </div>

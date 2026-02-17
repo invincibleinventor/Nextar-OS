@@ -1,9 +1,9 @@
 {
-  "name": "hackathos",
-  "productName": "HackathOS",
+  "name": "nextaros",
+  "productName": "NextarOS",
   "version": "1.0.0",
-  "description": "HackathOS - A hackathon operating system in your browser",
-  "author": "HackathOS",
+  "description": "NextarOS - Your personal cloud OS",
+  "author": "NextarOS",
   "license": "MIT",
   "private": true,
   "main": "electron/main.js",
@@ -13,6 +13,7 @@
     "start": "next start",
     "lint": "next lint",
     "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && electron .\"",
+    "electron:dev:shell": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && electron . --shell\"",
     "electron:build": "npm run build && electron-builder",
     "electron:build:mac": "npm run build && electron-builder --mac",
     "electron:build:win": "npm run build && electron-builder --win",
@@ -20,8 +21,8 @@
     "electron:build:all": "npm run build && electron-builder -mwl"
   },
   "build": {
-    "appId": "com.hackathos.desktop",
-    "productName": "HackathOS",
+    "appId": "com.nextaros.desktop",
+    "productName": "NextarOS",
     "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
     "directories": {
       "output": "dist-electron",
@@ -133,11 +134,35 @@
           ]
         }
       ],
-      "category": "Utility;System;",
+      "category": "System;",
       "icon": "public/app-icon.png",
-      "maintainer": "hello@hackathos.dev",
-      "synopsis": "HackathOS - Hackathon Operating System",
-      "description": "A modern, beautiful, and customizable desktop environment built with web technologies. Works as a standalone DE on Linux or as a shell on macOS/Windows."
+      "maintainer": "hello@nextaros.dev",
+      "synopsis": "NextarOS Desktop Environment",
+      "description": "NextarOS — A modern, beautiful desktop environment for Linux.",
+      "desktop": {
+        "Name": "NextarOS",
+        "Comment": "NextarOS Desktop Environment",
+        "Exec": "nextaros --no-sandbox %U",
+        "Terminal": "false",
+        "Type": "Application",
+        "Categories": "System;",
+        "StartupWMClass": "nextaros",
+        "MimeType": "x-scheme-handler/nextaros;"
+      }
+    },
+    "deb": {
+      "depends": [
+        "libgtk-3-0",
+        "libnotify4",
+        "libnss3",
+        "libxss1",
+        "libxtst6",
+        "xdg-utils",
+        "libatspi2.0-0",
+        "libuuid1",
+        "libsecret-1-0"
+      ],
+      "afterInstall": "build-resources/linux/postinst.sh"
     },
     "appImage": {
       "artifactName": "${productName}-${version}-${arch}.${ext}"
@@ -145,7 +170,7 @@
     "publish": {
       "provider": "github",
       "owner": "invincibleinventor",
-      "repo": "nextarde",
+      "repo": "nextar-os",
       "releaseType": "release"
     }
   },
@@ -177,6 +202,9 @@
     "react-rnd": "^10.4.13",
     "react-tagcloud": "^2.3.3",
     "tailwindcss-filters": "^3.0.0"
+  },
+  "optionalDependencies": {
+    "node-pty": "^1.0.0"
   },
   "devDependencies": {
     "@tailwindcss/container-queries": "^0.1.1",

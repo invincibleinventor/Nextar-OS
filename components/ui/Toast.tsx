@@ -37,7 +37,7 @@ export const Toast: React.FC<ToastProps> = ({ id, message, type, onClose }) => {
             <div className="shrink-0">
                 {icons[type]}
             </div>
-            <div className="flex-1 text-sm font-medium text-[--text-color]">
+            <div className="flex-1 text-[13px] font-medium text-[--text-color]">
                 {message}
             </div>
             <button

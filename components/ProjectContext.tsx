@@ -10,6 +10,7 @@ import {
 } from '../utils/projectDB';
 import { useAuth } from './AuthContext';
 import { useFileSystem } from './FileSystemContext';
+import { useCheerpXSafe } from './CheerpXContext';
 
 interface ProjectContextType {
     projects: Project[];
@@ -37,6 +38,7 @@ interface ProjectContextType {
 
     updateLayout: (layout: Partial<WorkspaceLayout>) => void;
     refreshProjects: () => Promise<void>;
+    syncProjectToShared: (projectId?: string) => Promise<void>;
 }
 
 const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
@@ -71,7 +73,6 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    // DB persistence helpers — skip for guests (ephemeral session)
     const persistProject = useCallback(async (project: Project) => {
         if (isGuest) return;
         await saveProject(project);
@@ -109,7 +110,6 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     const refreshProjects = useCallback(async () => {
         if (isGuest) {
-            // For guests, projects only exist in React state — nothing to load from DB
             return;
         }
         try {
@@ -120,31 +120,44 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
         }
     }, [isGuest]);
 
-    // Resolve the Projects folder ID in the virtual filesystem
     const projectsFolderId = useMemo(() => {
         const username = user?.username || 'guest';
         if (isGuest) return 'guest-projects';
         return `user-${username}-projects`;
     }, [isGuest, user]);
 
-    // Helper to sync a project's files to the virtual filesystem
     const syncProjectToFS = useCallback(async (project: Project, projectFiles: ProjectFile[]) => {
-        // Create project folder inside Projects
         const folderId = await fsCreateFolder(project.name, projectsFolderId);
         if (!folderId) return;
 
-        // Create files inside the project folder (skip directories, flatten)
         for (const file of projectFiles) {
             if (file.isDirectory) continue;
             await fsCreateFile(file.name, folderId, file.content);
         }
     }, [projectsFolderId, fsCreateFolder, fsCreateFile]);
 
-    // Helper to remove a project's folder from virtual filesystem
+    const cheerpx = useCheerpXSafe();
+
+    const syncProjectToShared = useCallback(async (projectId?: string) => {
+        if (!cheerpx?.writeSharedFile || !cheerpx?.isBooted) return;
+        const targetProject = projectId
+            ? projects.find(p => p.id === projectId) || currentProject
+            : currentProject;
+        if (!targetProject) return;
+        const filesToSync = projectId
+            ? currentFiles
+            : currentFiles;
+        const projectDir = targetProject.name.replace(/[^a-zA-Z0-9_-]/g, '_');
+        const writePromises = filesToSync
+            .filter(f => !f.isDirectory)
+            .map(f => cheerpx.writeSharedFile(`${projectDir}/${f.path}`, f.content));
+        await Promise.all(writePromises);
+    }, [cheerpx, projects, currentProject, currentFiles]);
+
+
     const removeProjectFromFS = useCallback(async (projectName: string) => {
         const projectFolder = fsFiles.find(f => f.name === projectName && f.parent === projectsFolderId);
         if (projectFolder) {
-            // Move children to trash first, then the folder
             const children = fsFiles.filter(f => f.parent === projectFolder.id);
             for (const child of children) {
                 await fsMoveToTrash(child.id);
@@ -156,7 +169,6 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     useEffect(() => {
         if (authLoading) return;
         if (isGuest) {
-            // Guest session: start with empty projects, no DB load
             setProjects([]);
             setIsLoading(false);
             return;
@@ -184,7 +196,6 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
             status: 'active',
         };
 
-        // Create project files from template
         const projectFiles: ProjectFile[] = Object.entries(template.files).map(([path, content]) => {
             const parts = path.split('/');
             const fileName = parts[parts.length - 1];
@@ -204,7 +215,6 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
             };
         });
 
-        // Create directory entries from file paths
         const dirs = new Set<string>();
         projectFiles.forEach(f => {
             const parts = f.path.split('/');
@@ -232,12 +242,10 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
         await persistProject(project);
         await persistFiles([...dirFiles, ...projectFiles]);
 
-        // Update state
         setCurrentProject(project);
         setCurrentFiles([...dirFiles, ...projectFiles]);
         setProjects(prev => [project, ...prev]);
 
-        // Auto-create initial snapshot
         const snapshot: Snapshot = {
             id: generateId(),
             projectId,
@@ -249,11 +257,11 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
         await persistSnapshot(snapshot);
         setSnapshots([snapshot]);
 
-        // Sync project folder to virtual filesystem (visible in Explorer)
         await syncProjectToFS(project, projectFiles);
+        syncProjectToShared(project.id).catch(() => {});
 
         return project;
-    }, [persistProject, persistFiles, persistSnapshot, syncProjectToFS]);
+    }, [persistProject, persistFiles, persistSnapshot, syncProjectToFS, syncProjectToShared]);
 
     const createProjectFromRawFiles = useCallback(async (
         name: string, files: Record<string, string>, description?: string, stack?: string[]
@@ -296,18 +304,17 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
         await persistSnapshot(snapshot);
         setSnapshots([snapshot]);
         await syncProjectToFS(project, projectFiles);
+        syncProjectToShared(project.id).catch(() => {});
         return project;
-    }, [persistProject, persistFiles, persistSnapshot, syncProjectToFS]);
+    }, [persistProject, persistFiles, persistSnapshot, syncProjectToFS, syncProjectToShared]);
 
     const openProject = useCallback(async (id: string) => {
         setIsLoading(true);
         try {
             if (isGuest) {
-                // For guests, project data is already in state
                 const project = projects.find(p => p.id === id);
                 if (project) {
                     setCurrentProject(project);
-                    // Files and snapshots for guest projects are already in state from create
                 }
                 return;
             }
@@ -342,7 +349,6 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
             closeProject();
         }
         setProjects(prev => prev.filter(p => p.id !== id));
-        // Remove from virtual filesystem
         if (project) {
             await removeProjectFromFS(project.name);
         }
@@ -422,8 +428,6 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
         return currentFiles.find(f => f.path === path);
     }, [currentFiles]);
 
-    // --- Snapshots ---
-
     const createSnapshot = useCallback(async (label?: string): Promise<Snapshot> => {
         if (!currentProject) throw new Error('No project open');
 
@@ -446,7 +450,6 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
         if (!snapshot || !currentProject) return;
 
         if (!isGuest) {
-            // Only access DB for logged-in users
             const existingFiles = await getProjectFiles(currentProject.id);
             for (const f of existingFiles) {
                 await deleteProjectFile(f.id);
@@ -475,7 +478,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
             createProject, createProjectFromRawFiles, openProject, closeProject, deleteProjectById, updateProject,
             createFile, updateFile, deleteFileById, renameFile, getFileByPath,
             createSnapshot, restoreSnapshot, deleteSnapshotById,
-            updateLayout, refreshProjects,
+            updateLayout, refreshProjects, syncProjectToShared,
         }}>
             {children}
         </ProjectContext.Provider>

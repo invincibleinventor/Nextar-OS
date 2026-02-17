@@ -4,7 +4,8 @@ let pyodide: any = null;
 
 async function boot() {
     if (pyodide) return;
-    // @ts-expect-error — worker globals not typed
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore — worker globals not typed
     importScripts('https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js');
     // @ts-expect-error — worker globals not typed
     pyodide = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.25.0/full/' });
