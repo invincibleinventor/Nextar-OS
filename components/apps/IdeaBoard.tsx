@@ -101,21 +101,21 @@ const TaskDialog: React.FC<{
     return (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[999]" onClick={onClose}>
             <div className="bg-surface border border-[--border-color] p-5 w-[380px]" onClick={e => e.stopPropagation()}>
-                <h3 className="text-sm font-semibold text-[--text-color] mb-4">{task ? 'Edit Task' : 'New Task'}</h3>
+                <h3 className="text-[13px] font-semibold text-[--text-color] mb-4">{task ? 'Edit Task' : 'New Task'}</h3>
 
                 <div className="space-y-3 mb-4">
                     <input
                         value={title}
                         onChange={e => setTitle(e.target.value)}
                         placeholder="Task title"
-                        className="w-full bg-overlay border border-transparent px-3 py-2 text-sm text-[--text-color] outline-none focus:border-accent"
+                        className="w-full bg-overlay border border-transparent px-3 py-2 text-[13px] text-[--text-color] outline-none focus:border-accent"
                         autoFocus
                     />
                     <textarea
                         value={description}
                         onChange={e => setDescription(e.target.value)}
                         placeholder="Description (optional)"
-                        className="w-full bg-overlay border border-transparent px-3 py-2 text-sm text-[--text-color] outline-none focus:border-accent resize-none h-20"
+                        className="w-full bg-overlay border border-transparent px-3 py-2 text-[13px] text-[--text-color] outline-none focus:border-accent resize-none h-20"
                     />
                     <div className="flex gap-2">
                         <div className="flex-1">
@@ -150,11 +150,11 @@ const TaskDialog: React.FC<{
                 </div>
 
                 <div className="flex gap-2">
-                    <button onClick={onClose} className="flex-1 py-2 bg-overlay hover:bg-[--border-color] text-[--text-muted] text-sm transition">Cancel</button>
+                    <button onClick={onClose} className="flex-1 py-2 bg-overlay hover:bg-[--border-color] text-[--text-muted] text-[13px] transition">Cancel</button>
                     <button
                         onClick={() => { if (title.trim()) onSave({ id: task?.id, title: title.trim(), description, status, priority, linkedFile: linkedFile || undefined }); }}
                         disabled={!title.trim()}
-                        className="flex-1 py-2 bg-accent hover:opacity-90 disabled:opacity-50 text-[--bg-base] text-sm font-medium transition"
+                        className="flex-1 py-2 bg-accent hover:opacity-90 disabled:opacity-50 text-[--bg-base] text-[13px] font-medium transition"
                     >
                         {task ? 'Save' : 'Create'}
                     </button>
@@ -235,7 +235,7 @@ export default function IdeaBoard({ windowId, appId = 'ideaboard', id }: { windo
             <div className="flex items-center justify-center h-full bg-[--bg-base] text-[--text-color] font-mono">
                 <div className="text-center space-y-2">
                     <IoCheckmarkCircle size={32} className="mx-auto text-[--text-muted] opacity-50" />
-                    <div className="text-sm text-[--text-muted]">Open a project to use the Idea Board</div>
+                    <div className="text-[13px] text-[--text-muted]">Open a project to use the Idea Board</div>
                 </div>
             </div>
         );
@@ -249,7 +249,7 @@ export default function IdeaBoard({ windowId, appId = 'ideaboard', id }: { windo
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-[--border-color] shrink-0">
                 <div>
-                    <h2 className="text-sm font-semibold flex items-center gap-2">
+                    <h2 className="text-[13px] font-semibold flex items-center gap-2">
                         <IoCheckmarkCircle size={16} className="text-accent" />
                         Idea Board — {currentProject.name}
                     </h2>

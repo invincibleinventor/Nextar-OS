@@ -718,6 +718,212 @@ async function trash(filepath) {
     }
 }
 
+async function registerfileassociation(extension, appName, appPath) {
+    try {
+        if (IS_LINUX) {
+            // Create .desktop file and set as default for the MIME type
+            const desktopEntry = `[Desktop Entry]
+Name=${appName}
+Exec=${appPath} %f
+Type=Application
+MimeType=application/x-${extension};`;
+            const desktopPath = path.join(os.homedir(), `.local/share/applications/${appName.toLowerCase().replace(/\s+/g, '-')}.desktop`);
+            fs.writeFileSync(desktopPath, desktopEntry);
+            await execpromise(`xdg-mime default ${path.basename(desktopPath)} application/x-${extension}`);
+            return { success: true };
+        } else if (IS_WINDOWS) {
+            // Register via registry
+            await execpromise(`reg add "HKCU\\Software\\Classes\\.${extension}" /ve /d "${appName}" /f`);
+            await execpromise(`reg add "HKCU\\Software\\Classes\\${appName}\\shell\\open\\command" /ve /d "\\"${appPath}\\" \\"%1\\"" /f`);
+            return { success: true };
+        } else if (IS_MAC) {
+            // macOS file associations require Info.plist at build time
+            return { success: false, error: 'macOS file associations must be configured in Info.plist at build time' };
+        }
+        return { success: false, error: 'Unsupported platform' };
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+}
+
+async function getsystemfonts() {
+    try {
+        if (IS_LINUX) {
+            const { stdout } = await execpromise('fc-list --format="%{family}\\n" | sort -u | head -500');
+            return { success: true, fonts: stdout.split('\n').filter(Boolean).map(f => f.trim()) };
+        } else if (IS_MAC) {
+            const { stdout } = await execpromise('system_profiler SPFontsDataType 2>/dev/null | grep "Full Name:" | cut -d: -f2 | sort -u | head -500');
+            return { success: true, fonts: stdout.split('\n').filter(Boolean).map(f => f.trim()) };
+        } else if (IS_WINDOWS) {
+            const { stdout } = await execpromise('powershell -command "[System.Drawing.Text.InstalledFontCollection]::new().Families | ForEach-Object { $_.Name } | Select-Object -First 500"');
+            return { success: true, fonts: stdout.split('\n').filter(Boolean).map(f => f.trim()) };
+        }
+        return { success: false, fonts: [] };
+    } catch (e) {
+        return { success: false, fonts: [], error: e.message };
+    }
+}
+
+async function getdisplayinfo() {
+    try {
+        if (IS_LINUX) {
+            const { stdout } = await execpromise('xrandr --query 2>/dev/null || echo ""');
+            const displays = [];
+            const lines = stdout.split('\n');
+            for (const line of lines) {
+                const match = line.match(/^(\S+)\s+connected\s+(primary\s+)?(\d+)x(\d+)/);
+                if (match) {
+                    displays.push({ name: match[1], primary: !!match[2], width: parseInt(match[3]), height: parseInt(match[4]) });
+                }
+            }
+            return { success: true, displays };
+        } else if (IS_MAC) {
+            const { stdout } = await execpromise('system_profiler SPDisplaysDataType 2>/dev/null');
+            const displays = [];
+            const blocks = stdout.split(/^\s{8}\w/m);
+            for (const block of blocks) {
+                const resMatch = block.match(/Resolution:\s*(\d+)\s*x\s*(\d+)/);
+                const nameMatch = block.match(/Display Type:\s*(.+)/);
+                if (resMatch) {
+                    displays.push({ name: nameMatch?.[1]?.trim() || 'Display', width: parseInt(resMatch[1]), height: parseInt(resMatch[2]) });
+                }
+            }
+            return { success: true, displays };
+        } else if (IS_WINDOWS) {
+            const { stdout } = await execpromise('wmic path Win32_VideoController get Name,CurrentHorizontalResolution,CurrentVerticalResolution /format:list');
+            const displays = [];
+            const blocks = stdout.split('\n\n').filter(b => b.trim());
+            for (const block of blocks) {
+                const nameMatch = block.match(/Name=(.+)/);
+                const hMatch = block.match(/CurrentHorizontalResolution=(\d+)/);
+                const vMatch = block.match(/CurrentVerticalResolution=(\d+)/);
+                if (nameMatch) {
+                    displays.push({ name: nameMatch[1].trim(), width: parseInt(hMatch?.[1]) || 0, height: parseInt(vMatch?.[1]) || 0 });
+                }
+            }
+            return { success: true, displays };
+        }
+        return { success: false, displays: [] };
+    } catch (e) {
+        return { success: false, displays: [], error: e.message };
+    }
+}
+
+// =============================================================================
+//  DISPLAY CONFIGURATION — We are the DE, we manage displays
+// =============================================================================
+
+async function getdisplayconfig() {
+    try {
+        if (IS_LINUX) {
+            const { stdout } = await execpromise('xrandr --query 2>/dev/null');
+            const displays = [];
+            let current = null;
+            for (const line of stdout.split('\n')) {
+                const displayMatch = line.match(/^(\S+)\s+(connected|disconnected)\s*(primary)?\s*(?:(\d+)x(\d+)\+(\d+)\+(\d+))?/);
+                if (displayMatch) {
+                    if (current) displays.push(current);
+                    current = {
+                        name: displayMatch[1],
+                        connected: displayMatch[2] === 'connected',
+                        primary: !!displayMatch[3],
+                        currentWidth: parseInt(displayMatch[4]) || 0,
+                        currentHeight: parseInt(displayMatch[5]) || 0,
+                        x: parseInt(displayMatch[6]) || 0,
+                        y: parseInt(displayMatch[7]) || 0,
+                        modes: []
+                    };
+                } else if (current && line.match(/^\s+\d+x\d+/)) {
+                    const modeMatch = line.trim().match(/(\d+)x(\d+)\s+([\d.]+)(\*?)(\+?)/);
+                    if (modeMatch) {
+                        current.modes.push({
+                            width: parseInt(modeMatch[1]),
+                            height: parseInt(modeMatch[2]),
+                            refreshRate: parseFloat(modeMatch[3]),
+                            active: modeMatch[4] === '*',
+                            preferred: modeMatch[5] === '+'
+                        });
+                    }
+                }
+            }
+            if (current) displays.push(current);
+            return { success: true, displays };
+        }
+        return { success: false, displays: [], error: 'Linux only' };
+    } catch (e) {
+        return { success: false, displays: [], error: e.message };
+    }
+}
+
+async function setdisplayresolution(displayName, width, height, refreshRate) {
+    try {
+        if (IS_LINUX) {
+            let cmd = `xrandr --output ${displayName} --mode ${width}x${height}`;
+            if (refreshRate) cmd += ` --rate ${refreshRate}`;
+            await execpromise(cmd);
+            return { success: true };
+        }
+        return { success: false, error: 'Linux only' };
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+}
+
+async function setdisplayrotation(displayName, rotation) {
+    try {
+        if (IS_LINUX) {
+            // rotation: 'normal', 'left', 'right', 'inverted'
+            const valid = ['normal', 'left', 'right', 'inverted'];
+            if (!valid.includes(rotation)) return { success: false, error: 'Invalid rotation' };
+            await execpromise(`xrandr --output ${displayName} --rotate ${rotation}`);
+            return { success: true };
+        }
+        return { success: false, error: 'Linux only' };
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+}
+
+async function setdisplayposition(displayName, x, y) {
+    try {
+        if (IS_LINUX) {
+            await execpromise(`xrandr --output ${displayName} --pos ${x}x${y}`);
+            return { success: true };
+        }
+        return { success: false, error: 'Linux only' };
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+}
+
+async function enabledisplay(displayName, enabled) {
+    try {
+        if (IS_LINUX) {
+            if (enabled) {
+                await execpromise(`xrandr --output ${displayName} --auto`);
+            } else {
+                await execpromise(`xrandr --output ${displayName} --off`);
+            }
+            return { success: true };
+        }
+        return { success: false, error: 'Linux only' };
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+}
+
+async function setprimarydisplay(displayName) {
+    try {
+        if (IS_LINUX) {
+            await execpromise(`xrandr --output ${displayName} --primary`);
+            return { success: true };
+        }
+        return { success: false, error: 'Linux only' };
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+}
+
 module.exports = {
     getwifistatus,
     setwifienabled,
@@ -747,6 +953,15 @@ module.exports = {
     openfilewithapp,
     trash,
     executeshell,
+    registerfileassociation,
+    getsystemfonts,
+    getdisplayinfo,
+    getdisplayconfig,
+    setdisplayresolution,
+    setdisplayrotation,
+    setdisplayposition,
+    enabledisplay,
+    setprimarydisplay,
     IS_LINUX,
     IS_MAC,
     IS_WINDOWS,

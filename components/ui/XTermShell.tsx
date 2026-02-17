@@ -2,6 +2,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import '@xterm/xterm/css/xterm.css';
 import { useCheerpX } from '../CheerpXContext';
+import { useDevice } from '../DeviceContext';
 
 interface XTermShellProps {
     className?: string;
@@ -41,7 +42,7 @@ function NetworkBadge() {
         return (
             <button
                 onClick={connectNetwork}
-                className="px-2 py-0.5 text-[10px] rounded bg-[--bg-overlay] text-pastel-teal hover:bg-[--border-color] transition-colors border border-[--border-color]"
+                className="px-2 py-0.5 text-[10px] bg-[--bg-overlay] text-pastel-teal hover:bg-[--border-color] transition-colors border border-[--border-color]"
             >
                 Connect to Internet
             </button>
@@ -49,7 +50,7 @@ function NetworkBadge() {
     }
     if (networkState === 'connecting') {
         return (
-            <span className="px-2 py-0.5 text-[10px] rounded bg-[--bg-overlay] text-pastel-yellow border border-[--border-color]">
+            <span className="px-2 py-0.5 text-[10px] bg-[--bg-overlay] text-pastel-yellow border border-[--border-color]">
                 Connecting...
             </span>
         );
@@ -58,7 +59,7 @@ function NetworkBadge() {
         return (
             <button
                 onClick={() => networkLoginUrl && window.open(networkLoginUrl, '_blank')}
-                className="px-2 py-0.5 text-[10px] rounded bg-[--bg-overlay] text-pastel-yellow hover:bg-[--border-color] transition-colors border border-[--border-color] animate-pulse"
+                className="px-2 py-0.5 text-[10px] bg-[--bg-overlay] text-pastel-yellow hover:bg-[--border-color] transition-colors border border-[--border-color] animate-pulse"
             >
                 Open Tailscale Login
             </button>
@@ -66,7 +67,7 @@ function NetworkBadge() {
     }
     if (networkState === 'connected') {
         return (
-            <span className="px-2 py-0.5 text-[10px] rounded bg-[--bg-overlay] text-pastel-green border border-[--border-color]">
+            <span className="px-2 py-0.5 text-[10px] bg-[--bg-overlay] text-pastel-green border border-[--border-color]">
                 Online
             </span>
         );
@@ -102,13 +103,17 @@ function TmuxSessionBar({ termhandleref, loaded }: { termhandleref: React.RefObj
 
     if (!loaded) return null;
 
+    const preventFocusSteal = (e: React.MouseEvent) => e.preventDefault();
+
     return (
         <div className="flex items-center gap-1 px-2 py-1 bg-[--bg-surface] border-b border-[--border-color] text-[11px] font-mono">
             {sessions.map((name, i) => (
                 <button
                     key={i}
+                    onMouseDown={preventFocusSteal}
                     onClick={() => switchsession(i)}
-                    className={`px-2 py-0.5 rounded transition-all cursor-pointer border-none ${
+                    tabIndex={-1}
+                    className={`px-2 py-0.5 transition-all cursor-pointer border-none ${
                         i === activesession
                             ? 'bg-[--bg-overlay] text-[--text-color]'
                             : 'bg-transparent text-[--text-muted] hover:text-[--text-color]'
@@ -118,10 +123,92 @@ function TmuxSessionBar({ termhandleref, loaded }: { termhandleref: React.RefObj
                 </button>
             ))}
             <button
+                onMouseDown={preventFocusSteal}
                 onClick={addsession}
-                className="px-1.5 py-0.5 rounded bg-transparent text-pastel-teal border border-[--border-color] cursor-pointer text-[11px] hover:bg-[--bg-overlay] transition-colors"
+                tabIndex={-1}
+                className="px-1.5 py-0.5 bg-transparent text-pastel-teal border border-[--border-color] cursor-pointer text-[11px] hover:bg-[--bg-overlay] transition-colors"
             >
                 +
+            </button>
+        </div>
+    );
+}
+
+function MobileHotkeyBar({ termhandleref }: { termhandleref: React.RefObject<any> }) {
+    const [modifiers, setModifiers] = useState<Set<string>>(new Set());
+
+    const toggleMod = (mod: string) => {
+        setModifiers(prev => {
+            const next = new Set(prev);
+            if (next.has(mod)) next.delete(mod);
+            else next.add(mod);
+            return next;
+        });
+    };
+
+    const sendKey = (key: string, code: string) => {
+        const handle = termhandleref.current;
+        if (!handle?.sendInput) return;
+        handle.sendInput(code);
+        setModifiers(new Set());
+    };
+
+    const preventFocusSteal = (e: React.MouseEvent | React.TouchEvent) => e.preventDefault();
+
+    const keys: { label: string; code: string; isMod?: boolean }[] = [
+        { label: 'Esc', code: '\x1b' },
+        { label: 'Ctrl', code: '', isMod: true },
+        { label: 'Alt', code: '', isMod: true },
+        { label: 'Tab', code: '\t' },
+        { label: '\u2191', code: '\x1b[A' },
+        { label: '\u2193', code: '\x1b[B' },
+        { label: '\u2190', code: '\x1b[D' },
+        { label: '\u2192', code: '\x1b[C' },
+    ];
+
+    return (
+        <div className="flex items-center gap-1 px-2 py-1.5 bg-[--bg-surface] border-t border-[--border-color] overflow-x-auto shrink-0">
+            {keys.map(k => (
+                <button
+                    key={k.label}
+                    onMouseDown={preventFocusSteal}
+                    onTouchStart={preventFocusSteal}
+                    tabIndex={-1}
+                    onClick={() => {
+                        if (k.isMod) {
+                            toggleMod(k.label);
+                        } else if (modifiers.has('Ctrl') && k.code.length === 1) {
+                            const handle = termhandleref.current;
+                            if (handle?.sendInput) handle.sendInput(String.fromCharCode(k.code.charCodeAt(0) & 0x1f));
+                            setModifiers(new Set());
+                        } else {
+                            sendKey(k.label, k.code);
+                        }
+                    }}
+                    className={`px-2.5 py-1 text-[11px] font-mono border border-[--border-color] shrink-0 transition-colors ${
+                        k.isMod && modifiers.has(k.label)
+                            ? 'bg-pastel-blue text-[--bg-base] border-pastel-blue'
+                            : 'bg-[--bg-overlay] text-[--text-color] hover:bg-[--border-color]'
+                    }`}
+                >
+                    {k.label}
+                </button>
+            ))}
+            <button
+                onMouseDown={preventFocusSteal}
+                tabIndex={-1}
+                onClick={() => sendKey('Ctrl+C', '\x03')}
+                className="px-2.5 py-1 text-[11px] font-mono border border-[--border-color] bg-[--bg-overlay] text-pastel-red hover:bg-[--border-color] shrink-0"
+            >
+                ^C
+            </button>
+            <button
+                onMouseDown={preventFocusSteal}
+                tabIndex={-1}
+                onClick={() => sendKey('Ctrl+D', '\x04')}
+                className="px-2.5 py-1 text-[11px] font-mono border border-[--border-color] bg-[--bg-overlay] text-pastel-yellow hover:bg-[--border-color] shrink-0"
+            >
+                ^D
             </button>
         </div>
     );
@@ -136,6 +223,7 @@ export default function XTermShell({
     const termInstanceRef = useRef<any>(null);
     const termHandleRef = useRef<any>(null);
     const [loaded, setLoaded] = useState(false);
+    const { ismobile } = useDevice();
 
     const { boot, attachTerminal, runShell, bootError, networkLoginUrl, networkState } = useCheerpX();
 
@@ -213,10 +301,14 @@ export default function XTermShell({
 
         init();
 
+        let resizeTimer: ReturnType<typeof setTimeout>;
         const resizeObs = new ResizeObserver(() => {
-            if (fitAddonRef.current) {
-                try { fitAddonRef.current.fit(); } catch { }
-            }
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                if (fitAddonRef.current) {
+                    try { fitAddonRef.current.fit(); } catch { }
+                }
+            }, 100);
         });
         if (wrapperRef.current) resizeObs.observe(wrapperRef.current);
 
@@ -240,7 +332,7 @@ export default function XTermShell({
             t.writeln('\x1b[33m  If it didn\'t open, click the URL below (free account):\x1b[0m');
             t.writeln(`\x1b[4;36m  ${networkLoginUrl}\x1b[0m`);
             t.writeln('');
-            console.log('[HackathOS] Tailscale login URL:', networkLoginUrl);
+            console.log('[NextarOS] Tailscale login URL:', networkLoginUrl);
             window.open(networkLoginUrl, '_blank');
         }
     }, [networkLoginUrl, loaded]);
@@ -270,6 +362,7 @@ export default function XTermShell({
                     <NetworkBadge />
                 </div>
             )}
+            {ismobile && loaded && <MobileHotkeyBar termhandleref={termHandleRef} />}
         </div>
     );
 }

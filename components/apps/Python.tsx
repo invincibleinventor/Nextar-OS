@@ -622,7 +622,7 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
     };
 
     return (
-        <div className="flex flex-col h-full w-full bg-[--bg-base] text-[--text-color] font-mono text-sm select-none">
+        <div className="flex flex-col h-full w-full bg-[--bg-base] text-[--text-color] font-mono text-[13px] select-none">
             <div className='w-full h-[50px] flex flex-row items-center content-center relative'><h1 className="w-max mx-auto top-0 bottom-0 left-0 right-0 text-center">Code Editor</h1></div>
             <div className="flex flex-1 min-h-0">
                 {!ismobile && (
@@ -676,7 +676,7 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
                                         value={searchquery}
                                         onChange={e => setsearchquery(e.target.value)}
                                         placeholder="Search files"
-                                        className="w-full bg-overlay border border-transparent focus:border-accent px-2 py-1.5 text-sm outline-none text-[--text-color] placeholder-[--text-muted]"
+                                        className="w-full bg-overlay border border-transparent focus:border-accent px-2 py-1.5 text-[13px] outline-none text-[--text-color] placeholder-[--text-muted]"
                                     />
                                 </div>
                                 <div className="flex-1 overflow-auto px-2">
@@ -763,7 +763,7 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
                                     value={findquery}
                                     onChange={e => setfindquery(e.target.value)}
                                     placeholder="Find"
-                                    className="flex-1 bg-overlay border border-transparent focus:border-accent px-2 py-1 text-sm outline-none text-[--text-color]"
+                                    className="flex-1 bg-overlay border border-transparent focus:border-accent px-2 py-1 text-[13px] outline-none text-[--text-color]"
                                     autoFocus
                                 />
                                 <button onClick={() => setcasesensitive(!casesensitive)} className={`p-1 ${casesensitive ? 'bg-accent text-[--text-color]' : 'text-[--text-muted] hover:text-[--text-color]'}`} title="Case Sensitive">
@@ -782,7 +782,7 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
                                     value={replacevalue}
                                     onChange={e => setreplacevalue(e.target.value)}
                                     placeholder="Replace"
-                                    className="flex-1 bg-overlay border border-transparent focus:border-accent px-2 py-1 text-sm outline-none text-[--text-color]"
+                                    className="flex-1 bg-overlay border border-transparent focus:border-accent px-2 py-1 text-[13px] outline-none text-[--text-color]"
                                 />
                                 <button onClick={replaceInEditor} className="px-2 py-1 text-xs bg-overlay hover:bg-accent text-[--text-color]">Replace All</button>
                             </div>
@@ -877,11 +877,11 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
                     <>
                         <button onClick={() => setmobilefilepanel(!mobilefilepanel)} className="flex items-center gap-2 px-3 py-1.5 bg-overlay">
                             <VscFiles size={16} />
-                            <span className="text-sm">Files</span>
+                            <span className="text-[13px]">Files</span>
                         </button>
                         <span className={`text-xs opacity-80 ${ismobile ? 'absolute left-1/2 -translate-x-1/2' : ''}`}>{currentFile?.name || 'No file'}</span>
                         <div className="flex items-center gap-2">
-                            <button onClick={runcode} disabled={isrunning} className="px-3 py-1.5 bg-overlay text-sm">
+                            <button onClick={runcode} disabled={isrunning} className="px-3 py-1.5 bg-overlay text-[13px]">
                                 Run
                             </button>
                         </div>
@@ -923,7 +923,7 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
                                 </button>
                             </div>
                         </div>
-                        <div className="flex-1 overflow-auto p-2 text-sm">
+                        <div className="flex-1 overflow-auto p-2 text-[13px]">
                             {renderFileTree(projectsId)}
                         </div>
                     </div>
@@ -937,20 +937,20 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
                 >
                     <button
                         onClick={() => { setshowrenamedialog(true); setnewfilename(selectedfileforcontext.name); setcontextmenupos(null); }}
-                        className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-[--text-color] hover:bg-overlay text-left"
+                        className="w-full flex items-center gap-2 px-3 py-1.5 text-[13px] text-[--text-color] hover:bg-overlay text-left"
                     >
                         <VscEdit size={14} /> Rename
                     </button>
                     <button
                         onClick={() => { handleDeleteFile(selectedfileforcontext); setcontextmenupos(null); }}
-                        className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-[--text-color] hover:bg-overlay text-left"
+                        className="w-full flex items-center gap-2 px-3 py-1.5 text-[13px] text-[--text-color] hover:bg-overlay text-left"
                     >
                         <VscTrash size={14} /> Delete
                     </button>
                     <div className="h-px bg-[--border-color] my-1" />
                     <button
                         onClick={() => { showInExplorer(selectedfileforcontext); setcontextmenupos(null); }}
-                        className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-[--text-color] hover:bg-overlay text-left"
+                        className="w-full flex items-center gap-2 px-3 py-1.5 text-[13px] text-[--text-color] hover:bg-overlay text-left"
                     >
                         <VscGoToFile size={14} /> Show in Explorer
                     </button>
@@ -962,7 +962,7 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
                     <div className="bg-surface w-80 overflow-hidden border border-[--border-color]">
                         <div className="flex items-center gap-2 p-3 bg-overlay">
                             {newfileisfolder ? <VscNewFolder size={16} /> : <VscNewFile size={16} />}
-                            <span className="text-sm font-medium">New {newfileisfolder ? 'Folder' : 'File'}</span>
+                            <span className="text-[13px] font-medium">New {newfileisfolder ? 'Folder' : 'File'}</span>
                         </div>
                         <div className="p-4">
                             <input
@@ -974,13 +974,13 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
                                     if (e.key === 'Escape') setshownewfiledialog(false);
                                 }}
                                 placeholder={newfileisfolder ? 'Folder name' : 'filename.js'}
-                                className="w-full bg-overlay border border-transparent focus:border-accent px-3 py-2 text-sm outline-none text-[--text-color]"
+                                className="w-full bg-overlay border border-transparent focus:border-accent px-3 py-2 text-[13px] outline-none text-[--text-color]"
                                 autoFocus
                             />
                         </div>
                         <div className="flex justify-end gap-2 p-3 bg-[--bg-base]">
-                            <button onClick={() => setshownewfiledialog(false)} className="px-4 py-1.5 text-sm hover:bg-overlay">Cancel</button>
-                            <button onClick={createNewFile} className="px-4 py-1.5 text-sm bg-accent hover:opacity-90">Create</button>
+                            <button onClick={() => setshownewfiledialog(false)} className="px-4 py-1.5 text-[13px] hover:bg-overlay">Cancel</button>
+                            <button onClick={createNewFile} className="px-4 py-1.5 text-[13px] bg-accent hover:opacity-90">Create</button>
                         </div>
                     </div>
                 </div>
@@ -991,7 +991,7 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
                     <div className="bg-surface w-80 overflow-hidden border border-[--border-color]">
                         <div className="flex items-center gap-2 p-3 bg-overlay">
                             <VscEdit size={16} />
-                            <span className="text-sm font-medium">Rename</span>
+                            <span className="text-[13px] font-medium">Rename</span>
                         </div>
                         <div className="p-4">
                             <input
@@ -1002,13 +1002,13 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
                                     if (e.key === 'Enter') handleRenameFile();
                                     if (e.key === 'Escape') { setshowrenamedialog(false); setselectedfileforcontext(null); }
                                 }}
-                                className="w-full bg-overlay border border-transparent focus:border-accent px-3 py-2 text-sm outline-none text-[--text-color]"
+                                className="w-full bg-overlay border border-transparent focus:border-accent px-3 py-2 text-[13px] outline-none text-[--text-color]"
                                 autoFocus
                             />
                         </div>
                         <div className="flex justify-end gap-2 p-3 bg-[--bg-base]">
-                            <button onClick={() => { setshowrenamedialog(false); setselectedfileforcontext(null); }} className="px-4 py-1.5 text-sm hover:bg-overlay">Cancel</button>
-                            <button onClick={handleRenameFile} className="px-4 py-1.5 text-sm bg-accent hover:opacity-90">Rename</button>
+                            <button onClick={() => { setshowrenamedialog(false); setselectedfileforcontext(null); }} className="px-4 py-1.5 text-[13px] hover:bg-overlay">Cancel</button>
+                            <button onClick={handleRenameFile} className="px-4 py-1.5 text-[13px] bg-accent hover:opacity-90">Rename</button>
                         </div>
                     </div>
                 </div>

@@ -34,17 +34,17 @@ export default function AboutDevice({ isopen, onclose }: AboutDeviceProps) {
                             <div className="w-20 h-20 mb-4">
                                 <Image
                                     src="/logo.svg"
-                                    alt="HackathOS"
+                                    alt="NextarOS"
                                     width={80}
                                     height={80}
                                     className="w-full h-full"
                                 />
                             </div>
 
-                            <h1 className="text-xl font-bold text-[--text-color] mb-1">HackathOS</h1>
+                            <h1 className="text-xl font-bold text-[--text-color] mb-1">NextarOS</h1>
                             <p className="text-xs text-[--text-muted] mb-4">Version 1.0</p>
 
-                            <div className="w-full space-y-2 text-sm text-left mb-4">
+                            <div className="w-full space-y-2 text-[13px] text-left mb-4">
                                 <div className="flex justify-between">
                                     <span className="text-[--text-muted]">User</span>
                                     <span className="text-[--text-color] font-medium">{user?.name || 'Guest'}</span>
@@ -78,7 +78,7 @@ export default function AboutDevice({ isopen, onclose }: AboutDeviceProps) {
                         <div className="p-3 border-t border-[--border-color] flex justify-center">
                             <button
                                 onClick={onclose}
-                                className="px-6 py-1.5 text-sm font-medium bg-accent text-[--bg-base] hover:bg-accent/80 transition-colors"
+                                className="px-6 py-1.5 text-[13px] font-medium bg-accent text-[--bg-base] hover:bg-accent/80 transition-colors"
                             >
                                 OK
                             </button>

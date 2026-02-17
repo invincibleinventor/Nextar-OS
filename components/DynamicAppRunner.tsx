@@ -330,7 +330,7 @@ export default function DynamicAppRunner({ code, appname, appicon, fileid, codeH
             <div className="h-full w-full flex items-center justify-center bg-[--bg-base]">
                 <div className="text-center">
                     <div className="w-10 h-10 border-2 border-accent border-t-transparent  animate-spin mx-auto mb-4" />
-                    <p className="text-sm text-[--text-muted] font-medium">{!babelloaded ? 'Loading transpiler...' : 'Building app...'}</p>
+                    <p className="text-[13px] text-[--text-muted] font-medium">{!babelloaded ? 'Loading transpiler...' : 'Building app...'}</p>
                     <p className="text-xs text-[--text-muted] mt-1">{appname || 'User App'}</p>
                 </div>
             </div>
@@ -345,7 +345,7 @@ export default function DynamicAppRunner({ code, appname, appicon, fileid, codeH
                         <span className="text-3xl">❌</span>
                     </div>
                     <h2 className="text-lg font-bold text-pastel-red mb-2">Compilation Error</h2>
-                    <p className="text-sm text-pastel-red mb-4 font-mono break-words">{error.message}</p>
+                    <p className="text-[13px] text-pastel-red mb-4 font-mono break-words">{error.message}</p>
                     {error.stack && (
                         <details className="text-left">
                             <summary className="text-xs text-[--text-muted] cursor-pointer mb-2">Stack trace</summary>
@@ -365,7 +365,7 @@ export default function DynamicAppRunner({ code, appname, appicon, fileid, codeH
                 <div className="text-center">
                     <span className="text-4xl mb-4 block">⚠️</span>
                     <h2 className="font-bold text-pastel-yellow mb-2">No Component Found</h2>
-                    <p className="text-sm text-[--text-muted]">
+                    <p className="text-[13px] text-[--text-muted]">
                         Create a function like <code className="bg-overlay px-1">function App() {'{}'}</code>
                     </p>
                 </div>
@@ -404,7 +404,7 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode; appname
                             <span className="text-3xl">💥</span>
                         </div>
                         <h2 className="text-lg font-bold text-pastel-red mb-2">Runtime Error</h2>
-                        <p className="text-sm text-pastel-red font-mono break-words">
+                        <p className="text-[13px] text-pastel-red font-mono break-words">
                             {this.state.error?.message || 'Unknown error'}
                         </p>
                     </div>

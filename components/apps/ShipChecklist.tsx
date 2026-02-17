@@ -93,22 +93,19 @@ export default function ShipChecklist({ windowId, appId = 'shipchecklist', id }:
 
     const [checked, setChecked] = useState<Set<string>>(new Set());
 
-    // Load from localStorage
     useEffect(() => {
         if (!storageKey) return;
         try {
             const stored = localStorage.getItem(storageKey);
             if (stored) setChecked(new Set(JSON.parse(stored)));
-        } catch { /* ignore */ }
+        } catch { }
     }, [storageKey]);
 
-    // Save to localStorage
     useEffect(() => {
         if (!storageKey) return;
         localStorage.setItem(storageKey, JSON.stringify(Array.from(checked)));
     }, [checked, storageKey]);
 
-    // Auto-check items based on project files
     useEffect(() => {
         if (!currentProject || !currentFiles.length) return;
         const filePaths = currentFiles.filter(f => !f.isDirectory).map(f => f.path);
@@ -161,7 +158,7 @@ export default function ShipChecklist({ windowId, appId = 'shipchecklist', id }:
             <div className="flex items-center justify-center h-full bg-[--bg-base] text-[--text-color] font-mono">
                 <div className="text-center space-y-2">
                     <IoRocketOutline size={32} className="mx-auto text-[--text-muted] opacity-50" />
-                    <div className="text-sm text-[--text-muted]">Open a project to use the Ship Checklist</div>
+                    <div className="text-[13px] text-[--text-muted]">Open a project to use the Ship Checklist</div>
                 </div>
             </div>
         );
@@ -180,11 +177,10 @@ export default function ShipChecklist({ windowId, appId = 'shipchecklist', id }:
 
     return (
         <div className="flex flex-col h-full bg-[--bg-base] text-[--text-color] overflow-hidden font-mono">
-            {/* Header */}
             <div className="px-5 pt-4 pb-3 border-b border-[--border-color] shrink-0">
                 <div className="flex items-center justify-between mb-3">
                     <div>
-                        <h2 className="text-sm font-semibold flex items-center gap-2">
+                        <h2 className="text-[13px] font-semibold flex items-center gap-2">
                             <IoRocketOutline size={16} className="text-pastel-green" />
                             Ship Checklist — {currentProject.name}
                         </h2>
@@ -210,7 +206,6 @@ export default function ShipChecklist({ windowId, appId = 'shipchecklist', id }:
                 )}
             </div>
 
-            {/* Checklist */}
             <div className="flex-1 overflow-y-auto p-5 space-y-5">
                 {Object.entries(groupedItems).map(([category, items]) => {
                     const catInfo = categoryLabels[category] || { label: category, color: '#888' };

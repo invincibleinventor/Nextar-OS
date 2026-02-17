@@ -128,9 +128,9 @@ export default function Launchpad({ onclose }: { onclose: () => void }) {
                     if (info.offset.x > 50) paginate(-1);
                 }}
             >
-                <div className="px-4 pt-4 pb-3 border-b border-[--border-color] bg-[--bg-overlay]">
+                <div className="px-4 pt-4 pb-3 border-b border-[--border-color] bg-overlay">
                     <div className="relative">
-                        <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[--text-muted] text-sm" />
+                        <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[--text-muted] text-[13px]" />
                         <input
                             autoFocus
                             placeholder="Search Apps"

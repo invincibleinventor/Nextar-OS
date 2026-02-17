@@ -1,88 +1,73 @@
-# HackathOS
+# NextarOS — Your Personal Cloud OS
 
-**The Zero-Setup Hackathon Operating System** — a fully client-side, offline-first project workspace for hackathon teams, running a real Linux VM in your browser.
+**Deploy on your server. Access from anywhere. Your cloud, your OS.**
 
-Built on **Next.js 15**, **React 19**, **CheerpX** (x86-to-WebAssembly Linux VM), and **Catppuccin Macchiato** theme.
+NextarOS is a complete desktop operating system that runs entirely in your browser. Deploy it on a VPS, NAS, Raspberry Pi, or any server and access your personal desktop from any device. It also works standalone — just open it in a browser, no server required.
 
-> Fork of [NextarOS](https://github.com/invincibleinventor/nextar-os) (`main` branch), extended with a full Linux development environment.
-
----
-
-## What is HackathOS?
-
-HackathOS gives every hackathon participant a complete development environment with zero setup:
-
-- **Full Linux Terminal** — Real Debian Linux via CheerpX (apt, pip, gcc, python, vim — everything works)
-- **Monaco Code Editor** — VS Code-quality editor with syntax highlighting and IntelliSense
-- **Project Templates** — One-click scaffolding for React, Flask, Express, and more
-- **Window Manager** — macOS-style desktop with drag, resize, snap, dock
-- **Offline-First** — Works completely offline after first load
-- **No Backend** — Everything runs in the browser via WebAssembly
+Not just for developers. For everyone.
 
 ---
 
-## Architecture
+## What is NextarOS?
 
-### CheerpX Linux VM
+NextarOS brings a full desktop experience to the web. It has a window manager, a dock, a file system, notifications, themes, and 30+ built-in applications — from a code editor and terminal to a music player and paint app. Everything runs client-side with no backend dependency. Your data stays in your browser (IndexedDB) or on your own server.
 
-HackathOS runs a full Debian Linux distribution in the browser via CheerpX:
+It is built for people who want a portable workspace they control. Use it as a cloud desktop for remote access, a development environment, a self-hosted productivity suite, or just a fun project to hack on.
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                    HackathOS UI Layer                     │
-│  ┌────────────┐ ┌───────────┐ ┌────────────────────────┐│
-│  │   Desktop   │ │   Dock    │ │ Hackathon Workspace    ││
-│  │  (Windows)  │ │  (Apps)   │ │ (Editor+Terminal+Tree) ││
-│  └────────────┘ └───────────┘ └────────────────────────┘│
-├─────────────────────────────────────────────────────────┤
-│                   Terminal Layer                          │
-│  ┌─────────────────────────────────────────────────────┐│
-│  │  xterm.js ←→ CheerpX Console (singleton, broadcast) ││
-│  └─────────────────────────────────────────────────────┘│
-├─────────────────────────────────────────────────────────┤
-│                  CheerpX VM Layer                         │
-│  ┌────────────┐ ┌────────────┐ ┌───────────────────────┐│
-│  │ x86→WASM   │ │  Debian    │ │   Tailscale Network   ││
-│  │   JIT      │ │ Filesystem │ │   (optional, free)    ││
-│  └────────────┘ └────────────┘ └───────────────────────┘│
-├─────────────────────────────────────────────────────────┤
-│                   Storage Layer                           │
-│  ┌────────────────────┐ ┌──────────────────────────────┐│
-│  │   IndexedDB cache   │ │  Cloud disk (WebSocket)      ││
-│  │   (overlay writes)  │ │  debian_large.ext2           ││
-│  └────────────────────┘ └──────────────────────────────┘│
-└─────────────────────────────────────────────────────────┘
-```
+---
 
-### Key Components
+## Features
 
-| Component | File | Purpose |
-|-----------|------|---------|
-| CheerpX Provider | `components/CheerpXContext.tsx` | VM lifecycle, singleton console, FS operations |
-| XTerm Shell | `components/ui/XTermShell.tsx` | xterm.js terminal connected to CheerpX |
-| Hackathon Workspace | `components/apps/HackathonWorkspace.tsx` | IDE: editor + file tree + terminal |
-| Project Context | `components/ProjectContext.tsx` | Project management, templates, snapshots |
+### Desktop Environment
 
-### Console Management
+- Window management with drag, resize, snap, minimize, maximize
+- Dock with hover magnification and pinned apps
+- Menu bar with app-specific menus and system controls
+- Notification center with grouped alerts
+- Spotlight-style search across apps and files
+- Customizable wallpapers, themes, and accent colors
+- Lock screen and boot sequence
+- Launchpad for quick app access
 
-CheerpX supports only ONE console. HackathOS handles this with:
+### Productivity
 
-- **Singleton pattern** — `setCustomConsole` called exactly once during boot
-- **Broadcast output** — All open Terminal windows receive the same shell output
-- **Shared shell** — One bash session, multiple Terminal window views
-- **Capture queue** — Background FS operations serialized to avoid interleaving
+- **Notes** — Rich text note-taking with folders and search
+- **TextEdit** — Document editor for plain text, Markdown, and JSON
+- **Reminders** — Task lists with priorities and due dates
+- **Mail** — Email client interface with folders and categories
+- **Calendar** — Month/week/day views with event management
+- **Contacts** — Address book with search and groups
+- **Clock** — World clock, alarms, stopwatch, and timer
+- **Calculator** — Standard calculator
+- **Browser** — Sandboxed web browser with tab support
+- **Idea Board** — Freeform brainstorming canvas
 
-### File System Bridge
+### Creative
 
-- **Editor → Linux sync** — Files saved in Monaco are written to `/home/user/projects/` on the ext2 filesystem via shell commands
-- **Full Linux FS** — `/`, `/home/user`, `/dev`, `/proc`, `/sys` all accessible in terminal
-- **DataDevice at `/projects`** — Flat key-value store for simple file sharing
+- **Photos** — Image viewer with filters, adjustments, and gallery
+- **Music** — Audio player with visualizer and playlist management
+- **Video Player** — Media player for MP4, WebM, and OGG
+- **Paint** — Canvas drawing tool with brushes, shapes, and layers
 
-### Networking (Optional)
+### Developer Tools
 
-- Tailscale free tier (no payment, just email signup) for internet access from within the VM
-- `curl`, `apt update`, `pip install` work after one-time Tailscale authentication
-- Login URL appears in terminal when network is needed
+- **Terminal** — Full terminal powered by WebContainers (Node.js runtime in-browser)
+- **Code Editor** — Monaco-based editor (VS Code engine) with syntax highlighting and IntelliSense
+- **Projects** — Project dashboard with create, open, and manage workflows
+- **Templates** — One-click scaffolding for React, Next.js, Express, Flask, and more
+- **API Playground** — HTTP client for testing REST APIs
+- **API Docs** — Built-in API documentation viewer
+- **Python** — Python REPL powered by Pyodide (CPython compiled to WebAssembly)
+- **Ship Checklist** — Pre-launch checklist for shipping projects
+
+### System
+
+- **Explorer** — File manager with sidebar, grid/list views, breadcrumb navigation, and trash
+- **Settings** — System preferences for appearance, wallpaper, dock, notifications, and more
+- **System Monitor** — CPU, memory, and process monitoring
+- **App Store** — Discover and install additional apps
+- **Help** — System information and about screen
+- **Installer** — First-run setup and onboarding
 
 ---
 
@@ -90,14 +75,17 @@ CheerpX supports only ONE console. HackathOS handles this with:
 
 | Category | Technology |
 |----------|------------|
-| Framework | Next.js 15 (App Router, Static Export) |
-| Core | React 19 |
-| Styling | Tailwind CSS + Catppuccin Macchiato |
-| Linux VM | CheerpX (`@leaningtech/cheerpx`) |
-| Terminal | xterm.js (`@xterm/xterm`) |
-| Editor | Monaco Editor (`@monaco-editor/react`) |
+| Framework | Next.js 15 (App Router) |
+| UI | React 19 |
+| Language | TypeScript |
+| Styling | Tailwind CSS |
+| Terminal | WebContainers (`@webcontainer/api`) + xterm.js |
+| Code Editor | Monaco Editor (`@monaco-editor/react`) |
+| Python | Pyodide (WebAssembly) |
+| Animations | GSAP + Framer Motion |
 | Storage | IndexedDB + LocalStorage |
-| Networking | Tailscale (optional, free) |
+| Git | isomorphic-git (in-browser) |
+| Desktop App | Electron (optional) |
 | Icons | React Icons |
 
 ---
@@ -107,67 +95,132 @@ CheerpX supports only ONE console. HackathOS handles this with:
 ```bash
 git clone https://github.com/invincibleinventor/nextar-os.git
 cd nextar-os
-git checkout product
 npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000)
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-> **Note**: CheerpX requires Cross-Origin Isolation (COOP/COEP headers). The dev server provides these automatically via `next.config.ts`. First load may need a page refresh for the service worker to initialize SharedArrayBuffer support.
+To build for production:
 
----
-
-## Pre-installing Packages
-
-The Debian disk image comes with many tools pre-installed (gcc, python, vim, etc.). To install additional packages:
-
-1. **Enable networking** — Tailscale login URL appears in terminal on first boot
-2. **Install via apt** — `sudo apt install nodejs npm` (or any package)
-3. **Packages persist** — Installed packages are cached in IndexedDB and survive page reloads
-
-To pre-install packages for all users, you would need a custom CheerpX disk image.
+```bash
+npm run build
+npm start
+```
 
 ---
 
-## Features
+## Self-Hosting
 
-### Hackathon Workspace
-- Monaco editor with 20+ language support
-- File tree with create/rename/delete
-- Integrated terminal panel
-- Project templates (React, Flask, Express, etc.)
-- Auto-save with Linux filesystem sync
-- Snapshot/version system
+### Docker
 
-### Desktop Environment
-- macOS-style window management (drag, resize, snap)
-- Dock with hover magnification
-- Menu bar with app-specific menus
-- Notification center
-- Spotlight-style search
-- Customizable wallpapers and themes
+```bash
+docker run -p 3000:3000 nextaros/nextaros
+```
 
-### Built-in Apps
-- **Terminal** — Full Linux shell via CheerpX
-- **Hackathon Workspace** — IDE with editor + terminal
-- **Browser** — Sandboxed web browser
-- **Explorer** — File manager
-- **Settings** — System preferences
-- And 15+ more system apps
+### Manual (any Linux server, VPS, or NAS)
+
+```bash
+git clone https://github.com/invincibleinventor/nextar-os.git
+cd nextar-os
+npm install
+npm run build
+npm start
+```
+
+NextarOS will be available on port 3000. Put it behind a reverse proxy (Nginx, Caddy, Traefik) for HTTPS and custom domain support.
+
+### Desktop App
+
+NextarOS ships as a native desktop app via Electron. It auto-detects system RAM and adjusts V8 heap limits, GPU acceleration, and background throttling for optimal performance on any hardware — including devices with less than 4GB of RAM.
+
+```bash
+npm run electron:build:mac    # macOS (.dmg)
+npm run electron:build:win    # Windows (.exe)
+npm run electron:build:linux  # Linux (.AppImage, .deb)
+```
+
+When running as a desktop app, NextarOS automatically integrates with native system APIs:
+
+- Real filesystem access (read, write, browse host files)
+- WiFi, Bluetooth, volume, and brightness control
+- Battery status and power management (sleep, shutdown, restart, lock)
+- Native app discovery and launching
+- System process monitoring and management
+- Clipboard integration (text and images)
+- Native notifications
+- Auto-updates via GitHub Releases
+
+### Shell Mode
+
+NextarOS can run as a **full desktop replacement shell** — a unified interface that sits on top of any OS:
+
+```bash
+# Run in shell mode (fullscreen, acts as the desktop)
+npm run electron:dev:shell
+
+# Or set the environment variable
+NEXTAROS_SHELL=1 electron .
+
+# Disable GPU for very low-spec devices
+NEXTAROS_DISABLE_GPU=1 electron . --shell
+```
+
+In shell mode, NextarOS takes over the entire screen and becomes your desktop environment. Combined with Linux auto-login and session configuration, it can replace traditional desktop environments like GNOME or KDE.
 
 ---
 
-## Documentation
+## Optional Backend
 
-- [Architecture Guide](./docs/ARCHITECTURE.md) — System design and OS internals
-- [SDK Documentation](./docs/SDK.md) — Build apps for the platform
+NextarOS works fully standalone in the browser with zero backend. However, a companion server can unlock additional capabilities:
+
+- Host filesystem access (read/write files on the server)
+- Native shell and process execution
+- Docker container management
+- Real system monitoring (CPU, RAM, disk)
+- Multi-user authentication
+
+Documentation for the companion server is coming soon.
+
+---
+
+## Architecture
+
+```
++----------------------------------------------------------+
+|                     NextarOS Frontend                     |
+|                                                          |
+|  +------------------+  +-----------------------------+   |
+|  |  Desktop Shell   |  |       Application Layer     |   |
+|  |  - Window Mgr    |  |  - 30+ built-in apps        |   |
+|  |  - Dock          |  |  - Dynamic app loading       |   |
+|  |  - Menu Bar      |  |  - External app support      |   |
+|  |  - Notifications |  |  - Permission system         |   |
+|  +------------------+  +-----------------------------+   |
+|                                                          |
+|  +------------------+  +-----------------------------+   |
+|  |  Virtual FS      |  |       Runtime Layer         |   |
+|  |  - IndexedDB     |  |  - WebContainers (Node.js)  |   |
+|  |  - File CRUD     |  |  - Pyodide (Python)         |   |
+|  |  - Trash/Undo    |  |  - Monaco (Code Editor)     |   |
+|  |  - Projects DB   |  |  - isomorphic-git           |   |
+|  +------------------+  +-----------------------------+   |
+|                                                          |
+|  +---------------------------------------------------+  |
+|  |              Context Providers (React)              |  |
+|  |  Theme | Settings | Notifications | Permissions    |  |
+|  |  Runtime | Project | AppMenu | ExternalApps        |  |
+|  +---------------------------------------------------+  |
++----------------------------------------------------------+
+|                Next.js 15 + React 19 + TypeScript        |
++----------------------------------------------------------+
+```
 
 ---
 
 ## License
 
-MIT License
+MIT
 
 ---
 

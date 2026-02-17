@@ -10,7 +10,9 @@ import {
     IoGlobeOutline, IoReaderOutline, IoStatsChartOutline,
     IoStorefrontOutline, IoBookOutline, IoHomeOutline, IoTrashOutline,
     IoGridOutline, IoDownloadOutline, IoRocketOutline,
-    IoBulbOutline, IoCheckboxOutline, IoLayersOutline, IoSchoolOutline
+    IoBulbOutline, IoCheckboxOutline, IoLayersOutline,
+    IoTimeOutline, IoCloudOutline, IoAlarmOutline, IoVideocamOutline,
+    IoBrushOutline, IoPeopleOutline, IoHelpCircleOutline
 } from 'react-icons/io5';
 
 interface TintedAppIconProps {
@@ -42,16 +44,20 @@ const appIconMap: Record<string, { icon: IconType; bg: string }> = {
     'systemmonitor': { icon: IoStatsChartOutline, bg: '#f5a97f' },
     'launchpad-item': { icon: IoGridOutline, bg: '#b7bdf8' },
     'trash-folder': { icon: IoTrashOutline, bg: '#6e738d' },
-    'aboutnextaros': { icon: IoHomeOutline, bg: '#f5bde6' },
+    'aboutnextaros': { icon: IoHelpCircleOutline, bg: '#f5bde6' },
     'getinfo': { icon: IoInformationCircleOutline, bg: '#6e738d' },
     'projectdashboard': { icon: IoRocketOutline, bg: '#a6da95' },
     'hackathonworkspace': { icon: IoLayersOutline, bg: '#8aadf4' },
     'ideaboard': { icon: IoBulbOutline, bg: '#eed49f' },
     'shipchecklist': { icon: IoCheckboxOutline, bg: '#8bd5ca' },
-    'lab-submit': { icon: IoSchoolOutline, bg: '#f5a97f' },
-    'linuxdisplay': { icon: IoTerminalOutline, bg: '#a6da95' },
     'apiplayground': { icon: IoCodeSlashOutline, bg: '#8bd5ca' },
-    'labmanager': { icon: IoSchoolOutline, bg: '#f5a97f' },
+    'templatesmanager': { icon: IoLayersOutline, bg: '#f5a97f' },
+    'clock': { icon: IoTimeOutline, bg: '#f5a97f' },
+    'weather': { icon: IoCloudOutline, bg: '#8aadf4' },
+    'reminders': { icon: IoAlarmOutline, bg: '#ed8796' },
+    'videoplayer': { icon: IoVideocamOutline, bg: '#c6a0f6' },
+    'paint': { icon: IoBrushOutline, bg: '#a6da95' },
+    'contacts': { icon: IoPeopleOutline, bg: '#8bd5ca' },
 };
 
 const excludedApps: string[] = [];
@@ -65,7 +71,7 @@ export default function TintedAppIcon({ appId, appName, originalIcon, size = 40,
                     alt={appName}
                     fill
                     sizes="96px"
-                    className={`ease-in-out transition-all duration-200 object-cover shadow-md ${className}`}
+                    className={`ease-in-out transition-all duration-200 object-cover shadow-pastel ${className}`}
                     draggable={false}
                 />
             );
@@ -76,7 +82,7 @@ export default function TintedAppIcon({ appId, appName, originalIcon, size = 40,
                 alt={appName}
                 width={size}
                 height={size}
-                className={`ease-in-out transition-all duration-200 object-cover shadow-md ${className}`}
+                className={`ease-in-out transition-all duration-200 object-cover shadow-pastel ${className}`}
                 draggable={false}
             />
         );
@@ -92,7 +98,7 @@ export default function TintedAppIcon({ appId, appName, originalIcon, size = 40,
                     alt={appName}
                     fill
                     sizes="96px"
-                    className={`ease-in-out transition-all duration-200 object-cover shadow-md ${className}`}
+                    className={`ease-in-out transition-all duration-200 object-cover shadow-pastel ${className}`}
                     draggable={false}
                 />
             );
@@ -103,7 +109,7 @@ export default function TintedAppIcon({ appId, appName, originalIcon, size = 40,
                 alt={appName}
                 width={size}
                 height={size}
-                className={`ease-in-out transition-all duration-200 object-cover shadow-md ${className}`}
+                className={`ease-in-out transition-all duration-200 object-cover shadow-pastel ${className}`}
                 draggable={false}
             />
         );
@@ -114,7 +120,7 @@ export default function TintedAppIcon({ appId, appName, originalIcon, size = 40,
 
     if (useFill) {
         return (
-            <div className={`absolute inset-0 overflow-hidden shadow-md ${className}`}>
+            <div className={`absolute inset-0 overflow-hidden shadow-pastel ${className}`}>
                 <div
                     className="absolute inset-0"
                     style={{ background: bgColor }}
@@ -127,7 +133,7 @@ export default function TintedAppIcon({ appId, appName, originalIcon, size = 40,
     }
 
     return (
-        <div style={{ width: size, height: size }} className="relative flex items-center justify-center overflow-hidden shadow-md">
+        <div style={{ width: size, height: size }} className="relative flex items-center justify-center overflow-hidden shadow-pastel">
             <div
                 className={`absolute ${className}`}
                 style={{

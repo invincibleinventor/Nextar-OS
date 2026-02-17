@@ -108,7 +108,7 @@ export default function AppSwitcher({ isOpen, onClose }: { isOpen: boolean; onCl
                     })}
                 </motion.div>
 
-                <div className="absolute bottom-8 text-[--text-muted] text-sm">
+                <div className="absolute bottom-8 text-[--text-muted] text-[13px]">
                     Hold ⌘ and press ` to switch • Release ⌘ to select
                 </div>
             </motion.div>

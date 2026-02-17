@@ -1,15 +1,13 @@
 'use client';
 import React, { useEffect, useRef, useCallback } from 'react';
 import '@xterm/xterm/css/xterm.css';
+import { parseInstallCommand, analyzePackage, formatSize, getHealthRating } from '../../lib/dependencyRadar';
 
 interface WebContainerTerminalProps {
     className?: string;
     fontSize?: number;
-    /** Project files to mount (flat map: path → content) */
     files?: Record<string, string>;
-    /** Called when dev server is ready with its URL */
     onServerReady?: (url: string, port: number) => void;
-    /** Called when terminal is ready */
     onReady?: () => void;
 }
 
@@ -46,11 +44,18 @@ export default function WebContainerTerminal({ className = '', fontSize = 12, fi
     const shellRef = useRef<any>(null);
     const mountedRef = useRef(false);
 
+    // Use refs for callback/data props to prevent re-triggering boot on every render
+    const filesRef = useRef(files);
+    const onServerReadyRef = useRef(onServerReady);
+    const onReadyRef = useRef(onReady);
+    useEffect(() => { filesRef.current = files; }, [files]);
+    useEffect(() => { onServerReadyRef.current = onServerReady; }, [onServerReady]);
+    useEffect(() => { onReadyRef.current = onReady; }, [onReady]);
+
     const boot = useCallback(async () => {
         if (!containerRef.current || mountedRef.current) return;
         mountedRef.current = true;
 
-        // Dynamic imports to avoid SSR issues
         const [{ Terminal }, { FitAddon }, wcMod] = await Promise.all([
             import('@xterm/xterm'),
             import('@xterm/addon-fit'),
@@ -80,53 +85,66 @@ export default function WebContainerTerminal({ className = '', fontSize = 12, fi
         term.writeln('\x1b[33m  Booting WebContainer...\x1b[0m');
 
         try {
-            // Boot WebContainer
             const container = await wcMod.bootWebContainer();
             wcRef.current = container;
 
-            // Mount project files if provided
-            if (files && Object.keys(files).length > 0) {
-                await wcMod.mountFiles(files);
+            const initialFiles = filesRef.current;
+            if (initialFiles && Object.keys(initialFiles).length > 0) {
+                await wcMod.mountFiles(initialFiles);
                 term.writeln('\x1b[32m  Project files mounted.\x1b[0m');
             }
 
-            // Listen for dev server
-            if (onServerReady) {
-                container.on('server-ready', (port: number, url: string) => {
-                    term.writeln(`\x1b[32m  Dev server ready at ${url} (port ${port})\x1b[0m`);
-                    onServerReady(url, port);
-                });
-            }
+            container.on('server-ready', (port: number, url: string) => {
+                term.writeln(`\x1b[32m  Dev server ready at ${url} (port ${port})\x1b[0m`);
+                onServerReadyRef.current?.(url, port);
+            });
 
-            // Spawn jsh (JavaScript Shell) - interactive shell for WebContainers
             const shellProcess = await container.spawn('jsh', {
                 terminal: { cols: term.cols, rows: term.rows },
             });
             shellRef.current = shellProcess;
 
-            // Pipe shell output to xterm
             shellProcess.output.pipeTo(new WritableStream({
                 write(data) { term.write(data); },
             }));
 
-            // Pipe xterm input to shell
             const input = shellProcess.input.getWriter();
-            term.onData((data: string) => { input.write(data); });
+            let cmdBuffer = '';
+            term.onData((data: string) => {
+                input.write(data);
+                if (data === '\r' || data === '\n') {
+                    const packages = parseInstallCommand(cmdBuffer.trim());
+                    if (packages.length > 0) {
+                        Promise.all(packages.map(p => analyzePackage(p))).then(reports => {
+                            for (const r of reports) {
+                                const health = getHealthRating(r);
+                                const color = health === 'good' ? '32' : health === 'warn' ? '33' : '31';
+                                const size = r.bundleSize ? formatSize(r.bundleSize) : '?';
+                                term.writeln(`\x1b[${color}m  [radar] ${r.name}: ${size} gzip, health: ${health}${r.deprecated ? ' (DEPRECATED)' : ''}\x1b[0m`);
+                            }
+                        }).catch(() => {});
+                    }
+                    cmdBuffer = '';
+                } else if (data === '\x7f') {
+                    cmdBuffer = cmdBuffer.slice(0, -1);
+                } else {
+                    cmdBuffer += data;
+                }
+            });
 
-            // Handle resize
             term.onResize(({ cols, rows }: { cols: number; rows: number }) => {
                 shellProcess.resize?.({ cols, rows });
             });
 
             term.writeln('\x1b[32m  Ready.\x1b[0m');
             term.writeln('');
-            onReady?.();
+            onReadyRef.current?.();
         } catch (err: any) {
             term.writeln(`\x1b[31m  Failed to boot: ${err.message}\x1b[0m`);
             term.writeln('\x1b[90m  WebContainers require cross-origin isolation headers.\x1b[0m');
             term.writeln('\x1b[90m  Ensure COOP: same-origin and COEP: require-corp are set.\x1b[0m');
         }
-    }, [fontSize, files, onServerReady, onReady]);
+    }, [fontSize]);
 
     useEffect(() => {
         boot();
@@ -136,7 +154,6 @@ export default function WebContainerTerminal({ className = '', fontSize = 12, fi
         };
     }, [boot]);
 
-    // Handle container resize
     useEffect(() => {
         if (!containerRef.current) return;
         const ro = new ResizeObserver(() => { fitRef.current?.fit(); });
@@ -144,7 +161,6 @@ export default function WebContainerTerminal({ className = '', fontSize = 12, fi
         return () => ro.disconnect();
     }, []);
 
-    // Remount files when they change
     useEffect(() => {
         if (!wcRef.current || !files || !mountedRef.current) return;
         import('../../lib/runtimes/webcontainer').then(mod => {

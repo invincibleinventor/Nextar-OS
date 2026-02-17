@@ -115,7 +115,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                                                         <div className="w-8 h-8 shrink-0 shadow-md">
                                                             <TintedAppIcon appId={app.id} appName={app.appname} originalIcon={app.icon} size={32} useFill={false} />
                                                         </div>
-                                                        <span className="text-[--text-color] font-medium text-sm">{app.appname}</span>
+                                                        <span className="text-[--text-color] font-medium text-[13px]">{app.appname}</span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -138,7 +138,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                                                             {file.mimetype === 'inode/directory' ? <IoFolderOutline className="w-6 h-6 text-pastel-blue" /> : <IoDocumentTextOutline className="w-6 h-6 text-pastel-peach" />}
                                                         </div>
                                                         <div className="flex-1 min-w-0">
-                                                            <div className="text-[--text-color] font-medium text-sm truncate">{file.name}</div>
+                                                            <div className="text-[--text-color] font-medium text-[13px] truncate">{file.name}</div>
                                                             <div className="text-[--text-muted] text-xs truncate">{file.mimetype}</div>
                                                         </div>
                                                     </div>
@@ -150,7 +150,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                                             files.filter(f => !f.isTrash && f.name.toLowerCase().includes(searchquery.toLowerCase())).length === 0 && (
                                                 <div className="p-6 text-center text-[--text-muted]">
                                                     <div className="text-2xl mb-2">🔍</div>
-                                                    <div className="text-sm">No results found</div>
+                                                    <div className="text-[13px]">No results found</div>
                                                 </div>
                                             )}
                                     </div>
@@ -263,7 +263,7 @@ const AppCard = ({ win, appdata, onkill, onopen, islightbackground }: any) => {
                         />
                     </div>
                 )}
-                <span className={`font-semibold text-sm tracking-wide ${islightbackground ? 'text-black' : 'text-white'}`}
+                <span className={`font-semibold text-[13px] tracking-wide ${islightbackground ? 'text-black' : 'text-white'}`}
                     style={{ textShadow: islightbackground ? 'none' : '0 1px 3px rgba(0,0,0,0.6)' }}>{win.title}</span>
             </div>
 
@@ -274,7 +274,7 @@ const AppCard = ({ win, appdata, onkill, onopen, islightbackground }: any) => {
                         <div className="w-16 h-16 shadow-lg">
                             <TintedAppIcon appId={appdata.id} appName={appdata.appname} originalIcon={appdata.icon} size={64} useFill={false} />
                         </div>
-                        <span className="text-sm font-semibold text-[--text-muted]">{win.title}</span>
+                        <span className="text-[13px] font-semibold text-[--text-muted]">{win.title}</span>
                     </div>
                 ) : (
                     <div id={`recent-app-slot-${win.id}`} className="w-full h-full" />

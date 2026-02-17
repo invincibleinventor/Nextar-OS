@@ -5,6 +5,7 @@ import {
     VscChevronDown, VscChevronRight, VscTrash, VscRunAll,
     VscHistory, VscEye, VscEyeClosed, VscSplitHorizontal,
     VscRefresh, VscSaveAll, VscGitMerge, VscGitCommit, VscGitPullRequest,
+    VscCloudDownload, VscSettingsGear, VscKey, VscRepo,
 } from 'react-icons/vsc';
 import { FaFolder, FaFolderOpen } from 'react-icons/fa';
 import {
@@ -19,11 +20,12 @@ import { useMenuAction } from '../hooks/useMenuAction';
 import { useMenuRegistration } from '../AppMenuContext';
 import { ProjectFile } from '../../types/project';
 import { api } from '../../utils/constants';
-import { useCheerpX } from '../CheerpXContext';
 import { useRuntimeSafe } from '../RuntimeContext';
 import { preloadForProject } from '../../lib/runtimes/preloader';
 import { CheckpointManager } from '../../lib/checkpoints';
 import { SkillAnalyzer } from '../../lib/skillAnalytics';
+import { getSprintTimer, SprintState } from '../../lib/sprintTimer';
+import { getAncestryTracker, recordChange as ancestryRecordChange, markPaste as ancestryMarkPaste } from '../../lib/codeAncestry';
 
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false });
 const WebContainerTerminal = dynamic(() => import('../ui/WebContainerTerminal'), { ssr: false });
@@ -33,6 +35,12 @@ const languageMap: Record<string, string> = {
     'jsx': 'javascriptreact', 'json': 'json', 'html': 'html', 'css': 'css',
     'md': 'markdown', 'txt': 'plaintext', 'yml': 'yaml', 'yaml': 'yaml',
     'env': 'plaintext', 'sh': 'shell', 'go': 'go', 'rs': 'rust',
+    'c': 'c', 'h': 'c', 'cpp': 'cpp', 'cc': 'cpp', 'cxx': 'cpp', 'hpp': 'cpp',
+    'java': 'java', 'rb': 'ruby', 'php': 'php', 'pl': 'perl',
+    'lua': 'lua', 'swift': 'swift', 'kt': 'kotlin', 'kts': 'kotlin',
+    'r': 'r', 'R': 'r', 'hs': 'haskell', 'ex': 'elixir', 'exs': 'elixir',
+    'dart': 'dart', 'sql': 'sql', 'xml': 'xml', 'toml': 'plaintext',
+    'scss': 'scss', 'less': 'less', 'svelte': 'html', 'vue': 'html',
 };
 
 const fileIcons: Record<string, { label: string; color: string }> = {
@@ -41,6 +49,19 @@ const fileIcons: Record<string, { label: string; color: string }> = {
     'py': { label: 'PY', color: '#3776AB' }, 'json': { label: '{}', color: '#F5A623' },
     'html': { label: 'H', color: '#E34F26' }, 'css': { label: 'C', color: '#1572B6' },
     'md': { label: 'M', color: '#888' }, 'env': { label: 'E', color: '#4CAF50' },
+    'c': { label: 'C', color: '#A8B9CC' }, 'h': { label: 'H', color: '#A8B9CC' },
+    'cpp': { label: 'C+', color: '#00599C' }, 'hpp': { label: 'H+', color: '#00599C' },
+    'java': { label: 'JV', color: '#ED8B00' }, 'rb': { label: 'RB', color: '#CC342D' },
+    'php': { label: 'PH', color: '#777BB4' }, 'pl': { label: 'PL', color: '#39457E' },
+    'lua': { label: 'LU', color: '#000080' }, 'swift': { label: 'SW', color: '#FA7343' },
+    'kt': { label: 'KT', color: '#7F52FF' }, 'r': { label: 'R', color: '#276DC3' },
+    'hs': { label: 'HS', color: '#5D4F85' }, 'ex': { label: 'EX', color: '#6E4A7E' },
+    'dart': { label: 'DA', color: '#0175C2' }, 'go': { label: 'GO', color: '#00ADD8' },
+    'rs': { label: 'RS', color: '#DEA584' }, 'sh': { label: 'SH', color: '#89E051' },
+    'sql': { label: 'SQ', color: '#E38C00' }, 'xml': { label: 'XM', color: '#E44D26' },
+    'yml': { label: 'YM', color: '#CB171E' }, 'yaml': { label: 'YM', color: '#CB171E' },
+    'toml': { label: 'TM', color: '#9C4121' }, 'scss': { label: 'SC', color: '#CD6799' },
+    'vue': { label: 'VU', color: '#42b883' }, 'svelte': { label: 'SV', color: '#FF3E00' },
 };
 
 const pistonRuntimes: Record<string, { language: string; version: string }> = {
@@ -50,9 +71,22 @@ const pistonRuntimes: Record<string, { language: string; version: string }> = {
     'go': { language: 'go', version: '1.16.2' },
     'rust': { language: 'rust', version: '1.68.2' },
     'shell': { language: 'bash', version: '5.2.0' },
+    'c': { language: 'c', version: '10.2.0' },
+    'cpp': { language: 'c++', version: '10.2.0' },
+    'java': { language: 'java', version: '15.0.2' },
+    'ruby': { language: 'ruby', version: '3.0.1' },
+    'php': { language: 'php', version: '8.2.3' },
+    'perl': { language: 'perl', version: '5.36.0' },
+    'lua': { language: 'lua', version: '5.4.4' },
+    'swift': { language: 'swift', version: '5.3.3' },
+    'kotlin': { language: 'kotlin', version: '1.8.20' },
+    'r': { language: 'r', version: '4.1.1' },
+    'haskell': { language: 'haskell', version: '9.0.1' },
+    'elixir': { language: 'elixir', version: '1.11.3' },
+    'dart': { language: 'dart', version: '2.19.6' },
 };
 
-const runnableLanguages = new Set([...Object.keys(pistonRuntimes), 'c', 'cpp', 'java', 'ruby', 'php']);
+const runnableLanguages = new Set(Object.keys(pistonRuntimes));
 
 function getLanguage(filename: string): string {
     const ext = filename.split('.').pop()?.toLowerCase() || '';
@@ -114,7 +148,6 @@ function buildFileTree(files: ProjectFile[]): TreeNode[] {
     return root;
 }
 
-// --- File Tree Item (OPT: wrapped in React.memo to prevent full tree re-renders) ---
 const FileTreeItem: React.FC<{
     node: TreeNode;
     depth: number;
@@ -181,22 +214,14 @@ const FileTreeItem: React.FC<{
 });
 FileTreeItem.displayName = 'FileTreeItem';
 
-// --- Terminal Panel ---
-const XTermShell = dynamic(() => import('../ui/XTermShell'), { ssr: false });
-
 const TerminalPanel: React.FC<{
-    mode: 'linux' | 'node';
     files?: Record<string, string>;
     onServerReady?: (url: string, port: number) => void;
-}> = ({ mode, files, onServerReady }) => {
-    if (mode === 'node') {
-        return <WebContainerTerminal fontSize={12} files={files} onServerReady={onServerReady} />;
-    }
-    return <XTermShell fontSize={12} />;
+}> = ({ files, onServerReady }) => {
+    return <WebContainerTerminal fontSize={12} files={files} onServerReady={onServerReady} />;
 };
 TerminalPanel.displayName = 'TerminalPanel';
 
-// --- Snapshot Panel ---
 const SnapshotPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const { snapshots, createSnapshot, restoreSnapshot, deleteSnapshotById } = useProjects();
     const { addToast } = useNotifications();
@@ -256,55 +281,56 @@ const SnapshotPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     );
 };
 
-// --- Hackathon Timer ---
 const HackathonTimer: React.FC = () => {
-    const [endTime, setEndTime] = useState<number | null>(null);
-    const [remaining, setRemaining] = useState('');
+    const [state, setState] = useState<SprintState | null>(null);
     const [showSetup, setShowSetup] = useState(false);
-    const [hours, setHours] = useState('24');
+    const [minutes, setMinutes] = useState('25');
+    const timerRef = useRef(getSprintTimer());
 
     useEffect(() => {
-        if (!endTime) return;
-        const interval = setInterval(() => {
-            const diff = endTime - Date.now();
-            if (diff <= 0) { setRemaining('TIME UP!'); clearInterval(interval); return; }
-            const h = Math.floor(diff / 3600000);
-            const m = Math.floor((diff % 3600000) / 60000);
-            const s = Math.floor((diff % 60000) / 1000);
-            setRemaining(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
-        }, 1000);
-        return () => clearInterval(interval);
-    }, [endTime]);
+        const unsub = timerRef.current.subscribe(setState);
+        return () => { unsub(); };
+    }, []);
 
-    if (!endTime && !showSetup) {
+    const formatTime = (secs: number) => {
+        const m = Math.floor(secs / 60);
+        const s = secs % 60;
+        return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    };
+
+    if (!state || state.phase === 'idle') {
+        if (showSetup) {
+            return (
+                <div className="flex items-center gap-1">
+                    <input value={minutes} onChange={(e) => setMinutes(e.target.value)} className="w-10 bg-overlay border border-transparent focus:border-accent px-1 py-0.5 text-[10px] text-[--text-color] text-center outline-none" placeholder="min" />
+                    <span className="text-[10px] text-[--text-muted]">min</span>
+                    <button onClick={() => { timerRef.current = getSprintTimer({ workMinutes: parseInt(minutes) || 25 }); timerRef.current.subscribe(setState); timerRef.current.start(); setShowSetup(false); }} className="px-1.5 py-0.5 bg-pastel-green text-[--bg-base] text-[10px] hover:opacity-90">Start</button>
+                    <button onClick={() => setShowSetup(false)} className="text-[10px] text-[--text-muted] hover:text-[--text-color]">Cancel</button>
+                </div>
+            );
+        }
         return (
-            <button onClick={() => setShowSetup(true)} className="flex items-center gap-1 px-2 py-1 text-[10px] text-[--text-muted] hover:text-[--text-color] hover:bg-overlay" title="Set hackathon timer">
-                <IoTimeOutline size={12} /> Timer
+            <button onClick={() => setShowSetup(true)} className="flex items-center gap-1 px-2 py-1 text-[10px] text-[--text-muted] hover:text-[--text-color] hover:bg-overlay" title="Sprint timer">
+                <IoTimeOutline size={12} /> Sprint
             </button>
         );
     }
 
-    if (showSetup) {
-        return (
-            <div className="flex items-center gap-1">
-                <input value={hours} onChange={(e) => setHours(e.target.value)} className="w-10 bg-overlay border border-transparent focus:border-accent px-1 py-0.5 text-[10px] text-[--text-color] text-center outline-none" placeholder="hrs" />
-                <span className="text-[10px] text-[--text-muted]">hrs</span>
-                <button onClick={() => { setEndTime(Date.now() + parseInt(hours) * 3600000); setShowSetup(false); }} className="px-1.5 py-0.5 bg-pastel-green text-[--bg-base] text-[10px] hover:opacity-90">Start</button>
-                <button onClick={() => setShowSetup(false)} className="text-[10px] text-[--text-muted] hover:text-[--text-color]">Cancel</button>
-            </div>
-        );
-    }
+    const isBreak = state.phase === 'break';
+    const isLow = state.remaining <= 60;
 
     return (
         <div className="flex items-center gap-1.5 px-2 py-1 bg-overlay">
-            <IoTimeOutline size={12} className={remaining === 'TIME UP!' ? 'text-pastel-red animate-pulse' : 'text-pastel-peach'} />
-            <span className={`text-xs font-mono font-bold ${remaining === 'TIME UP!' ? 'text-pastel-red animate-pulse' : 'text-pastel-peach'}`}>{remaining}</span>
-            <button onClick={() => { setEndTime(null); setRemaining(''); }} className="text-[--text-muted] hover:text-[--text-color]"><VscClose size={10} /></button>
+            <IoTimeOutline size={12} className={isLow ? 'text-pastel-red animate-pulse' : isBreak ? 'text-pastel-green' : 'text-pastel-peach'} />
+            <span className={`text-[10px] font-mono font-bold ${isLow ? 'text-pastel-red' : isBreak ? 'text-pastel-green' : 'text-pastel-peach'}`}>
+                {isBreak ? 'BREAK ' : `#${state.sprint} `}{formatTime(state.remaining)}
+            </span>
+            <button onClick={() => timerRef.current.skip()} className="text-[--text-muted] hover:text-[--text-color] text-[10px]">Skip</button>
+            <button onClick={() => timerRef.current.reset()} className="text-[--text-muted] hover:text-[--text-color]"><VscClose size={10} /></button>
         </div>
     );
 };
 
-// === MAIN WORKSPACE COMPONENT ===
 export default function HackathonWorkspace({ windowId, projectId, appId = 'hackathonworkspace', id }: { windowId?: string; projectId?: string; appId?: string; id?: string }) {
     const { currentProject, currentFiles, openProject, updateFile, createFile, deleteFileById, createSnapshot } = useProjects();
     const { theme } = useTheme();
@@ -316,9 +342,9 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
     const [activeTab, setActiveTab] = useState<string | null>(null);
     const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set());
     const [sidebarOpen, setSidebarOpen] = useState(true);
-    const [terminalOpen, setTerminalOpen] = useState(true);
+    const [bottomPanelOpen, setBottomPanelOpen] = useState(true);
+    const [bottomPanelTab, setBottomPanelTab] = useState<'terminal' | 'output' | 'problems'>('terminal');
     const [previewOpen, setPreviewOpen] = useState(false);
-    const [terminalMode, setTerminalMode] = useState<'linux' | 'node'>('linux');
     const [snapshotPanelOpen, setSnapshotPanelOpen] = useState(false);
     const [focusMode, setFocusMode] = useState(false);
     const [newFileName, setNewFileName] = useState('');
@@ -326,23 +352,37 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
     const [fileContents, setFileContents] = useState<Map<string, string>>(new Map());
     const [isRunning, setIsRunning] = useState(false);
     const [outputLines, setOutputLines] = useState<{ text: string; type: 'stdout' | 'stderr' | 'info' }[]>([]);
-    const [outputOpen, setOutputOpen] = useState(false);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [gitPanelOpen, setGitPanelOpen] = useState(false);
     const [commitMsg, setCommitMsg] = useState('');
     const [gitChanges, setGitChanges] = useState<{ filepath: string; status: string }[]>([]);
     const [gitBranch, setGitBranch] = useState<string>('');
     const [gitLoading, setGitLoading] = useState(false);
+    const [gitView, setGitView] = useState<'changes' | 'log' | 'settings'>('changes');
+    const [gitLogEntries, setGitLogEntries] = useState<{ oid: string; message: string; author: { name: string; email: string; timestamp: number } }[]>([]);
+    const [gitBranches, setGitBranches] = useState<string[]>([]);
+    const [gitRemoteUrl, setGitRemoteUrl] = useState('');
+    const [gitToken, setGitToken] = useState('');
+    const [gitTokenSaved, setGitTokenSaved] = useState(false);
+    const [gitCloneUrl, setGitCloneUrl] = useState('');
+    const [gitShowToken, setGitShowToken] = useState(false);
+    const [gitRemotes, setGitRemotes] = useState<{ remote: string; url: string }[]>([]);
+    const [detectedFramework, setDetectedFramework] = useState<string | null>(null);
+    const [hasPackageJson, setHasPackageJson] = useState(false);
+    const [cursorPosition, setCursorPosition] = useState<{ line: number; col: number }>({ line: 1, col: 1 });
+    const [splitMode, setSplitMode] = useState<'horizontal' | 'vertical' | null>(null);
+    const [splitFileId, setSplitFileId] = useState<string | null>(null);
+    const [minimapEnabled, setMinimapEnabled] = useState(false);
+    const [outputFilter, setOutputFilter] = useState('');
 
     const editorRef = useRef<any>(null);
+    const splitEditorRef = useRef<any>(null);
     const autoSaveTimer = useRef<NodeJS.Timeout | null>(null);
     const outputContainerRef = useRef<HTMLDivElement>(null);
     const [outputScrollTop, setOutputScrollTop] = useState(0);
 
-    const { isBooted, writeProjectFile, writeLinuxFile, mkdirLinux, removeLinux, captureCommand, readFile, batchReadFiles } = useCheerpX();
     const runtime = useRuntimeSafe();
 
-    // --- Micro-Checkpoints (Coding DVR) ---
     const checkpointMgr = useRef<CheckpointManager | null>(null);
     useEffect(() => {
         if (!currentProject) return;
@@ -354,44 +394,49 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
         return () => { mgr.stopAutoCheckpoint(); mgr.destroy(); };
     }, [currentProject?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // --- Skill Analytics ---
     const skillAnalyzer = useRef<SkillAnalyzer | null>(null);
     useEffect(() => {
         if (!currentProject) return;
         skillAnalyzer.current = new SkillAnalyzer(currentProject.id);
     }, [currentProject?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // Resolve a virtual FS path to an absolute Linux path under the project dir.
-    // file.path may or may not start with '/' depending on depth, so normalize it.
-    const linuxPath = useCallback((filePath: string) => {
-        if (!currentProject) return '';
-        const projDir = `/home/user/projects/${currentProject.name.replace(/\s+/g, '_')}`;
-        const normalized = filePath.startsWith('/') ? filePath : `/${filePath}`;
-        return `${projDir}${normalized}`;
-    }, [currentProject]);
-
-    // --- Git operations ---
     const gitDir = currentProject ? `/projects/${currentProject.name.replace(/\s+/g, '_')}` : '';
 
     const refreshGitStatus = useCallback(async () => {
         if (!runtime?.git || !gitDir) return;
         try {
-            const branch = await runtime.git.currentBranch(gitDir);
+            const [branch, entries, logEntries, branches, remotes] = await Promise.all([
+                runtime.git.currentBranch(gitDir).catch(() => undefined),
+                runtime.git.status(gitDir).catch(() => []),
+                runtime.git.log(gitDir, 30).catch(() => []),
+                runtime.git.listBranches(gitDir).catch(() => []),
+                (async () => {
+                    const { gitListRemotes } = await import('../../lib/runtimes/git');
+                    return gitListRemotes(gitDir).catch(() => []);
+                })(),
+            ]);
             setGitBranch(branch || 'main');
-            const entries = await runtime.git.status(gitDir);
             const changed = entries
-                .filter(e => e.headStatus !== 1 || e.workdirStatus !== 1 || e.stageStatus !== 1)
-                .map(e => ({
+                .filter((e: any) => e.headStatus !== 1 || e.workdirStatus !== 1 || e.stageStatus !== 1)
+                .map((e: any) => ({
                     filepath: e.filepath,
                     status: e.headStatus === 0 ? 'new' : e.workdirStatus === 2 ? 'modified' : e.workdirStatus === 0 ? 'deleted' : 'unknown',
                 }));
             setGitChanges(changed);
+            setGitLogEntries(logEntries);
+            setGitBranches(branches);
+            setGitRemotes(remotes);
+            if (remotes.length > 0 && !gitRemoteUrl) {
+                setGitRemoteUrl(remotes[0].url);
+            }
         } catch {
-            // Not a git repo yet — that's fine
             setGitChanges([]);
             setGitBranch('');
+            setGitLogEntries([]);
+            setGitBranches([]);
+            setGitRemotes([]);
         }
-    }, [runtime, gitDir]);
+    }, [runtime, gitDir, gitRemoteUrl]);
 
     useEffect(() => {
         if (gitPanelOpen) refreshGitStatus();
@@ -402,7 +447,6 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
         setGitLoading(true);
         try {
             await runtime.git.init(gitDir);
-            // Write project files to git FS
             for (const f of currentFiles) {
                 if (!f.isDirectory) {
                     const { writeGitFile } = await import('../../lib/runtimes/git');
@@ -421,14 +465,13 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
         if (!runtime?.git || !gitDir || !commitMsg.trim()) return;
         setGitLoading(true);
         try {
-            // Sync current files to git FS before commit
             for (const f of currentFiles) {
                 if (!f.isDirectory) {
                     const { writeGitFile } = await import('../../lib/runtimes/git');
                     await writeGitFile(`${gitDir}/${f.path}`, f.content);
                 }
             }
-            const oid = await runtime.git.commit({ dir: gitDir, message: commitMsg, author: { name: 'HackathOS User', email: 'user@hackathos.dev' } });
+            const oid = await runtime.git.commit({ dir: gitDir, message: commitMsg, author: { name: 'NextarOS User', email: 'user@nextaros.dev' } });
             setCommitMsg('');
             await refreshGitStatus();
             addToast('Committed: ' + oid.slice(0, 7), 'success');
@@ -455,37 +498,124 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
         if (!runtime?.git || !gitDir) return;
         setGitLoading(true);
         try {
-            await runtime.git.push({ dir: gitDir, token: '' });
+            await runtime.git.push({ dir: gitDir, token: gitToken });
             addToast('Pushed to remote', 'success');
         } catch (err: any) {
             addToast('Push failed: ' + err.message, 'error');
         }
         setGitLoading(false);
-    }, [runtime, gitDir, addToast]);
+    }, [runtime, gitDir, gitToken, addToast]);
+
+    const handleSetRemote = useCallback(async (url: string) => {
+        if (!runtime?.git || !gitDir || !url.trim()) return;
+        setGitLoading(true);
+        try {
+            const { gitAddRemote, gitRemoveRemote, gitListRemotes } = await import('../../lib/runtimes/git');
+            const existing = await gitListRemotes(gitDir);
+            const origin = existing.find(r => r.remote === 'origin');
+            if (origin) {
+                await gitRemoveRemote(gitDir, 'origin');
+            }
+            await gitAddRemote(gitDir, 'origin', url);
+            setGitRemoteUrl(url);
+            await refreshGitStatus();
+            addToast('Remote origin set', 'success');
+        } catch (err: any) {
+            addToast('Set remote failed: ' + err.message, 'error');
+        }
+        setGitLoading(false);
+    }, [runtime, gitDir, refreshGitStatus, addToast]);
+
+    const handleGitClone = useCallback(async () => {
+        if (!runtime?.git || !gitCloneUrl.trim()) return;
+        setGitLoading(true);
+        try {
+            const repoName = gitCloneUrl.split('/').pop()?.replace('.git', '') || 'cloned-repo';
+            const cloneDir = `/projects/${repoName}`;
+            await runtime.git.clone({ url: gitCloneUrl, dir: cloneDir, depth: 10, corsProxy: 'https://cors.isomorphic-git.org' });
+            const { listGitDir, readGitFile } = await import('../../lib/runtimes/git');
+
+            const importFiles = async (dir: string, prefix: string): Promise<{ path: string; content: string; isDir: boolean }[]> => {
+                const entries = await listGitDir(dir);
+                const results: { path: string; content: string; isDir: boolean }[] = [];
+                for (const entry of entries) {
+                    if (entry === '.git') continue;
+                    const fullPath = `${dir}/${entry}`;
+                    const relPath = prefix ? `${prefix}/${entry}` : entry;
+                    try {
+                        const content = await readGitFile(fullPath);
+                        results.push({ path: relPath, content, isDir: false });
+                    } catch {
+                        results.push({ path: relPath, content: '', isDir: true });
+                        const subEntries = await importFiles(fullPath, relPath);
+                        results.push(...subEntries);
+                    }
+                }
+                return results;
+            };
+
+            const files = await importFiles(cloneDir, '');
+            for (const f of files) {
+                if (f.isDir) {
+                    await createFile(f.path, '', true);
+                } else {
+                    await createFile(f.path, f.content, false);
+                }
+            }
+            setGitCloneUrl('');
+            await refreshGitStatus();
+            addToast(`Cloned ${repoName} (${files.filter(f => !f.isDir).length} files)`, 'success');
+        } catch (err: any) {
+            addToast('Clone failed: ' + err.message, 'error');
+        }
+        setGitLoading(false);
+    }, [runtime, gitCloneUrl, createFile, refreshGitStatus, addToast]);
+
+    const handleGitCheckout = useCallback(async (branch: string) => {
+        if (!runtime?.git || !gitDir) return;
+        setGitLoading(true);
+        try {
+            const { gitCheckout } = await import('../../lib/runtimes/git');
+            await gitCheckout(gitDir, branch);
+            await refreshGitStatus();
+            addToast(`Switched to ${branch}`, 'success');
+        } catch (err: any) {
+            addToast('Checkout failed: ' + err.message, 'error');
+        }
+        setGitLoading(false);
+    }, [runtime, gitDir, refreshGitStatus, addToast]);
+
+    const handleSaveToken = useCallback(async () => {
+        if (!gitToken.trim()) return;
+        try {
+            const { encryptAndStore } = await import('../../utils/secureStorage');
+            await encryptAndStore('git-pat', gitToken);
+            setGitTokenSaved(true);
+            addToast('Token saved securely', 'success');
+        } catch (err: any) {
+            addToast('Failed to save token: ' + err.message, 'error');
+        }
+    }, [gitToken, addToast]);
+
+    useEffect(() => {
+        (async () => {
+            try {
+                const { retrieveAndDecrypt } = await import('../../utils/secureStorage');
+                const saved = await retrieveAndDecrypt('git-pat');
+                if (saved) {
+                    setGitToken(saved);
+                    setGitTokenSaved(true);
+                }
+            } catch {
+            }
+        })();
+    }, []);
 
     useEffect(() => {
         if (projectId && (!currentProject || currentProject.id !== projectId)) {
             openProject(projectId);
         }
     }, [projectId, currentProject, openProject]);
-
-    // Sync project files to Linux filesystem so terminal can access them.
-    // DataDevice (/projects) is flat — doesn't support subdirectories.
-    // We write to /home/user/projects/<name>/ on the ext2 filesystem instead.
-    const syncedRef = useRef(false);
-    useEffect(() => {
-        if (!isBooted || !currentProject || syncedRef.current) return;
-        syncedRef.current = true;
-        const syncFiles = async () => {
-            for (const file of currentFiles) {
-                if (file.isDirectory) continue;
-                try {
-                    await writeLinuxFile(linuxPath(file.path), file.content);
-                } catch { /* ignore sync errors */ }
-            }
-        };
-        syncFiles();
-    }, [isBooted, currentProject, currentFiles, writeLinuxFile, linuxPath]);
 
     const fileTree = useMemo(() => buildFileTree(currentFiles), [currentFiles]);
 
@@ -494,10 +624,32 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
         setExpandedDirs(new Set(rootDirs));
     }, [currentFiles]);
 
-    // Predictive preloading: analyze project files and preload the appropriate runtime
     useEffect(() => {
         if (currentFiles.length > 0) {
             preloadForProject(currentFiles.map(f => f.path));
+        }
+    }, [currentFiles]);
+
+    useEffect(() => {
+        const pkgFile = currentFiles.find(f => f.name === 'package.json' && !f.isDirectory);
+        setHasPackageJson(!!pkgFile);
+        if (!pkgFile) { setDetectedFramework(null); return; }
+        try {
+            const pkg = JSON.parse(pkgFile.content);
+            const allDeps = { ...pkg.dependencies, ...pkg.devDependencies };
+            if (allDeps['next']) setDetectedFramework('Next.js');
+            else if (allDeps['@remix-run/react']) setDetectedFramework('Remix');
+            else if (allDeps['nuxt']) setDetectedFramework('Nuxt');
+            else if (allDeps['svelte'] || allDeps['@sveltejs/kit']) setDetectedFramework('Svelte');
+            else if (allDeps['vue']) setDetectedFramework('Vue');
+            else if (allDeps['react']) setDetectedFramework('React');
+            else if (allDeps['express']) setDetectedFramework('Express');
+            else if (allDeps['fastify']) setDetectedFramework('Fastify');
+            else if (allDeps['hono']) setDetectedFramework('Hono');
+            else if (allDeps['vite']) setDetectedFramework('Vite');
+            else setDetectedFramework(null);
+        } catch {
+            setDetectedFramework(null);
         }
     }, [currentFiles]);
 
@@ -532,84 +684,6 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
         setFileContents(prev => { const next = new Map(prev); next.delete(fileId); return next; });
     }, [activeTab]);
 
-    // Reverse sync: pull changes from Linux FS back into the virtual FS.
-    // Handles files created/edited/deleted in the terminal.
-    const [isSyncing, setIsSyncing] = useState(false);
-    const syncFromLinux = useCallback(async () => {
-        if (!currentProject || !isBooted || isSyncing) return;
-        setIsSyncing(true);
-        try {
-            const projDir = `/home/user/projects/${currentProject.name.replace(/\s+/g, '_')}`;
-            const norm = (p: string) => (p.startsWith('/') ? p : `/${p}`);
-
-            // List dirs and files in one shot
-            const raw = await captureCommand(
-                `cd '${projDir}' 2>/dev/null && find . -mindepth 1 -type d | sed 's/^/D:/' && find . -mindepth 1 -type f | sed 's/^/F:/'`
-            );
-
-            const lines = (raw || '').trim().split('\n').filter(l => l.startsWith('D:') || l.startsWith('F:'));
-
-            // Convert ./path → virtual FS path (root items have no leading /)
-            const toVP = (dotRel: string) => {
-                const rel = dotRel.slice(1); // ./foo → /foo
-                const parts = rel.split('/').filter(Boolean);
-                return parts.length === 1 ? parts[0] : rel;
-            };
-
-            // Track all paths found in Linux FS (normalized)
-            const linuxPaths = new Set<string>();
-
-            // Process directories first (sorted by depth so parents come first)
-            const dirs = lines.filter(l => l.startsWith('D:')).map(l => l.slice(2))
-                .sort((a, b) => a.split('/').length - b.split('/').length);
-            for (const d of dirs) {
-                const vp = toVP(d);
-                linuxPaths.add(norm(vp));
-                if (!currentFiles.some(f => norm(f.path) === norm(vp) && f.isDirectory)) {
-                    await createFile(vp, '', true);
-                }
-            }
-
-            // OPT: Batch read ALL files in one shell command (kills N+1 pattern)
-            const files = lines.filter(l => l.startsWith('F:')).map(l => l.slice(2));
-            const filePaths = files.map(f => `${projDir}${f.slice(1)}`);
-            const fileContentsMap = filePaths.length > 0
-                ? await batchReadFiles(filePaths)
-                : new Map<string, string>();
-
-            for (let idx = 0; idx < files.length; idx++) {
-                const f = files[idx];
-                const vp = toVP(f);
-                linuxPaths.add(norm(vp));
-                const content = fileContentsMap.get(filePaths[idx]) ?? '';
-                const existing = currentFiles.find(ef => norm(ef.path) === norm(vp) && !ef.isDirectory);
-                if (!existing) {
-                    await createFile(vp, content, false);
-                } else if (content !== existing.content) {
-                    await updateFile(existing.id, content);
-                    if (openTabs.some(t => t.fileId === existing.id)) {
-                        setFileContents(prev => new Map(prev).set(existing.id, content));
-                    }
-                }
-            }
-
-            // Delete files from virtual FS that no longer exist in Linux FS
-            for (const vf of currentFiles) {
-                if (!linuxPaths.has(norm(vf.path))) {
-                    await deleteFileById(vf.id);
-                    const tab = openTabs.find(t => t.fileId === vf.id);
-                    if (tab) closeTab(vf.id);
-                }
-            }
-
-            addToast('Synced from terminal', 'success');
-        } catch {
-            addToast('Sync failed', 'error');
-        } finally {
-            setIsSyncing(false);
-        }
-    }, [currentProject, isBooted, isSyncing, captureCommand, readFile, batchReadFiles, currentFiles, createFile, updateFile, deleteFileById, openTabs, closeTab, addToast]);
-
     const handleEditorChange = useCallback((value: string | undefined, fileId: string) => {
         if (value === undefined) return;
         setFileContents(prev => new Map(prev).set(fileId, value));
@@ -617,29 +691,20 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
         if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
         autoSaveTimer.current = setTimeout(async () => {
             await updateFile(fileId, value);
-            // Also sync to Linux filesystem so terminal sees updated files
-            const tab = openTabs.find(t => t.fileId === fileId);
-            if (tab && currentProject && isBooted) {
-                writeLinuxFile(linuxPath(tab.path), value).catch(() => {});
-            }
             setOpenTabs(prev => prev.map(t => t.fileId === fileId ? { ...t, modified: false } : t));
         }, 2000);
-    }, [updateFile, openTabs, writeLinuxFile, currentProject, isBooted, linuxPath]);
+    }, [updateFile]);
 
     const saveCurrentFile = useCallback(async () => {
         if (!activeTab) return;
         const content = fileContents.get(activeTab);
         if (content !== undefined) {
             await updateFile(activeTab, content);
-            // Sync to Linux filesystem
-            const tab = openTabs.find(t => t.fileId === activeTab);
-            if (tab && currentProject && isBooted) {
-                writeLinuxFile(linuxPath(tab.path), content).catch(() => {});
-            }
             setOpenTabs(prev => prev.map(t => t.fileId === activeTab ? { ...t, modified: false } : t));
+            const tab = openTabs.find(t => t.fileId === activeTab);
             addToast(`Saved ${tab?.name || 'file'}`, 'success');
         }
-    }, [activeTab, fileContents, updateFile, openTabs, addToast, currentProject, isBooted, writeLinuxFile, linuxPath]);
+    }, [activeTab, fileContents, updateFile, openTabs, addToast]);
 
     const handleNewFile = useCallback(async (parentPath: string) => {
         setNewFileParent(parentPath);
@@ -653,14 +718,6 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
         const cleanName = isDir ? newFileName.slice(0, -1) : newFileName;
         const cleanPath = isDir ? path.slice(0, -1) : path;
         await createFile(cleanPath, '', isDir);
-        // Sync to Linux filesystem so terminal sees the new file/folder
-        if (currentProject && isBooted) {
-            if (isDir) {
-                mkdirLinux(linuxPath(cleanPath)).catch(() => {});
-            } else {
-                writeLinuxFile(linuxPath(cleanPath), '').catch(() => {});
-            }
-        }
         setNewFileName('');
         setNewFileParent(null);
         addToast(`Created ${isDir ? 'folder' : 'file'}: ${cleanName}`, 'success');
@@ -668,19 +725,14 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
             const file = currentFiles.find(f => f.path === cleanPath);
             if (file) openFile(file);
         }
-    }, [newFileName, newFileParent, createFile, currentFiles, openFile, addToast, isBooted, mkdirLinux, writeLinuxFile, linuxPath]);
+    }, [newFileName, newFileParent, createFile, currentFiles, openFile, addToast]);
 
     const handleDeleteFile = useCallback(async (file: ProjectFile) => {
         await deleteFileById(file.id);
         if (openTabs.find(t => t.fileId === file.id)) closeTab(file.id);
-        // Remove from Linux filesystem too
-        if (currentProject && isBooted) {
-            removeLinux(linuxPath(file.path)).catch(() => {});
-        }
         addToast(`Deleted ${file.name}`, 'success');
-    }, [deleteFileById, openTabs, closeTab, addToast, isBooted, removeLinux, linuxPath]);
+    }, [deleteFileById, openTabs, closeTab, addToast]);
 
-    // Auto-scroll output
     useEffect(() => {
         if (outputContainerRef.current) {
             outputContainerRef.current.scrollTop = outputContainerRef.current.scrollHeight;
@@ -693,7 +745,6 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
         setOutputLines(prev => [...prev, { text: `[${ts}] ${text}`, type }]);
     }, []);
 
-    // Gather all companion files matching the same language family for multi-file execution
     const gatherCompanionFiles = useCallback((activeFileId: string, lang: string): Record<string, string> => {
         const langFamily: Record<string, string[]> = {
             'python': ['py'],
@@ -708,7 +759,6 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
             if (f.isDirectory || f.id === activeFileId) continue;
             const ext = f.name.split('.').pop()?.toLowerCase() || '';
             if (exts.includes(ext)) {
-                // Use the latest content from editor if open, otherwise from project state
                 const content = fileContents.get(f.id) ?? f.content;
                 companions[f.name] = content;
             }
@@ -726,12 +776,12 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
         const companions = gatherCompanionFiles(activeTab, lang);
 
         setIsRunning(true);
-        setOutputOpen(true);
+        setBottomPanelOpen(true);
+        setBottomPanelTab('output');
         setOutputLines([]);
 
         const execStart = performance.now();
 
-        // Try RuntimeContext first (supports Pyodide, WebContainers, Piston)
         if (runtime) {
             appendOutput(`Running ${tab.name} via ${runtime.resolveRuntime(lang)}...`, 'info');
             try {
@@ -741,7 +791,6 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                 if (!result.stdout && !result.stderr) {
                     appendOutput(`Exited with code ${result.exitCode} (${result.durationMs?.toFixed(0)}ms)`, 'info');
                 }
-                // Track skills
                 const dur = performance.now() - execStart;
                 if (result.exitCode === 0) skillAnalyzer.current?.recordSuccess(`run:${lang}`, dur);
                 else skillAnalyzer.current?.recordFailure(`run:${lang}`, result.stderr || 'non-zero exit', dur);
@@ -754,19 +803,18 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
             return;
         }
 
-        // Fallback: direct Piston API (when RuntimeContext not available)
         const pistonRuntime = pistonRuntimes[lang];
         if (!pistonRuntime) {
             appendOutput(`Language "${lang}" is not supported for execution.`, 'stderr');
             appendOutput(`Supported: ${Object.keys(pistonRuntimes).join(', ')}`, 'info');
-            setOutputOpen(true);
+            setBottomPanelOpen(true);
+            setBottomPanelTab('output');
             setIsRunning(false);
             return;
         }
         appendOutput(`Running ${tab.name} (${pistonRuntime.language} ${pistonRuntime.version})...`, 'info');
 
         try {
-            // Build files array: active file first, then companions
             const pistonFiles: { name?: string; content: string }[] = [{ name: tab.name, content }];
             for (const [name, code] of Object.entries(companions)) {
                 pistonFiles.push({ name, content: code });
@@ -801,6 +849,15 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
         }
     }, [activeTab, openTabs, fileContents, appendOutput, runtime, gatherCompanionFiles]);
 
+    const openInSplit = useCallback((file: ProjectFile) => {
+        if (file.isDirectory) return;
+        setSplitFileId(file.id);
+        if (!fileContents.has(file.id)) {
+            setFileContents(prev => new Map(prev).set(file.id, file.content));
+        }
+        if (!splitMode) setSplitMode('vertical');
+    }, [fileContents, splitMode]);
+
     const runAsApp = useCallback(() => {
         if (!activeTab) return;
         const tab = openTabs.find(t => t.fileId === activeTab);
@@ -829,11 +886,10 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
         addToast(`Launched ${appname}`, 'success');
     }, [activeTab, openTabs, fileContents, addwindow, addToast]);
 
-    // Keyboard shortcuts
     useEffect(() => {
         const handler = (e: KeyboardEvent) => {
             if ((e.metaKey || e.ctrlKey) && e.key === 's') { e.preventDefault(); saveCurrentFile(); }
-            if ((e.metaKey || e.ctrlKey) && e.key === '`') { e.preventDefault(); setTerminalOpen(p => !p); }
+            if ((e.metaKey || e.ctrlKey) && e.key === '`') { e.preventDefault(); setBottomPanelOpen(p => !p); }
             if ((e.metaKey || e.ctrlKey) && e.key === 'b') { e.preventDefault(); setSidebarOpen(p => !p); }
             if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'f') { e.preventDefault(); setFocusMode(p => !p); }
         };
@@ -841,7 +897,6 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
         return () => window.removeEventListener('keydown', handler);
     }, [saveCurrentFile]);
 
-    // Menu registration
     const workspaceMenus = useMemo(() => ({
         File: [
             { title: "Save", actionId: "save-file", shortcut: "⌘S" },
@@ -870,8 +925,8 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
         'run-code': () => runCode(),
         'run-as-app': () => runAsApp(),
         'toggle-sidebar': () => setSidebarOpen(p => !p),
-        'toggle-terminal': () => setTerminalOpen(p => !p),
-        'toggle-output': () => setOutputOpen(p => !p),
+        'toggle-terminal': () => { setBottomPanelOpen(p => !p); setBottomPanelTab('terminal'); },
+        'toggle-output': () => { setBottomPanelOpen(p => !p); setBottomPanelTab('output'); },
         'toggle-preview': () => setPreviewOpen(p => !p),
         'focus-mode': () => setFocusMode(p => !p),
     }), [saveCurrentFile, handleNewFile, createSnapshot, addToast, runCode, runAsApp]);
@@ -891,7 +946,7 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                 <div className="text-center space-y-3">
                     <div className="text-4xl">🚀</div>
                     <div className="text-lg font-medium">No project loaded</div>
-                    <div className="text-sm text-[--text-muted]">Open a project from the Project Dashboard</div>
+                    <div className="text-[13px] text-[--text-muted]">Open a project from the Project Dashboard</div>
                 </div>
             </div>
         );
@@ -899,7 +954,6 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
 
     return (
         <div className="flex flex-col h-full bg-[--bg-base] text-[--text-muted] text-xs overflow-hidden relative font-mono">
-            {/* Top Toolbar */}
             <div className="flex items-center justify-between px-2 py-1 bg-surface border-b border-[--border-color] shrink-0">
                 <div className="flex items-center gap-2">
                     <button onClick={() => setSidebarOpen(p => !p)} className={`p-1 hover:bg-overlay ${sidebarOpen ? 'text-[--text-color]' : 'text-[--text-muted]'}`} title="Toggle sidebar (Cmd+B)">
@@ -909,12 +963,24 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                         <VscGitMerge size={14} />
                     </button>
                     <span className="text-[--text-color] font-medium">{currentProject.name}</span>
-                    {currentProject.stack && (
+                    {detectedFramework && (
+                        <span className="px-1.5 py-0.5 bg-overlay text-[10px] text-pastel-blue">{detectedFramework}</span>
+                    )}
+                    {currentProject.stack && !detectedFramework && (
                         <div className="flex items-center gap-1 ml-2">
                             {currentProject.stack.slice(0, 3).map(s => (
                                 <span key={s} className="px-1.5 py-0.5 bg-overlay text-[10px] text-[--text-muted]">{s}</span>
                             ))}
                         </div>
+                    )}
+                    {hasPackageJson && (
+                        <button
+                            onClick={() => { setBottomPanelOpen(true); setBottomPanelTab('terminal'); }}
+                            className="flex items-center gap-1 px-1.5 py-0.5 text-[10px] text-pastel-green hover:bg-overlay"
+                            title="Open terminal to run dev server"
+                        >
+                            <VscRunAll size={10} /> Dev Server
+                        </button>
                     )}
                 </div>
                 <div className="flex items-center gap-1">
@@ -928,7 +994,7 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                     <button onClick={() => setPreviewOpen(p => !p)} className={`p-1 hover:bg-overlay ${previewOpen ? 'text-[--text-color]' : 'text-[--text-muted]'}`} title="Toggle preview">
                         {previewOpen ? <VscEye size={14} /> : <VscEyeClosed size={14} />}
                     </button>
-                    <button onClick={() => setTerminalOpen(p => !p)} className={`p-1 hover:bg-overlay ${terminalOpen ? 'text-[--text-color]' : 'text-[--text-muted]'}`} title="Toggle terminal (Cmd+`)">
+                    <button onClick={() => setBottomPanelOpen(p => !p)} className={`p-1 hover:bg-overlay ${bottomPanelOpen ? 'text-[--text-color]' : 'text-[--text-muted]'}`} title="Toggle terminal (Cmd+`)">
                         <VscTerminal size={14} />
                     </button>
                     <button onClick={() => setFocusMode(p => !p)} className={`p-1 hover:bg-overlay ${focusMode ? 'text-pastel-peach' : 'text-[--text-muted]'}`} title="Focus mode (Cmd+Shift+F)">
@@ -937,9 +1003,7 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                 </div>
             </div>
 
-            {/* Main Content Area */}
             <div className="flex flex-1 overflow-hidden relative">
-                {/* Sidebar */}
                 {sidebarOpen && !focusMode && (
                     <div className="w-56 bg-surface border-r border-[--border-color] flex flex-col shrink-0">
                         <div className="flex items-center justify-between px-2 py-1.5 border-b border-[--border-color]">
@@ -947,7 +1011,6 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                             <div className="flex items-center gap-0.5">
                                 <button onClick={() => handleNewFile('/')} className="p-0.5 hover:bg-overlay" title="New file"><VscNewFile size={12} /></button>
                                 <button onClick={() => { setNewFileParent('/'); setNewFileName(''); }} className="p-0.5 hover:bg-overlay" title="New folder"><VscNewFolder size={12} /></button>
-                                <button onClick={syncFromLinux} disabled={isSyncing} className={`p-0.5 hover:bg-overlay ${isSyncing ? 'animate-spin text-accent' : ''}`} title="Sync from terminal"><VscRefresh size={12} /></button>
                             </div>
                         </div>
                         <div className="flex-1 overflow-y-auto py-1">
@@ -980,70 +1043,123 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                     </div>
                 )}
 
-                {/* Git Panel */}
                 {gitPanelOpen && !focusMode && (
-                    <div className="w-56 bg-surface border-r border-[--border-color] flex flex-col shrink-0">
+                    <div className="w-64 bg-surface border-r border-[--border-color] flex flex-col shrink-0">
                         <div className="flex items-center justify-between px-2 py-1.5 border-b border-[--border-color]">
                             <span className="text-[10px] uppercase tracking-wider text-[--text-muted] font-medium flex items-center gap-1">
                                 <VscGitMerge size={10} /> Source Control
                                 {gitBranch && <span className="text-pastel-blue normal-case tracking-normal">({gitBranch})</span>}
                             </span>
-                            <button onClick={() => setGitPanelOpen(false)} className="p-0.5 hover:bg-overlay">
-                                <VscClose size={12} className="text-[--text-muted]" />
-                            </button>
+                            <div className="flex items-center gap-0.5">
+                                <button onClick={refreshGitStatus} className="p-0.5 hover:bg-overlay" title="Refresh">
+                                    <VscRefresh size={10} className="text-[--text-muted]" />
+                                </button>
+                                <button onClick={() => setGitPanelOpen(false)} className="p-0.5 hover:bg-overlay">
+                                    <VscClose size={12} className="text-[--text-muted]" />
+                                </button>
+                            </div>
                         </div>
+
+                        {gitBranch && (
+                            <div className="flex items-center border-b border-[--border-color] shrink-0">
+                                <button
+                                    onClick={() => setGitView('changes')}
+                                    className={`flex-1 py-1 text-[10px] font-medium text-center ${gitView === 'changes' ? 'text-[--text-color] border-b border-accent' : 'text-[--text-muted] hover:text-[--text-color]'}`}
+                                >Changes</button>
+                                <button
+                                    onClick={() => setGitView('log')}
+                                    className={`flex-1 py-1 text-[10px] font-medium text-center ${gitView === 'log' ? 'text-[--text-color] border-b border-accent' : 'text-[--text-muted] hover:text-[--text-color]'}`}
+                                >Log</button>
+                                <button
+                                    onClick={() => setGitView('settings')}
+                                    className={`flex-1 py-1 text-[10px] font-medium text-center ${gitView === 'settings' ? 'text-[--text-color] border-b border-accent' : 'text-[--text-muted] hover:text-[--text-color]'}`}
+                                >Settings</button>
+                            </div>
+                        )}
+
                         <div className="flex-1 overflow-y-auto">
                             {!gitBranch && (
-                                <div className="px-2 py-3 text-center">
-                                    <p className="text-[10px] text-[--text-muted] mb-2">No git repository</p>
-                                    <button onClick={handleGitInit} disabled={gitLoading}
-                                        className="w-full py-1 text-[10px] rounded bg-pastel-blue text-white font-medium hover:opacity-90 disabled:opacity-50 transition-opacity">
-                                        {gitLoading ? 'Initializing...' : 'Initialize Repository'}
-                                    </button>
+                                <div className="px-2 py-3 space-y-3">
+                                    <div className="text-center">
+                                        <VscRepo size={20} className="mx-auto text-[--text-muted] mb-2 opacity-50" />
+                                        <p className="text-[10px] text-[--text-muted] mb-2">No git repository</p>
+                                        <button onClick={handleGitInit} disabled={gitLoading}
+                                            className="w-full py-1 text-[10px] bg-pastel-blue text-white font-medium hover:opacity-90 disabled:opacity-50 transition-opacity">
+                                            {gitLoading ? 'Initializing...' : 'Initialize Repository'}
+                                        </button>
+                                    </div>
+                                    <div className="border-t border-[--border-color] pt-3">
+                                        <div className="flex items-center gap-1 mb-1.5">
+                                            <VscCloudDownload size={11} className="text-pastel-blue" />
+                                            <span className="text-[10px] font-medium text-[--text-color]">Clone Repository</span>
+                                        </div>
+                                        <input
+                                            type="text"
+                                            value={gitCloneUrl}
+                                            onChange={e => setGitCloneUrl(e.target.value)}
+                                            onKeyDown={e => { if (e.key === 'Enter') handleGitClone(); }}
+                                            placeholder="https://github.com/user/repo.git"
+                                            className="w-full bg-[--bg-base] border border-[--border-color] px-2 py-1 text-[10px] text-[--text-color] outline-none focus:border-accent placeholder:text-[--text-muted] mb-1.5"
+                                        />
+                                        <button onClick={handleGitClone} disabled={gitLoading || !gitCloneUrl.trim()}
+                                            className="w-full py-1 text-[10px] bg-accent text-[--bg-base] font-medium hover:opacity-90 disabled:opacity-50 transition-opacity">
+                                            {gitLoading ? 'Cloning...' : 'Clone'}
+                                        </button>
+                                    </div>
                                 </div>
                             )}
-                            {gitBranch && (
+
+                            {gitBranch && gitView === 'changes' && (
                                 <>
                                     <div className="px-2 py-2 border-b border-[--border-color]">
-                                        <div className="flex items-center gap-1 mb-2">
-                                            <VscGitCommit size={11} className="text-pastel-green" />
-                                            <span className="text-[10px] font-medium text-[--text-color]">Commit</span>
-                                        </div>
                                         <input
                                             type="text"
                                             value={commitMsg}
                                             onChange={e => setCommitMsg(e.target.value)}
                                             onKeyDown={e => { if (e.key === 'Enter') handleGitCommit(); }}
                                             placeholder="Commit message..."
-                                            className="w-full bg-[--bg-base] border border-[--border-color] rounded px-2 py-1 text-[10px] text-[--text-color] outline-none focus:border-pastel-blue placeholder:text-[--text-muted] mb-1.5"
+                                            className="w-full bg-[--bg-base] border border-[--border-color] px-2 py-1 text-[10px] text-[--text-color] outline-none focus:border-accent placeholder:text-[--text-muted] mb-1.5"
                                         />
-                                        <button onClick={handleGitCommit} disabled={gitLoading || !commitMsg.trim()}
-                                            className="w-full py-1 text-[10px] rounded bg-pastel-green text-[--bg-base] font-medium hover:opacity-90 disabled:opacity-50 transition-opacity">
-                                            {gitLoading ? 'Committing...' : 'Commit All'}
+                                        <div className="flex gap-1">
+                                            <button onClick={handleGitCommit} disabled={gitLoading || !commitMsg.trim()}
+                                                className="flex-1 py-1 text-[10px] bg-pastel-green text-[--bg-base] font-medium hover:opacity-90 disabled:opacity-50 transition-opacity flex items-center justify-center gap-1">
+                                                <VscGitCommit size={10} />
+                                                {gitLoading ? 'Committing...' : 'Commit'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className="px-2 py-1.5 border-b border-[--border-color] flex gap-1">
+                                        <button onClick={handleGitPull} disabled={gitLoading}
+                                            className="flex-1 flex items-center justify-center gap-1 py-1 text-[10px] hover:bg-overlay text-[--text-muted] hover:text-[--text-color] disabled:opacity-50 transition-colors border border-[--border-color]">
+                                            <VscRefresh size={10} /> Pull
+                                        </button>
+                                        <button onClick={handleGitPush} disabled={gitLoading || !gitToken}
+                                            className="flex-1 flex items-center justify-center gap-1 py-1 text-[10px] hover:bg-overlay text-[--text-muted] hover:text-[--text-color] disabled:opacity-50 transition-colors border border-[--border-color]"
+                                            title={!gitToken ? 'Set a PAT in Settings tab to push' : 'Push to remote'}>
+                                            <VscGitPullRequest size={10} /> Push
                                         </button>
                                     </div>
-                                    <div className="px-2 py-2 border-b border-[--border-color]">
-                                        <div className="flex items-center gap-1 mb-1.5">
-                                            <VscGitPullRequest size={11} className="text-pastel-blue" />
-                                            <span className="text-[10px] font-medium text-[--text-color]">Actions</span>
+                                    {gitBranches.length > 1 && (
+                                        <div className="px-2 py-1.5 border-b border-[--border-color]">
+                                            <div className="flex items-center gap-1 mb-1">
+                                                <span className="text-[10px] text-[--text-muted] font-medium">Branch</span>
+                                            </div>
+                                            <select
+                                                value={gitBranch}
+                                                onChange={(e) => handleGitCheckout(e.target.value)}
+                                                className="w-full bg-overlay border border-[--border-color] px-2 py-1 text-[10px] text-[--text-color] outline-none focus:border-accent"
+                                            >
+                                                {gitBranches.map(b => (
+                                                    <option key={b} value={b}>{b}</option>
+                                                ))}
+                                            </select>
                                         </div>
-                                        <div className="flex flex-col gap-1">
-                                            <button onClick={handleGitPull} disabled={gitLoading}
-                                                className="flex items-center gap-1.5 px-2 py-1 text-[10px] rounded hover:bg-overlay text-[--text-muted] hover:text-[--text-color] disabled:opacity-50 transition-colors">
-                                                <VscRefresh size={10} /> Pull
-                                            </button>
-                                            <button onClick={handleGitPush} disabled={gitLoading}
-                                                className="flex items-center gap-1.5 px-2 py-1 text-[10px] rounded hover:bg-overlay text-[--text-muted] hover:text-[--text-color] disabled:opacity-50 transition-colors">
-                                                <VscGitPullRequest size={10} /> Push
-                                            </button>
-                                        </div>
-                                    </div>
+                                    )}
                                     <div className="px-2 py-2">
                                         <div className="flex items-center justify-between mb-1.5">
-                                            <span className="text-[10px] text-[--text-muted] font-medium">Changes</span>
-                                            <button onClick={refreshGitStatus} className="p-0.5 hover:bg-overlay rounded">
-                                                <VscRefresh size={10} className="text-[--text-muted]" />
-                                            </button>
+                                            <span className="text-[10px] text-[--text-muted] font-medium">
+                                                Changes {gitChanges.length > 0 && <span className="text-accent">({gitChanges.length})</span>}
+                                            </span>
                                         </div>
                                         {gitChanges.length === 0 ? (
                                             <div className="text-[10px] text-[--text-muted] opacity-60 text-center py-3">
@@ -1052,8 +1168,8 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                                         ) : (
                                             <div className="space-y-0.5">
                                                 {gitChanges.map(c => (
-                                                    <div key={c.filepath} className="flex items-center gap-1.5 px-1 py-0.5 text-[10px] rounded hover:bg-overlay">
-                                                        <span className={`font-bold ${c.status === 'new' ? 'text-pastel-green' : c.status === 'deleted' ? 'text-pastel-red' : 'text-pastel-yellow'}`}>
+                                                    <div key={c.filepath} className="flex items-center gap-1.5 px-1 py-0.5 text-[10px] hover:bg-overlay">
+                                                        <span className={`font-bold w-3 text-center shrink-0 ${c.status === 'new' ? 'text-pastel-green' : c.status === 'deleted' ? 'text-pastel-red' : 'text-pastel-yellow'}`}>
                                                             {c.status === 'new' ? 'A' : c.status === 'deleted' ? 'D' : 'M'}
                                                         </span>
                                                         <span className="text-[--text-muted] truncate">{c.filepath}</span>
@@ -1064,13 +1180,139 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                                     </div>
                                 </>
                             )}
+
+                            {gitBranch && gitView === 'log' && (
+                                <div className="flex flex-col">
+                                    {gitLogEntries.length === 0 ? (
+                                        <div className="text-[10px] text-[--text-muted] opacity-60 text-center py-6">
+                                            No commits yet
+                                        </div>
+                                    ) : (
+                                        gitLogEntries.map(entry => (
+                                            <div key={entry.oid} className="px-2 py-1.5 border-b border-[--border-color] hover:bg-overlay">
+                                                <div className="flex items-start gap-1.5">
+                                                    <span className="text-pastel-blue font-mono text-[10px] shrink-0 mt-0.5">{entry.oid.slice(0, 7)}</span>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="text-[10px] text-[--text-color] truncate">{entry.message.split('\n')[0]}</div>
+                                                        <div className="text-[9px] text-[--text-muted] mt-0.5">
+                                                            {entry.author.name} · {new Date(entry.author.timestamp * 1000).toLocaleDateString()}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            )}
+
+                            {gitBranch && gitView === 'settings' && (
+                                <div className="px-2 py-2 space-y-3">
+                                    <div>
+                                        <div className="flex items-center gap-1 mb-1.5">
+                                            <VscGitPullRequest size={11} className="text-pastel-blue" />
+                                            <span className="text-[10px] font-medium text-[--text-color]">Remote URL</span>
+                                        </div>
+                                        <input
+                                            type="text"
+                                            value={gitRemoteUrl}
+                                            onChange={e => setGitRemoteUrl(e.target.value)}
+                                            placeholder="https://github.com/user/repo.git"
+                                            className="w-full bg-[--bg-base] border border-[--border-color] px-2 py-1 text-[10px] text-[--text-color] outline-none focus:border-accent placeholder:text-[--text-muted] mb-1.5"
+                                        />
+                                        <button onClick={() => handleSetRemote(gitRemoteUrl)} disabled={gitLoading || !gitRemoteUrl.trim()}
+                                            className="w-full py-1 text-[10px] bg-accent text-[--bg-base] font-medium hover:opacity-90 disabled:opacity-50 transition-opacity">
+                                            {gitRemotes.find(r => r.remote === 'origin') ? 'Update Remote' : 'Set Remote'}
+                                        </button>
+                                        {gitRemotes.length > 0 && (
+                                            <div className="mt-1.5">
+                                                <span className="text-[9px] text-[--text-muted]">Current remotes:</span>
+                                                {gitRemotes.map(r => (
+                                                    <div key={r.remote} className="text-[9px] text-[--text-muted] truncate mt-0.5">
+                                                        <span className="text-pastel-blue">{r.remote}</span> → {r.url}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="border-t border-[--border-color] pt-3">
+                                        <div className="flex items-center gap-1 mb-1.5">
+                                            <VscKey size={11} className="text-pastel-peach" />
+                                            <span className="text-[10px] font-medium text-[--text-color]">Personal Access Token</span>
+                                        </div>
+                                        <div className="flex gap-1 mb-1.5">
+                                            <input
+                                                type={gitShowToken ? 'text' : 'password'}
+                                                value={gitToken}
+                                                onChange={e => { setGitToken(e.target.value); setGitTokenSaved(false); }}
+                                                placeholder="ghp_xxxxxxxxxxxx"
+                                                className="flex-1 bg-[--bg-base] border border-[--border-color] px-2 py-1 text-[10px] text-[--text-color] outline-none focus:border-accent placeholder:text-[--text-muted] font-mono"
+                                            />
+                                            <button
+                                                onClick={() => setGitShowToken(p => !p)}
+                                                className="px-1.5 border border-[--border-color] hover:bg-overlay text-[--text-muted]"
+                                                title={gitShowToken ? 'Hide token' : 'Show token'}
+                                            >
+                                                {gitShowToken ? <VscEyeClosed size={10} /> : <VscEye size={10} />}
+                                            </button>
+                                        </div>
+                                        <button onClick={handleSaveToken} disabled={!gitToken.trim() || gitTokenSaved}
+                                            className="w-full py-1 text-[10px] font-medium hover:opacity-90 disabled:opacity-50 transition-opacity bg-pastel-peach text-[--bg-base]">
+                                            {gitTokenSaved ? 'Token Saved' : 'Save Token'}
+                                        </button>
+                                        <p className="text-[9px] text-[--text-muted] mt-1 opacity-70">
+                                            Encrypted with AES-256-GCM and stored in IndexedDB
+                                        </p>
+                                    </div>
+
+                                    <div className="border-t border-[--border-color] pt-3">
+                                        <div className="flex items-center gap-1 mb-1.5">
+                                            <VscGitMerge size={11} className="text-pastel-green" />
+                                            <span className="text-[10px] font-medium text-[--text-color]">Branches</span>
+                                        </div>
+                                        {gitBranches.length === 0 ? (
+                                            <div className="text-[10px] text-[--text-muted] opacity-60">No branches</div>
+                                        ) : (
+                                            <div className="space-y-0.5">
+                                                {gitBranches.map(b => (
+                                                    <div key={b}
+                                                        onClick={() => { if (b !== gitBranch) handleGitCheckout(b); }}
+                                                        className={`flex items-center gap-1.5 px-2 py-1 text-[10px] cursor-pointer ${b === gitBranch ? 'bg-accent text-[--bg-base]' : 'text-[--text-muted] hover:bg-overlay hover:text-[--text-color]'}`}
+                                                    >
+                                                        <VscGitMerge size={10} />
+                                                        <span className="truncate">{b}</span>
+                                                        {b === gitBranch && <span className="ml-auto text-[9px]">current</span>}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="border-t border-[--border-color] pt-3">
+                                        <div className="flex items-center gap-1 mb-1.5">
+                                            <VscSettingsGear size={11} className="text-[--text-muted]" />
+                                            <span className="text-[10px] font-medium text-[--text-color]">Clone</span>
+                                        </div>
+                                        <input
+                                            type="text"
+                                            value={gitCloneUrl}
+                                            onChange={e => setGitCloneUrl(e.target.value)}
+                                            onKeyDown={e => { if (e.key === 'Enter') handleGitClone(); }}
+                                            placeholder="https://github.com/user/repo.git"
+                                            className="w-full bg-[--bg-base] border border-[--border-color] px-2 py-1 text-[10px] text-[--text-color] outline-none focus:border-accent placeholder:text-[--text-muted] mb-1.5"
+                                        />
+                                        <button onClick={handleGitClone} disabled={gitLoading || !gitCloneUrl.trim()}
+                                            className="w-full py-1 text-[10px] bg-accent text-[--bg-base] font-medium hover:opacity-90 disabled:opacity-50 transition-opacity">
+                                            {gitLoading ? 'Cloning...' : 'Clone into Project'}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
 
-                {/* Editor Area */}
                 <div className="flex-1 flex flex-col overflow-hidden">
-                    {/* Tabs */}
                     {openTabs.length > 0 && (
                         <div className="flex items-center bg-surface border-b border-[--border-color] overflow-x-auto shrink-0">
                             {openTabs.map(tab => (
@@ -1109,15 +1351,51 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                                         <IoRocketOutline size={14} /> App
                                     </button>
                                 )}
-                                <button onClick={() => setOutputOpen(!outputOpen)} className={`p-1 ${outputOpen ? 'text-[--text-color] bg-overlay' : 'text-[--text-muted] hover:text-[--text-color] hover:bg-overlay'}`} title="Output Panel">
+                                <button
+                                    onClick={() => setMinimapEnabled(p => !p)}
+                                    className={`p-1 ${minimapEnabled ? 'text-[--text-color] bg-overlay' : 'text-[--text-muted] hover:text-[--text-color] hover:bg-overlay'}`}
+                                    title="Toggle Minimap"
+                                >
+                                    <VscEye size={14} />
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        if (splitMode) { setSplitMode(null); setSplitFileId(null); }
+                                        else setSplitMode('vertical');
+                                    }}
+                                    className={`p-1 ${splitMode ? 'text-[--text-color] bg-overlay' : 'text-[--text-muted] hover:text-[--text-color] hover:bg-overlay'}`}
+                                    title="Split Editor"
+                                >
+                                    <VscSplitHorizontal size={14} />
+                                </button>
+                                <button onClick={() => { setBottomPanelOpen(true); setBottomPanelTab('output'); }} className={`p-1 ${bottomPanelOpen && bottomPanelTab === 'output' ? 'text-[--text-color] bg-overlay' : 'text-[--text-muted] hover:text-[--text-color] hover:bg-overlay'}`} title="Output Panel">
                                     <VscTerminal size={14} />
                                 </button>
                             </div>
                         </div>
                     )}
 
-                    {/* Editor + Preview */}
-                    <div className="flex flex-1 overflow-hidden">
+                    {activeTab && activeFileName && (
+                        <div className="flex items-center px-2 py-0.5 bg-surface border-b border-[--border-color] shrink-0 gap-1 text-[10px]">
+                            {activeFileName.split('/').length > 1 ? (
+                                activeFileName.split('/').map((seg, i, arr) => (
+                                    <React.Fragment key={i}>
+                                        {i > 0 && <span className="text-[--text-muted] opacity-40">/</span>}
+                                        <span className={i === arr.length - 1 ? 'text-[--text-color] font-medium' : 'text-[--text-muted]'}>{seg}</span>
+                                    </React.Fragment>
+                                ))
+                            ) : (
+                                <span className="text-[--text-color] font-medium">{activeFileName}</span>
+                            )}
+                            <div className="flex-1" />
+                            {detectedFramework && (
+                                <span className="px-1.5 py-0.5 bg-pastel-blue/20 text-pastel-blue text-[10px]">{detectedFramework}</span>
+                            )}
+                            <span className="px-1.5 py-0.5 bg-overlay text-[--text-muted]">{getLanguage(activeFileName)}</span>
+                        </div>
+                    )}
+
+                    <div className={`flex flex-1 overflow-hidden ${splitMode === 'horizontal' ? 'flex-col' : 'flex-row'}`}>
                         <div className="flex-1 overflow-hidden">
                             {activeTab && activeFileContent !== undefined ? (
                                 <MonacoEditor
@@ -1127,12 +1405,24 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                                     path={activeTab}
                                     theme={theme === 'dark' ? 'vs-dark' : 'light'}
                                     onChange={(value) => handleEditorChange(value, activeTab)}
-                                    onMount={(editor) => { editorRef.current = editor; }}
+                                    onMount={(editor) => {
+                                        editorRef.current = editor;
+                                        getAncestryTracker();
+                                        editor.onDidChangeCursorPosition((e: any) => {
+                                            setCursorPosition({ line: e.position.lineNumber, col: e.position.column });
+                                        });
+                                        editor.onDidChangeModelContent((e: any) => {
+                                            for (const change of e.changes) {
+                                                if (activeTab) ancestryRecordChange(activeTab, change);
+                                            }
+                                        });
+                                        editor.onDidPaste?.(() => ancestryMarkPaste());
+                                    }}
                                     options={{
                                         fontSize: 13,
                                         fontFamily: "'JetBrains Mono', 'SF Mono', 'Fira Code', monospace",
                                         fontLigatures: true,
-                                        minimap: { enabled: false },
+                                        minimap: { enabled: minimapEnabled },
                                         scrollBeyondLastLine: false,
                                         lineNumbers: 'on',
                                         renderLineHighlight: 'all',
@@ -1151,14 +1441,89 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                                 <div className="flex items-center justify-center h-full text-[--text-muted]">
                                     <div className="text-center space-y-2">
                                         <IoDocumentTextOutline size={32} className="mx-auto opacity-50" />
-                                        <div className="text-sm">Open a file to start editing</div>
+                                        <div className="text-[13px]">Open a file to start editing</div>
                                         <div className="text-[10px] opacity-60">Click a file in the sidebar</div>
                                     </div>
                                 </div>
                             )}
                         </div>
 
-                        {/* Preview Panel — supports WebContainer dev server URL, static HTML blob, or manual URL */}
+                        {splitMode && (
+                            <div className={`flex-1 overflow-hidden ${splitMode === 'horizontal' ? 'border-t' : 'border-l'} border-[--border-color]`}>
+                                {splitFileId && fileContents.has(splitFileId) ? (
+                                    <>
+                                        <div className="flex items-center px-2 py-0.5 bg-surface border-b border-[--border-color] shrink-0">
+                                            <select
+                                                value={splitFileId}
+                                                onChange={(e) => {
+                                                    setSplitFileId(e.target.value);
+                                                    const file = currentFiles.find(f => f.id === e.target.value);
+                                                    if (file && !fileContents.has(file.id)) {
+                                                        setFileContents(prev => new Map(prev).set(file.id, file.content));
+                                                    }
+                                                }}
+                                                className="bg-transparent text-[10px] text-[--text-color] outline-none flex-1"
+                                            >
+                                                {currentFiles.filter(f => !f.isDirectory).map(f => (
+                                                    <option key={f.id} value={f.id}>{f.name}</option>
+                                                ))}
+                                            </select>
+                                            <button onClick={() => { setSplitMode(null); setSplitFileId(null); }} className="p-0.5 hover:bg-overlay">
+                                                <VscClose size={12} className="text-[--text-muted]" />
+                                            </button>
+                                        </div>
+                                        <MonacoEditor
+                                            height="calc(100% - 24px)"
+                                            language={getLanguage(currentFiles.find(f => f.id === splitFileId)?.name || '')}
+                                            value={fileContents.get(splitFileId) || ''}
+                                            path={`split-${splitFileId}`}
+                                            theme={theme === 'dark' ? 'vs-dark' : 'light'}
+                                            onChange={(value) => { if (value !== undefined && splitFileId) handleEditorChange(value, splitFileId); }}
+                                            onMount={(editor) => { splitEditorRef.current = editor; }}
+                                            options={{
+                                                fontSize: 13,
+                                                fontFamily: "'JetBrains Mono', 'SF Mono', 'Fira Code', monospace",
+                                                fontLigatures: true,
+                                                minimap: { enabled: false },
+                                                scrollBeyondLastLine: false,
+                                                lineNumbers: 'on',
+                                                renderLineHighlight: 'all',
+                                                cursorBlinking: 'smooth',
+                                                smoothScrolling: true,
+                                                bracketPairColorization: { enabled: true },
+                                                guides: { bracketPairs: true, indentation: true },
+                                                tabSize: 2,
+                                                wordWrap: 'on',
+                                                automaticLayout: true,
+                                                padding: { top: 8, bottom: 8 },
+                                            }}
+                                        />
+                                    </>
+                                ) : (
+                                    <div className="flex items-center justify-center h-full text-[--text-muted]">
+                                        <div className="text-center space-y-2">
+                                            <VscSplitHorizontal size={24} className="mx-auto opacity-50" />
+                                            <div className="text-[10px]">Select a file to open in split view</div>
+                                            <select
+                                                onChange={(e) => {
+                                                    if (!e.target.value) return;
+                                                    const file = currentFiles.find(f => f.id === e.target.value);
+                                                    if (file) openInSplit(file);
+                                                }}
+                                                className="bg-overlay border border-[--border-color] text-[10px] text-[--text-color] outline-none px-2 py-1"
+                                                defaultValue=""
+                                            >
+                                                <option value="" disabled>Pick a file...</option>
+                                                {currentFiles.filter(f => !f.isDirectory).map(f => (
+                                                    <option key={f.id} value={f.id}>{f.name}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                         {previewOpen && (
                             <div className="w-96 border-l border-[--border-color] bg-[--bg-base] flex flex-col shrink-0">
                                 <div className="flex items-center justify-between px-2 py-1 bg-surface border-b border-[--border-color]">
@@ -1166,7 +1531,6 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                                         {previewUrl ? `Preview — ${previewUrl}` : 'Preview'}
                                     </span>
                                     <div className="flex items-center gap-0.5">
-                                        {/* Preview current HTML file as blob */}
                                         {activeFileName.endsWith('.html') && (
                                             <button
                                                 onClick={() => {
@@ -1215,115 +1579,137 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                         )}
                     </div>
 
-                    {/* Bottom Panels: Terminal + Output share a fixed container to prevent overflow */}
-                    {(terminalOpen || outputOpen) && !focusMode && (
-                        <div className="flex flex-col border-t border-[--border-color] shrink-0" style={{ height: terminalOpen && outputOpen ? '50%' : '40%', maxHeight: '50%', minHeight: 120 }}>
-                            {/* Terminal */}
-                            {terminalOpen && (
-                                <div className={`flex flex-col ${outputOpen ? 'flex-1 min-h-0 border-b border-[--border-color]' : 'flex-1 min-h-0'}`}>
-                                    <div className="flex items-center justify-between px-2 py-1 bg-surface border-b border-[--border-color] shrink-0">
-                                        <div className="flex items-center gap-1">
-                                            <VscTerminal size={11} className="text-[--text-muted]" />
-                                            <button
-                                                onClick={() => setTerminalMode('linux')}
-                                                className={`px-1.5 py-0.5 text-[10px] rounded ${terminalMode === 'linux' ? 'bg-overlay text-[--text-color]' : 'text-[--text-muted] hover:text-[--text-color]'}`}
-                                            >Linux</button>
-                                            <button
-                                                onClick={() => setTerminalMode('node')}
-                                                className={`px-1.5 py-0.5 text-[10px] rounded ${terminalMode === 'node' ? 'bg-overlay text-pastel-green' : 'text-[--text-muted] hover:text-[--text-color]'}`}
-                                            >Node</button>
-                                        </div>
-                                        <button onClick={() => setTerminalOpen(false)} className="p-0.5 hover:bg-overlay">
-                                            <VscClose size={12} className="text-[--text-muted]" />
-                                        </button>
-                                    </div>
-                                    <div className="flex-1 min-h-0">
-                                        <TerminalPanel
-                                            mode={terminalMode}
-                                            files={terminalMode === 'node' ? Object.fromEntries(
-                                                currentFiles.filter(f => !f.isDirectory).map(f => [f.path, f.content])
-                                            ) : undefined}
-                                            onServerReady={(url) => { setPreviewUrl(url); setPreviewOpen(true); }}
+                    {bottomPanelOpen && !focusMode && (
+                        <div className="flex flex-col border-t border-[--border-color] shrink-0" style={{ height: '40%', maxHeight: '50%', minHeight: 120 }}>
+                            <div className="flex items-center px-2 bg-surface border-b border-[--border-color] shrink-0 gap-0">
+                                <button
+                                    onClick={() => setBottomPanelTab('terminal')}
+                                    className={`flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-medium transition-colors ${bottomPanelTab === 'terminal' ? 'text-[--text-color] border-b border-accent' : 'text-[--text-muted] hover:text-[--text-color]'}`}
+                                ><VscTerminal size={11} /> Terminal</button>
+                                <button
+                                    onClick={() => setBottomPanelTab('output')}
+                                    className={`flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-medium transition-colors ${bottomPanelTab === 'output' ? 'text-[--text-color] border-b border-accent' : 'text-[--text-muted] hover:text-[--text-color]'}`}
+                                >Output {outputLines.length > 0 && <span className="text-[9px] text-accent">{outputLines.length}</span>}</button>
+                                <button
+                                    onClick={() => setBottomPanelTab('problems')}
+                                    className={`flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-medium transition-colors ${bottomPanelTab === 'problems' ? 'text-[--text-color] border-b border-accent' : 'text-[--text-muted] hover:text-[--text-color]'}`}
+                                >Problems {outputLines.filter(l => l.type === 'stderr').length > 0 && <span className="text-[9px] text-pastel-red">{outputLines.filter(l => l.type === 'stderr').length}</span>}</button>
+                                <div className="flex-1" />
+                                {bottomPanelTab === 'output' && (
+                                    <>
+                                        <input
+                                            value={outputFilter}
+                                            onChange={(e) => setOutputFilter(e.target.value)}
+                                            placeholder="Filter..."
+                                            className="w-24 bg-overlay border border-transparent focus:border-accent px-1.5 py-0.5 text-[10px] text-[--text-color] outline-none placeholder-[--text-muted]"
                                         />
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Output Panel */}
-                            {outputOpen && (
-                                <div className={`flex flex-col ${terminalOpen ? 'flex-1 min-h-0' : 'flex-1 min-h-0'}`}>
-                                    <div className="h-7 flex items-center px-3 bg-surface border-b border-[--border-color] gap-4 shrink-0">
-                                        <button className="text-[10px] text-[--text-color] font-medium border-b border-accent py-0.5">Output</button>
-                                        <div className="flex-1" />
-                                        <button onClick={() => setOutputLines([])} className="text-[--text-muted] hover:text-[--text-color] p-0.5 hover:bg-overlay">
+                                        <button
+                                            onClick={() => {
+                                                const text = outputLines.map(l => l.text).join('\n');
+                                                navigator.clipboard.writeText(text);
+                                            }}
+                                            className="text-[--text-muted] hover:text-[--text-color] p-0.5 hover:bg-overlay ml-1"
+                                            title="Copy output"
+                                        >
+                                            <VscSave size={11} />
+                                        </button>
+                                        <button onClick={() => setOutputLines([])} className="text-[--text-muted] hover:text-[--text-color] p-0.5 hover:bg-overlay" title="Clear">
                                             <IoTrashOutline size={12} />
                                         </button>
-                                        <button onClick={() => setOutputOpen(false)} className="text-[--text-muted] hover:text-[--text-color] p-0.5 hover:bg-overlay">
-                                            <VscClose size={12} />
-                                        </button>
-                                    </div>
-                                    {(() => {
-                                        const OUTPUT_LINE_HEIGHT = 16;
-                                        const OUTPUT_BUFFER = 10;
-                                        return (
-                                            <div
-                                                ref={outputContainerRef}
-                                                className="flex-1 min-h-0 overflow-auto bg-[--bg-base]"
-                                                onScroll={(e) => setOutputScrollTop((e.target as HTMLDivElement).scrollTop)}
-                                            >
-                                                {outputLines.length === 0 ? (
-                                                    <div className="p-3 text-xs font-mono text-[--text-muted] opacity-50">
-                                                        Run your code to see output here...
-                                                    </div>
-                                                ) : (() => {
-                                                    const containerHeight = outputContainerRef.current?.clientHeight || 300;
-                                                    const totalHeight = outputLines.length * OUTPUT_LINE_HEIGHT;
-                                                    const startIdx = Math.max(0, Math.floor(outputScrollTop / OUTPUT_LINE_HEIGHT) - OUTPUT_BUFFER);
-                                                    const endIdx = Math.min(outputLines.length, Math.ceil((outputScrollTop + containerHeight) / OUTPUT_LINE_HEIGHT) + OUTPUT_BUFFER);
-                                                    const visibleLines = outputLines.slice(startIdx, endIdx);
+                                    </>
+                                )}
+                                <button onClick={() => setBottomPanelOpen(false)} className="text-[--text-muted] hover:text-[--text-color] p-0.5 hover:bg-overlay ml-1">
+                                    <VscClose size={12} />
+                                </button>
+                            </div>
 
-                                                    return (
-                                                        <div style={{ height: totalHeight, position: 'relative' }}>
-                                                            <div
-                                                                style={{ position: 'absolute', top: startIdx * OUTPUT_LINE_HEIGHT, left: 0, right: 0 }}
-                                                                className="p-3 text-xs font-mono whitespace-pre-wrap"
-                                                            >
-                                                                {visibleLines.map((line, i) => (
-                                                                    <div
-                                                                        key={startIdx + i}
-                                                                        style={{ height: OUTPUT_LINE_HEIGHT }}
-                                                                        className={
-                                                                            line.type === 'stderr' ? 'text-pastel-red' :
-                                                                            line.type === 'info' ? 'text-accent' :
-                                                                            'text-[--text-color]'
-                                                                        }
-                                                                    >{line.text}</div>
-                                                                ))}
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                })()}
-                                            </div>
-                                        );
-                                    })()}
+                            <div className="flex-1 min-h-0 overflow-hidden">
+                                <div className={`h-full ${bottomPanelTab === 'terminal' ? '' : 'hidden'}`}>
+                                    <TerminalPanel
+                                        files={Object.fromEntries(
+                                            currentFiles.filter(f => !f.isDirectory).map(f => [f.path, f.content])
+                                        )}
+                                        onServerReady={(url) => { setPreviewUrl(url); setPreviewOpen(true); }}
+                                    />
                                 </div>
-                            )}
+
+                                {bottomPanelTab === 'output' && (() => {
+                                    const OUTPUT_LINE_HEIGHT = 16;
+                                    const OUTPUT_BUFFER = 10;
+                                    const filtered = outputFilter
+                                        ? outputLines.filter(l => l.text.toLowerCase().includes(outputFilter.toLowerCase()))
+                                        : outputLines;
+                                    return (
+                                        <div
+                                            ref={outputContainerRef}
+                                            className="h-full overflow-auto bg-[--bg-base]"
+                                            onScroll={(e) => setOutputScrollTop((e.target as HTMLDivElement).scrollTop)}
+                                        >
+                                            {filtered.length === 0 ? (
+                                                <div className="p-3 text-xs font-mono text-[--text-muted] opacity-50">
+                                                    {outputFilter ? 'No matching output lines' : 'Run your code to see output here...'}
+                                                </div>
+                                            ) : (() => {
+                                                const containerHeight = outputContainerRef.current?.clientHeight || 300;
+                                                const totalHeight = filtered.length * OUTPUT_LINE_HEIGHT;
+                                                const startIdx = Math.max(0, Math.floor(outputScrollTop / OUTPUT_LINE_HEIGHT) - OUTPUT_BUFFER);
+                                                const endIdx = Math.min(filtered.length, Math.ceil((outputScrollTop + containerHeight) / OUTPUT_LINE_HEIGHT) + OUTPUT_BUFFER);
+                                                const visibleLines = filtered.slice(startIdx, endIdx);
+                                                return (
+                                                    <div style={{ height: totalHeight, position: 'relative' }}>
+                                                        <div
+                                                            style={{ position: 'absolute', top: startIdx * OUTPUT_LINE_HEIGHT, left: 0, right: 0 }}
+                                                            className="p-3 text-xs font-mono whitespace-pre-wrap"
+                                                        >
+                                                            {visibleLines.map((line, i) => (
+                                                                <div
+                                                                    key={startIdx + i}
+                                                                    style={{ height: OUTPUT_LINE_HEIGHT }}
+                                                                    className={
+                                                                        line.type === 'stderr' ? 'text-pastel-red' :
+                                                                        line.type === 'info' ? 'text-accent' :
+                                                                        'text-[--text-color]'
+                                                                    }
+                                                                >{line.text}</div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })()}
+                                        </div>
+                                    );
+                                })()}
+
+                                {bottomPanelTab === 'problems' && (
+                                    <div className="h-full overflow-auto bg-[--bg-base] p-3">
+                                        <div className="text-xs font-mono">
+                                            {outputLines.filter(l => l.type === 'stderr').length === 0
+                                                ? <span className="text-[--text-muted] opacity-50">No problems detected</span>
+                                                : outputLines.filter(l => l.type === 'stderr').map((line, i) => (
+                                                    <div key={i} className="text-pastel-red py-0.5">{line.text}</div>
+                                                ))
+                                            }
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )}
                 </div>
 
-                {/* Snapshot Panel */}
                 {snapshotPanelOpen && <SnapshotPanel onClose={() => setSnapshotPanelOpen(false)} />}
             </div>
 
-            {/* Status Bar */}
             <div className="flex items-center justify-between px-2 py-0.5 bg-accent text-[--bg-base] shrink-0">
                 <div className="flex items-center gap-2 text-[10px]">
                     <span>{currentProject.status}</span>
+                    {gitBranch && <span className="flex items-center gap-0.5"><VscGitMerge size={10} /> {gitBranch}</span>}
                     <span>{currentFiles.filter(f => !f.isDirectory).length} files</span>
-                    {activeFileName && <span>{getLanguage(activeFileName)}</span>}
+                    {detectedFramework && <span className="font-medium">{detectedFramework}</span>}
                 </div>
                 <div className="flex items-center gap-2 text-[10px]">
+                    {activeFileName && <span>Ln {cursorPosition.line}, Col {cursorPosition.col}</span>}
+                    {activeFileName && <span>{getLanguage(activeFileName)}</span>}
                     <span>UTF-8</span>
                     <span>Spaces: 2</span>
                 </div>

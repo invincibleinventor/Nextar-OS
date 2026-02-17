@@ -3,8 +3,7 @@ import http from 'isomorphic-git/http/web';
 import LightningFS from '@isomorphic-git/lightning-fs';
 import type { GitCloneOptions, GitCommitOptions, GitPushOptions, GitStatusEntry, GitLogEntry } from '../../types/runtime';
 
-// Persistent in-browser filesystem backed by IndexedDB
-const fs = new LightningFS('hackathos-git');
+const fs = new LightningFS('nextaros-git');
 const DEFAULT_CORS_PROXY = 'https://cors.isomorphic-git.org';
 
 export async function gitClone(options: GitCloneOptions): Promise<void> {
@@ -91,7 +90,7 @@ export async function gitPull(dir: string, token?: string): Promise<void> {
         corsProxy: DEFAULT_CORS_PROXY,
         singleBranch: true,
         onAuth: token ? () => ({ username: token }) : undefined,
-        author: { name: 'HackathOS', email: 'user@hackathos.dev' },
+        author: { name: 'NextarOS', email: 'user@nextaros.dev' },
     });
 }
 
@@ -124,28 +123,39 @@ export async function gitCheckout(dir: string, branch: string): Promise<void> {
     await git.checkout({ fs, dir, ref: branch });
 }
 
-// Read a file from the git filesystem
+export async function gitAddRemote(dir: string, name: string, url: string): Promise<void> {
+    await git.addRemote({ fs, dir, remote: name, url });
+}
+
+export async function gitRemoveRemote(dir: string, name: string): Promise<void> {
+    await git.deleteRemote({ fs, dir, remote: name });
+}
+
+export async function gitListRemotes(dir: string): Promise<{ remote: string; url: string }[]> {
+    return git.listRemotes({ fs, dir });
+}
+
+export async function gitCreateBranch(dir: string, branch: string): Promise<void> {
+    await git.branch({ fs, dir, ref: branch });
+}
+
 export async function readGitFile(path: string): Promise<string> {
     const content = await fs.promises.readFile(path, 'utf8');
     return content as string;
 }
 
-// Write a file to the git filesystem
 export async function writeGitFile(path: string, content: string): Promise<void> {
-    // Ensure parent directory exists
     const parts = path.split('/');
     for (let i = 1; i < parts.length; i++) {
         const dir = parts.slice(0, i).join('/');
         try {
             await fs.promises.mkdir(dir);
         } catch {
-            // Directory already exists
         }
     }
     await fs.promises.writeFile(path, content, 'utf8');
 }
 
-// List files in a git directory
 export async function listGitDir(dir: string): Promise<string[]> {
     try {
         const entries = await fs.promises.readdir(dir);
@@ -155,7 +165,6 @@ export async function listGitDir(dir: string): Promise<string[]> {
     }
 }
 
-// Get the lightning-fs instance for advanced operations
 export function getGitFS() {
     return fs;
 }

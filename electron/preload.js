@@ -28,7 +28,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
         remove: (targetpath, recursive) => ipcRenderer.invoke('delete-path', targetpath, recursive),
         rename: (oldpath, newpath) => ipcRenderer.invoke('rename-path', oldpath, newpath),
         copy: (source, dest) => ipcRenderer.invoke('copy-path', source, dest),
-        trash: (filepath) => ipcRenderer.invoke('system-trash', filepath)
+        trash: (filepath) => ipcRenderer.invoke('system-trash', filepath),
+        // File watchers
+        watchstart: (watchPath, options) => ipcRenderer.invoke('fs-watch-start', watchPath, options),
+        watchstop: (id) => ipcRenderer.invoke('fs-watch-stop', id),
+        watchstopall: () => ipcRenderer.invoke('fs-watch-stop-all'),
+        onwatchchange: (callback) => ipcRenderer.on('fs-watch-change', (_, data) => callback(data)),
+        onwatcherror: (callback) => ipcRenderer.on('fs-watch-error', (_, data) => callback(data))
     },
 
     shell: {
@@ -70,7 +76,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
     events: {
         onglobalshortcut: (callback) => ipcRenderer.on('global-shortcut', (_, action) => callback(action)),
-        onpowerevent: (callback) => ipcRenderer.on('power-event', (_, event) => callback(event))
+        onpowerevent: (callback) => ipcRenderer.on('power-event', (_, event) => callback(event)),
+        onmenuaction: (callback) => ipcRenderer.on('menu-action', (_, action) => callback(action)),
+        onprotocolurl: (callback) => ipcRenderer.on('protocol-url', (_, url) => callback(url))
     },
 
     wifi: {
@@ -137,14 +145,96 @@ contextBridge.exposeInMainWorld('electronAPI', {
     },
 
     terminal: {
-        execute: (command, cwd) => ipcRenderer.invoke('terminal-execute', command, cwd)
+        execute: (command, cwd) => ipcRenderer.invoke('terminal-execute', command, cwd),
+        // Interactive PTY
+        ptyspawn: (options) => ipcRenderer.invoke('pty-spawn', options),
+        ptywrite: (id, data) => ipcRenderer.invoke('pty-write', id, data),
+        ptyresize: (id, cols, rows) => ipcRenderer.invoke('pty-resize', id, cols, rows),
+        ptykill: (id) => ipcRenderer.invoke('pty-kill', id),
+        onptydata: (callback) => ipcRenderer.on('pty-data', (_, data) => callback(data)),
+        onptyexit: (callback) => ipcRenderer.on('pty-exit', (_, data) => callback(data))
+    },
+
+    // Session info (backwards compat: shellinfo still works)
+    shellinfo: {
+        get: () => ipcRenderer.invoke('get-session-info'),
+        oninfo: (callback) => ipcRenderer.on('session-info', (_, info) => callback(info))
+    },
+
+    session: {
+        getinfo: () => ipcRenderer.invoke('get-session-info'),
+        oninfo: (callback) => ipcRenderer.on('session-info', (_, info) => callback(info)),
+        lock: () => ipcRenderer.invoke('session-lock'),
+        logout: () => ipcRenderer.invoke('session-logout'),
+        install: () => ipcRenderer.invoke('install-session'),
+        onaction: (callback) => ipcRenderer.on('session-action', (_, action) => callback(action))
+    },
+
+    displayconfig: {
+        getconfig: () => ipcRenderer.invoke('get-display-config'),
+        setresolution: (display, w, h, rate) => ipcRenderer.invoke('set-display-resolution', display, w, h, rate),
+        setrotation: (display, rotation) => ipcRenderer.invoke('set-display-rotation', display, rotation),
+        onchanged: (callback) => ipcRenderer.on('display-changed', (_, data) => callback(data))
+    },
+
+    // --- CAPABILITY APIS ---
+
+    dialogs: {
+        openfile: (options) => ipcRenderer.invoke('dialog-open-file', options),
+        opendirectory: (options) => ipcRenderer.invoke('dialog-open-directory', options),
+        savefile: (options) => ipcRenderer.invoke('dialog-save-file', options),
+        messagebox: (options) => ipcRenderer.invoke('dialog-message-box', options),
+        errorbox: (title, content) => ipcRenderer.invoke('dialog-error-box', title, content)
+    },
+
+    screencapture: {
+        getsources: (options) => ipcRenderer.invoke('screen-get-sources', options),
+        capture: (sourceId, options) => ipcRenderer.invoke('screen-capture', sourceId, options)
+    },
+
+    print: {
+        page: (options) => ipcRenderer.invoke('print-page', options),
+        topdf: (options) => ipcRenderer.invoke('print-to-pdf', options),
+        getprinters: () => ipcRenderer.invoke('get-printers')
+    },
+
+    securestorage: {
+        isavailable: () => ipcRenderer.invoke('secure-storage-available'),
+        encrypt: (plaintext) => ipcRenderer.invoke('secure-storage-encrypt', plaintext),
+        decrypt: (encrypted) => ipcRenderer.invoke('secure-storage-decrypt', encrypted)
+    },
+
+    autolaunch: {
+        getsettings: () => ipcRenderer.invoke('get-login-item-settings'),
+        setsettings: (settings) => ipcRenderer.invoke('set-login-item-settings', settings)
+    },
+
+    media: {
+        checkpermission: (mediaType) => ipcRenderer.invoke('media-check-permission', mediaType),
+        requestpermission: (mediaType) => ipcRenderer.invoke('media-request-permission', mediaType)
+    },
+
+    appbadge: {
+        setbadge: (badge) => ipcRenderer.invoke('app-badge-set', badge),
+        setprogress: (progress) => ipcRenderer.invoke('app-progress-set', progress),
+        bounce: (type) => ipcRenderer.invoke('app-bounce', type)
+    },
+
+    hardware: {
+        getgpu: () => ipcRenderer.invoke('system-gpu-info'),
+        getfonts: () => ipcRenderer.invoke('system-fonts'),
+        getdisplays: () => ipcRenderer.invoke('system-display-info')
+    },
+
+    fileassociations: {
+        register: (extension, appName, appPath) => ipcRenderer.invoke('register-file-association', extension, appName, appPath)
     }
 });
 
-ipcRenderer.on('update-available', () => { });
-ipcRenderer.on('update-downloaded', () => { });
-ipcRenderer.on('update-progress', () => { });
-ipcRenderer.on('update-status', () => { });
-ipcRenderer.on('update-error', () => { });
-ipcRenderer.on('global-shortcut', () => { });
-ipcRenderer.on('power-event', () => { });
+// Pre-register all event channels so they don't get garbage collected
+const channels = [
+    'update-available', 'update-downloaded', 'update-progress', 'update-status', 'update-error',
+    'global-shortcut', 'power-event', 'session-info', 'session-action', 'menu-action', 'protocol-url',
+    'fs-watch-change', 'fs-watch-error', 'pty-data', 'pty-exit', 'display-changed'
+];
+channels.forEach(ch => ipcRenderer.on(ch, () => { }));

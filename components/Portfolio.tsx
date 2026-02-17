@@ -264,7 +264,7 @@ const JpButton = ({ children, primary = false, onClick, href }: { children: Reac
             onClick={onClick}
             href={href}
             target={href ? '_blank' : undefined}
-            className="px-6 md:px-8 py-2.5 md:py-3 font-bold text-xs md:text-sm uppercase tracking-wider rounded-md"
+            className="px-6 md:px-8 py-2.5 md:py-3 font-bold text-xs md:text-[13px] uppercase tracking-wider rounded-md"
             style={{
                 background: primary ? PINK : 'transparent',
                 color: primary ? INK : INK,
@@ -344,13 +344,13 @@ const HeroSection = ({ onBoot, embedded }: { onBoot: () => void; embedded?: bool
             <motion.div className="relative z-20 max-w-4xl mx-auto px-6 md:px-8 py-16 md:py-20" style={{ y }}>
                 <nav className={`${embedded ? 'sticky' : 'fixed'} top-0 left-0 right-0 z-50 px-4 md:px-8 py-4 md:py-5 flex items-center justify-between`} style={{ background: BG }}>
                     <motion.div className="flex items-center gap-3" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-sm flex items-center justify-center font-black text-sm md:text-lg" style={{ background: PINK, color: INK }}>B</div>
+                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-sm flex items-center justify-center font-black text-[13px] md:text-lg" style={{ background: PINK, color: INK }}>B</div>
                         <div className="flex flex-col">
                             <TranslatableName />
                             <span className="text-[10px] tracking-widest" style={{ color: GRAY }}>DEVELOPER</span>
                         </div>
                     </motion.div>
-                    <div className="hidden md:flex items-center gap-8 text-sm font-medium" style={{ color: GRAY }}>
+                    <div className="hidden md:flex items-center gap-8 text-[13px] font-medium" style={{ color: GRAY }}>
                         <motion.a href="#projects" className="hover:text-anime-text transition-colors relative group" whileHover={{ y: -2 }}>
                             PROJECTS
                             <span className="absolute -bottom-1 left-0 w-0 h-0.5 group-hover:w-full transition-all" style={{ background: PINK }} />
@@ -386,7 +386,7 @@ const HeroSection = ({ onBoot, embedded }: { onBoot: () => void; embedded?: bool
                     </motion.div>
 
                     <motion.p
-                        className="text-sm md:text-lg max-w-md mb-8 md:mb-10 leading-relaxed"
+                        className="text-[13px] md:text-lg max-w-md mb-8 md:mb-10 leading-relaxed"
                         style={{ color: GRAY }}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -531,7 +531,7 @@ const ProjectsSection = () => {
                                 </div>
 
                                 <h3 className="text-xl font-black mb-2" style={{ color: INK }}>{p.name}</h3>
-                                <p className="text-sm leading-relaxed mb-4" style={{ color: GRAY }}>{p.desc}</p>
+                                <p className="text-[13px] leading-relaxed mb-4" style={{ color: GRAY }}>{p.desc}</p>
 
                                 <div className="flex flex-wrap gap-1">
                                     {p.tags.map((tag, ti) => (
@@ -644,7 +644,7 @@ const SkillsSection = () => {
                     {categories.map((cat, i) => (
                         <motion.button
                             key={cat.jp}
-                            className="px-6 py-3 font-bold text-sm uppercase tracking-wider relative overflow-hidden"
+                            className="px-6 py-3 font-bold text-[13px] uppercase tracking-wider relative overflow-hidden"
                             style={{
                                 background: activecat === i ? PINK : 'transparent',
                                 color: activecat === i ? BG : LIGHTGRAY,
@@ -756,7 +756,7 @@ const AboutSection = () => {
                             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
                         <motion.div
-                            className="absolute -bottom-4 -right-4 px-4 py-2 font-black text-sm"
+                            className="absolute -bottom-4 -right-4 px-4 py-2 font-black text-[13px]"
                             style={{ background: INK, color: BG }}
                         >
                             侍開発者
@@ -803,7 +803,7 @@ const AboutSection = () => {
                                     <div className="flex items-start justify-between">
                                         <div>
                                             <div className="font-black text-lg" style={{ color: INK }}>{exp.role}</div>
-                                            <div className="text-sm font-medium" style={{ color: exp.current ? PINK : GRAY }}>{exp.company}</div>
+                                            <div className="text-[13px] font-medium" style={{ color: exp.current ? PINK : GRAY }}>{exp.company}</div>
                                             <div className="text-xs mt-2 flex items-center gap-2" style={{ color: LIGHTGRAY }}>
                                                 <IoCalendar className="w-3 h-3" /> {exp.period}
                                             </div>
@@ -930,7 +930,7 @@ const ContactSection = ({ onBoot, embedded, onGetStarted }: { onBoot: () => void
                 >
                     <motion.a
                         href={`mailto:${personal.personal.email}`}
-                        className="group relative px-8 py-4 font-black text-sm uppercase tracking-wider flex items-center gap-3 overflow-hidden"
+                        className="group relative px-8 py-4 font-black text-[13px] uppercase tracking-wider flex items-center gap-3 overflow-hidden"
                         style={{ background: PINK, color: INK }}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
@@ -943,7 +943,7 @@ const ContactSection = ({ onBoot, embedded, onGetStarted }: { onBoot: () => void
                     <motion.a
                         href={personal.personal.socials.linkedin}
                         target="_blank"
-                        className="px-8 py-4 font-black text-sm uppercase tracking-wider flex items-center gap-3"
+                        className="px-8 py-4 font-black text-[13px] uppercase tracking-wider flex items-center gap-3"
                         style={{ background: 'transparent', color: BG, border: `2px solid ${BG}40` }}
                         whileHover={{ borderColor: BG, scale: 1.02 }}
                     >
@@ -954,7 +954,7 @@ const ContactSection = ({ onBoot, embedded, onGetStarted }: { onBoot: () => void
                     <motion.a
                         href={personal.personal.socials.github}
                         target="_blank"
-                        className="px-8 py-4 font-black text-sm uppercase tracking-wider flex items-center gap-3"
+                        className="px-8 py-4 font-black text-[13px] uppercase tracking-wider flex items-center gap-3"
                         style={{ background: 'transparent', color: BG, border: `2px solid ${BG}40` }}
                         whileHover={{ borderColor: BG, scale: 1.02 }}
                     >
@@ -973,7 +973,7 @@ const ContactSection = ({ onBoot, embedded, onGetStarted }: { onBoot: () => void
                     >
                         <motion.button
                             onClick={onGetStarted}
-                            className="px-10 py-4 font-black text-sm uppercase tracking-wider flex items-center gap-3 overflow-hidden group relative"
+                            className="px-10 py-4 font-black text-[13px] uppercase tracking-wider flex items-center gap-3 overflow-hidden group relative"
                             style={{ background: PINK, color: INK }}
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
@@ -995,7 +995,7 @@ const ContactSection = ({ onBoot, embedded, onGetStarted }: { onBoot: () => void
                         <span className="text-xs tracking-widest" style={{ color: GRAY }}>OR EXPLORE</span>
                         <motion.button
                             onClick={onBoot}
-                            className="px-6 py-3 font-black text-sm uppercase tracking-wider flex items-center gap-2"
+                            className="px-6 py-3 font-black text-[13px] uppercase tracking-wider flex items-center gap-2"
                             style={{ background: `${BG}10`, color: BG, border: `1px solid ${BG}30` }}
                             whileHover={{ background: `${BG}20` }}
                         >
@@ -1037,14 +1037,14 @@ const TourCard = ({ onTakeTour, onSkip }: { onTakeTour: () => void; onSkip: () =
             <h2 className="text-3xl md:text-5xl font-black mb-4" style={{ color: INK }}>
                 Explore NextarOS
             </h2>
-            <p className="text-sm md:text-base mb-10 leading-relaxed" style={{ color: GRAY }}>
+            <p className="text-[13px] md:text-base mb-10 leading-relaxed" style={{ color: GRAY }}>
                 Take a guided tour of the OS experience, or skip ahead to see the projects.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <motion.button
                     onClick={onTakeTour}
-                    className="px-8 py-3.5 font-black text-sm uppercase tracking-wider flex items-center gap-2"
+                    className="px-8 py-3.5 font-black text-[13px] uppercase tracking-wider flex items-center gap-2"
                     style={{ background: PINK, color: INK }}
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
@@ -1054,7 +1054,7 @@ const TourCard = ({ onTakeTour, onSkip }: { onTakeTour: () => void; onSkip: () =
                 </motion.button>
                 <motion.button
                     onClick={onSkip}
-                    className="px-8 py-3.5 font-bold text-sm uppercase tracking-wider flex items-center gap-2"
+                    className="px-8 py-3.5 font-bold text-[13px] uppercase tracking-wider flex items-center gap-2"
                     style={{ color: GRAY, border: `2px solid ${LIGHTGRAY}40` }}
                     whileHover={{ scale: 1.03, borderColor: `${INK}40` }}
                     whileTap={{ scale: 0.97 }}

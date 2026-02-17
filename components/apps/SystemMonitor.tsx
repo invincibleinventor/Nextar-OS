@@ -141,7 +141,7 @@ export default function SystemMonitor({ isFocused }: SystemMonitorProps) {
             <div className="h-12 bg-surface border-b border-[--border-color] flex items-center px-4 shrink-0">
                 <div className="flex items-center gap-2 ml-16">
                     <div className="w-3 h-3  bg-pastel-green animate-pulse" />
-                    <span className="text-sm font-medium">System Monitor</span>
+                    <span className="text-[13px] font-medium">System Monitor</span>
                     {stats.hostname && <span className="text-xs text-[--text-muted]">• {stats.hostname}</span>}
                 </div>
                 <div className="ml-auto flex items-center gap-4">
@@ -152,7 +152,7 @@ export default function SystemMonitor({ isFocused }: SystemMonitorProps) {
                                 className={`px-3 py-1 text-xs transition-colors ${viewmode === 'internal' ? 'bg-accent text-[--text-color]' : 'text-[--text-muted] hover:text-[--text-color]'}`}
                             >
                                 <IoDesktop className="inline mr-1" size={12} />
-                                HackathOS
+                                NextarOS
                             </button>
                             <button
                                 onClick={() => setviewmode('system')}
@@ -208,7 +208,7 @@ export default function SystemMonitor({ isFocused }: SystemMonitorProps) {
 
             <div className="flex-1 overflow-auto">
                 {viewmode === 'internal' ? (
-                    <table className="w-full text-sm">
+                    <table className="w-full text-[13px]">
                         <thead className="bg-surface sticky top-0">
                             <tr className="text-left text-[--text-muted] text-xs uppercase">
                                 <th className="px-4 py-3 font-medium">PID</th>
@@ -301,7 +301,7 @@ export default function SystemMonitor({ isFocused }: SystemMonitorProps) {
                         </tbody>
                     </table>
                 ) : (
-                    <table className="w-full text-sm">
+                    <table className="w-full text-[13px]">
                         <thead className="bg-surface sticky top-0">
                             <tr className="text-left text-[--text-muted] text-xs uppercase">
                                 <th className="px-4 py-3 font-medium">PID</th>
@@ -379,7 +379,7 @@ export default function SystemMonitor({ isFocused }: SystemMonitorProps) {
                 <span>
                     {viewmode === 'system'
                         ? `${systemprocs.length} host processes`
-                        : `${runningprocesses.length} HackathOS process${runningprocesses.length !== 1 ? 'es' : ''}`
+                        : `${runningprocesses.length} NextarOS process${runningprocesses.length !== 1 ? 'es' : ''}`
                     }
                 </span>
                 {viewmode === 'system' && (
@@ -391,7 +391,7 @@ export default function SystemMonitor({ isFocused }: SystemMonitorProps) {
                         <IoRefresh size={12} className={loading ? 'animate-spin' : ''} />
                     </button>
                 )}
-                <span className="ml-auto">HackathOS System Monitor</span>
+                <span className="ml-auto">NextarOS System Monitor</span>
             </div>
         </div>
     );

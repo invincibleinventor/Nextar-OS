@@ -63,7 +63,7 @@ export interface LabCapsuleConfig {
 }
 
 export interface CapsuleExport {
-    magic: 'HACKOS_CAPSULE_V1';
+    magic: 'NEXTAROS_CAPSULE_V1';
     manifest: CapsuleManifest;
     /** Compressed payload (base64 of gzipped JSON of file contents) */
     payload: string;

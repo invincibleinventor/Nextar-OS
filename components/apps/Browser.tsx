@@ -172,7 +172,7 @@ export default function Browser({ initialurl = 'https://google.com', appId = 'br
                                     <IoLockClosedOutline size={32} className="text-[--text-muted]" />
                                 </div>
                                 <h2 className="text-xl font-bold mb-2">GitHub Security</h2>
-                                <p className="text-[--text-muted] max-w-sm mb-6 text-sm">
+                                <p className="text-[--text-muted] max-w-sm mb-6 text-[13px]">
                                     Browsing GitHub recursively is restricted.
                                 </p>
                                 <a
@@ -218,7 +218,7 @@ export default function Browser({ initialurl = 'https://google.com', appId = 'br
                 <div className="border-t border-[--border-color] bg-surface">
                     <form onSubmit={handlenavigate} className="mx-3 my-2">
                         <div className="flex items-center bg-overlay border border-[--border-color] px-3 h-[44px] gap-2">
-                            <IoLockClosedOutline className="text-pastel-green text-sm" />
+                            <IoLockClosedOutline className="text-pastel-green text-[13px]" />
                             <input
                                 type="text"
                                 value={inputvalue}
@@ -227,7 +227,7 @@ export default function Browser({ initialurl = 'https://google.com', appId = 'br
                                 placeholder="Search or enter website"
                             />
                             {inputvalue !== url && (
-                                <button type="submit" className="text-accent font-medium text-sm">Go</button>
+                                <button type="submit" className="text-accent font-medium text-[13px]">Go</button>
                             )}
                         </div>
                     </form>
@@ -304,7 +304,7 @@ export default function Browser({ initialurl = 'https://google.com', appId = 'br
                         isloading ? (
                             <div className="absolute inset-0 flex flex-col items-center justify-center bg-[--bg-base]">
                                 <div className="w-8 h-8 border-4 border-accent border-t-transparent  animate-spin mb-4"></div>
-                                <span className="text-[--text-muted] text-sm">Loading...</span>
+                                <span className="text-[--text-muted] text-[13px]">Loading...</span>
                             </div>
                         ) : (
                             <iframe

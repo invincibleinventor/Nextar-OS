@@ -1,8 +1,9 @@
 {
-    "name": "HackathOS",
-    "short_name": "HackathOS",
-    "description": "A modern cross-platform desktop environment",
+    "name": "NextarOS",
+    "short_name": "NextarOS",
+    "description": "Your personal cloud OS. Deploy on your server, access from anywhere.",
     "start_url": "/",
+    "scope": "/",
     "display": "standalone",
     "background_color": "#1c1c1e",
     "theme_color": "#007AFF",
@@ -22,8 +23,10 @@
         }
     ],
     "categories": [
+        "productivity",
         "utilities",
-        "productivity"
+        "entertainment",
+        "personalization"
     ],
     "lang": "en",
     "dir": "ltr"

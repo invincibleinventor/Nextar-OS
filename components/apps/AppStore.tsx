@@ -161,7 +161,7 @@ export default function AppStore({ appId = 'appstore', id }: { appId?: string, i
                                                 Loading...
                                             </div>
                                         ) : filteredExternalApps.length === 0 ? (
-                                            <div className="text-center py-10 text-[--text-muted] text-sm">
+                                            <div className="text-center py-10 text-[--text-muted] text-[13px]">
                                                 {appsearch ? `No apps found for "${appsearch}"` : 'No apps available'}
                                             </div>
                                         ) : (
@@ -331,7 +331,7 @@ export default function AppStore({ appId = 'appstore', id }: { appId?: string, i
                     <div className="relative">
                         <IoSearch className="absolute left-2 top-1/2 -translate-y-1/2 text-[--text-muted]" />
                         <input
-                            className="w-full bg-overlay pl-8 pr-2 py-1.5 text-sm outline-none placeholder-[--text-muted]"
+                            className="w-full bg-overlay pl-8 pr-2 py-1.5 text-[13px] outline-none placeholder-[--text-muted]"
                             placeholder="Search"
                         />
                     </div>
@@ -471,7 +471,7 @@ export default function AppStore({ appId = 'appstore', id }: { appId?: string, i
                                                     <div>
                                                         <div className="text-[--text-muted] text-xs uppercase font-semibold mb-1">Featured App</div>
                                                         <h2 className="text-[--text-color] text-3xl font-bold mb-1">{filteredExternalApps[0].name}</h2>
-                                                        <p className="text-[--text-muted] text-sm line-clamp-1">{filteredExternalApps[0].description}</p>
+                                                        <p className="text-[--text-muted] text-[13px] line-clamp-1">{filteredExternalApps[0].description}</p>
                                                     </div>
                                                     <div className="w-20 h-20 bg-overlay flex items-center justify-center text-4xl">
                                                         {filteredExternalApps[0].icon || '📦'}
@@ -488,7 +488,7 @@ export default function AppStore({ appId = 'appstore', id }: { appId?: string, i
                                                 <IoRefresh size={16} className={isLoading ? 'animate-spin' : ''} />
                                             </button>
                                         </div>
-                                        <span className="text-[--text-muted] text-sm">{filteredExternalApps.length} apps</span>
+                                        <span className="text-[--text-muted] text-[13px]">{filteredExternalApps.length} apps</span>
                                     </div>
                                     {isLoading ? (
                                         <div className="text-center text-[--text-muted] py-10">
@@ -537,7 +537,7 @@ export default function AppStore({ appId = 'appstore', id }: { appId?: string, i
                                         </div>
                                         <div className="flex-1">
                                             <h2 className="text-2xl font-bold mb-1">{selectedexternalapp.name}</h2>
-                                            <p className="text-[--text-muted] text-sm mb-2">by {selectedexternalapp.author}</p>
+                                            <p className="text-[--text-muted] text-[13px] mb-2">by {selectedexternalapp.author}</p>
                                             <div className="flex items-center gap-2 flex-wrap">
                                                 <span className="text-xs px-2 py-1 bg-accent/10 text-accent">{selectedexternalapp.category}</span>
                                                 <span className="text-xs px-2 py-1 bg-overlay text-[--text-muted]">v{selectedexternalapp.version}</span>
@@ -563,7 +563,7 @@ export default function AppStore({ appId = 'appstore', id }: { appId?: string, i
                                     </div>
                                     <div className="bg-surface p-5 mb-6">
                                         <h3 className="font-bold mb-3">About</h3>
-                                        <p className="text-[--text-muted] text-sm leading-relaxed">{selectedexternalapp.description}</p>
+                                        <p className="text-[--text-muted] text-[13px] leading-relaxed">{selectedexternalapp.description}</p>
                                     </div>
                                     {selectedexternalapp.tags && selectedexternalapp.tags.length > 0 && (
                                         <div className="mb-6">
@@ -576,7 +576,7 @@ export default function AppStore({ appId = 'appstore', id }: { appId?: string, i
                                         </div>
                                     )}
                                     {selectedexternalapp.homepage && (
-                                        <a href={selectedexternalapp.homepage} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-accent text-sm hover:underline mb-4">
+                                        <a href={selectedexternalapp.homepage} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-accent text-[13px] hover:underline mb-4">
                                             <IoGlobeOutline size={16} /> Visit Homepage
                                         </a>
                                     )}
@@ -589,12 +589,12 @@ export default function AppStore({ appId = 'appstore', id }: { appId?: string, i
                                 <div className="text-center py-10">
                                     <IoLogoGithub size={48} className="mx-auto mb-4 text-[--text-muted]" />
                                     <h3 className="text-xl font-bold mb-2">Repository Management</h3>
-                                    <p className="text-[--text-muted] text-sm max-w-md mx-auto mb-6">
-                                        Add custom GitHub repositories to discover community-made apps for HackathOS.
+                                    <p className="text-[--text-muted] text-[13px] max-w-md mx-auto mb-6">
+                                        Add custom GitHub repositories to discover community-made apps for NextarOS.
                                         Repositories must contain an apps.json file in the main branch.
                                     </p>
                                     <div className="bg-surface p-5 max-w-lg mx-auto text-left">
-                                        <h4 className="font-bold text-sm mb-3">apps.json Format</h4>
+                                        <h4 className="font-bold text-[13px] mb-3">apps.json Format</h4>
                                         <pre className="text-xs bg-overlay p-3 overflow-x-auto text-[--text-muted]">{`{
   "apps": [{
     "id": "unique-id",

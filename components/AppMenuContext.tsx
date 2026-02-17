@@ -34,7 +34,7 @@ const globalmenus: MenuConfig = {
     Help: [
         { title: "Search", actionId: "help-search", disabled: true },
         { separator: true },
-        { title: "About HackathOS", actionId: "help-about" }
+        { title: "Help", actionId: "help-about" }
     ]
 };
 

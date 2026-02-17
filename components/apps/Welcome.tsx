@@ -161,8 +161,8 @@ export default function Welcome(props: any) {
                         <IoDownloadOutline size={40} className="text-[--text-color]" />
                     </div>
                     <div>
-                        <h2 className="text-2xl font-semibold mb-2">HackathOS Setup</h2>
-                        <p className="text-sm text-[--text-muted] max-w-sm mx-auto">
+                        <h2 className="text-2xl font-semibold mb-2">NextarOS Setup</h2>
+                        <p className="text-[13px] text-[--text-muted] max-w-sm mx-auto">
                             A web-based operating system interface built with Next.js, featuring window management, file operations, and native-like interactions.
                         </p>
                     </div>
@@ -248,7 +248,7 @@ export default function Welcome(props: any) {
                                 <div className="w-16 h-16 mx-auto bg-overlay flex items-center justify-center">
                                     <IoCloudDownloadOutline size={32} className="text-accent" />
                                 </div>
-                                <p className="text-sm text-[--text-muted]">
+                                <p className="text-[13px] text-[--text-muted]">
                                     Restore your system from a previously exported snapshot file.
                                 </p>
 
@@ -336,13 +336,13 @@ export default function Welcome(props: any) {
                                                         <IoPersonAdd size={18} />
                                                     </div>
                                                     <div className="text-left">
-                                                        <div className="font-semibold text-sm">Create Admin Account</div>
+                                                        <div className="font-semibold text-[13px]">Create Admin Account</div>
                                                         <div className="text-xs text-[--text-muted]">First time setup</div>
                                                     </div>
                                                 </div>
                                                 <button
                                                     onClick={() => setView('create-account')}
-                                                    className="w-full py-2 bg-accent hover:bg-accent/80 text-[--text-color] text-sm font-medium transition-colors"
+                                                    className="w-full py-2 bg-accent hover:bg-accent/80 text-[--text-color] text-[13px] font-medium transition-colors"
                                                 >
                                                     Set up System
                                                 </button>
@@ -354,13 +354,13 @@ export default function Welcome(props: any) {
                                                         <IoCloudDownloadOutline size={18} />
                                                     </div>
                                                     <div className="text-left">
-                                                        <div className="font-semibold text-sm">Restore from Snapshot</div>
+                                                        <div className="font-semibold text-[13px]">Restore from Snapshot</div>
                                                         <div className="text-xs text-[--text-muted]">Import previous setup</div>
                                                     </div>
                                                 </div>
                                                 <button
                                                     onClick={() => setView('restore-snapshot')}
-                                                    className="w-full py-2 bg-accent hover:bg-accent/80 text-[--text-color] text-sm font-medium transition-colors"
+                                                    className="w-full py-2 bg-accent hover:bg-accent/80 text-[--text-color] text-[13px] font-medium transition-colors"
                                                 >
                                                     Restore Snapshot
                                                 </button>
@@ -369,7 +369,7 @@ export default function Welcome(props: any) {
                                     ) : (
                                         <div className="p-4 bg-overlay border border-[--border-color]">
                                             <div className="text-center">
-                                                <div className="font-semibold text-sm mb-1">Standard User Access</div>
+                                                <div className="font-semibold text-[13px] mb-1">Standard User Access</div>
                                                 <div className="text-xs text-[--text-muted]">
                                                     Please ask an administrator to create an account for you via Settings.
                                                 </div>
@@ -378,7 +378,7 @@ export default function Welcome(props: any) {
                                     )}
                                     <button
                                         onClick={logout}
-                                        className="w-full py-2 text-accent text-sm font-medium hover:bg-overlay transition-colors"
+                                        className="w-full py-2 text-accent text-[13px] font-medium hover:bg-overlay transition-colors"
                                     >
                                         Sign in as different user
                                     </button>
@@ -402,7 +402,7 @@ export default function Welcome(props: any) {
                         <div key={i} className="flex items-center gap-3 p-3 bg-overlay">
                             <item.icon size={24} className="text-accent shrink-0" />
                             <div className="min-w-0">
-                                <div className="text-sm font-medium truncate">{item.label}</div>
+                                <div className="text-[13px] font-medium truncate">{item.label}</div>
                                 <div className="text-xs text-[--text-muted] truncate">{item.desc}</div>
                             </div>
                         </div>
@@ -419,7 +419,7 @@ export default function Welcome(props: any) {
                     </div>
                     <div>
                         <h3 className="text-xl font-semibold mb-2">Ready to explore</h3>
-                        <p className="text-sm text-[--text-muted] max-w-xs mx-auto">
+                        <p className="text-[13px] text-[--text-muted] max-w-xs mx-auto">
                             Click Get Started to begin, or take a guided tour.
                         </p>
                     </div>
@@ -428,27 +428,27 @@ export default function Welcome(props: any) {
                             if (props.windowId) removewindow(props.windowId);
                             setTimeout(() => window.dispatchEvent(new Event('start-tour')), 300);
                         }}
-                            className="flex items-center justify-center gap-2 px-4 py-2 bg-accent text-[--text-color] text-sm font-medium hover:bg-accent/80 transition-colors">
+                            className="flex items-center justify-center gap-2 px-4 py-2 bg-accent text-[--text-color] text-[13px] font-medium hover:bg-accent/80 transition-colors">
                             <IoCheckmarkCircle size={18} />
                             Take a Tour
                         </button>
                         <button onClick={() => openSystemItem('finder', context)}
-                            className="flex items-center justify-center gap-2 px-4 py-2 bg-overlay text-sm font-medium hover:bg-overlay transition-colors">
+                            className="flex items-center justify-center gap-2 px-4 py-2 bg-overlay text-[13px] font-medium hover:bg-overlay transition-colors">
                             <Image src="/explorer.png" alt="" width={20} height={20} className="w-5 h-5" />
                             Open Explorer
                         </button>
                     </div>
                     <a
-                        href="https://github.com/hackos/hackos"
+                        href="https://github.com/nextaros/nextaros"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 text-sm text-[--text-muted] hover:text-[--text-color] transition-colors"
+                        className="inline-flex items-center gap-2 text-[13px] text-[--text-muted] hover:text-[--text-color] transition-colors"
                     >
                         <IoLogoGithub size={18} />
                         View on GitHub
                     </a>
                     {user?.username !== 'guest' && (
-                        <label className="flex items-center justify-center gap-2 text-sm text-[--text-muted] cursor-pointer select-none">
+                        <label className="flex items-center justify-center gap-2 text-[13px] text-[--text-muted] cursor-pointer select-none">
                             <input
                                 type="checkbox"
                                 checked={dontshowagain}
@@ -485,7 +485,7 @@ export default function Welcome(props: any) {
             <div className="h-24 lg:h-16 shrink-0 relative flex items-center justify-between px-6 border-t border-[--border-color]">
                 <button
                     onClick={() => step > 0 && setstep(step - 1)}
-                    className={`text-accent text-sm font-medium px-3 py-1.5 hover:bg-overlay transition-colors ${step === 0 ? 'opacity-0 pointer-events-none' : ''}`}
+                    className={`text-accent text-[13px] font-medium px-3 py-1.5 hover:bg-overlay transition-colors ${step === 0 ? 'opacity-0 pointer-events-none' : ''}`}
                 >
                     Go Back
                 </button>
@@ -508,7 +508,7 @@ export default function Welcome(props: any) {
                             removewindow(props.windowId || 'welcome');
                         }
                     }}
-                    className="flex items-center gap-1.5 bg-accent text-[--text-color] px-4 py-1.5 text-sm font-medium hover:bg-accent/80 transition-colors"
+                    className="flex items-center gap-1.5 bg-accent text-[--text-color] px-4 py-1.5 text-[13px] font-medium hover:bg-accent/80 transition-colors"
                 >
                     {step < steps.length - 1 ? 'Continue' : 'Get Started'}
                 </button>

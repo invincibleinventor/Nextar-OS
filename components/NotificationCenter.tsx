@@ -8,7 +8,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { IoClose, IoNotificationsOutline, IoTrashOutline } from 'react-icons/io5';
 
 export default function NotificationCenter({ isopen, onclose }: { isopen: boolean; onclose: () => void }) {
-    const { handlenotificationclick, notifications, clearnotification, clearallnotifications, markasviewed, version } = useNotifications();
+    const { handlenotificationclick, handleactionclick, notifications, clearnotification, clearallnotifications, markasviewed, version } = useNotifications();
     const { ismobile, osstate } = useDevice();
     const [mounted, setmounted] = useState(false);
     const [tick, setTick] = useState(0);
@@ -161,7 +161,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                 className="py-3 shrink-0 cursor-grab active:cursor-grabbing"
                                 onPointerDown={(e) => dragControls.start(e)}
                             >
-                                <div className="w-16 h-1.5 bg-[--text-muted]/40 mx-auto rounded-full" />
+                                <div className="w-16 h-1.5 bg-[--text-muted]/40 mx-auto" />
                             </div>
                         </div>
                     </motion.div>
@@ -240,6 +240,19 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                     <p className="text-[13px] text-[--text-color] leading-snug mt-0.5 line-clamp-2">{n.description}</p>
                                 </div>
                             </div>
+                            {n.actions && n.actions.length > 0 && (
+                                <div className="flex gap-2 mt-2 pt-2 border-t border-[--border-color]">
+                                    {n.actions.slice(0, 3).map(a => (
+                                        <button
+                                            key={a.actionId}
+                                            onClick={(e) => { e.stopPropagation(); handleactionclick(n, a.actionId); }}
+                                            className="flex-1 px-2 py-1 text-[11px] font-medium text-pastel-blue hover:bg-[--bg-overlay] transition-colors border border-[--border-color]"
+                                        >
+                                            {a.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                         </motion.div>
                     ))}
                 </AnimatePresence>
@@ -284,7 +297,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                             <IoNotificationsOutline size={28} className="text-pastel-lavender" />
                                         </div>
                                         <p className="text-[--text-muted] font-medium">No Notifications</p>
-                                        <p className="text-[--text-muted] text-sm mt-1">You&apos;re all caught up!</p>
+                                        <p className="text-[--text-muted] text-[13px] mt-1">You&apos;re all caught up!</p>
                                     </div>
                                 ) : (
                                     notifications.map(n => (
@@ -315,6 +328,19 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                                     <p className="text-[13px] text-[--text-color] leading-snug mt-1">{n.description}</p>
                                                 </div>
                                             </div>
+                                            {n.actions && n.actions.length > 0 && (
+                                                <div className="flex gap-2 mt-2 pt-2 border-t border-[--border-color]">
+                                                    {n.actions.slice(0, 3).map(a => (
+                                                        <button
+                                                            key={a.actionId}
+                                                            onClick={(e) => { e.stopPropagation(); handleactionclick(n, a.actionId); }}
+                                                            className="flex-1 px-2 py-1 text-[11px] font-medium text-pastel-blue hover:bg-[--bg-overlay] transition-colors border border-[--border-color]"
+                                                        >
+                                                            {a.label}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </motion.div>
                                     ))
                                 )}

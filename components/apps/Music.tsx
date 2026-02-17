@@ -14,6 +14,61 @@ const formattime = (seconds: number): string => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
 };
 
+const VISUALIZER_BAR_COUNT = 20;
+
+const visualizerKeyframes = `
+@keyframes visualizer-bar-bounce {
+    0%, 100% { transform: scaleY(var(--bar-min)); }
+    50% { transform: scaleY(var(--bar-max)); }
+}
+`;
+
+const barConfigs = Array.from({ length: VISUALIZER_BAR_COUNT }, (_, i) => ({
+    minScale: 0.15 + Math.random() * 0.2,
+    maxScale: 0.5 + Math.random() * 0.5,
+    delay: -(Math.random() * 1.8).toFixed(2),
+    duration: (0.6 + Math.random() * 0.8).toFixed(2),
+}));
+
+function Visualizer({ isplaying, size }: { isplaying: boolean; size: number }) {
+    const barWidth = 3;
+    const totalWidth = VISUALIZER_BAR_COUNT * (barWidth + 3);
+    const offsetLeft = (size - totalWidth) / 2;
+
+    return (
+        <>
+            <style>{visualizerKeyframes}</style>
+            <div
+                className="absolute inset-0 flex items-end justify-center pointer-events-none"
+                style={{ padding: '0 4px' }}
+            >
+                {barConfigs.map((cfg, i) => (
+                    <div
+                        key={i}
+                        className="bg-pastel-pink"
+                        style={{
+                            position: 'absolute',
+                            bottom: 0,
+                            left: `${offsetLeft + i * (barWidth + 3)}px`,
+                            width: `${barWidth}px`,
+                            height: '100%',
+                            opacity: 0.18,
+                            transformOrigin: 'bottom',
+                            ['--bar-min' as string]: cfg.minScale,
+                            ['--bar-max' as string]: cfg.maxScale,
+                            animation: isplaying
+                                ? `visualizer-bar-bounce ${cfg.duration}s ease-in-out ${cfg.delay}s infinite`
+                                : 'none',
+                            transform: isplaying ? undefined : `scaleY(${cfg.minScale})`,
+                            transition: isplaying ? 'none' : 'transform 0.4s ease-out',
+                        }}
+                    />
+                ))}
+            </div>
+        </>
+    );
+}
+
 export default function Music({ windowId }: { windowId?: string }) {
     const { ismobile } = useDevice();
     const { activewindow } = useWindows();
@@ -121,7 +176,7 @@ export default function Music({ windowId }: { windowId?: string }) {
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <div className={`font-medium truncate ${currenttrackindex === idx ? 'text-accent' : ''}`}>{track.title}</div>
-                                            <div className="text-sm text-[--text-muted] truncate">{track.artist}</div>
+                                            <div className="text-[13px] text-[--text-muted] truncate">{track.artist}</div>
                                         </div>
                                         <button onClick={(e) => { e.stopPropagation(); togglefavorite(track.id); }} className="p-2">
                                             {favorites.includes(track.id) ? <IoHeart className="text-pastel-red" /> : <IoHeartOutline className="text-[--text-muted]" />}
@@ -144,13 +199,17 @@ export default function Music({ windowId }: { windowId?: string }) {
                             </button>
 
                             <div className="flex-1 flex flex-col items-center justify-center">
-                                <div className="w-64 h-64 bg-overlay shadow-pastel-pink mb-8 flex items-center justify-center anime-glow-lg">
-                                    <IoMusicalNotes className="text-pastel-pink" size={80} />
+                                <div className="relative w-64 h-64 mb-8">
+                                    <Visualizer isplaying={isplaying} size={256} />
+                                    <div className="absolute inset-0 bg-overlay shadow-pastel-pink flex items-center justify-center anime-glow-lg">
+                                        <IoMusicalNotes className="text-pastel-pink" size={80} />
+                                    </div>
                                 </div>
 
                                 <div className="text-center mb-8">
                                     <h2 className="text-2xl font-bold">{currenttrack.title}</h2>
                                     <p className="text-[--text-muted]">{currenttrack.artist}</p>
+                                    <p className="text-[11px] text-[--text-muted] mt-1">{currenttrackindex + 1} of {playlist.length}</p>
                                 </div>
 
                                 <div className="w-full mb-4" ref={progressref} onClick={handleseek}>
@@ -185,7 +244,7 @@ export default function Music({ windowId }: { windowId?: string }) {
                                 <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[--text-muted]" />
                                 <input
                                     placeholder="Search"
-                                    className="w-full bg-overlay pl-10 pr-3 py-2 text-sm outline-none placeholder:text-[--text-muted] text-[--text-color] border border-[--border-color] focus:border-accent transition-colors"
+                                    className="w-full bg-overlay pl-10 pr-3 py-2 text-[13px] outline-none placeholder:text-[--text-muted] text-[--text-color] border border-[--border-color] focus:border-accent transition-colors"
                                 />
                             </div>
                         </div>
@@ -201,7 +260,7 @@ export default function Music({ windowId }: { windowId?: string }) {
                                         <IoMusicalNotes className="text-pastel-pink" size={16} />
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <div className={`text-sm font-medium truncate ${currenttrackindex === idx ? 'text-accent' : ''}`}>{track.title}</div>
+                                        <div className={`text-[13px] font-medium truncate ${currenttrackindex === idx ? 'text-accent' : ''}`}>{track.title}</div>
                                         <div className="text-xs text-[--text-muted] truncate">{track.artist}</div>
                                     </div>
                                 </div>
@@ -212,11 +271,15 @@ export default function Music({ windowId }: { windowId?: string }) {
                     <div className="flex-1 flex flex-col">
                         <div className="flex-1 flex items-center justify-center p-8">
                             <div className="text-center">
-                                <div className="w-48 h-48 mx-auto bg-overlay shadow-pastel-pink mb-6 flex items-center justify-center anime-glow-lg">
-                                    <IoMusicalNotes className="text-pastel-pink" size={60} />
+                                <div className="relative w-48 h-48 mx-auto mb-6">
+                                    <Visualizer isplaying={isplaying} size={192} />
+                                    <div className="absolute inset-0 bg-overlay shadow-pastel-pink flex items-center justify-center anime-glow-lg">
+                                        <IoMusicalNotes className="text-pastel-pink" size={60} />
+                                    </div>
                                 </div>
                                 <h2 className="text-xl font-bold">{currenttrack.title}</h2>
                                 <p className="text-[--text-muted]">{currenttrack.artist} — {currenttrack.album}</p>
+                                <p className="text-[11px] text-[--text-muted] mt-1">{currenttrackindex + 1} of {playlist.length}</p>
                             </div>
                         </div>
 

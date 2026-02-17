@@ -25,21 +25,10 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [reducemotion, setreducemotion] = useState(false);
     const [reducetransparency, setreducetransparency] = useState(false);
     const [soundeffects, setsoundeffects] = useState(false);
-    const [wallpaperurl, setwallpaperurl] = useState('/bg.jpg');
+    const [wallpaperurl, setwallpaperurl] = useState('/bg-dark.jpg');
     const [accentcolor, setaccentcolor] = useState('#ed8796');
-    const [islightbackground, setislightbackground] = useState(() => {
-        if (typeof window === 'undefined') return false;
-        try {
-            const cached = localStorage.getItem('bgBrightnessMap');
-            if (cached) {
-                const map = JSON.parse(cached);
-                const val = map['/bg.jpg'];
-                if (val !== undefined) return val;
-            }
-        } catch {}
-        return false;
-    });
-    const [inverselabelcolor, setinverselabelcolor] = useState(true);
+    const [islightbackground, setislightbackground] = useState(false);
+    const [inverselabelcolor, setinverselabelcolor] = useState(false);
 
     const { isGuest } = useAuth();
 
@@ -96,7 +85,6 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             setislightbackground(false);
         };
 
-        // For same-origin images, try without crossOrigin first (works in WebViews)
         const issameorigin = url.startsWith('/') || url.startsWith(window.location.origin);
 
         if (issameorigin) {
@@ -109,7 +97,6 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             img.onerror = () => usecached();
             img.src = url;
         } else {
-            // External URL: try with crossOrigin, fall back to cache
             const img = new Image();
             img.crossOrigin = 'anonymous';
             img.onload = () => {
@@ -118,7 +105,6 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
                 }
             };
             img.onerror = () => {
-                // Retry without crossOrigin - image may load but canvas will be tainted
                 const img2 = new Image();
                 img2.onload = () => {
                     if (!trycanvasanalysis(img2)) {

@@ -224,7 +224,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
                     <div className="bg-overlay border border-[--border-color] p-3 flex flex-col justify-between aspect-square">
                       <div className='flex items-center justify-center flex-1'>
                         <div className='text-center w-full px-2 overflow-hidden'>
-                          <p className="text-[--text-color] text-sm font-medium truncate">{isplaying ? currenttrack.title : 'Not Playing'}</p>
+                          <p className="text-[--text-color] text-[13px] font-medium truncate">{isplaying ? currenttrack.title : 'Not Playing'}</p>
                           <p className="text-[--text-muted] text-[10px] truncate">{isplaying ? currenttrack.artist : 'Music'}</p>
                         </div>
                       </div>
@@ -298,7 +298,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
                     </div>
                     <button
                       onClick={(e) => { e.stopPropagation(); handlelockscreen(); }}
-                      className="px-4 py-2 bg-pastel-red/20 text-pastel-red text-sm font-medium active:bg-pastel-red/30"
+                      className="px-4 py-2 bg-pastel-red/20 text-pastel-red text-[13px] font-medium active:bg-pastel-red/30"
                     >
                       Lock
                     </button>
@@ -319,7 +319,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
                           <FaWifi className={wifienabled ? 'text-[--bg-base]' : wificonnecting ? 'text-[--bg-base]' : 'text-[--text-color]'} size={16} />
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-[--text-color]">Wi-Fi</p>
+                          <p className="text-[13px] font-semibold text-[--text-color]">Wi-Fi</p>
                           <p className="text-[12px] text-[--text-muted] truncate">
                             {wifilabel}
                           </p>
@@ -333,7 +333,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
                           <FaBluetoothB className={bluetoothstatus.enabled ? 'text-[--bg-base]' : 'text-[--text-color]'} size={16} />
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-[--text-color]">Bluetooth</p>
+                          <p className="text-[13px] font-semibold text-[--text-color]">Bluetooth</p>
                           <p className="text-[12px] text-[--text-muted] truncate">
                             {bluetoothstatus.enabled ? 'On' : 'Off'}
                           </p>
@@ -344,7 +344,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
                           {isfullscreen ? <IoContract className="text-[--bg-base]" size={16} /> : <IoExpand className="text-[--text-color]" size={16} />}
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-[--text-color]">Full Screen</p>
+                          <p className="text-[13px] font-semibold text-[--text-color]">Full Screen</p>
                         </div>
                       </div>
                     </div>
@@ -353,7 +353,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
                         <div className="flex flex-col px-4">
                           <div className="w-10 h-10 mr-auto bg-gradient-to-br from-pastel-pink to-pastel-mauve mb-2"></div>
                           <div className="overflow-hidden">
-                            <p className="text-sm font-semibold text-[--text-color] truncate">{isplaying ? currenttrack.title : 'Not Playing'}</p>
+                            <p className="text-[13px] font-semibold text-[--text-color] truncate">{isplaying ? currenttrack.title : 'Not Playing'}</p>
                             <p className="text-[11px] text-[--text-muted] truncate">{isplaying ? currenttrack.artist : 'Music'}</p>
                           </div>
                         </div>

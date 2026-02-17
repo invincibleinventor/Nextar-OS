@@ -245,8 +245,8 @@ export default function TourGuide({ isOpen, onClose }: TourGuideProps) {
         const mobileSteps = [
             {
                 popover: {
-                    title: 'Welcome to HackathOS',
-                    description: 'A full mobile OS experience in your browser.\nLet\'s walk through the key features.',
+                    title: 'Welcome to NextarOS',
+                    description: 'Your personal cloud OS, in your pocket.\nLet\'s walk through the key features.',
                     side: 'bottom' as const,
                     align: 'center' as const
                 }
@@ -292,7 +292,7 @@ export default function TourGuide({ isOpen, onClose }: TourGuideProps) {
             {
                 popover: {
                     title: 'You\'re All Set',
-                    description: 'Explore the apps, customize settings, and enjoy HackathOS.',
+                    description: 'Explore your apps, customize your settings, and make it yours.',
                     side: 'bottom' as const
                 }
             }
@@ -301,8 +301,8 @@ export default function TourGuide({ isOpen, onClose }: TourGuideProps) {
         const desktopSteps = [
             {
                 popover: {
-                    title: 'Welcome to HackathOS',
-                    description: 'A web-based desktop experience.\nLet us give you a quick tour of the interface.',
+                    title: 'Welcome to NextarOS',
+                    description: 'Your personal cloud OS.\nLet us give you a quick tour of the interface.',
                     side: 'bottom' as const,
                     align: 'center' as const
                 }
@@ -355,8 +355,8 @@ export default function TourGuide({ isOpen, onClose }: TourGuideProps) {
             },
             {
                 popover: {
-                    title: 'Enjoy HackathOS',
-                    description: 'Explore Explorer, Browser, Settings, Music, and more.\nBuilt with Next.js, React, and IndexedDB.',
+                    title: 'Enjoy NextarOS',
+                    description: 'Explore your apps, customize your desktop, and make it yours.\nYour cloud, your OS.',
                     side: 'bottom' as const
                 }
             }

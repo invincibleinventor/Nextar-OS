@@ -39,7 +39,7 @@ const MemoizedDynamicComponent = memo(
         <div className="flex flex-row h-full w-full items-center content-center">
           <div className="flex flex-col space-y-5 font-mono mx-auto items-center content-center">
             <Image className="w-24 h-24" src={icon} width={96} height={96} alt={appname} />
-            <div className="text-sm text-[--text-color]">{appname} is coming soon</div>
+            <div className="text-[13px] text-[--text-color]">{appname} is coming soon</div>
           </div>
         </div>
       );

@@ -9,7 +9,7 @@ interface SidebarProps {
     show?: boolean;
     children?: React.ReactNode;
     isOverlay?: boolean;
-    items?: { title?: string; items: { name: string; icon: any; path: string[] }[] }[];
+    items?: { title?: string; items: { name: string; icon: any; path: string[]; color?: string }[] }[];
 }
 
 export default function Sidebar({ currentPath, onNavigate, className = '', show = true, children, isOverlay = false, items = sidebaritems }: SidebarProps) {
@@ -59,7 +59,9 @@ export default function Sidebar({ currentPath, onNavigate, className = '', show 
                                             }
                                         `}
                                     >
-                                        <item.icon className={`text-lg ${active ? 'text-[--bg-base]' : 'text-pastel-blue'}`} />
+                                        <div className="w-5 h-5 flex items-center justify-center text-[--bg-base] shrink-0" style={{ backgroundColor: active ? 'transparent' : (item.color || '#8aadf4') }}>
+                                            <item.icon size={12} className={active ? 'text-[--bg-base]' : ''} />
+                                        </div>
                                         <span className="text-[13px] font-medium leading-none pb-0.5">{item.name}</span>
                                     </div>
                                 );

@@ -5,7 +5,7 @@ import { useWindows } from '../WindowContext';
 import { useAuth } from '../AuthContext';
 import { useDevice } from '../DeviceContext';
 import { useFileSystem } from '../FileSystemContext';
-import { IoImagesOutline, IoChevronBack, IoGridOutline, IoListOutline, IoInformationCircleOutline, IoClose, IoTrashOutline } from 'react-icons/io5';
+import { IoImagesOutline, IoChevronBack, IoGridOutline, IoAddOutline, IoRemoveOutline, IoRefreshOutline, IoDownloadOutline, IoColorFilterOutline } from 'react-icons/io5';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface photosprops {
@@ -28,6 +28,12 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
         singleview && src ? { src, title: title || 'Image', id: 'single' } : null
     );
     const [mobileview, setmobileview] = useState<'grid' | 'photo'>(singleview && src ? 'photo' : 'grid');
+    const [zoom, setZoom] = useState(1);
+    const [rotation, setRotation] = useState(0);
+    const [brightness, setBrightness] = useState(100);
+    const [contrast, setContrast] = useState(100);
+    const [saturation, setSaturation] = useState(100);
+    const [showFilters, setShowFilters] = useState(false);
 
     const photos = useMemo(() => {
         if (!user) return [];
@@ -105,7 +111,28 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
 
     const handlePhotoClick = (photo: typeof photos[0]) => {
         setviewingimage(photo);
+        setZoom(1);
+        setRotation(0);
+        setBrightness(100);
+        setContrast(100);
+        setSaturation(100);
         if (ismobile) setmobileview('photo');
+    };
+
+    const resetFilters = () => {
+        setBrightness(100);
+        setContrast(100);
+        setSaturation(100);
+    };
+
+    const filterStyle = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`;
+
+    const handleDownload = () => {
+        if (!viewingimage) return;
+        const a = document.createElement('a');
+        a.href = viewingimage.src;
+        a.download = viewingimage.title;
+        a.click();
     };
 
     if (ismobile) {
@@ -130,7 +157,7 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
                                 {photos.length === 0 ? (
                                     <div className="flex flex-col items-center justify-center h-full text-[--text-muted]">
                                         <IoImagesOutline size={48} className="mb-4 opacity-50" />
-                                        <span className="text-sm">No photos in file system</span>
+                                        <span className="text-[13px]">No photos in file system</span>
                                         <span className="text-xs mt-1">Add image files to see them here</span>
                                     </div>
                                 ) : (
@@ -166,7 +193,7 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
                         >
                             <div className="h-14 flex items-center justify-between px-4 bg-surface">
                                 <button
-                                    onClick={() => { setviewingimage(null); setmobileview('grid'); }}
+                                    onClick={() => { setviewingimage(null); setmobileview('grid'); resetFilters(); setShowFilters(false); }}
                                     className="text-[--text-color] flex items-center gap-1"
                                 >
                                     <IoChevronBack size={24} />
@@ -180,10 +207,45 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
                                     width={800}
                                     height={600}
                                     className="max-w-full max-h-full object-contain"
+                                    style={{ filter: filterStyle }}
                                 />
                             </div>
-                            <div className="h-16 flex items-center justify-center px-4 bg-surface">
-                                <span className="text-[--text-color] text-sm">{viewingimage.title}</span>
+                            <div className="flex flex-col bg-surface border-t border-[--border-color]">
+                                <div className="h-12 flex items-center justify-between px-4">
+                                    <span className="text-[--text-color] text-[13px]">{viewingimage.title}</span>
+                                    <button
+                                        onClick={() => setShowFilters(f => !f)}
+                                        className={`p-1.5 transition-colors ${showFilters ? 'bg-accent text-[--bg-base]' : 'text-[--text-muted] hover:text-[--text-color]'}`}
+                                        title="Filters"
+                                    >
+                                        <IoColorFilterOutline size={18} />
+                                    </button>
+                                </div>
+                                {showFilters && (
+                                    <div className="px-4 pb-3 flex flex-col gap-2 border-t border-[--border-color]">
+                                        <div className="flex items-center gap-3 pt-2">
+                                            <span className="text-[11px] text-[--text-muted] w-16 shrink-0">Brightness</span>
+                                            <input type="range" min={0} max={200} value={brightness} onChange={e => setBrightness(Number(e.target.value))} className="flex-1 accent-[--accent-color]" />
+                                            <span className="text-[11px] text-[--text-muted] w-8 text-right">{brightness}%</span>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-[11px] text-[--text-muted] w-16 shrink-0">Contrast</span>
+                                            <input type="range" min={0} max={200} value={contrast} onChange={e => setContrast(Number(e.target.value))} className="flex-1 accent-[--accent-color]" />
+                                            <span className="text-[11px] text-[--text-muted] w-8 text-right">{contrast}%</span>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-[11px] text-[--text-muted] w-16 shrink-0">Saturation</span>
+                                            <input type="range" min={0} max={200} value={saturation} onChange={e => setSaturation(Number(e.target.value))} className="flex-1 accent-[--accent-color]" />
+                                            <span className="text-[11px] text-[--text-muted] w-8 text-right">{saturation}%</span>
+                                        </div>
+                                        <button
+                                            onClick={resetFilters}
+                                            className="self-end mt-1 px-3 py-1 text-[11px] bg-overlay border border-[--border-color] text-[--text-muted] hover:text-[--text-color] transition-colors"
+                                        >
+                                            Reset
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </motion.div>
                     )}
@@ -217,23 +279,67 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
                         >
                             <div className="h-12 px-4 pl-20 flex items-center justify-between border-b border-[--border-color]">
                                 <button
-                                    onClick={() => setviewingimage(null)}
-                                    className="text-accent flex items-center gap-1 text-sm font-medium"
+                                    onClick={() => { setviewingimage(null); setZoom(1); setRotation(0); resetFilters(); setShowFilters(false); }}
+                                    className="text-accent flex items-center gap-1 text-[13px] font-medium"
                                 >
                                     <IoChevronBack size={18} />
                                     All Photos
                                 </button>
-                                <span className="text-[--text-muted] text-sm">{viewingimage.title}</span>
+                                <span className="text-[--text-muted] text-[13px]">{viewingimage.title}</span>
+                                <div className="flex items-center gap-1">
+                                    <button onClick={() => setZoom(z => Math.max(0.25, z - 0.25))} className="p-1.5 hover:bg-overlay text-[--text-muted] hover:text-[--text-color] transition-colors" title="Zoom Out"><IoRemoveOutline size={16} /></button>
+                                    <span className="text-xs text-[--text-muted] w-10 text-center">{Math.round(zoom * 100)}%</span>
+                                    <button onClick={() => setZoom(z => Math.min(4, z + 0.25))} className="p-1.5 hover:bg-overlay text-[--text-muted] hover:text-[--text-color] transition-colors" title="Zoom In"><IoAddOutline size={16} /></button>
+                                    <button onClick={() => setRotation(r => (r + 90) % 360)} className="p-1.5 hover:bg-overlay text-[--text-muted] hover:text-[--text-color] transition-colors" title="Rotate"><IoRefreshOutline size={16} /></button>
+                                    <button onClick={handleDownload} className="p-1.5 hover:bg-overlay text-[--text-muted] hover:text-[--text-color] transition-colors" title="Download"><IoDownloadOutline size={16} /></button>
+                                    <div className="w-px h-4 bg-[--border-color] mx-1" />
+                                    <button
+                                        onClick={() => setShowFilters(f => !f)}
+                                        className={`p-1.5 transition-colors ${showFilters ? 'bg-accent text-[--bg-base]' : 'hover:bg-overlay text-[--text-muted] hover:text-[--text-color]'}`}
+                                        title="Filters"
+                                    >
+                                        <IoColorFilterOutline size={16} />
+                                    </button>
+                                </div>
                             </div>
-                            <div className="flex-1 flex overflow-y-scroll items-center justify-center p-8 bg-surface">
+                            <div className="flex-1 flex overflow-auto items-center justify-center p-8 bg-surface">
                                 <Image
                                     src={viewingimage.src}
                                     alt={viewingimage.title}
                                     width={1000}
                                     height={700}
-                                    className="max-h-auto max-w-auto object-contain"
+                                    className="max-h-auto max-w-auto object-contain transition-transform"
+                                    style={{
+                                        transform: `scale(${zoom}) rotate(${rotation}deg)`,
+                                        filter: filterStyle,
+                                    }}
                                 />
                             </div>
+                            {showFilters && (
+                                <div className="px-4 py-3 flex items-center gap-6 border-t border-[--border-color] bg-surface">
+                                    <div className="flex items-center gap-2 flex-1">
+                                        <span className="text-[11px] text-[--text-muted] w-16 shrink-0">Brightness</span>
+                                        <input type="range" min={0} max={200} value={brightness} onChange={e => setBrightness(Number(e.target.value))} className="flex-1 accent-[--accent-color]" />
+                                        <span className="text-[11px] text-[--text-muted] w-8 text-right">{brightness}%</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 flex-1">
+                                        <span className="text-[11px] text-[--text-muted] w-14 shrink-0">Contrast</span>
+                                        <input type="range" min={0} max={200} value={contrast} onChange={e => setContrast(Number(e.target.value))} className="flex-1 accent-[--accent-color]" />
+                                        <span className="text-[11px] text-[--text-muted] w-8 text-right">{contrast}%</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 flex-1">
+                                        <span className="text-[11px] text-[--text-muted] w-16 shrink-0">Saturation</span>
+                                        <input type="range" min={0} max={200} value={saturation} onChange={e => setSaturation(Number(e.target.value))} className="flex-1 accent-[--accent-color]" />
+                                        <span className="text-[11px] text-[--text-muted] w-8 text-right">{saturation}%</span>
+                                    </div>
+                                    <button
+                                        onClick={resetFilters}
+                                        className="px-3 py-1 text-[11px] bg-overlay border border-[--border-color] text-[--text-muted] hover:text-[--text-color] transition-colors shrink-0"
+                                    >
+                                        Reset
+                                    </button>
+                                </div>
+                            )}
                         </motion.div>
                     ) : (
                         <motion.div
@@ -251,7 +357,7 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
                                     <div className="flex flex-col items-center justify-center h-full text-[--text-muted]">
                                         <IoImagesOutline size={64} className="mb-4 opacity-50" />
                                         <span className="text-lg">No Photos</span>
-                                        <span className="text-sm mt-1">Add image files to your file system to see them here</span>
+                                        <span className="text-[13px] mt-1">Add image files to your file system to see them here</span>
                                     </div>
                                 ) : (
                                     <div className={`grid ${isnarrow ? 'grid-cols-3' : 'grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'} gap-2`}>

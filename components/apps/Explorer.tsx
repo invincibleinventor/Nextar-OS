@@ -11,11 +11,11 @@ import {
 import Sidebar from '../ui/Sidebar';
 import Image from 'next/image';
 import { useWindows } from '../WindowContext';
-import { apps, filesystemitem, openSystemItem, getFileIcon } from '../data';
+import { apps, filesystemitem, openSystemItem, getFileIcon, getMimeTypeFromExtension } from '../data';
 import { useDevice } from '../DeviceContext';
 import { useExternalApps } from '../ExternalAppsContext';
 
-import { IoTrashOutline, IoTrash, IoAddCircleOutline } from "react-icons/io5";
+import { IoTrashOutline, IoTrash, IoAddCircleOutline, IoServerOutline, IoHomeOutline, IoRefreshOutline, IoSwapHorizontalOutline } from "react-icons/io5";
 import { useFileSystem } from '../FileSystemContext';
 import { useMenuAction } from '../hooks/useMenuAction';
 import { useMenuRegistration } from '../AppMenuContext';
@@ -24,7 +24,8 @@ import FileModal from '../ui/FileModal';
 import { SelectionArea } from '../ui/SelectionArea';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../AuthContext';
-import { useCheerpXSafe, LinuxFileEntry } from '../CheerpXContext';
+import { useProjects } from '../ProjectContext';
+import { iselectron, nativefs } from '@/utils/platform';
 
 export default function Explorer({ windowId, initialpath, istrash, openPath, selectItem, isDesktopBackend }: { windowId?: string, initialpath?: string[], istrash?: boolean, openPath?: string, selectItem?: string, isDesktopBackend?: boolean }) {
     const [selected, setselected] = useState(istrash ? 'Trash' : 'Desktop');
@@ -37,12 +38,73 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
     const { user, isGuest } = useAuth();
     const { launchApp } = useExternalApps();
 
-    const cheerpx = useCheerpXSafe();
-    const [linuxfiles, setlinuxfiles] = useState<filesystemitem[]>([]);
-    const [linuxloading, setlinuxloading] = useState(false);
+    const { createProjectFromRawFiles } = useProjects();
 
     const username = user?.username || 'guest';
     const userhome = isGuest ? 'Guest' : (username.charAt(0).toUpperCase() + username.slice(1));
+
+    const [fsMode, setFsMode] = useState<'vfs' | 'native'>(iselectron ? 'native' : 'vfs');
+    const [nativePath, setNativePath] = useState('/home');
+    const [nativeFiles, setNativeFiles] = useState<filesystemitem[]>([]);
+    const [nativeLoading, setNativeLoading] = useState(false);
+    const [nativeError, setNativeError] = useState<string | null>(null);
+    const [nativeHistory, setNativeHistory] = useState<string[]>(['/home']);
+    const [nativeHistoryIdx, setNativeHistoryIdx] = useState(0);
+
+    const formatNativeSize = (bytes: number) => {
+        if (bytes < 1024) return `${bytes} B`;
+        if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+        if (bytes < 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+        return `${(bytes / 1024 / 1024 / 1024).toFixed(1)} GB`;
+    };
+
+    const loadNativeDirectory = useCallback(async (dirpath: string) => {
+        setNativeLoading(true);
+        setNativeError(null);
+        try {
+            const result = await nativefs.readdir(dirpath);
+            if (result.success && result.items) {
+                const sorted = result.items.sort((a: any, b: any) => {
+                    if (a.isdir && !b.isdir) return -1;
+                    if (!a.isdir && b.isdir) return 1;
+                    return a.name.localeCompare(b.name);
+                });
+                const mapped: filesystemitem[] = sorted.map((item: any) => ({
+                    id: `native:${dirpath}/${item.name}`.replace(/\/+/g, '/'),
+                    name: item.name,
+                    parent: `native:${dirpath}`,
+                    mimetype: item.isdir ? 'inode/directory' : getMimeTypeFromExtension(item.name),
+                    date: item.modified ? new Date(item.modified).toLocaleDateString() : '--',
+                    size: item.isdir ? '--' : formatNativeSize(item.size || 0),
+                    isSystem: false,
+                    isReadOnly: false,
+                }));
+                setNativeFiles(mapped);
+            } else {
+                setNativeError(result.error || 'Failed to read directory');
+                setNativeFiles([]);
+            }
+        } catch (e: any) {
+            setNativeError(e.message || 'Unknown error');
+            setNativeFiles([]);
+        }
+        setNativeLoading(false);
+    }, []);
+
+    const nativeNavigate = useCallback((path: string) => {
+        const newHistory = nativeHistory.slice(0, nativeHistoryIdx + 1);
+        newHistory.push(path);
+        setNativeHistory(newHistory);
+        setNativeHistoryIdx(newHistory.length - 1);
+        setNativePath(path);
+        setSelectedFileIds([]);
+    }, [nativeHistory, nativeHistoryIdx]);
+
+    useEffect(() => {
+        if (fsMode === 'native' && iselectron) {
+            loadNativeDirectory(nativePath);
+        }
+    }, [nativePath, fsMode, loadNativeDirectory]);
 
     const sidebaritems = useMemo(() => [
         {
@@ -58,12 +120,18 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                 { name: 'Applications', icon: IoAppsOutline, path: ['System', 'Applications'] },
             ]
         },
-        {
+        ...(iselectron ? [{
+            title: 'Host System',
+            items: [
+                { name: 'Home', icon: IoHomeOutline, path: ['_native_', '/home'] },
+                { name: 'Root (/)', icon: IoServerOutline, path: ['_native_', '/'] },
+            ]
+        }] : [{
             title: 'iCloud',
             items: [
                 { name: 'iCloud Drive', icon: IoFolderOutline, path: ['iCloud Drive'] },
             ]
-        },
+        }]),
         {
             title: 'Locations',
             items: [
@@ -71,14 +139,6 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                 { name: 'Network', icon: IoGlobeOutline, path: ['Network'] },
             ]
         },
-        {
-            title: 'Linux',
-            items: [
-                { name: 'Root (/)', icon: IoFolderOutline, path: ['Linux', '/'] },
-                { name: 'Home', icon: IoFolderOutline, path: ['Linux', '/home/user'] },
-                { name: 'Shared', icon: IoFolderOutline, path: ['Linux', '/shared'] },
-            ]
-        }
     ], [userhome, isGuest]);
 
     const getPathFromId = (folderId: string): string[] => {
@@ -97,37 +157,6 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
     const [currentpath, setcurrentpath] = useState<string[]>(initialPathFromOpen || initialpath || ['System', 'Users', userhome, 'Desktop']);
     const [searchquery, setsearchquery] = useState("");
 
-    const islinuxpath = currentpath[0] === 'Linux';
-    const linuxdirpath = islinuxpath ? (currentpath.length > 1 ? currentpath.slice(1).join('/').replace(/\/\//g, '/') : '/') : '';
-
-    useEffect(() => {
-        if (!islinuxpath || !cheerpx?.listDir || !cheerpx?.isBooted) return;
-        let cancelled = false;
-        setlinuxloading(true);
-        const fetchdir = async () => {
-            try {
-                const entries: LinuxFileEntry[] = await cheerpx.listDir(linuxdirpath || '/');
-                if (cancelled) return;
-                const mapped: filesystemitem[] = entries.map((e: LinuxFileEntry) => ({
-                    id: `linux-${e.path}`,
-                    name: e.name,
-                    parent: null,
-                    mimetype: e.isDirectory ? 'inode/directory' : 'application/octet-stream',
-                    date: e.modifiedAt ? new Date(e.modifiedAt * 1000).toLocaleDateString() : '',
-                    size: e.isDirectory ? '--' : String(e.size),
-                    isSystem: false,
-                    isReadOnly: false,
-                    owner: 'linux',
-                }));
-                setlinuxfiles(mapped);
-            } catch {
-                setlinuxfiles([]);
-            }
-            setlinuxloading(false);
-        };
-        fetchdir();
-        return () => { cancelled = true; };
-    }, [islinuxpath, linuxdirpath, cheerpx?.isBooted]);
 
     const [isnarrow, setisnarrow] = useState(false);
     const containerref = useRef<HTMLDivElement>(null);
@@ -194,7 +223,6 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
         }
     }, [currentpath, windowId, updatewindow, isDesktopBackend, windows]);
 
-    // Quick Look: Space key to preview, Escape/Space to close
     useEffect(() => {
         if (!windowId || isDesktopBackend || ismobile) return;
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -234,7 +262,6 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [windowId, isDesktopBackend, ismobile, activewindow, quicklook, selectedFileIds, files, currentpath, searchquery, isTrashView, sortby, sortasc, showhidden]);
 
-    // Persist view mode
     useEffect(() => {
         const saved = localStorage.getItem('nextaros-explorer-viewmode');
         if (saved === 'list' || saved === 'grid') setviewmode(saved);
@@ -274,12 +301,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
     const getcurrentfiles = (): filesystemitem[] => {
         let result: filesystemitem[] = [];
 
-        if (islinuxpath) {
-            result = [...linuxfiles];
-            if (searchquery) {
-                result = result.filter(f => f.name.toLowerCase().includes(searchquery.toLowerCase()));
-            }
-        } else if (isTrashView) {
+        if (isTrashView) {
             result = files.filter(f => f.parent === currentUserTrashId && f.id !== currentUserTrashId);
         } else {
             let currentparentid = 'root';
@@ -337,12 +359,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
 
     const handlefileopen = (file: filesystemitem) => {
         if (file.mimetype === 'inode/directory') {
-            if (islinuxpath && file.id.startsWith('linux-')) {
-                const linuxpath = file.id.replace('linux-', '');
-                setcurrentpath(['Linux', linuxpath]);
-            } else {
-                setcurrentpath([...currentpath, file.name]);
-            }
+            setcurrentpath([...currentpath, file.name]);
             setsearchquery("");
             setSelectedFileIds([]);
         } else if (file.mimetype === 'inode/shortcut') {
@@ -582,6 +599,8 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
         setFileModal({ ...fileModal, isOpen: false });
     };
 
+    const SOURCE_FILE_REGEX = /\.(py|js|ts|tsx|jsx|html|css|json|md|txt|yml|yaml|xml|sh|bash|c|cpp|h|hpp|java|rb|php|go|rs|swift|kt|r|lua|pl|ex|exs|dart)$/i;
+
     const getContextMenuItems = () => {
         const activeFileItem = contextMenu?.fileId ? files.find(f => f.id === contextMenu?.fileId) : null;
 
@@ -792,7 +811,6 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                     onConfirm={handleModalConfirm}
                     onCancel={() => setFileModal({ ...fileModal, isOpen: false })}
                 />
-
                 {contextMenu && (
                     <ContextMenu
                         x={contextMenu.x}
@@ -933,12 +951,12 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                 {isLoading ? (
                                     <div className="flex flex-col items-center justify-center h-full text-[--text-muted]">
                                         <div className="animate-spin h-8 w-8 border-b-2 border-[--text-muted] mb-2"></div>
-                                        <span className="text-sm">Loading Files...</span>
+                                        <span className="text-[13px]">Loading Files...</span>
                                     </div>
                                 ) : filesList.length === 0 ? (
                                     <div className="flex flex-col items-center justify-center h-full text-[--text-muted]">
                                         <span className="text-4xl mb-2 opacity-50">¯\_(ツ)_/¯</span>
-                                        <span className="text-sm">No items found</span>
+                                        <span className="text-[13px]">No items found</span>
                                     </div>
                                 ) : (
                                     <div className="divide-y divide-[--border-color]">
@@ -966,7 +984,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                                     </div>
                                                 </div>
                                                 {isLocked(file.id) && (
-                                                    <IoLockClosed className="text-[--text-muted] text-sm" />
+                                                    <IoLockClosed className="text-[--text-muted] text-[13px]" />
                                                 )}
                                                 {file.mimetype === 'inode/directory' && (
                                                     <IoChevronForward className="text-[--text-muted]" />
@@ -1064,8 +1082,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
             <div className={`flex-1 flex ${isnarrow ? 'flex-col' : 'flex-row'} min-w-0 bg-[--bg-base] relative overflow-hidden`}>
 
                 <div className="flex-1 flex flex-col min-w-0 min-h-0">
-                    {/* Row 1: Breadcrumb navigation */}
-                    <div className="h-[34px] shrink-0 flex items-center px-3 border-b border-[--border-color] bg-[--bg-overlay] gap-1">
+                    <div className="h-[34px] shrink-0 flex items-center px-3 border-b border-[--border-color] bg-overlay gap-1">
                         {isnarrow && (
                             <button onClick={() => setshowsidebar(!showsidebar)} className="p-1 hover:bg-overlay transition-colors mr-1 shrink-0">
                                 <IoListOutline className="text-lg text-[--text-color]" />
@@ -1095,8 +1112,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                             </div>
                         )}
                     </div>
-                    {/* Row 2: Toolbar - search, view toggle, actions */}
-                    <div className="h-[34px] shrink-0 flex items-center justify-between px-3 border-b border-[--border-color] bg-[--bg-overlay] gap-2" style={{ color: 'var(--text-muted)' }}>
+                    <div className="h-[34px] shrink-0 flex items-center justify-between px-3 border-b border-[--border-color] bg-overlay gap-2" style={{ color: 'var(--text-muted)' }}>
                         <div className="flex items-center gap-1.5">
                             <div className="flex items-center bg-overlay p-0.5 border border-[--border-color]">
                                 <button
@@ -1105,7 +1121,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                     style={viewmode === 'grid' ? { color: 'var(--text-color)' } : undefined}
                                     title="Grid View"
                                 >
-                                    <IoGridOutline className="text-sm" />
+                                    <IoGridOutline className="text-[13px]" />
                                 </button>
                                 <button
                                     onClick={() => { setviewmode('list'); localStorage.setItem('nextaros-explorer-viewmode', 'list'); }}
@@ -1113,7 +1129,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                     style={viewmode === 'list' ? { color: 'var(--text-color)' } : undefined}
                                     title="List View"
                                 >
-                                    <IoListOutline className="text-sm" />
+                                    <IoListOutline className="text-[13px]" />
                                 </button>
                             </div>
                             {!isTrashView && (
@@ -1255,9 +1271,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                 })}
                             </div>
                         ) : (
-                            /* List view */
                             <div className="w-full">
-                                {/* Sortable column headers */}
                                 <div className="flex items-center border-b border-[--border-color] text-[10px] uppercase tracking-wider text-[--text-muted] font-semibold sticky top-0 bg-[--bg-base] z-[5]">
                                     <button onClick={() => { if (sortby === 'name') setsortasc(!sortasc); else { setsortby('name'); setsortasc(true); } }} className="flex items-center gap-1 flex-1 min-w-0 px-2 py-2 hover:bg-overlay">
                                         Name {sortby === 'name' && (sortasc ? <IoChevronUp size={10} /> : <IoChevronDown size={10} />)}
@@ -1272,7 +1286,6 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                         Kind {sortby === 'type' && (sortasc ? <IoChevronUp size={10} /> : <IoChevronDown size={10} />)}
                                     </button>
                                 </div>
-                                {/* File rows */}
                                 {filesList.map((file, i) => {
                                     const isSelected = selectedFileIds.includes(file.id);
                                     return (
@@ -1313,7 +1326,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                         {filesList.length === 0 && (
                             <div className="flex flex-col items-center justify-center h-full text-[--text-muted]">
                                 <span className="text-4xl mb-2 opacity-50">¯\_(ツ)_/¯</span>
-                                <span className="text-sm">No items found</span>
+                                <span className="text-[13px]">No items found</span>
                                 {!isTrashView && <span className="text-xs opacity-50 mt-1">Right click to create new items</span>}
                             </div>
                         )}
@@ -1413,7 +1426,6 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                 )}
             </div>
 
-            {/* Quick Look overlay */}
             <AnimatePresence>
                 {quicklook && (
                     <motion.div
@@ -1433,14 +1445,12 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                             className="bg-surface border border-[--border-color] shadow-2xl flex flex-col max-w-[80%] max-h-[80%] min-w-[300px] overflow-hidden"
                             onClick={(e) => e.stopPropagation()}
                         >
-                            {/* Title bar */}
-                            <div className="h-9 shrink-0 flex items-center justify-between px-3 border-b border-[--border-color] bg-[--bg-overlay]">
+                            <div className="h-9 shrink-0 flex items-center justify-between px-3 border-b border-[--border-color] bg-overlay">
                                 <span className="text-[12px] font-semibold text-[--text-color] truncate">{quicklook.name}</span>
                                 <button onClick={() => setquicklook(null)} className="p-1 hover:bg-overlay transition-colors text-[--text-muted] hover:text-[--text-color]">
                                     <IoCloseOutline size={16} />
                                 </button>
                             </div>
-                            {/* Content */}
                             <div className="flex-1 overflow-auto flex items-center justify-center p-4 min-h-[200px]">
                                 {quicklook.mimetype?.startsWith('image/') ? (
                                     quicklook.content?.startsWith('data:') ? (
@@ -1474,11 +1484,10 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                         {quicklook.content || '(empty)'}
                                     </pre>
                                 ) : (
-                                    /* Generic file info card */
                                     <div className="flex flex-col items-center gap-4 text-center py-4">
                                         <div className="w-20 h-20">{getFileIcon(quicklook.mimetype, quicklook.name, quicklook.icon, quicklook.id, quicklook.content || quicklook.link)}</div>
                                         <div>
-                                            <div className="text-sm font-semibold text-[--text-color] mb-1">{quicklook.name}</div>
+                                            <div className="text-[13px] font-semibold text-[--text-color] mb-1">{quicklook.name}</div>
                                             <div className="text-[11px] text-[--text-muted]">{quicklook.mimetype || 'Unknown type'}</div>
                                         </div>
                                         <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-[11px]">
@@ -1490,8 +1499,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                     </div>
                                 )}
                             </div>
-                            {/* Footer */}
-                            <div className="h-7 shrink-0 flex items-center justify-between px-3 border-t border-[--border-color] bg-[--bg-overlay] text-[10px] text-[--text-muted]">
+                            <div className="h-7 shrink-0 flex items-center justify-between px-3 border-t border-[--border-color] bg-overlay text-[10px] text-[--text-muted]">
                                 <span>{quicklook.mimetype || 'Unknown'}</span>
                                 <span>{quicklook.size || '--'}</span>
                             </div>

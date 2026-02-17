@@ -85,13 +85,11 @@ export const componentmap: { [key: string]: any } = {
     'apps/Photos': dynamic(() => import('./apps/Photos')),
     'apps/Terminal': dynamic(() => import('./apps/Terminal')),
     'apps/Launchpad': dynamic(() => import('./apps/Launchpad')),
-    'apps/Python': dynamic(() => import('./apps/Python')), // kept for DynamicAppRunner compat
+    'apps/Python': dynamic(() => import('./apps/Python')),
     'apps/FileViewer': dynamic(() => import('./apps/FileViewer')),
     'apps/Notes': dynamic(() => import('./apps/Notes')),
     'apps/Music': dynamic(() => import('./apps/Music')),
-    'apps/AboutBala': dynamic(() => import('./apps/AboutBala')),
     'apps/AppStore': dynamic(() => import('./apps/AppStore')),
-    'apps/BalaDev': dynamic(() => import('./apps/BalaDev')),
     'apps/Installer': dynamic(() => import('./apps/Welcome')),
     'apps/Mail': dynamic(() => import('./apps/Mail')),
     'apps/Calculator': dynamic(() => import('./apps/Calculator')),
@@ -106,10 +104,14 @@ export const componentmap: { [key: string]: any } = {
     'apps/HackathonWorkspace': dynamic(() => import('./apps/HackathonWorkspace')),
     'apps/IdeaBoard': dynamic(() => import('./apps/IdeaBoard')),
     'apps/ShipChecklist': dynamic(() => import('./apps/ShipChecklist')),
-    'apps/LinuxDisplay': dynamic(() => import('./apps/LinuxDisplay')),
-    'apps/LabSubmit': dynamic(() => import('./apps/LabSubmit')),
     'apps/ApiPlayground': dynamic(() => import('./apps/ApiPlayground')),
-    'apps/LabManager': dynamic(() => import('./apps/LabManager')),
+    'apps/TemplatesManager': dynamic(() => import('./apps/TemplatesManager')),
+    'apps/Clock': dynamic(() => import('./apps/Clock')),
+    'apps/Weather': dynamic(() => import('./apps/Weather')),
+    'apps/Reminders': dynamic(() => import('./apps/Reminders')),
+    'apps/VideoPlayer': dynamic(() => import('./apps/VideoPlayer')),
+    'apps/Paint': dynamic(() => import('./apps/Paint')),
+    'apps/Contacts': dynamic(() => import('./apps/Contacts')),
 };
 
 
@@ -117,14 +119,14 @@ export const componentmap: { [key: string]: any } = {
 
 export const personal = {
     personal: {
-        name: "HackathOS",
-        role: "Hackathon Operating Workspace",
-        bio: "A zero-setup, offline-first, shareable project workspace for hackathon teams and startup builders. Go from idea to deploy in minutes.",
+        name: "NextarOS",
+        role: "Your Personal Cloud OS",
+        bio: "A complete desktop experience in your browser. Files, apps, tools, and more — deploy on any server, access from anywhere.",
         location: "Everywhere",
-        username: "hackos",
-        email: "hello@hackos.dev",
+        username: "nextaros",
+        email: "hello@nextaros.dev",
         socials: {
-            github: "https://github.com/hackos",
+            github: "https://github.com/nextaros",
             threads: "",
             linkedin: ""
         }
@@ -132,8 +134,8 @@ export const personal = {
     education: [] as { degree: string; institution: string; year: string; grade: string }[],
     projects: [] as { title: string; date: number; type: string; desc: string; stack: string[]; link: string; github: string; icon: React.ReactNode }[],
     skills: [
-        "Next.js", "React", "TypeScript", "Tailwind CSS",
-        "Node.js", "Python", "Express", "Flask",
+        "Self-Hosted", "Cloud Desktop", "Next.js", "React",
+        "TypeScript", "Node.js", "Python", "Tailwind CSS",
         "WebContainers", "IndexedDB", "Monaco Editor", "WASM"
     ]
 };
@@ -180,7 +182,6 @@ export const apps: appdata[] = [
             }
         }
     },
-    // Python/Code Editor removed — functionality merged into HackathonWorkspace
     {
         id: 'mail',
         appname: 'Mail',
@@ -430,8 +431,8 @@ export const apps: appdata[] = [
         }
     },
     {
-        id: 'abouthackathos',
-        appname: 'About HackathOS',
+        id: 'aboutnextaros',
+        appname: 'Help',
         icon: '/info.png',
         maximizeable: false,
         componentname: 'apps/AboutNextarOS',
@@ -457,17 +458,16 @@ export const apps: appdata[] = [
     },
     {
         id: 'hackathonworkspace',
-        appname: 'Workspace',
+        appname: 'Code Editor',
         icon: '/code.png',
         maximizeable: true,
         componentname: 'apps/HackathonWorkspace',
         additionaldata: {},
         multiwindow: true,
         titlebarblurred: false,
-        pinned: false,
+        pinned: true,
         defaultsize: { width: 1200, height: 700 },
-        category: 'Creativity',
-        hidePreview: true,
+        category: 'Developer Tools',
     },
     {
         id: 'ideaboard',
@@ -496,33 +496,6 @@ export const apps: appdata[] = [
         category: 'Productivity',
     },
     {
-        id: 'linuxdisplay',
-        appname: 'Linux Desktop',
-        icon: '/terminal.webp',
-        maximizeable: true,
-        componentname: 'apps/LinuxDisplay',
-        additionaldata: {},
-        multiwindow: false,
-        titlebarblurred: false,
-        pinned: false,
-        defaultsize: { width: 1050, height: 820 },
-        category: 'Developer Tools',
-        webOnly: true,
-    },
-    {
-        id: 'lab-submit',
-        appname: 'Lab Submission',
-        icon: '/classroom.png',
-        maximizeable: true,
-        componentname: 'apps/LabSubmit',
-        additionaldata: {},
-        multiwindow: false,
-        titlebarblurred: false,
-        pinned: true,
-        defaultsize: { width: 900, height: 600 },
-        category: 'Education',
-    },
-    {
         id: 'apiplayground',
         appname: 'API Playground',
         icon: '/terminal.png',
@@ -536,17 +509,96 @@ export const apps: appdata[] = [
         category: 'Developer Tools',
     },
     {
-        id: 'labmanager',
-        appname: 'Lab Manager',
+        id: 'templatesmanager',
+        appname: 'Templates',
         icon: '/classroom.png',
         maximizeable: true,
-        componentname: 'apps/LabManager',
+        componentname: 'apps/TemplatesManager',
         additionaldata: {},
         multiwindow: false,
         titlebarblurred: false,
         pinned: false,
         defaultsize: { width: 1000, height: 650 },
-        category: 'Education',
+        category: 'Developer Tools',
+    },
+    {
+        id: 'clock',
+        appname: 'Clock',
+        icon: '/info.png',
+        maximizeable: true,
+        componentname: 'apps/Clock',
+        additionaldata: {},
+        multiwindow: false,
+        titlebarblurred: false,
+        pinned: false,
+        defaultsize: { width: 500, height: 550 },
+        category: 'Utilities',
+    },
+    {
+        id: 'weather',
+        appname: 'Weather',
+        icon: '/info.png',
+        maximizeable: true,
+        componentname: 'apps/Weather',
+        additionaldata: {},
+        multiwindow: false,
+        titlebarblurred: false,
+        pinned: false,
+        defaultsize: { width: 600, height: 650 },
+        category: 'Utilities',
+    },
+    {
+        id: 'reminders',
+        appname: 'Reminders',
+        icon: '/info.png',
+        maximizeable: true,
+        componentname: 'apps/Reminders',
+        additionaldata: {},
+        multiwindow: false,
+        titlebarblurred: false,
+        pinned: false,
+        defaultsize: { width: 700, height: 550 },
+        category: 'Productivity',
+    },
+    {
+        id: 'videoplayer',
+        appname: 'Video Player',
+        icon: '/info.png',
+        maximizeable: true,
+        componentname: 'apps/VideoPlayer',
+        additionaldata: {},
+        multiwindow: true,
+        titlebarblurred: false,
+        pinned: false,
+        defaultsize: { width: 800, height: 550 },
+        category: 'Entertainment',
+        acceptedMimeTypes: ['video/mp4', 'video/webm', 'video/ogg'],
+    },
+    {
+        id: 'paint',
+        appname: 'Paint',
+        icon: '/info.png',
+        maximizeable: true,
+        componentname: 'apps/Paint',
+        additionaldata: {},
+        multiwindow: false,
+        titlebarblurred: false,
+        pinned: false,
+        defaultsize: { width: 900, height: 650 },
+        category: 'Creativity',
+    },
+    {
+        id: 'contacts',
+        appname: 'Contacts',
+        icon: '/info.png',
+        maximizeable: true,
+        componentname: 'apps/Contacts',
+        additionaldata: {},
+        multiwindow: false,
+        titlebarblurred: false,
+        pinned: false,
+        defaultsize: { width: 700, height: 550 },
+        category: 'Social',
     },
 ];
 
@@ -655,25 +707,25 @@ export const sidebaritems = [
     {
         title: 'Favorites',
         items: [
-            { name: 'Desktop', icon: IoDesktopOutline, path: ['System', 'Users', 'Guest', 'Desktop'] },
-            { name: 'Documents', icon: IoDocumentTextOutline, path: ['System', 'Users', 'Guest', 'Documents'] },
-            { name: 'Downloads', icon: IoDownloadOutline, path: ['System', 'Users', 'Guest', 'Downloads'] },
-            { name: 'Projects', icon: IoFolderOutline, path: ['System', 'Users', 'Guest', 'Projects'] },
+            { name: 'Desktop', icon: IoDesktopOutline, path: ['System', 'Users', 'Guest', 'Desktop'], color: '#8aadf4' },
+            { name: 'Documents', icon: IoDocumentTextOutline, path: ['System', 'Users', 'Guest', 'Documents'], color: '#a6da95' },
+            { name: 'Downloads', icon: IoDownloadOutline, path: ['System', 'Users', 'Guest', 'Downloads'], color: '#f5a97f' },
+            { name: 'Projects', icon: IoFolderOutline, path: ['System', 'Users', 'Guest', 'Projects'], color: '#c6a0f6' },
         ]
     },
     {
         title: 'Locations',
         items: [
-            { name: 'Applications', icon: IoAppsOutline, path: ['System', 'Applications'] },
-            { name: 'System', icon: IoAppsOutline, path: ['System'] },
+            { name: 'Applications', icon: IoAppsOutline, path: ['System', 'Applications'], color: '#ed8796' },
+            { name: 'System', icon: IoAppsOutline, path: ['System'], color: '#6e738d' },
         ]
     },
     {
         title: 'Linux',
         items: [
-            { name: 'Root (/)', icon: IoFolderOutline, path: ['Linux', '/'] },
-            { name: 'Home', icon: IoFolderOutline, path: ['Linux', '/home/user'] },
-            { name: 'Shared', icon: IoFolderOutline, path: ['Linux', '/shared'] },
+            { name: 'Root (/)', icon: IoFolderOutline, path: ['Linux', '/'], color: '#8bd5ca' },
+            { name: 'Home', icon: IoFolderOutline, path: ['Linux', '/home/user'], color: '#8bd5ca' },
+            { name: 'Shared', icon: IoFolderOutline, path: ['Linux', '/shared'], color: '#8bd5ca' },
         ]
     }
 ];
@@ -695,24 +747,24 @@ export interface MailItem {
 
 export const ALL_MAILS: MailItem[] = [
     {
-        id: 'hackos-welcome',
+        id: 'nextaros-welcome',
         folder: 'inbox',
         category: 'System',
-        sender: 'HackathOS Team',
-        senderEmail: 'hello@hackos.dev',
-        subject: 'Welcome to HackathOS!',
+        sender: 'NextarOS Team',
+        senderEmail: 'hello@nextaros.dev',
+        subject: 'Welcome to NextarOS!',
         date: 'Just Now',
         iconType: 'icon' as const,
         icon: IoRocketOutline,
-        preview: 'Welcome to the Hackathon Operating Workspace. Build, ship, and demo in minutes.',
+        preview: 'Welcome to NextarOS. Your cloud desktop is ready.',
         content: (
-            <div className="space-y-4 text-sm leading-relaxed text-[--text-color]">
-                <p>Welcome to <strong>HackathOS</strong>!</p>
-                <p>Your hackathon operating workspace is ready. Here&apos;s how to get started:</p>
-                <p><strong>1.</strong> Open the <strong>Hackathon Workspace</strong> app to create a new project from a template.</p>
-                <p><strong>2.</strong> Use the <strong>Idea Board</strong> to track your tasks and progress.</p>
-                <p><strong>3.</strong> When you&apos;re ready, use the <strong>Ship Checklist</strong> to validate before deploying.</p>
-                <p>Happy hacking!</p>
+            <div className="space-y-4 text-[13px] leading-relaxed text-[--text-color]">
+                <p>Welcome to <strong>NextarOS</strong>!</p>
+                <p>Your cloud desktop is ready. Here&apos;s how to get started:</p>
+                <p><strong>1.</strong> Explore the <strong>apps</strong> — files, notes, music, browser, and much more.</p>
+                <p><strong>2.</strong> Open <strong>Settings</strong> to customize your desktop, themes, and wallpaper.</p>
+                <p><strong>3.</strong> Use the <strong>Code Editor</strong> for development, or try any of the built-in tools.</p>
+                <p>Your cloud, your OS. Enjoy NextarOS!</p>
             </div>
         )
     },
@@ -857,6 +909,18 @@ export const generateGuestFilesystem = (): filesystemitem[] => {
     });
 
     fs.push({
+        id: 'guest-videos',
+        name: 'Videos',
+        parent: 'user-guest',
+        mimetype: 'inode/directory',
+        date: 'Today',
+        size: '--',
+        isSystem: true,
+        isReadOnly: false,
+        owner: 'guest'
+    });
+
+    fs.push({
         id: 'guest-trash',
         name: 'Trash',
         parent: 'root',
@@ -869,7 +933,6 @@ export const generateGuestFilesystem = (): filesystemitem[] => {
         owner: 'guest'
     });
 
-    // Add a welcome README to Documents
     fs.push({
         id: 'guest-welcome-readme',
         name: 'Welcome.md',
@@ -877,7 +940,7 @@ export const generateGuestFilesystem = (): filesystemitem[] => {
         mimetype: 'text/markdown',
         date: 'Today',
         size: '1 KB',
-        content: '# Welcome to HackathOS\n\nYour hackathon operating workspace.\n\n## Getting Started\n\n1. Open **Hackathon Workspace** to create a project from a template\n2. Use the **Idea Board** to track tasks\n3. Use the **Ship Checklist** before deploying\n\nHappy hacking!',
+        content: '# Welcome to NextarOS\n\nYour personal cloud OS.\n\n## Getting Started\n\n1. Explore the **apps** — files, notes, music, browser, and more\n2. Open **Settings** to customize your desktop and themes\n3. Use the **Code Editor** for development projects\n\nYour cloud, your OS. Enjoy NextarOS!',
         isReadOnly: true,
         owner: 'guest'
     });
@@ -952,6 +1015,17 @@ export const generateUserFolders = (username: string): filesystemitem[] => {
         owner: username
     });
 
+
+    fs.push({
+        id: `${uid}-videos`,
+        name: 'Videos',
+        parent: uid,
+        mimetype: 'inode/directory',
+        date: 'Today',
+        size: '--',
+        isSystem: true,
+        owner: username
+    });
 
     fs.push({
         id: `${uid}-trash`,
@@ -1087,7 +1161,6 @@ export const generateFullFilesystemForUser = (username: string): filesystemitem[
 
         delete newItem.isReadOnly;
 
-        // Allow user to delete their own desktop app shortcuts and files
         if (newItem.mimetype !== 'inode/directory') {
             newItem.isSystem = false;
         }

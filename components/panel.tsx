@@ -40,6 +40,19 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
     const [showcontrolcenter, setshowcontrolcenter] = useState(false);
     const [batterystatus, setbatterystatus] = useState({ percentage: 100, charging: false, available: false });
     const [wifistatus, setwifistatus] = useState({ connected: false, ssid: null as string | null, available: false });
+    const [isOnline, setIsOnline] = useState(true);
+
+    useEffect(() => {
+        setIsOnline(navigator.onLine);
+        const handleOnline = () => setIsOnline(true);
+        const handleOffline = () => setIsOnline(false);
+        window.addEventListener('online', handleOnline);
+        window.addEventListener('offline', handleOffline);
+        return () => {
+            window.removeEventListener('online', handleOnline);
+            window.removeEventListener('offline', handleOffline);
+        };
+    }, []);
 
     useEffect(() => {
         if (!iselectron) return;
@@ -89,7 +102,7 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
     ];
 
     const defaultHelpMenu = [
-        { title: "HackathOS Help", disabled: false },
+        { title: "NextarOS Help", disabled: false },
         { title: "About " + activeappname, disabled: false }
     ];
 
@@ -130,7 +143,7 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
     }, [isGuest, addToast]);
 
     const dynamicmainmenu = [
-        { title: `About HackathOS`, actionId: 'about' },
+        { title: 'Help', actionId: 'about' },
         { separator: true },
         { title: 'System Settings...', actionId: 'settings' },
         { title: 'App Store...', actionId: 'appstore' },
@@ -150,8 +163,8 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
         switch (action) {
             case 'about':
                 addwindow({
-                    id: `abouthackathos-${Date.now()}`,
-                    appname: 'About HackathOS',
+                    id: `aboutnextaros-${Date.now()}`,
+                    appname: 'Help',
                     component: 'apps/AboutNextarOS',
                     props: {},
                     isminimized: false,
@@ -332,7 +345,7 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
                                 onClick={() => setappmode('portfolio')}
                                 className="px-2 py-1 text-xs font-medium bg-pastel-red/15 hover:bg-pastel-red/25 text-pastel-red border border-pastel-red/30 transition-colors"
                             >
-                                Exit HackathOS
+                                Exit NextarOS
                             </button>
                         )}
                         <button
@@ -351,7 +364,10 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                         </button>
-                        <IoWifi className={`w-[18px] h-[18px] ${wifistatus.connected ? 'text-pastel-blue' : 'text-pastel-lavender'}`} />
+                        {!isOnline && (
+                            <span className="text-[9px] font-bold text-pastel-red px-1 py-0.5 bg-pastel-red/15">OFFLINE</span>
+                        )}
+                        <IoWifi className={`w-[18px] h-[18px] ${!isOnline ? 'text-pastel-red' : wifistatus.connected ? 'text-pastel-blue' : 'text-pastel-lavender'}`} />
                         <div className='flex items-center space-x-1'>
                             {batterystatus.available && (
                                 <span className="text-[11px] font-medium text-[--text-color]">{batterystatus.percentage}%</span>

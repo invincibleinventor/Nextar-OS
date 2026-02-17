@@ -50,6 +50,9 @@ interface CheerpXContextType {
     extractArchive: (archivePath: string, destPath: string) => Promise<void>;
     downloadFile: (path: string) => Promise<void>;
     resetEnvironment: () => Promise<void>;
+    writeSharedFile: (path: string, content: string) => Promise<void>;
+    readSharedFile: (path: string) => Promise<string>;
+    listSharedDir: (path: string) => Promise<LinuxFileEntry[]>;
 }
 
 const CheerpXContext = createContext<CheerpXContextType | undefined>(undefined);
@@ -66,7 +69,6 @@ export const useCheerpXSafe = () => {
 
 const DISK_IMAGE_URL = 'wss://disks.webvm.io/debian_large_20230522_5044875331_2.ext2';
 
-// Patch console.log to suppress excessive CheerpX/Tailscale spam
 if (typeof window !== 'undefined') {
     const originalLog = console.log;
     console.log = (...args: any[]) => {
@@ -77,10 +79,10 @@ if (typeof window !== 'undefined') {
     };
 }
 
-const IDB_CACHE_ID = 'hackathos-cx';
-const WARM_BOOT_KEY = 'hackathos-warm-boot';
+const IDB_CACHE_ID = 'nextaros-cx';
+const WARM_BOOT_KEY = 'nextaros-warm-boot';
 
-const BASHRC = `export PS1='\\[\\e[1;32m\\]user\\[\\e[0m\\]@\\[\\e[1;36m\\]hackathos\\[\\e[0m\\]:\\[\\e[1;34m\\]\\w\\[\\e[0m\\]$ '
+const BASHRC = `export PS1='\\[\\e[1;32m\\]user\\[\\e[0m\\]@\\[\\e[1;36m\\]nextaros\\[\\e[0m\\]:\\[\\e[1;34m\\]\\w\\[\\e[0m\\]$ '
 export EDITOR=vim
 export LANG=en_US.UTF-8
 export CFLAGS="-O0"
@@ -95,48 +97,38 @@ alias ...='cd ../..'
 
 alias proj='cd ~/projects'
 
-echo -e "\\e[36m  HackathOS Linux Environment\\e[0m"
+echo -e "\\e[36m  NextarOS Linux Environment\\e[0m"
 echo -e "\\e[90m  Full Debian Linux in your browser. apt, pip, gcc, python — everything works.\\e[0m"
 echo -e "\\e[90m  Project files are at ~/projects\\e[0m"
 echo ""
 `;
 
-// OPT: Pre-compute bashrc base64 at module load instead of every boot
 const BASHRC_B64 = typeof btoa !== 'undefined'
     ? btoa(unescape(encodeURIComponent(BASHRC)))
     : '';
 
-// OPT: Static TextDecoder instance (reused across all decode calls)
 const textDecoder = new TextDecoder();
 
-// OPT: Pre-compiled regex for ls output parsing
 const LS_LINE_REGEX = /^([dlcbsp-][rwxstST-]{9})\s+\d+\s+\S+\s+\S+\s+(\d+)\s+(\d+)\s+(.+)$/;
 
 let cxInstance: any = null;
 let dataDeviceInstance: any = null;
 let idbDeviceInstance: any = null;
+let sharedIdbInstance: any = null;
 let bootPromise: Promise<any> | null = null;
 
 let consoleReadFunc: any = null;
 let consoleAttached = false;
 let shellRunning = false;
 const terminalWriteFuncs = new Set<(buf: Uint8Array) => void>();
-// --- Parallel Capture Pool ---
-// CheerpX can run multiple processes concurrently. We use a semaphore to limit
-// concurrent captures while allowing parallelism (default: 4 slots).
 const CAPTURE_CONCURRENCY = 4;
 let activeCaptureCount = 0;
 const captureQueue: Array<{ command: string; resolve: (r: string) => void; reject: (e: Error) => void }> = [];
 
-// Each capture gets its own buffer via a unique output handler.
-// Terminal output (non-capture) routes to terminalWriteFuncs.
-let activeCaptureHandlers = new Set<(buf: Uint8Array) => void>();
+const activeCaptureHandlers = new Set<(buf: Uint8Array) => void>();
 
 function centralOutputHandler(buf: Uint8Array) {
     if (activeCaptureHandlers.size > 0) {
-        // Broadcast to all active capture handlers — each filters by its own process.
-        // CheerpX mixes outputs for concurrent processes, but for file reads
-        // (which are our main parallel case) the output is discrete per command.
         for (const fn of activeCaptureHandlers) {
             fn(buf);
         }
@@ -162,11 +154,9 @@ async function runCapture(command: string): Promise<string> {
         return buffer;
     } catch (err: any) {
         const msg = err?.message || String(err);
-        // WASM out-of-bounds errors are non-recoverable for this process but
-        // don't necessarily kill CheerpX.  Return what we have and log the error.
         if (msg.includes('out of bounds') || msg.includes('RuntimeError') || msg.includes('unreachable')) {
-            console.warn('[HackathOS] CheerpX WASM error during command:', command.slice(0, 80), msg);
-            return buffer; // partial output is better than throwing
+            console.warn('[NextarOS] CheerpX WASM error during command:', command.slice(0, 80), msg);
+            return buffer;
         }
         throw err;
     } finally {
@@ -216,7 +206,6 @@ function parseLsOutput(output: string, dirPath: string): LinuxFileEntry[] {
     return entries;
 }
 
-// OPT: Check if this is a warm boot (config already persisted in overlay)
 function isWarmBoot(): boolean {
     try {
         return localStorage.getItem(WARM_BOOT_KEY) === 'true';
@@ -238,22 +227,18 @@ export const CheerpXProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const [networkLoginUrl, setNetworkLoginUrl] = useState<string | null>(null);
     const [networkState, setNetworkState] = useState<'disconnected' | 'connecting' | 'login-ready' | 'connected'>('disconnected');
 
-    // Catch unhandled WASM errors (CheerpX "out of bounds memory access") so they
-    // don't crash the React tree.  These are non-fatal for the overall app — the
-    // individual command that triggered them will already have been handled in
-    // runCapture's catch block.
     React.useEffect(() => {
         const handler = (e: ErrorEvent) => {
             const msg = e.message || '';
             if (msg.includes('out of bounds') || msg.includes('RuntimeError') || msg.includes('unreachable')) {
-                console.warn('[HackathOS] Suppressed CheerpX WASM error:', msg);
-                e.preventDefault(); // prevent default error overlay
+                console.warn('[NextarOS] Suppressed CheerpX WASM error:', msg);
+                e.preventDefault();
             }
         };
         const rejectionHandler = (e: PromiseRejectionEvent) => {
             const msg = String(e.reason?.message || e.reason || '');
             if (msg.includes('out of bounds') || msg.includes('RuntimeError') || msg.includes('unreachable')) {
-                console.warn('[HackathOS] Suppressed CheerpX unhandled rejection:', msg);
+                console.warn('[NextarOS] Suppressed CheerpX unhandled rejection:', msg);
                 e.preventDefault();
             }
         };
@@ -266,7 +251,6 @@ export const CheerpXProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }, []);
     const [isXorgRunning, setIsXorgRunning] = useState(false);
     const kmsCanvasRef = useRef<HTMLCanvasElement | null>(null);
-    // OPT: Deferred Tailscale — networkInterface callbacks are no-ops until user requests networking
     const networkEnabledRef = useRef(false);
 
     const boot = useCallback(async (initialCols?: number, initialRows?: number) => {
@@ -290,7 +274,8 @@ export const CheerpXProvider: React.FC<{ children: React.ReactNode }> = ({ child
             dataDeviceInstance = dataDevice;
             idbDeviceInstance = idbDevice;
 
-            const sharedIdb = await CheerpX.IDBDevice.create('hackathos-shared');
+            const sharedIdb = await CheerpX.IDBDevice.create('nextaros-shared');
+            sharedIdbInstance = sharedIdb;
 
             const mounts: any[] = [
                 { type: 'ext2', dev: overlayDevice, path: '/' },
@@ -304,15 +289,12 @@ export const CheerpXProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
             const cx = await CheerpX.Linux.create({
                 mounts,
-                // OPT: Deferred Tailscale — callbacks are registered at boot but act as
-                // no-ops until the user explicitly triggers networking via connectNetwork().
-                // This avoids 2-5s of Tailscale auth overhead on the boot critical path.
                 networkInterface: {
                     authKey: undefined,
                     controlUrl: undefined,
                     loginUrlCb: (url: string) => {
                         if (!networkEnabledRef.current) return;
-                        console.log('[HackathOS] Tailscale login URL received:', url);
+                        console.log('[NextarOS] Tailscale login URL received:', url);
                         setNetworkLoginUrl(url);
                         setNetworkState('login-ready');
                     },
@@ -348,12 +330,10 @@ export const CheerpXProvider: React.FC<{ children: React.ReactNode }> = ({ child
                 }
             }
 
-            // OPT: Warm boot skips config steps already persisted in overlay
             const warm = isWarmBoot();
             const bootOpts = { cwd: '/', uid: 0, gid: 0, env: ['HOME=/root', 'TERM=dumb', 'SHELL=/bin/bash'] };
 
             if (!warm) {
-                // OPT: Parallelize DNS config + bashrc setup (independent operations)
                 try {
                     await Promise.all([
                         cx.run('/bin/bash', ['-c',
@@ -364,11 +344,9 @@ export const CheerpXProvider: React.FC<{ children: React.ReactNode }> = ({ child
                         ], bootOpts),
                     ]);
                 } catch {
-                    // Non-fatal: boot continues even if config fails
                 }
                 markWarmBoot();
             } else {
-                // Warm boot: just ensure projects dir exists (fast)
                 try {
                     await cx.run('/bin/bash', ['-c', 'mkdir -p /home/user/projects'], bootOpts);
                 } catch { }
@@ -434,19 +412,15 @@ export const CheerpXProvider: React.FC<{ children: React.ReactNode }> = ({ child
         return queueCapture(command);
     }, []);
 
-    // OPT: Batch read multiple files in a single shell command (kills N+1 pattern)
-    // Instead of N separate `cat` commands, runs one `find -exec cat` with file delimiters
     const batchReadFiles = useCallback(async (paths: string[]): Promise<Map<string, string>> => {
         if (!cxInstance || paths.length === 0) return new Map();
 
-        // For small batches, fall through to individual reads
         if (paths.length === 1) {
             const content = await queueCapture(`cat ${JSON.stringify(paths[0])} 2>/dev/null`);
             return new Map([[paths[0], content]]);
         }
 
-        // Build a single command that outputs all files with delimiters
-        const DELIMITER = '===HACKATHOS_FILE_BOUNDARY===';
+        const DELIMITER = '===NEXTAROS_FILE_BOUNDARY===';
         const catParts = paths.map(p => {
             const escaped = p.replace(/'/g, "'\\''");
             return `echo '${DELIMITER}${escaped}${DELIMITER}' && cat '${escaped}' 2>/dev/null`;
@@ -456,7 +430,6 @@ export const CheerpXProvider: React.FC<{ children: React.ReactNode }> = ({ child
         const rawOutput = await queueCapture(batchCmd);
         const result = new Map<string, string>();
 
-        // Parse the delimited output
         const sections = rawOutput.split(DELIMITER);
         for (let i = 1; i < sections.length - 1; i += 2) {
             const filePath = sections[i];
@@ -500,8 +473,6 @@ export const CheerpXProvider: React.FC<{ children: React.ReactNode }> = ({ child
         if (!cxInstance) return;
         if (networkState === 'connected' || networkState === 'connecting') return;
 
-        // OPT: Enable deferred Tailscale callbacks — from this point on,
-        // loginUrlCb and stateUpdateCb will propagate state to the UI.
         networkEnabledRef.current = true;
 
         setNetworkState('connecting');
@@ -513,7 +484,7 @@ export const CheerpXProvider: React.FC<{ children: React.ReactNode }> = ({ child
         try {
             cxInstance.networkLogin();
         } catch (err) {
-            console.error('[HackathOS] networkLogin error:', err);
+            console.error('[NextarOS] networkLogin error:', err);
             setNetworkState('disconnected');
         }
     }, [networkState]);
@@ -532,7 +503,6 @@ export const CheerpXProvider: React.FC<{ children: React.ReactNode }> = ({ child
                 cwd: '/', uid: 0, gid: 0,
                 env: ['HOME=/root', 'TERM=dumb', 'SHELL=/bin/bash', 'DISPLAY=:0'],
             }).catch(() => setIsXorgRunning(false));
-            // OPT: Poll for Xorg readiness instead of fixed 2s wait
             const start = Date.now();
             while (Date.now() - start < 5000) {
                 await new Promise(r => setTimeout(r, 300));
@@ -560,7 +530,7 @@ export const CheerpXProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     const exportLinuxSnapshot = useCallback(async () => {
         if (!cxInstance) return;
-        const archivePath = '/tmp/hackathos-snapshot.tar.gz';
+        const archivePath = '/tmp/nextaros-snapshot.tar.gz';
         await queueCapture(
             `tar czf ${archivePath} --exclude=/proc --exclude=/sys --exclude=/dev --exclude=/tmp --exclude=/projects --exclude=/shared / 2>/dev/null || true`
         );
@@ -572,13 +542,12 @@ export const CheerpXProvider: React.FC<{ children: React.ReactNode }> = ({ child
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = `hackathos-snapshot-${Date.now()}.tar.gz`;
+                    a.download = `nextaros-snapshot-${Date.now()}.tar.gz`;
                     a.click();
                     URL.revokeObjectURL(url);
                     return;
                 }
             } catch {
-                // fall through to captureCommand approach
             }
         }
 
@@ -591,32 +560,27 @@ export const CheerpXProvider: React.FC<{ children: React.ReactNode }> = ({ child
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `hackathos-snapshot-${Date.now()}.tar.gz`;
+            a.download = `nextaros-snapshot-${Date.now()}.tar.gz`;
             a.click();
             URL.revokeObjectURL(url);
         }
     }, []);
 
-    // OPT: Rewritten snapshot import — writes directly to DataDevice as ArrayBuffer
-    // instead of chunking into thousands of base64 shell commands
     const importLinuxSnapshot = useCallback(async (file: File) => {
         if (!cxInstance) return;
         const buffer = await file.arrayBuffer();
 
         if (dataDeviceInstance) {
             try {
-                // Write the entire file to DataDevice in one shot (no shell, no base64)
                 const uint8 = new Uint8Array(buffer);
                 await dataDeviceInstance.writeFile('/import-snapshot.tar.gz', uint8);
                 await queueCapture('tar xzf /projects/import-snapshot.tar.gz -C / 2>/dev/null || true');
                 await queueCapture('rm -f /projects/import-snapshot.tar.gz');
                 return;
             } catch {
-                // Fall through to legacy approach
             }
         }
 
-        // Legacy fallback: larger chunk size (64KB vs 4KB = 16x fewer commands)
         const bytes = new Uint8Array(buffer);
         const chunkSize = 65536;
         await queueCapture('rm -f /tmp/import-snapshot.tar.gz');
@@ -687,6 +651,26 @@ export const CheerpXProvider: React.FC<{ children: React.ReactNode }> = ({ child
         }
     }, []);
 
+    const writeSharedFile = useCallback(async (path: string, content: string): Promise<void> => {
+        if (!cxInstance) return;
+        const fullPath = `/shared/${path}`.replace(/\/\//g, '/');
+        const b64 = btoa(unescape(encodeURIComponent(content)));
+        await queueCapture(`mkdir -p "$(dirname '${fullPath}')" && echo '${b64}' | base64 -d > '${fullPath}'`);
+    }, []);
+
+    const readSharedFile = useCallback(async (path: string): Promise<string> => {
+        if (!cxInstance) return '';
+        const fullPath = `/shared/${path}`.replace(/\/\//g, '/');
+        return queueCapture(`cat ${JSON.stringify(fullPath)} 2>/dev/null`);
+    }, []);
+
+    const listSharedDir = useCallback(async (path: string): Promise<LinuxFileEntry[]> => {
+        if (!cxInstance) return [];
+        const fullPath = `/shared/${path}`.replace(/\/\//g, '/');
+        const output = await queueCapture(`ls -la --time-style=+%s ${JSON.stringify(fullPath)} 2>/dev/null`);
+        return parseLsOutput(output, fullPath);
+    }, []);
+
     return (
         <CheerpXContext.Provider value={{
             isBooted, isBooting, bootError, boot,
@@ -696,7 +680,8 @@ export const CheerpXProvider: React.FC<{ children: React.ReactNode }> = ({ child
             networkLoginUrl, networkState, connectNetwork,
             kmsCanvasRef, isXorgRunning, startXorg, launchGuiApp,
             exportLinuxSnapshot, importLinuxSnapshot,
-            compressPath, extractArchive, downloadFile, resetEnvironment
+            compressPath, extractArchive, downloadFile, resetEnvironment,
+            writeSharedFile, readSharedFile, listSharedDir,
         }}>
             {children}
             <canvas

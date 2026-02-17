@@ -26,7 +26,7 @@ export const templates: ProjectTemplate[] = [
         },
         files: {
             'package.json': JSON.stringify({
-                name: 'hackathon-nextjs-app',
+                name: 'nextaros-nextjs-app',
                 version: '0.1.0',
                 private: true,
                 scripts: {
@@ -62,8 +62,8 @@ module.exports = {
             'app/layout.tsx': `import './globals.css';
 
 export const metadata = {
-  title: 'Hackathon App',
-  description: 'Built at a hackathon',
+  title: 'My App',
+  description: 'Built with NextarOS',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -76,7 +76,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             'app/page.tsx': `export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-24">
-      <h1 className="text-4xl font-bold mb-4">🚀 Hackathon Project</h1>
+      <h1 className="text-4xl font-bold mb-4">🚀 My Project</h1>
       <p className="text-lg text-gray-600">Start building something amazing.</p>
     </main>
   );
@@ -94,7 +94,7 @@ export async function GET() {
   return NextResponse.json({ message: 'Hello from the API!' });
 }`,
             '.env.local': '# Add your environment variables here\n',
-            'README.md': '# Hackathon Project\n\nBuilt with Next.js Full Stack template.\n\n## Getting Started\n\n```bash\nnpm run dev\n```\n',
+            'README.md': '# My Project\n\nBuilt with Next.js Full Stack template.\n\n## Getting Started\n\n```bash\nnpm run dev\n```\n',
         },
     },
     {
@@ -119,7 +119,7 @@ export async function GET() {
         },
         files: {
             'package.json': JSON.stringify({
-                name: 'hackathon-react-app',
+                name: 'nextaros-react-app',
                 version: '0.1.0',
                 private: true,
                 type: 'module',
@@ -138,7 +138,7 @@ export default defineConfig({
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hackathon App</title>
+    <title>My App</title>
   </head>
   <body>
     <div id="root"></div>
@@ -162,7 +162,7 @@ function App() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
-      <h1 className="text-4xl font-bold mb-4">⚡ Hackathon App</h1>
+      <h1 className="text-4xl font-bold mb-4">⚡ My App</h1>
       <button
         className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
         onClick={() => setCount(c => c + 1)}
@@ -177,7 +177,7 @@ export default App;`,
             'src/index.css': `@tailwind base;
 @tailwind components;
 @tailwind utilities;`,
-            'README.md': '# Hackathon App\n\nReact + Vite + TypeScript starter.\n\n```bash\nnpm run dev\n```\n',
+            'README.md': '# My App\n\nReact + Vite + TypeScript starter.\n\n```bash\nnpm run dev\n```\n',
         },
     },
     {
@@ -202,7 +202,7 @@ export default App;`,
         },
         files: {
             'package.json': JSON.stringify({
-                name: 'hackathon-api',
+                name: 'nextaros-api',
                 version: '0.1.0',
                 private: true,
                 type: 'module',
@@ -224,7 +224,7 @@ app.use(cors());
 app.use(express.json());
 
 app.get('/', (req, res) => {
-  res.json({ status: 'ok', message: 'Hackathon API is running!' });
+  res.json({ status: 'ok', message: 'API is running!' });
 });
 
 app.get('/api/health', (req, res) => {
@@ -245,7 +245,7 @@ app.listen(PORT, () => {
   console.log(\`API running on http://localhost:\${PORT}\`);
 });`,
             '.env': '# Add your environment variables\nPORT=3001\n',
-            'README.md': '# Hackathon API\n\nExpress + TypeScript REST API.\n\n```bash\nnpm run dev\n```\n',
+            'README.md': '# REST API\n\nExpress + TypeScript REST API.\n\n```bash\nnpm run dev\n```\n',
         },
     },
     {
@@ -265,12 +265,12 @@ app.listen(PORT, () => {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hackathon Project</title>
+  <title>My Project</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
-    <h1>🚀 Hackathon Project</h1>
+    <h1>🚀 My Project</h1>
     <p>Start building something amazing.</p>
     <button id="actionBtn">Get Started</button>
   </div>
@@ -326,13 +326,13 @@ button:hover {
             'script.js': `document.getElementById('actionBtn').addEventListener('click', () => {
   alert('Let\\'s build something awesome!');
 });`,
-            'README.md': '# Hackathon Project\n\nVanilla HTML/CSS/JS starter.\n\nOpen `index.html` in your browser to get started.\n',
+            'README.md': '# My Project\n\nVanilla HTML/CSS/JS starter.\n\nOpen `index.html` in your browser to get started.\n',
         },
     },
     {
         id: 'python-flask',
         name: 'Python Flask API',
-        description: 'Lightweight Python backend with Flask. Great for ML/AI hackathon projects.',
+        description: 'Lightweight Python backend with Flask. Great for ML/AI projects.',
         icon: '🐍',
         stack: ['Python', 'Flask', 'REST API'],
         category: 'api',
@@ -349,7 +349,7 @@ CORS(app)
 
 @app.route('/')
 def home():
-    return jsonify({"status": "ok", "message": "Hackathon API running!"})
+    return jsonify({"status": "ok", "message": "API running!"})
 
 @app.route('/api/health')
 def health():
@@ -364,15 +364,15 @@ def predict():
 if __name__ == '__main__':
     app.run(debug=True, port=5000)`,
             'requirements.txt': 'flask==3.0.0\nflask-cors==4.0.0\n',
-            'README.md': '# Hackathon API\n\nPython Flask starter.\n\n```bash\npip install -r requirements.txt\npython app.py\n```\n',
+            'README.md': '# REST API\n\nPython Flask starter.\n\n```bash\npip install -r requirements.txt\npython app.py\n```\n',
         },
     },
     {
-        id: 'hackos-app',
-        name: 'HackathOS App',
-        description: 'Build a custom app for HackathOS. Uses the DynamicAppRunner to run inside the desktop.',
+        id: 'nextaros-app',
+        name: 'NextarOS App',
+        description: 'Build a custom app for NextarOS. Uses the DynamicAppRunner to run inside the desktop.',
         icon: '🖥',
-        stack: ['React', 'TypeScript', 'HackathOS SDK'],
+        stack: ['React', 'TypeScript', 'NextarOS SDK'],
         category: 'frontend',
         startupCommand: 'Run as App',
         featurePacksIncluded: [],
@@ -381,7 +381,7 @@ if __name__ == '__main__':
         files: {
             'app.tsx': `import React, { useState } from 'react';
 
-// This file runs inside HackathOS via DynamicAppRunner.
+// This file runs inside NextarOS via DynamicAppRunner.
 // Use "Run as App" in the workspace toolbar to launch it.
 
 export default function App() {
@@ -397,7 +397,7 @@ export default function App() {
 
   return (
     <div style={{ padding: 24, fontFamily: 'system-ui, monospace', color: '#cad3f5', background: '#1e2030', minHeight: '100%' }}>
-      <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>My HackathOS App</h1>
+      <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16 }}>My NextarOS App</h1>
       <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
         <input
           value={input}
@@ -433,22 +433,22 @@ export default function App() {
     </div>
   );
 }`,
-            'README.md': `# HackathOS App
+            'README.md': `# NextarOS App
 
-A custom app that runs inside HackathOS.
+A custom app that runs inside NextarOS.
 
 ## How to Use
 
 1. Edit \`app.tsx\` with your React component
 2. Click **Run as App** in the workspace toolbar
-3. Your app launches as a window in HackathOS
+3. Your app launches as a window in NextarOS
 
 ## Tips
 
 - Use inline styles (no CSS imports in DynamicAppRunner)
 - The app runs in a sandboxed React environment
 - You have access to React hooks (useState, useEffect, etc.)
-- Match the HackathOS theme: bg \`#1e2030\`, text \`#cad3f5\`, accent \`#8aadf4\`
+- Match the NextarOS theme: bg \`#1e2030\`, text \`#cad3f5\`, accent \`#8aadf4\`
 `,
         },
     },

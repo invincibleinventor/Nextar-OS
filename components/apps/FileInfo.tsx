@@ -59,7 +59,7 @@ export default function FileInfo({ fileId, item }: FileInfoProps) {
 
                 {isRenaming ? (
                     <input
-                        className="text-center font-bold text-sm bg-surface border border-accent px-1 outline-none w-3/4"
+                        className="text-center font-bold text-[13px] bg-surface border border-accent px-1 outline-none w-3/4"
                         value={newName}
                         onChange={(e) => setNewName(e.target.value)}
                         onBlur={handleRename}
@@ -68,7 +68,7 @@ export default function FileInfo({ fileId, item }: FileInfoProps) {
                     />
                 ) : (
                     <h1
-                        className="text-sm font-bold text-center select-text cursor-text"
+                        className="text-[13px] font-bold text-center select-text cursor-text"
                         onClick={() => {
                             if (localItem && !localItem.isSystem) {
                                 setIsRenaming(true);
