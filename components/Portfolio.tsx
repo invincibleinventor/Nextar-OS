@@ -16,7 +16,6 @@ const LIGHTGRAY = '#d0cfe0';
 
 const TranslatableName = () => {
     const [hovered, sethovered] = useState(false);
-
     return (
         <motion.div
             className="relative cursor-pointer"
@@ -306,6 +305,7 @@ const HeroSection = ({ onBoot, embedded }: { onBoot: () => void; embedded?: bool
     const sunscale = useTransform(scrollY, [0, 300], [1, 1.3]);
     const samuraix = useTransform(scrollY, [0, 300], [0, 50]);
 
+    const { ismobile, setappmode } = useDevice();
 
     return (
         <motion.section className="min-h-screen relative overflow-hidden flex items-center snap-start" style={{ background: BG, opacity }}>
@@ -342,7 +342,10 @@ const HeroSection = ({ onBoot, embedded }: { onBoot: () => void; embedded?: bool
             </motion.div>
 
             <motion.div className="relative z-20 max-w-4xl mx-auto px-6 md:px-8 py-16 md:py-20" style={{ y }}>
-                <nav className={`${embedded ? 'sticky' : 'fixed'} top-10 left-0 right-0 z-50 px-4 md:px-8 py-4 md:py-5 flex items-center justify-between`} style={{ background: BG }}>
+                <nav className={`${embedded ? 'sticky' : 'fixed'} ${ismobile
+                    ? 'top-0'
+                    : 'top-10'
+                } left-0 right-0 z-50 px-4 md:px-8 py-4 md:py-5 flex items-center justify-between`} style={{ background: BG }}>
                     <motion.div className="flex items-center gap-3" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
                         <div className="w-8 h-8 md:w-10 md:h-10 rounded-none flex items-center justify-center font-black text-[13px] md:text-lg" style={{ background: PINK, color: INK }}>B</div>
                         <div className="flex flex-col">

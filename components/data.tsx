@@ -407,7 +407,8 @@ const _legacyApps: appdata[] = [
         titlebarblurred: true,
         pinned: false,
         defaultsize: { width: 1100, height: 700 },
-        category: 'Utilities'
+        category: 'Utilities',
+        hidePreview: true
     },
     {
         id: 'aboutbala',
