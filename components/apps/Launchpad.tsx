@@ -10,7 +10,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { IoSearch } from 'react-icons/io5';
 import { useExternalApps } from '../ExternalAppsContext';
 import TintedAppIcon from '../ui/TintedAppIcon';
-import { iselectron, apps as nativeapps } from '@/utils/platform';
+import { iselectron, apps as nativeapps, icons as nativeicons } from '@/utils/platform';
 
 const appsperpage = 35;
 
@@ -29,6 +29,8 @@ export default function Launchpad({ onclose }: { onclose: () => void }) {
     const [searchterm, setsearchterm] = useState('');
     const [page, setpage] = useState(0);
     const [linuxapps, setlinuxapps] = useState<LinuxApp[]>([]);
+    const [activeCategory, setActiveCategory] = useState<string>('All');
+    const [iconCache, setIconCache] = useState<Record<string, string>>({});
 
     useEffect(() => {
         if (iselectron) {
@@ -39,6 +41,24 @@ export default function Launchpad({ onclose }: { onclose: () => void }) {
             }).catch(() => { });
         }
     }, []);
+
+    // Resolve native Linux app icons via IPC (file:// is blocked from app:// origin)
+    useEffect(() => {
+        if (!iselectron || linuxapps.length === 0) return;
+        const toResolve = linuxapps.filter(a => a.icon && a.icon.startsWith('/') && !iconCache[a.icon]);
+        if (toResolve.length === 0) return;
+        Promise.all(toResolve.map(async (a) => {
+            try {
+                const result = await nativeicons.getdata(a.icon!);
+                if (result.success && result.dataurl) return { path: a.icon!, dataurl: result.dataurl };
+            } catch { }
+            return null;
+        })).then(results => {
+            const newCache: Record<string, string> = {};
+            results.forEach(r => { if (r) newCache[r.path] = r.dataurl; });
+            if (Object.keys(newCache).length > 0) setIconCache(prev => ({ ...prev, ...newCache }));
+        });
+    }, [linuxapps]);
 
     const handleappclick = (app: any) => {
         if (app.id === 'launchpad') return;
@@ -92,10 +112,20 @@ export default function Launchpad({ onclose }: { onclose: () => void }) {
         return [...platformApps, ...installedApps, ...linuxAppsFormatted];
     }, [files, linuxapps]);
 
-    const filteredapps = allApps.filter(a =>
-        a.id !== 'launchpad' &&
-        a.appname.toLowerCase().includes(searchterm.toLowerCase())
-    );
+    const categories = useMemo(() => {
+        const cats = new Set<string>();
+        allApps.forEach(a => {
+            if (a.category) cats.add(a.category);
+        });
+        return ['All', ...Array.from(cats).sort()];
+    }, [allApps]);
+
+    const filteredapps = allApps.filter(a => {
+        if (a.id === 'launchpad') return false;
+        if (searchterm && !a.appname.toLowerCase().includes(searchterm.toLowerCase())) return false;
+        if (activeCategory !== 'All' && a.category !== activeCategory) return false;
+        return true;
+    });
 
     const totalpages = Math.ceil(filteredapps.length / appsperpage) || 1;
     const currentapps = filteredapps.slice(page * appsperpage, (page + 1) * appsperpage);
@@ -141,6 +171,17 @@ export default function Launchpad({ onclose }: { onclose: () => void }) {
                             onChange={e => { setsearchterm(e.target.value); setpage(0); }}
                         />
                     </div>
+                    <div className="flex gap-1.5 mt-2 overflow-x-auto no-scrollbar">
+                        {categories.map(cat => (
+                            <button
+                                key={cat}
+                                onClick={() => { setActiveCategory(cat); setpage(0); }}
+                                className={`px-2.5 py-1 text-[11px] font-mono shrink-0 transition-colors ${activeCategory === cat ? 'bg-accent text-white' : 'bg-overlay text-[--text-muted] hover:text-[--text-color]'}`}
+                            >
+                                {cat}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-5">
@@ -164,7 +205,7 @@ export default function Launchpad({ onclose }: { onclose: () => void }) {
                                     <div className="w-14 h-14 md:w-16 md:h-16 relative">
                                         {'isLinuxApp' in app && app.isLinuxApp && app.icon?.startsWith('/') ? (
                                             <img
-                                                src={`file://${app.icon}`}
+                                                src={iconCache[app.icon] || '/appstore.png'}
                                                 alt={app.appname}
                                                 className="w-full h-full object-contain"
                                                 onError={(e) => { (e.target as HTMLImageElement).src = '/appstore.png'; }}

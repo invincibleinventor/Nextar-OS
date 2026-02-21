@@ -114,6 +114,11 @@ export default function LockScreen() {
     const textShadowSm = islightbackground ? 'none' : '0 1px 4px rgba(0,0,0,0.5)';
 
     if (ismobile) {
+        const greeting = currentTime ? (
+            currentTime.getHours() < 12 ? 'Good Morning' :
+            currentTime.getHours() < 17 ? 'Good Afternoon' : 'Good Evening'
+        ) : '';
+
         return (
             <div className="fixed inset-0 z-[800] flex flex-col items-center overflow-hidden font-mono">
                 {/* Wallpaper background with blur overlay */}
@@ -129,39 +134,88 @@ export default function LockScreen() {
                     transition={{ duration: 0.8, delay: 0.3 }}
                 />
 
+                {/* Bottom accent line */}
+                <motion.div
+                    className="absolute bottom-0 left-0 right-0 h-[2px] z-20"
+                    style={{ background: 'linear-gradient(90deg, transparent, var(--accent-color), transparent)' }}
+                    initial={{ scaleX: 0 }}
+                    animate={{ scaleX: 1 }}
+                    transition={{ duration: 0.8, delay: 0.5 }}
+                />
+
+                {/* Corner bracket accents */}
+                <motion.div className="absolute top-4 left-4 z-10" style={{ width: 20, height: 20, borderLeft: '2px solid var(--accent-color)', borderTop: '2px solid var(--accent-color)' }} initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 0.35, scale: 1 }} transition={{ delay: 0.6, type: 'spring' }} />
+                <motion.div className="absolute top-4 right-4 z-10" style={{ width: 20, height: 20, borderRight: '2px solid var(--accent-color)', borderTop: '2px solid var(--accent-color)' }} initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 0.35, scale: 1 }} transition={{ delay: 0.7, type: 'spring' }} />
+                <motion.div className="absolute bottom-4 left-4 z-10" style={{ width: 20, height: 20, borderLeft: '2px solid var(--accent-color)', borderBottom: '2px solid var(--accent-color)' }} initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 0.35, scale: 1 }} transition={{ delay: 0.8, type: 'spring' }} />
+                <motion.div className="absolute bottom-4 right-4 z-10" style={{ width: 20, height: 20, borderRight: '2px solid var(--accent-color)', borderBottom: '2px solid var(--accent-color)' }} initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 0.35, scale: 1 }} transition={{ delay: 0.9, type: 'spring' }} />
+
+                {/* Decorative side elements */}
+                <motion.div
+                    className="absolute left-3 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center gap-2"
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 0.25, x: 0 }}
+                    transition={{ delay: 0.8 }}
+                >
+                    <div style={{ width: 2, height: 30, background: 'var(--accent-color)' }} />
+                    <div style={{ width: 5, height: 5, background: 'var(--accent-color)' }} />
+                    <div style={{ width: 2, height: 20, background: 'var(--accent-color)' }} />
+                </motion.div>
+                <motion.div
+                    className="absolute right-3 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center gap-2"
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 0.25, x: 0 }}
+                    transition={{ delay: 0.9 }}
+                >
+                    <div style={{ width: 2, height: 20, background: 'var(--accent-color)' }} />
+                    <div style={{ width: 5, height: 5, background: 'var(--accent-color)' }} />
+                    <div style={{ width: 2, height: 30, background: 'var(--accent-color)' }} />
+                </motion.div>
+
                 <div className="h-12 w-full z-10" />
 
-                {/* Lock icon */}
+                {/* Lock icon with pulsing ring */}
                 <motion.div
-                    className="z-10 mt-6 mb-3"
+                    className="z-10 mt-4 mb-2 relative"
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ delay: 0.1 }}
                 >
+                    <div className="absolute inset-0 border border-pastel-red/20 animate-ping" style={{ animationDuration: '3s' }} />
                     <div className="w-10 h-10 flex items-center justify-center border border-pastel-red/40 bg-pastel-red/10"
                         style={{ boxShadow: '0 4px 20px rgba(237,135,150,0.4), 0 0 40px rgba(237,135,150,0.15)' }}>
                         <IoLockClosed className="text-pastel-red text-lg" />
                     </div>
                 </motion.div>
 
-                {/* Time display */}
+                {/* Time display - larger and more expressive */}
                 <motion.div
-                    className="z-10 flex flex-col items-center mb-6"
+                    className="z-10 flex flex-col items-center mb-2"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
                 >
-                    <h1 className={`text-7xl font-bold tracking-tight ${textColor}`}
+                    <h1 className={`text-8xl font-bold tracking-tighter ${textColor}`}
                         style={{ textShadow: islightbackground ? '0 2px 8px rgba(0,0,0,0.08)' : '0 2px 16px rgba(0,0,0,0.6), 0 4px 32px rgba(0,0,0,0.3)' }}>
                         {timeStr}
                     </h1>
-                    <div className="w-16 h-[2px] mt-3 mb-2" style={{ background: 'linear-gradient(90deg, transparent, var(--accent-color), transparent)' }} />
+                    <div className="w-20 h-[2px] mt-3 mb-2" style={{ background: 'linear-gradient(90deg, transparent, var(--accent-color), transparent)' }} />
                     <p className={`text-base font-medium ${textMutedColor}`}
                         style={{ textShadow: islightbackground ? 'none' : '0 1px 8px rgba(0,0,0,0.5)' }}>{dateStr}</p>
                 </motion.div>
 
+                {/* Greeting */}
+                <motion.p
+                    className={`z-10 text-sm font-medium tracking-wider uppercase mb-4 ${textMutedColor}`}
+                    style={{ textShadow: textShadowSm }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 0.7 }}
+                    transition={{ delay: 0.4 }}
+                >
+                    {greeting}
+                </motion.p>
+
                 {/* User selection and login */}
-                <div className="z-20 w-full px-8 flex flex-col items-center gap-5 flex-1 justify-center">
+                <div className="z-20 w-full px-8 flex flex-col items-center gap-4 flex-1 justify-center">
                     <div className="flex items-center gap-5 overflow-x-auto w-full justify-center py-3 no-scrollbar">
                         {users.map(u => (
                             <motion.div
@@ -249,9 +303,18 @@ export default function LockScreen() {
                     </AnimatePresence>
                 </div>
 
-                {/* Bottom accent */}
-                <div className="w-full flex flex-col items-center pb-8 z-10 gap-4 mt-auto">
-                    <div className="w-16 h-[2px]" style={{ background: 'linear-gradient(90deg, transparent, var(--accent-color), transparent)' }} />
+                {/* Bottom decorative area */}
+                <div className="w-full flex flex-col items-center pb-8 z-10 gap-3 mt-auto">
+                    <motion.p
+                        className={`text-[10px] tracking-[0.2em] uppercase font-medium ${textMutedColor}`}
+                        style={{ textShadow: textShadowSm }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 0.5 }}
+                        transition={{ delay: 1 }}
+                    >
+                        NextarOS
+                    </motion.p>
+                    <div className="w-20 h-[2px]" style={{ background: 'linear-gradient(90deg, transparent, var(--accent-color), transparent)' }} />
                 </div>
             </div>
         );

@@ -200,7 +200,7 @@ export default function Weather({ appId = 'weather', id }: { appId?: string; id?
                                         <div key={i} className="flex flex-col items-center gap-1 min-w-[3.5rem]">
                                             <span className="text-[10px] text-[--text-muted]">{i === 0 ? 'Now' : fmtTime(h.time)}</span>
                                             <span className="text-lg">{hEmoji}</span>
-                                            <span className="text-[11px] font-medium text-[--text-color]">{toUnit(h.temp)}\u00B0</span>
+                                            <span className="text-[11px] font-medium text-[--text-color]">{toUnit(h.temp)}°</span>
                                         </div>
                                     );
                                 })}
@@ -218,14 +218,14 @@ export default function Weather({ appId = 'weather', id }: { appId?: string; id?
                                     <div key={i} className={`flex items-center gap-3 px-4 py-2.5 ${i < daily.length - 1 ? 'border-b border-[--border-color]' : ''}`}>
                                         <span className="text-[13px] w-10 text-[--text-muted] font-medium">{i === 0 ? 'Today' : d.day}</span>
                                         <span className="text-base w-6 text-center">{dEmoji}</span>
-                                        <span className="text-[13px] text-pastel-blue w-10 text-right">{toUnit(d.low)}\u00B0</span>
+                                        <span className="text-[13px] text-pastel-blue w-10 text-right">{toUnit(d.low)}°</span>
                                         <div className="flex-1 h-1 bg-[--border-color] relative overflow-hidden">
                                             <div
                                                 className="absolute h-full bg-accent"
                                                 style={{ left: `${pct(d.low)}%`, right: `${100 - pct(d.high)}%` }}
                                             />
                                         </div>
-                                        <span className="text-[13px] text-pastel-peach w-10">{toUnit(d.high)}\u00B0</span>
+                                        <span className="text-[13px] text-pastel-peach w-10">{toUnit(d.high)}°</span>
                                     </div>
                                 );
                             })}

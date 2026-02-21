@@ -29,6 +29,7 @@ interface FileSystemContextType {
     currentUserDesktopId: string;
     currentUserDocsId: string;
     currentUserDownloadsId: string;
+    currentUserProjectsId: string;
     currentUserTrashId: string;
 }
 
@@ -47,6 +48,7 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const currentUserDesktopId = isGuest ? 'guest-desktop' : `user-${username}-desktop`;
     const currentUserDocsId = isGuest ? 'guest-docs' : `user-${username}-docs`;
     const currentUserDownloadsId = isGuest ? 'guest-downloads' : `user-${username}-downloads`;
+    const currentUserProjectsId = isGuest ? 'guest-projects' : `user-${username}-projects`;
     const currentUserTrashId = isGuest ? 'guest-trash' : `user-${username}-trash`;
 
     useEffect(() => {
@@ -563,6 +565,7 @@ export const FileSystemProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             currentUserDesktopId,
             currentUserDocsId,
             currentUserDownloadsId,
+            currentUserProjectsId,
             currentUserTrashId
         }}>
             {children}

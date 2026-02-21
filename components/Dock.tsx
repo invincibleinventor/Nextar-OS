@@ -6,20 +6,21 @@ import { useWindows } from './WindowContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { apps, openSystemItem, getfilteredapps } from './data';
 import Launchpad from './apps/Launchpad';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useDevice } from './DeviceContext';
 import ContextMenu from './ui/ContextMenu';
 import TintedAppIcon from './ui/TintedAppIcon';
 import { iselectron } from '@/utils/platform';
 
 const Dock = () => {
-  const { windows, addwindow, setactivewindow, focusortogglewindow, updatewindow, removewindow } = useWindows();
+  const { windows, addwindow, setactivewindow, activewindow, focusortogglewindow, updatewindow, removewindow } = useWindows();
   const [launchpad, setlaunch] = useState(false);
   const [hoverapp, sethoverapp] = useState<string | null>(null);
   const { ismobile } = useDevice();
 
   const [pinnedAppIds, setPinnedAppIds] = useState<string[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
+  const lastClickedApp = useRef<{ name: string; index: number }>({ name: '', index: 0 });
 
   const filteredapps = useMemo(() => getfilteredapps(iselectron), []);
 
@@ -48,7 +49,11 @@ const Dock = () => {
     }
   };
 
-  const onclick = (id: string, name: string, title?: string) => {
+  const getAppWindows = (appname: string) => {
+    return windows.filter((win: any) => win.appname === appname && win.id !== 'explorer-desktop');
+  };
+
+  const onclick = (id: string, name: string) => {
     if (id === 'trash-folder') {
       addwindow({
         id: `explorer-trash-${Date.now()}`,
@@ -62,26 +67,36 @@ const Dock = () => {
       return;
     }
 
-    const appwins = windows.filter((win: any) => win.appname === name && win.id !== 'explorer-desktop');
+    const appwins = getAppWindows(name);
 
-    if (appwins.length > 0) {
-      if (ismobile) {
-        const lastWin = appwins[appwins.length - 1];
-        updatewindow(lastWin.id, { isminimized: false });
-        setactivewindow(lastWin.id);
-      } else {
-        focusortogglewindow(name);
-      }
-    } else {
-      openSystemItem(id, {
-        addwindow,
-        windows,
-        updatewindow,
-        setactivewindow,
-        ismobile
-      });
+    if (appwins.length === 0) {
+      openSystemItem(id, { addwindow, windows, updatewindow, setactivewindow, ismobile });
+      lastClickedApp.current = { name, index: 0 };
+      return;
     }
-  }
+
+    if (appwins.length === 1) {
+      const win = appwins[0];
+      if (win.id === activewindow && !win.isminimized) {
+        updatewindow(win.id, { isminimized: true });
+      } else {
+        updatewindow(win.id, { isminimized: false });
+        setactivewindow(win.id);
+      }
+      lastClickedApp.current = { name, index: 0 };
+      return;
+    }
+
+    // Multi-window cycling
+    let nextIdx = 0;
+    if (lastClickedApp.current.name === name) {
+      nextIdx = (lastClickedApp.current.index + 1) % appwins.length;
+    }
+    const targetWin = appwins[nextIdx];
+    updatewindow(targetWin.id, { isminimized: false });
+    setactivewindow(targetWin.id);
+    lastClickedApp.current = { name, index: nextIdx };
+  };
 
   const pinnedAppsList = pinnedAppIds.map(id => filteredapps.find(a => a.id === id)).filter(Boolean) as typeof apps;
   const openUnpinnedApps = windows
@@ -154,6 +169,62 @@ const Dock = () => {
     });
   };
 
+  const getContextMenuItems = () => {
+    if (!contextMenu) return [];
+    const item = contextMenu.item;
+    const appWins = getAppWindows(item.appname);
+    const isSystem = item.isSystem;
+    const hasWindows = appWins.length > 0;
+
+    const items: any[] = [];
+
+    // Window list
+    if (appWins.length > 0) {
+      appWins.forEach((win: any) => {
+        items.push({
+          label: win.title || win.appname,
+          action: () => {
+            updatewindow(win.id, { isminimized: false });
+            setactivewindow(win.id);
+          },
+          bold: win.id === activewindow,
+        });
+      });
+      items.push({ separator: true });
+    }
+
+    items.push({
+      label: hasWindows ? 'New Window' : 'Open',
+      action: () => openSystemItem(item.id, { addwindow, windows, updatewindow, setactivewindow, ismobile }),
+    });
+
+    if (!isSystem) {
+      items.push({ separator: true });
+      items.push({
+        label: pinnedAppIds.includes(item.id) ? 'Unpin from Dock' : 'Pin to Dock',
+        action: () => togglePin(item.id),
+      });
+    }
+
+    if (hasWindows) {
+      items.push({ separator: true });
+      if (appWins.length > 1) {
+        items.push({
+          label: 'Close All Windows',
+          action: () => handleQuit(item.appname),
+          danger: true,
+        });
+      } else {
+        items.push({
+          label: 'Quit',
+          action: () => handleQuit(item.appname),
+        });
+      }
+    }
+
+    return items;
+  };
+
 
   if (!isInitialized) return null;
   return (
@@ -174,33 +245,9 @@ const Dock = () => {
           <ContextMenu
             x={0}
             y={0}
-            items={[
-              {
-                label: 'Open',
-                action: () => openSystemItem(contextMenu.item.id, {
-                  addwindow,
-                  windows,
-                  updatewindow,
-                  setactivewindow,
-                  ismobile
-                }),
-                disabled: false
-              },
-              { separator: true },
-              {
-                label: pinnedAppIds.includes(contextMenu.item.id) ? 'Unpin from Dock' : 'Pin to Dock',
-                action: () => togglePin(contextMenu.item.id),
-                disabled: contextMenu.item.isSystem
-              },
-              { separator: true },
-              {
-                label: 'Quit',
-                action: () => handleQuit(contextMenu.item.appname),
-                disabled: !windows.some((w: any) => w.appname === contextMenu.item.appname)
-              }
-            ]}
+            items={getContextMenuItems()}
             onClose={() => setContextMenu(null)}
-            className="!fixed !static !transform-none !m-0 !w-48 border border-[--border-color]"
+            className="!fixed !static !transform-none !m-0 !w-56 border border-[--border-color]"
           />
         </div>
       )}
@@ -222,14 +269,17 @@ const Dock = () => {
           {dockItems.map((app, i) => {
             const { size: iconsize, y: icony } = getprops(i);
             const ishover = hoverapp === app.appname;
-            const haswin = windows.some((win: any) => win.appname === app.appname);
+            const appwins = getAppWindows(app.appname);
+            const wincount = appwins.length;
+            const haswin = wincount > 0;
+            const isActive = haswin && appwins.some((w: any) => w.id === activewindow);
             const islaunchpad = app.id === 'launchpad-item';
             const isTrash = app.id === 'trash-folder';
 
             return (
               <motion.div
                 key={app.id || i}
-                className="relative  flex flex-col items-center cursor-pointer"
+                className="relative flex flex-col items-center cursor-pointer"
                 onClick={() => {
                   if (islaunchpad) setlaunch(!launchpad);
                   else if (isTrash) onclick('trash-folder', 'Explorer');
@@ -265,6 +315,7 @@ const Dock = () => {
                     transition={{ duration: 0.1 }}
                   >
                     {app.appname}
+                    {wincount > 1 && <span className="ml-1 opacity-60">({wincount})</span>}
                   </motion.div>
                 )}
 
@@ -277,7 +328,22 @@ const Dock = () => {
                 />
 
                 {haswin && !islaunchpad && !isTrash && (
-                  <div className="absolute -bottom-2 w-[5px] h-[5px] bg-accent anime-pulse"></div>
+                  <div className="absolute -bottom-2 flex items-center gap-[3px]">
+                    {wincount <= 3 ? (
+                      Array.from({ length: wincount }).map((_, idx) => (
+                        <div
+                          key={idx}
+                          className={`w-[5px] h-[5px] transition-colors ${isActive ? 'bg-accent' : 'bg-[--text-muted]'}`}
+                          style={{ opacity: isActive ? 1 : 0.5 }}
+                        />
+                      ))
+                    ) : (
+                      <>
+                        <div className={`w-[5px] h-[5px] ${isActive ? 'bg-accent' : 'bg-[--text-muted]'}`} />
+                        <span className={`text-[8px] font-bold ${isActive ? 'text-accent' : 'text-[--text-muted]'}`}>{wincount}</span>
+                      </>
+                    )}
+                  </div>
                 )}
               </motion.div>
             );

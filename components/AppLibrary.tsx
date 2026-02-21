@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { apps, openSystemItem, appdata } from './data';
 import { useWindows } from './WindowContext';
 import { useDevice } from './DeviceContext';
@@ -9,16 +9,20 @@ import { IoSearch, IoClose } from 'react-icons/io5';
 import { useExternalApps } from './ExternalAppsContext';
 import TintedAppIcon from './ui/TintedAppIcon';
 import { useSettings } from './SettingsContext';
+import ContextMenu from './ui/ContextMenu';
 
 const AppLibrary = () => {
     const { addwindow, windows, setactivewindow, updatewindow } = useWindows();
     const { ismobile } = useDevice();
-    const { files } = useFileSystem();
+    const { files, createFile, currentUserDesktopId } = useFileSystem();
     const { launchApp } = useExternalApps();
     const { islightbackground } = useSettings();
 
     const [openfolder, setopenfolder] = useState<string | null>(null);
     const [searchquery, setsearchquery] = useState('');
+    const [contextmenu, setcontextmenu] = useState<{ x: number; y: number; app: appdata } | null>(null);
+    const longpresstimer = useRef<NodeJS.Timeout | null>(null);
+    const touchstartpos = useRef<{ x: number; y: number } | null>(null);
 
     const allApps = useMemo(() => {
         const installedAppFiles = files.filter(f => f.parent === 'root-apps' && f.name.endsWith('.app'));
@@ -60,12 +64,89 @@ const AppLibrary = () => {
         openSystemItem(app.id, { addwindow, windows, setactivewindow, updatewindow, ismobile });
     };
 
+    const handlelongpressstart = (app: appdata, e: React.TouchEvent) => {
+        const touch = e.touches[0];
+        touchstartpos.current = { x: touch.clientX, y: touch.clientY };
+        longpresstimer.current = setTimeout(() => {
+            if ('vibrate' in navigator) navigator.vibrate(10);
+            setcontextmenu({ x: touch.clientX, y: touch.clientY, app });
+        }, 500);
+    };
+
+    const handlelongpressmove = (e: React.TouchEvent) => {
+        if (!touchstartpos.current || !longpresstimer.current) return;
+        const touch = e.touches[0];
+        const dx = Math.abs(touch.clientX - touchstartpos.current.x);
+        const dy = Math.abs(touch.clientY - touchstartpos.current.y);
+        if (dx > 10 || dy > 10) handlelongpressend();
+    };
+
+    const handlelongpressend = () => {
+        if (longpresstimer.current) {
+            clearTimeout(longpresstimer.current);
+            longpresstimer.current = null;
+        }
+        touchstartpos.current = null;
+    };
+
+    const isOnHomeScreen = useCallback((appId: string) => {
+        return files.some(f =>
+            f.parent === currentUserDesktopId &&
+            !f.isTrash &&
+            f.mimetype === 'application/x-executable' &&
+            (f.id === `desktop-app-${appId}` || f.id.endsWith(`-app-${appId}`))
+        );
+    }, [files, currentUserDesktopId]);
+
+    const pinToHomeScreen = useCallback(async (app: appdata) => {
+        if (isOnHomeScreen(app.id)) return;
+        await createFile(app.appname, currentUserDesktopId, '', app.icon);
+    }, [createFile, currentUserDesktopId, isOnHomeScreen]);
+
+    const getcontextmenuitems = () => {
+        if (!contextmenu) return [];
+        const app = contextmenu.app;
+        const pinned = isOnHomeScreen(app.id);
+        return [
+            {
+                label: 'Open',
+                action: () => openapp(app)
+            },
+            { separator: true, label: '' },
+            {
+                label: 'App Info',
+                action: () => {
+                    openSystemItem('settings', { addwindow, windows, setactivewindow, updatewindow, ismobile });
+                }
+            },
+            {
+                label: pinned ? 'Already on Home Screen' : 'Add to Home Screen',
+                disabled: pinned,
+                action: () => {
+                    if (!pinned) pinToHomeScreen(app);
+                }
+            },
+        ];
+    };
+
     return (
         <div
             className="w-full h-full overflow-y-auto overflow-x-hidden pt-8 px-5 pb-32 scrollbar-hide select-none [&::-webkit-scrollbar]:hidden bg-[--bg-surface]"
             style={{ touchAction: 'pan-x pan-y', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); }}
+            onTouchMove={handlelongpressmove}
+            onTouchEnd={handlelongpressend}
+            onTouchCancel={handlelongpressend}
         >
+            {contextmenu && (
+                <ContextMenu
+                    x={contextmenu.x}
+                    y={contextmenu.y}
+                    items={getcontextmenuitems()}
+                    onClose={() => setcontextmenu(null)}
+                />
+            )}
+
             <h1 className="text-2xl font-bold text-[--text-color] mb-4">App Library</h1>
             <div className="relative w-full text-center mb-6">
                 <div className="relative w-full mx-auto bg-overlay border border-[--border-color] h-10 flex items-center px-3">
@@ -93,6 +174,12 @@ const AppLibrary = () => {
                             <div
                                 key={app.id}
                                 onClick={() => openapp(app)}
+                                onTouchStart={(e) => handlelongpressstart(app, e)}
+                                onContextMenu={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setcontextmenu({ x: e.clientX, y: e.clientY, app });
+                                }}
                                 className="flex items-center gap-4 p-3 bg-overlay border border-[--border-color] cursor-pointer active:scale-[0.98] transition-transform"
                             >
                                 <div className="w-12 h-12 shrink-0 shadow-md">
@@ -112,8 +199,7 @@ const AppLibrary = () => {
                         ))}
                     {allApps.filter(app => app.appname.toLowerCase().includes(searchquery.toLowerCase())).length === 0 && (
                         <div className="text-center text-[--text-muted] py-10">
-                            <div className="text-2xl mb-2">🔍</div>
-                            <div>No apps found</div>
+                            <div className="text-2xl mb-2">No apps found</div>
                         </div>
                     )}
                 </div>
@@ -143,6 +229,12 @@ const AppLibrary = () => {
                                                         e.stopPropagation();
                                                         openapp(app);
                                                     }
+                                                }}
+                                                onTouchStart={(e) => handlelongpressstart(app, e)}
+                                                onContextMenu={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    setcontextmenu({ x: e.clientX, y: e.clientY, app });
                                                 }}
                                                 className={`relative w-full h-full flex items-center justify-center ${!hasoverflow ? 'cursor-pointer active:scale-90' : ''} transition-transform`}
                                             >
@@ -208,6 +300,12 @@ const AppLibrary = () => {
                                     <div
                                         key={app.id}
                                         onClick={() => openapp(app)}
+                                        onTouchStart={(e) => handlelongpressstart(app, e)}
+                                        onContextMenu={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            setcontextmenu({ x: e.clientX, y: e.clientY, app });
+                                        }}
                                         className="flex flex-col items-center gap-2 cursor-pointer active:scale-90 transition-transform"
                                     >
                                         <div className="w-16 h-16 shadow-md">

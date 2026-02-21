@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { useDevice } from './DeviceContext';
 import { apps, filesystemitem, openSystemItem, getFileIcon } from './data';
 
@@ -19,15 +19,21 @@ import { useFileSystem } from './FileSystemContext';
 import ContextMenu from './ui/ContextMenu';
 import TintedAppIcon from './ui/TintedAppIcon';
 
+const GRID_COLS = 4;
+const GRID_ROWS = 5;
+const ITEMS_PER_PAGE = GRID_COLS * GRID_ROWS;
+
 export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayopen?: boolean }) {
     const { addwindow, windows, setactivewindow, updatewindow } = useWindows();
     const { reducemotion, islightbackground, inverselabelcolor } = useSettings();
     const { ismobile } = useDevice();
-    const { files, moveToTrash, createFolder, createFile, currentUserDesktopId } = useFileSystem();
+    const { files, moveToTrash, createFolder, createFile, renameItem, currentUserDesktopId, copyItem, cutItem, pasteItem, clipboard } = useFileSystem();
     const [page, setpage] = useState(0);
     const [editmode, seteditmode] = useState(false);
     const [contextmenu, setcontextmenu] = useState<{ x: number; y: number; item?: filesystemitem } | null>(null);
     const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+    const [renameTarget, setRenameTarget] = useState<string | null>(null);
+    const [renameValue, setRenameValue] = useState('');
     const longpresstimer = useRef<NodeJS.Timeout | null>(null);
     const touchstartpos = useRef<{ x: number; y: number } | null>(null);
     const scrollcontainerref = useRef<HTMLDivElement>(null);
@@ -44,14 +50,17 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
 
     useEffect(() => {
         const scrollToHome = () => {
-            if (page === 1 && scrollcontainerref.current) {
+            if (scrollcontainerref.current) {
                 scrollcontainerref.current.scrollTo({ left: 0, behavior: 'smooth' });
             }
         };
         const handleAppBack = (e: Event) => {
-            if (page === 1) {
+            const currentScroll = scrollcontainerref.current?.scrollLeft || 0;
+            const pageWidth = scrollcontainerref.current?.offsetWidth || 1;
+            const currentPage = Math.round(currentScroll / pageWidth);
+            if (currentPage > 0) {
                 e.preventDefault();
-                scrollToHome();
+                scrollcontainerref.current?.scrollTo({ left: (currentPage - 1) * pageWidth, behavior: 'smooth' });
             }
         };
         const handleHomePressed = () => scrollToHome();
@@ -62,7 +71,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
             window.removeEventListener('app-back', handleAppBack);
             window.removeEventListener('home-pressed', handleHomePressed);
         };
-    }, [page]);
+    }, []);
 
     const dockAppIds = ['explorer', 'browser', 'mail', 'settings'];
 
@@ -92,6 +101,17 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
     }, [desktopItems, iconorder]);
 
     const griditems = getorderedgriditems();
+
+    const gridPages = useMemo(() => {
+        const pages: filesystemitem[][] = [];
+        for (let i = 0; i < griditems.length; i += ITEMS_PER_PAGE) {
+            pages.push(griditems.slice(i, i + ITEMS_PER_PAGE));
+        }
+        if (pages.length === 0) pages.push([]);
+        return pages;
+    }, [griditems]);
+
+    const totalPages = gridPages.length + 1; // +1 for App Library
 
     const handleItemClick = (item: filesystemitem) => {
         if (editmode) {
@@ -148,6 +168,22 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
         localStorage.setItem('mobile-icon-order', JSON.stringify(neworderids));
     };
 
+    const handleRename = (itemId: string) => {
+        const item = files.find(f => f.id === itemId);
+        if (item) {
+            setRenameTarget(itemId);
+            setRenameValue(item.name);
+        }
+    };
+
+    const submitRename = () => {
+        if (renameTarget && renameValue.trim()) {
+            renameItem(renameTarget, renameValue.trim());
+        }
+        setRenameTarget(null);
+        setRenameValue('');
+    };
+
     const getcontextmenuitems = () => {
         if (!contextmenu) return [];
 
@@ -177,6 +213,27 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
 
             items.push({ separator: true, label: '' });
 
+            if (!item.isReadOnly && !item.isSystem) {
+                items.push({
+                    label: 'Rename',
+                    action: () => handleRename(item.id)
+                });
+            }
+
+            items.push({
+                label: 'Copy',
+                action: () => copyItem(item.id)
+            });
+
+            if (!item.isReadOnly && !item.isSystem) {
+                items.push({
+                    label: 'Cut',
+                    action: () => cutItem(item.id)
+                });
+            }
+
+            items.push({ separator: true, label: '' });
+
             items.push({
                 label: 'Edit Home Screen',
                 action: () => seteditmode(true)
@@ -191,6 +248,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                 items.push({ separator: true, label: '' });
                 items.push({
                     label: 'Move to Trash',
+                    danger: true,
                     action: () => {
                         if (contextmenu.item?.mimetype === 'application/x-executable' || contextmenu.item?.id.startsWith('desktop-app-')) {
                             moveToTrash(contextmenu.item?.id || '');
@@ -198,13 +256,12 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                             setConfirmDelete(contextmenu.item.id);
                         }
                     },
-                    separator: true
                 });
             }
 
             return items;
         } else {
-            return [
+            const items: any[] = [
                 {
                     label: 'New Folder',
                     action: () => createFolder('New Folder', currentUserDesktopId)
@@ -213,16 +270,152 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                     label: 'New File',
                     action: () => createFile('Untitled.txt', currentUserDesktopId)
                 },
-                { separator: true, label: '' },
-                {
-                    label: 'Edit Home Screen',
-                    action: () => seteditmode(true)
-                }
             ];
+
+            if (clipboard) {
+                items.push({
+                    label: 'Paste',
+                    action: () => pasteItem(currentUserDesktopId)
+                });
+            }
+
+            items.push({ separator: true, label: '' });
+            items.push({
+                label: 'Edit Home Screen',
+                action: () => seteditmode(true)
+            });
+
+            return items;
         }
     };
 
     const [draggeditem, setdraggeditem] = useState<string | null>(null);
+
+    const renderGridPage = (pageItems: filesystemitem[], pageIndex: number) => (
+        <div className="flex-1 px-5">
+            <div data-tour={pageIndex === 0 ? "ios-apps" : undefined} className="grid grid-cols-4 gap-x-4 gap-y-5" style={{ gridTemplateRows: `repeat(${GRID_ROWS}, minmax(0, 1fr))` }}>
+                {pageItems.map((item, index) => {
+                    const globalIndex = pageIndex * ITEMS_PER_PAGE + index;
+                    const isRenaming = renameTarget === item.id;
+                    return (
+                        <motion.div
+                            key={item.id}
+                            layout
+                            layoutId={item.id}
+                            className="app-icon flex flex-col items-center gap-1 touch-pan-x"
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={editmode ? {
+                                opacity: 1,
+                                scale: 1,
+                                rotate: [-2, 2, -2]
+                            } : {
+                                opacity: 1,
+                                scale: 1,
+                                rotate: 0
+                            }}
+                            exit={{ opacity: 0, scale: 0.8 }}
+                            transition={{
+                                rotate: editmode ? {
+                                    repeat: Infinity,
+                                    repeatType: "mirror",
+                                    duration: 0.25,
+                                    ease: "easeInOut"
+                                } : { duration: 0 },
+                                scale: { duration: 0.2 },
+                                default: { type: 'spring', damping: 25, stiffness: 300 }
+                            } as any}
+                            draggable={editmode}
+                            onDragStart={() => setdraggeditem(item.id)}
+                            onDragEnd={() => setdraggeditem(null)}
+                            onDragOver={(e) => {
+                                e.preventDefault();
+                                if (draggeditem && draggeditem !== item.id) {
+                                    handlereorder(draggeditem, globalIndex);
+                                }
+                            }}
+                            onClick={() => !editmode && !isRenaming && handleItemClick(item)}
+                            onTouchStart={(e) => {
+                                if (!editmode && !isRenaming) handlelongpressstart(item, e);
+                            }}
+                            onTouchEnd={() => {
+                                handlelongpressend();
+                            }}
+                            onTouchCancel={() => {
+                                handlelongpressend();
+                            }}
+                            onContextMenu={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setcontextmenu({ x: e.clientX, y: e.clientY, item });
+                            }}
+                            whileTap={editmode ? {} : { scale: 0.9 }}
+                        >
+                            <div className="relative">
+                                {editmode && (
+                                    <button
+                                        className="absolute -top-1 -left-1 w-5 h-5 bg-overlay border border-[--border-color] flex items-center justify-center z-10"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (item.mimetype === 'application/x-executable' || item.id.startsWith('desktop-app-')) {
+                                                moveToTrash(item.id);
+                                            } else {
+                                                setConfirmDelete(item.id);
+                                            }
+                                        }}
+                                    >
+                                        <svg className="w-3 h-3 text-[--text-color]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                )}
+                                <div className="w-[60px] h-[60px] overflow-hidden shadow-sm relative">
+                                    {item.mimetype === 'application/x-executable' ? (() => {
+                                        const appId = extractAppId(item.id);
+                                        const appData = apps.find(a => a.id === appId);
+                                        return appData ? (
+                                            <TintedAppIcon
+                                                appId={appData.id}
+                                                appName={appData.appname}
+                                                originalIcon={appData.icon}
+                                                size={60}
+                                                useFill={false}
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex flex-col">
+                                                {getFileIcon(item.mimetype, item.name, item.icon, item.id, item.content || item.link)}
+                                            </div>
+                                        );
+                                    })() : (
+                                        <div className="w-full h-full flex flex-col">
+                                            {getFileIcon(item.mimetype, item.name, item.icon, item.id, item.content || item.link)}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                            {isRenaming ? (
+                                <input
+                                    autoFocus
+                                    value={renameValue}
+                                    onChange={(e) => setRenameValue(e.target.value)}
+                                    onBlur={submitRename}
+                                    onKeyDown={(e) => { if (e.key === 'Enter') submitRename(); if (e.key === 'Escape') { setRenameTarget(null); setRenameValue(''); } }}
+                                    className="text-[11px] font-semibold text-center leading-tight w-full tracking-tight px-1 font-mono bg-black/30 text-white border border-pastel-red/50 outline-none"
+                                    onClick={(e) => e.stopPropagation()}
+                                />
+                            ) : (
+                                <span
+                                    className={`text-[11px] font-semibold text-center leading-tight truncate w-full tracking-tight px-1 font-mono ${inverselabelcolor && islightbackground ? 'text-black' : 'text-white'}`}
+                                    style={{ textShadow: (inverselabelcolor && islightbackground) ? 'none' : '0 1px 3px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.3)' }}
+                                >
+                                    {item.name}
+                                </span>
+                            )}
+                        </motion.div>
+                    );
+                })}
+            </div>
+        </div>
+    );
 
     return (
         <div
@@ -308,159 +501,60 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                     }
                 }}
             >
-                <div className="w-[100vw] h-full flex flex-col pt-6 relative snap-center flex-shrink-0">
-                    <div className="flex-1 px-5">
-                        <div data-tour="ios-apps" className="grid grid-cols-4 gap-x-4 gap-y-6">
-                            {griditems.map((item, index) => (
-                                <motion.div
-                                    key={item.id}
-                                    layout
-                                    layoutId={item.id}
-                                    className="app-icon flex flex-col items-center gap-1 touch-pan-x"
-                                    initial={{ opacity: 0, scale: 0.8 }}
-                                    animate={editmode ? {
-                                        opacity: 1,
-                                        scale: 1,
-                                        rotate: [-2, 2, -2]
-                                    } : {
-                                        opacity: 1,
-                                        scale: 1,
-                                        rotate: 0
+                {/* App grid pages */}
+                {gridPages.map((pageItems, pageIndex) => (
+                    <div key={`page-${pageIndex}`} className="w-[100vw] h-full flex flex-col pt-6 relative snap-center flex-shrink-0">
+                        {renderGridPage(pageItems, pageIndex)}
+
+                        {editmode && pageIndex === 0 && (
+                            <motion.button
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="absolute bottom-[165px] left-0 right-0 mx-auto w-max z-30 px-6 py-2 bg-pastel-red/20 text-pastel-red border border-pastel-red/30 font-medium text-[13px]"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    seteditmode(false);
+                                }}
+                            >
+                                Done
+                            </motion.button>
+                        )}
+
+                        <div data-tour={pageIndex === 0 ? "ios-dock" : undefined} className={`mx-auto mb-7 p-3 w-max flex items-center justify-between gap-4 transition-all duration-300 ${isoverlayopen ? 'bg-transparent' : 'bg-[--bg-surface]/80 border border-[--border-color]/50'}`}>
+                            {dockapps.map(app => (
+                                <motion.button
+                                    key={app.id}
+                                    onClick={() => {
+                                        openSystemItem(app.id, { addwindow, windows, setactivewindow, updatewindow, ismobile });
                                     }}
-                                    exit={{ opacity: 0, scale: 0.8 }}
-                                    transition={{
-                                        rotate: editmode ? {
-                                            repeat: Infinity,
-                                            repeatType: "mirror",
-                                            duration: 0.25,
-                                            ease: "easeInOut"
-                                        } : { duration: 0 },
-                                        scale: { duration: 0.2 },
-                                        default: { type: 'spring', damping: 25, stiffness: 300 }
-                                    } as any}
-                                    draggable={editmode}
-                                    onDragStart={() => setdraggeditem(item.id)}
-                                    onDragEnd={() => setdraggeditem(null)}
-                                    onDragOver={(e) => {
-                                        e.preventDefault();
-                                        if (draggeditem && draggeditem !== item.id) {
-                                            handlereorder(draggeditem, index);
-                                        }
-                                    }}
-                                    onClick={() => !editmode && handleItemClick(item)}
-                                    onTouchStart={(e) => {
-                                        if (!editmode) handlelongpressstart(item, e);
-                                    }}
-                                    onTouchEnd={() => {
-                                        handlelongpressend();
-                                    }}
-                                    onTouchCancel={() => {
-                                        handlelongpressend();
-                                    }}
-                                    onContextMenu={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        setcontextmenu({ x: e.clientX, y: e.clientY, item });
-                                    }}
-                                    whileTap={editmode ? {} : { scale: 0.9 }}
+                                    whileTap={{ scale: 0.85 }}
+                                    className="w-[65px] h-[65px] aspect-square overflow-hidden relative"
                                 >
-                                    <div className="relative">
-                                        {editmode && (
-                                            <button
-                                                className="absolute -top-1 -left-1 w-5 h-5 bg-overlay border border-[--border-color] flex items-center justify-center z-10"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    if (item.mimetype === 'application/x-executable' || item.id.startsWith('desktop-app-')) {
-                                                        moveToTrash(item.id);
-                                                    } else {
-                                                        setConfirmDelete(item.id);
-                                                    }
-                                                }}
-                                            >
-                                                <svg className="w-3 h-3 text-[--text-color]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                                </svg>
-                                            </button>
-                                        )}
-                                        <div className="w-[60px] h-[60px] overflow-hidden shadow-sm relative">
-                                            {item.mimetype === 'application/x-executable' ? (() => {
-                                                const appId = extractAppId(item.id);
-                                                const appData = apps.find(a => a.id === appId);
-                                                return appData ? (
-                                                    <TintedAppIcon
-                                                        appId={appData.id}
-                                                        appName={appData.appname}
-                                                        originalIcon={appData.icon}
-                                                        size={60}
-                                                        useFill={false}
-                                                    />
-                                                ) : (
-                                                    <div className="w-full h-full flex flex-col">
-                                                        {getFileIcon(item.mimetype, item.name, item.icon, item.id, item.content || item.link)}
-                                                    </div>
-                                                );
-                                            })() : (
-                                                <div className="w-full h-full flex flex-col">
-                                                    {getFileIcon(item.mimetype, item.name, item.icon, item.id, item.content || item.link)}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <span
-                                        className={`text-[11px] font-semibold text-center leading-tight truncate w-full tracking-tight px-1 font-mono ${inverselabelcolor && islightbackground ? 'text-black' : 'text-white'}`}
-                                        style={{ textShadow: (inverselabelcolor && islightbackground) ? 'none' : '0 1px 3px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.3)' }}
-                                    >
-                                        {item.name}
-                                    </span>
-                                </motion.div>
+                                    <TintedAppIcon
+                                        appId={app.id}
+                                        appName={app.appname}
+                                        originalIcon={app.icon}
+                                        size={65}
+                                        useFill={false}
+                                    />
+                                </motion.button>
                             ))}
                         </div>
                     </div>
+                ))}
 
-                    {editmode && (
-                        <motion.button
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="absolute bottom-[165px] left-0 right-0 mx-auto w-max z-30 px-6 py-2 bg-pastel-red/20 text-pastel-red border border-pastel-red/30 font-medium text-[13px]"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                seteditmode(false);
-                            }}
-                        >
-                            Done
-                        </motion.button>
-                    )}
-
-                    <div data-tour="ios-dock" className={`mx-auto mb-7 p-3 w-max flex items-center justify-between gap-4 transition-all duration-300 ${isoverlayopen ? 'bg-transparent' : 'bg-[--bg-surface]/80 border border-[--border-color]/50'}`}>
-                        {dockapps.map(app => (
-                            <motion.button
-                                key={app.id}
-                                onClick={() => {
-                                    openSystemItem(app.id, { addwindow, windows, setactivewindow, updatewindow, ismobile });
-                                }}
-                                whileTap={{ scale: 0.85 }}
-                                className="w-[65px] h-[65px] aspect-square overflow-hidden relative"
-                            >
-                                <TintedAppIcon
-                                    appId={app.id}
-                                    appName={app.appname}
-                                    originalIcon={app.icon}
-                                    size={65}
-                                    useFill={false}
-                                />
-                            </motion.button>
-                        ))}
-                    </div>
-                </div>
-
+                {/* App Library page */}
                 <div className="w-[100vw] h-full pt-0 snap-center flex-shrink-0">
                     <AppLibrary />
                 </div>
             </div>
 
-            <div className={`absolute bottom-[140px] left-0 right-0 flex justify-center gap-2 z-20 pointer-events-none transition-opacity duration-300 ${isoverlayopen || page === 1 ? 'opacity-0' : 'opacity-100'}`}>
-                <div className={`w-2 h-2  transition-all duration-300 ${page === 0 ? 'bg-pastel-red' : 'bg-[--text-muted]'}`} />
-                <div className={`w-2 h-2  transition-all duration-300 ${page === 1 ? 'bg-pastel-red' : 'bg-[--text-muted]'}`} />
+            {/* Page dots */}
+            <div className={`absolute bottom-[140px] left-0 right-0 flex justify-center gap-1.5 z-20 pointer-events-none transition-opacity duration-300 ${isoverlayopen || page >= gridPages.length ? 'opacity-0' : 'opacity-100'}`}>
+                {gridPages.map((_, i) => (
+                    <div key={`dot-${i}`} className={`w-[6px] h-[6px] rounded-full transition-all duration-300 ${page === i ? 'bg-pastel-red scale-110' : 'bg-[--text-muted]/50'}`} />
+                ))}
+                <div className={`w-[6px] h-[6px] rounded-full transition-all duration-300 ${page >= gridPages.length ? 'bg-pastel-red scale-110' : 'bg-[--text-muted]/50'}`} />
             </div>
         </div>
     );

@@ -96,10 +96,8 @@ export const componentmap: { [key: string]: any } = {
     'apps/ExternalAppLoader': dynamic(() => import('./apps/ExternalAppLoader')),
     'apps/ApiDocs': dynamic(() => import('./apps/ApiDocs')),
     'apps/SystemMonitor': dynamic(() => import('./apps/SystemMonitor')),
-    'apps/NativeFileBrowser': dynamic(() => import('./apps/NativeFileBrowser')),
-    'apps/AppLauncher': dynamic(() => import('./apps/AppLauncher')),
-    'apps/AboutBala': dynamic(() => import('./apps/AboutBala')),
     'apps/AboutNextarOS': dynamic(() => import('./apps/AboutNextarOS')),
+    'apps/Portfolio': dynamic(() => import('./Portfolio')),
     'DynamicAppRunner': dynamic(() => import('./DynamicAppRunner')),
     'apps/ProjectDashboard': dynamic(() => import('./apps/ProjectDashboard')),
     'apps/HackathonWorkspace': dynamic(() => import('./apps/HackathonWorkspace')),
@@ -141,7 +139,14 @@ export const personal = {
     ]
 };
 
-export const apps: appdata[] = [
+import { getAllApps, getFilteredPackages } from '@/packages/registry';
+
+// Apps are now loaded from the package registry (packages/registry.ts).
+// Each app is defined as a manifest — like .desktop files in Linux DEs.
+export const apps: appdata[] = getAllApps() as appdata[];
+
+// Legacy inline definitions kept as reference, actual source of truth is the registry.
+const _legacyApps: appdata[] = [
     {
         id: 'explorer',
         appname: 'Explorer',
@@ -194,7 +199,6 @@ export const apps: appdata[] = [
         titlebarblurred: false,
         pinned: true,
         category: 'Social',
-        webOnly: true
     },
     {
         id: 'calendar',
@@ -393,43 +397,17 @@ export const apps: appdata[] = [
         }
     },
     {
-        id: 'nativefilebrowser',
-        appname: 'Files',
-        icon: '/explorer.png',
+        id: 'portfolio',
+        appname: 'Portfolio',
+        icon: '/bala.jpeg',
         maximizeable: true,
-        componentname: 'apps/NativeFileBrowser',
-        additionaldata: {},
-        multiwindow: true,
-        titlebarblurred: false,
-        pinned: true,
-        defaultsize: { width: 900, height: 600 },
-        category: 'Utilities',
-        nativeOnly: true,
-        manifest: {
-            permissions: {
-                fs: ['fs.native', 'fs.read', 'fs.write'],
-                system: ['system.host']
-            }
-        }
-    },
-    {
-        id: 'applauncher',
-        appname: 'Applications',
-        icon: '/appstore.png',
-        maximizeable: true,
-        componentname: 'apps/AppLauncher',
+        componentname: 'apps/Portfolio',
         additionaldata: {},
         multiwindow: false,
-        titlebarblurred: false,
-        pinned: true,
-        defaultsize: { width: 900, height: 600 },
-        category: 'Utilities',
-        nativeOnly: true,
-        manifest: {
-            permissions: {
-                system: ['system.apps']
-            }
-        }
+        titlebarblurred: true,
+        pinned: false,
+        defaultsize: { width: 1100, height: 700 },
+        category: 'Utilities'
     },
     {
         id: 'aboutbala',
@@ -616,16 +594,23 @@ export const apps: appdata[] = [
         defaultsize: { width: 700, height: 550 },
         category: 'Social',
     },
+    {
+        id: 'python',
+        appname: 'Python',
+        icon: '/terminal.png',
+        maximizeable: true,
+        componentname: 'apps/Python',
+        additionaldata: {},
+        multiwindow: false,
+        titlebarblurred: false,
+        pinned: false,
+        defaultsize: { width: 800, height: 550 },
+        category: 'Developer Tools',
+    },
 ];
 
 export function getfilteredapps(iselectron: boolean): appdata[] {
-    return apps.filter(app => {
-        if (iselectron) {
-            return !app.webOnly;
-        } else {
-            return !app.nativeOnly;
-        }
-    });
+    return getFilteredPackages(iselectron) as appdata[];
 }
 
 export const menus = [
@@ -723,25 +708,25 @@ export const sidebaritems = [
     {
         title: 'Favorites',
         items: [
-            { name: 'Desktop', icon: IoDesktopOutline, path: ['System', 'Users', 'Guest', 'Desktop'], color: '#8aadf4' },
-            { name: 'Documents', icon: IoDocumentTextOutline, path: ['System', 'Users', 'Guest', 'Documents'], color: '#a6da95' },
-            { name: 'Downloads', icon: IoDownloadOutline, path: ['System', 'Users', 'Guest', 'Downloads'], color: '#f5a97f' },
-            { name: 'Projects', icon: IoFolderOutline, path: ['System', 'Users', 'Guest', 'Projects'], color: '#c6a0f6' },
+            { name: 'Desktop', icon: IoDesktopOutline, path: ['Disk Drive', 'Users', 'Guest', 'Desktop'], color: 'var(--pastel-blue)' },
+            { name: 'Documents', icon: IoDocumentTextOutline, path: ['Disk Drive', 'Users', 'Guest', 'Documents'], color: 'var(--pastel-green)' },
+            { name: 'Downloads', icon: IoDownloadOutline, path: ['Disk Drive', 'Users', 'Guest', 'Downloads'], color: 'var(--pastel-peach)' },
+            { name: 'Projects', icon: IoFolderOutline, path: ['Disk Drive', 'Users', 'Guest', 'Projects'], color: 'var(--pastel-mauve)' },
+            { name: 'Applications', icon: IoAppsOutline, path: ['Disk Drive', 'Applications'], color: 'var(--pastel-red)' },
         ]
     },
     {
         title: 'Locations',
         items: [
-            { name: 'Applications', icon: IoAppsOutline, path: ['System', 'Applications'], color: '#ed8796' },
-            { name: 'System', icon: IoAppsOutline, path: ['System'], color: '#6e738d' },
+            { name: 'Disk Drive', icon: IoAppsOutline, path: ['Disk Drive'], color: 'var(--text-muted)' },
         ]
     },
     {
         title: 'Linux',
         items: [
-            { name: 'Root (/)', icon: IoFolderOutline, path: ['Linux', '/'], color: '#8bd5ca' },
-            { name: 'Home', icon: IoFolderOutline, path: ['Linux', '/home/user'], color: '#8bd5ca' },
-            { name: 'Shared', icon: IoFolderOutline, path: ['Linux', '/shared'], color: '#8bd5ca' },
+            { name: 'Root (/)', icon: IoFolderOutline, path: ['Linux', '/'], color: 'var(--pastel-teal)' },
+            { name: 'Home', icon: IoFolderOutline, path: ['Linux', '/home/user'], color: 'var(--pastel-teal)' },
+            { name: 'Shared', icon: IoFolderOutline, path: ['Linux', '/shared'], color: 'var(--pastel-teal)' },
         ]
     }
 ];
@@ -796,7 +781,7 @@ export const generateSystemFilesystem = (): filesystemitem[] => {
 
     fs.push({
         id: 'root-hd',
-        name: 'System',
+        name: 'Disk Drive',
         parent: 'root',
         mimetype: 'inode/directory',
         date: 'Today',
@@ -826,17 +811,6 @@ export const generateSystemFilesystem = (): filesystemitem[] => {
         size: '--',
         isSystem: true,
         isReadOnly: true,
-        owner: 'system'
-    });
-
-    fs.push({
-        id: 'root-network',
-        name: 'Network',
-        parent: 'root',
-        mimetype: 'inode/directory',
-        date: 'Today',
-        size: '--',
-        isSystem: true,
         owner: 'system'
     });
 
@@ -1031,6 +1005,16 @@ export const generateUserFolders = (username: string): filesystemitem[] => {
         owner: username
     });
 
+    fs.push({
+        id: `${uid}-projects`,
+        name: 'Projects',
+        parent: uid,
+        mimetype: 'inode/directory',
+        date: 'Today',
+        size: '--',
+        isSystem: true,
+        owner: username
+    });
 
     fs.push({
         id: `${uid}-videos`,
@@ -1106,6 +1090,16 @@ export const generateUserFilesystem = (username: string): filesystemitem[] => {
         owner: username
     });
 
+    fs.push({
+        id: `${uid}-projects`,
+        name: 'Projects',
+        parent: uid,
+        mimetype: 'inode/directory',
+        date: 'Today',
+        size: '--',
+        isSystem: true,
+        owner: username
+    });
 
     fs.push({
         id: `${uid}-trash`,
@@ -1321,13 +1315,12 @@ export const getFileIcon = (mimetype: string, name: string, itemicon?: React.Rea
 };
 
 const FolderPathMap: Record<string, string[]> = {
-    'user-projects': ['System', 'Users', 'Guest', 'Projects'],
-    'root-apps': ['System', 'Applications'],
-    'user-docs': ['System', 'Users', 'Guest', 'Documents'],
-    'user-downloads': ['System', 'Users', 'Guest', 'Downloads'],
-    'root-network': ['Network'],
-    'root-hd': ['System'],
-    'user-desktop': ['System', 'Users', 'Guest', 'Desktop'],
+    'user-projects': ['Disk Drive', 'Users', 'Guest', 'Projects'],
+    'root-apps': ['Disk Drive', 'Applications'],
+    'user-docs': ['Disk Drive', 'Users', 'Guest', 'Documents'],
+    'user-downloads': ['Disk Drive', 'Users', 'Guest', 'Downloads'],
+    'root-hd': ['Disk Drive'],
+    'user-desktop': ['Disk Drive', 'Users', 'Guest', 'Desktop'],
 };
 
 const ParentFolderMap: Record<string, string> = {
@@ -1356,14 +1349,14 @@ const resolveFolderPath = (file: filesystemitem): string[] => {
 
     if (file.parent) {
         if (file.parent.endsWith('-desktop') || file.parent === 'user-desktop') {
-            return ['System', 'Users', userHome, 'Desktop', file.name];
+            return ['Disk Drive', 'Users', userHome, 'Desktop', file.name];
         }
 
         if (ParentFolderMap[file.parent]) {
             if (file.parent === 'user-projects' || file.parent.endsWith('-projects')) {
-                return ['System', 'Users', userHome, 'Projects', file.name];
+                return ['Disk Drive', 'Users', userHome, 'Projects', file.name];
             }
-            return ['System', 'Users', userHome, ParentFolderMap[file.parent], file.name];
+            return ['Disk Drive', 'Users', userHome, ParentFolderMap[file.parent], file.name];
         }
 
         if (file.parent.startsWith('project-') || file.parent.includes('-project-')) {
@@ -1371,7 +1364,7 @@ const resolveFolderPath = (file: filesystemitem): string[] => {
             if (projectName.startsWith('project-')) projectName = projectName.replace('project-', '');
             if (projectName.startsWith('guest-project-')) projectName = projectName.replace('guest-project-', '');
 
-            return ['System', 'Users', userHome, 'Projects', projectName, file.name];
+            return ['Disk Drive', 'Users', userHome, 'Projects', projectName, file.name];
         }
     }
 
@@ -1395,7 +1388,7 @@ const resolveTarget = (itemOrId: string | filesystemitem, currentFiles?: filesys
 
         if (itemOrId.startsWith('project-')) {
             const projectName = itemOrId.replace('project-', '');
-            return { appId: 'explorer', props: { initialpath: ['System', 'Users', 'Projects', projectName] }, title: projectName };
+            return { appId: 'explorer', props: { initialpath: ['Disk Drive', 'Users', 'Projects', projectName] }, title: projectName };
         }
 
         return null;
