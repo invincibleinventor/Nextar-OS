@@ -7,6 +7,14 @@ const { app, BrowserWindow, Tray, Menu, ipcMain, Notification, shell, screen, na
 // and already has full system access.
 if (process.platform === 'linux') {
     app.commandLine.appendSwitch('no-sandbox');
+
+    // Wayland support: enable Ozone and let Chromium pick the right backend.
+    // --ozone-platform-hint=auto lets Chromium detect X11 vs Wayland at runtime.
+    // Works both nested inside GNOME and as the session itself.
+    if (process.env.WAYLAND_DISPLAY) {
+        app.commandLine.appendSwitch('enable-features', 'UseOzonePlatform,WaylandWindowDecorations');
+        app.commandLine.appendSwitch('ozone-platform-hint', 'auto');
+    }
 }
 
 const { autoUpdater } = require('electron-updater');
@@ -14,6 +22,7 @@ const path = require('path');
 const fs = require('fs');
 const fsp = fs.promises;
 const os = require('os');
+const { exec } = require('child_process');
 const mime = require('mime-types');
 
 // Lazy-load system module — only when native system APIs are actually called
@@ -79,8 +88,9 @@ const IS_MAC = process.platform === 'darwin';
 const IS_WINDOWS = process.platform === 'win32';
 const PLATFORM = process.platform;
 
-// Desktop session: always in production, opt-in in dev
-const isDesktopSession = app.isPackaged ||
+// Desktop session: only when explicitly launched as the DE (from display manager or --session flag)
+// NOT when running as a regular app window inside another DE
+const isDesktopSession =
     process.argv.includes('--session') ||
     process.env.NEXTAROS_SESSION === '1' ||
     process.env.XDG_SESSION_DESKTOP === 'nextaros' ||
@@ -103,17 +113,24 @@ function installsession() {
     const execPath = app.isPackaged
         ? process.execPath
         : `${process.execPath} ${path.join(app.getAppPath(), 'electron/main.js')}`;
-    const sessionFile = [
+
+    // X11 session file
+    const x11SessionFile = [
         '[Desktop Entry]',
         'Name=NextarOS',
         'Comment=NextarOS Desktop Environment',
-        `Exec=${execPath} --no-sandbox --session`,
+        `Exec=env DESKTOP_SESSION=nextaros XDG_SESSION_DESKTOP=nextaros ${execPath} --no-sandbox --session`,
         `TryExec=${process.execPath}`,
         'Type=Application',
         'DesktopNames=NextarOS',
         'X-LightDM-DesktopName=NextarOS',
         ''
     ].join('\n');
+
+    // NOTE: Only X11 sessions are supported. For Wayland sessions, the session
+    // binary must BE the compositor. Electron is a Wayland client, not a compositor.
+    // GDM/SDDM can still run X11 sessions on Wayland systems — it starts Xorg.
+
     const paths = [
         '/usr/share/xsessions/nextaros.desktop',
         path.join(os.homedir(), '.local/share/xsessions/nextaros.desktop')
@@ -122,7 +139,7 @@ function installsession() {
         try {
             const dir = path.dirname(p);
             if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-            fs.writeFileSync(p, sessionFile);
+            fs.writeFileSync(p, x11SessionFile);
             return { success: true, path: p };
         } catch { continue; }
     }
@@ -198,15 +215,19 @@ function createwindow() {
     };
 
     if (isDesktopSession) {
-        // THIS IS THE DESKTOP — fullscreen, no frame, no escape
+        // THIS IS THE DESKTOP — fill the entire screen, no frame, no escape.
+        // Use simpleFullscreen instead of fullscreen — fullscreen requires a WM
+        // to handle _NET_WM_STATE_FULLSCREEN, but in session mode there IS no WM.
+        // simpleFullscreen just sets the window to cover the screen directly.
         Object.assign(windowoptions, {
             width, height, x: 0, y: 0,
             frame: false,
-            fullscreen: true,
+            simpleFullscreen: true,
             skipTaskbar: true,
             resizable: false,
             closable: false,
-            minimizable: false
+            minimizable: false,
+            alwaysOnTop: true,
         });
     } else {
         // Dev/app mode — regular window for development
@@ -263,6 +284,32 @@ function createwindow() {
             displayServer: getDisplayServer()
         });
     });
+
+    // Renderer crash recovery — critical for session mode where a crash = no desktop
+    mainwindow.webContents.on('render-process-gone', (_, details) => {
+        console.error('[NextarOS] Renderer crashed:', details.reason);
+        if (isDesktopSession) {
+            // In session mode, reload to restore the desktop
+            setTimeout(() => {
+                if (mainwindow && !mainwindow.isDestroyed()) {
+                    console.log('[NextarOS] Reloading renderer after crash...');
+                    mainwindow.loadURL(app.isPackaged ? 'app://-/' : 'http://localhost:3000');
+                }
+            }, 1000);
+        }
+    });
+
+    // Handle page load failure (blank screen)
+    mainwindow.webContents.on('did-fail-load', (_, errorCode, errorDesc) => {
+        console.error('[NextarOS] Page load failed:', errorCode, errorDesc);
+        if (isDesktopSession && app.isPackaged) {
+            setTimeout(() => {
+                if (mainwindow && !mainwindow.isDestroyed()) {
+                    mainwindow.loadURL('app://-/');
+                }
+            }, 2000);
+        }
+    });
 }
 
 // =============================================================================
@@ -310,6 +357,7 @@ function setupipc() {
         islinux: IS_LINUX,
         ismac: IS_MAC,
         iswindows: IS_WINDOWS,
+        displayserver: getDisplayServer(),
         hostname: os.hostname(),
         username: os.userInfo().name,
         homedir: os.homedir(),
@@ -338,6 +386,18 @@ function setupipc() {
     ipcMain.handle('write-file', async (_, filepath, content) => {
         try { await fsp.writeFile(filepath, content, 'utf-8'); return { success: true }; }
         catch (error) { return { success: false, error: error.message }; }
+    });
+
+    // Serve native app icons as data URLs (file:// is blocked from app:// origin)
+    ipcMain.handle('get-icon-data', async (_, iconpath) => {
+        try {
+            if (!iconpath || !iconpath.startsWith('/')) return { success: false };
+            const data = await fsp.readFile(iconpath);
+            const ext = path.extname(iconpath).toLowerCase();
+            const mimeMap = { '.png': 'image/png', '.svg': 'image/svg+xml', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.xpm': 'image/x-xpixmap', '.ico': 'image/x-icon' };
+            const mimetype = mimeMap[ext] || 'image/png';
+            return { success: true, dataurl: `data:${mimetype};base64,${data.toString('base64')}` };
+        } catch { return { success: false }; }
     });
 
     ipcMain.handle('read-directory', async (_, dirpath) => {
@@ -489,6 +549,41 @@ function setupipc() {
     ipcMain.handle('system-disk-usage', () => system().getdiskusage());
     ipcMain.handle('system-trash', (_, filepath) => system().trash(filepath));
     ipcMain.handle('terminal-execute', (_, command, cwd) => system().executeshell(command, cwd));
+
+    // --- Keyboard ---
+    ipcMain.handle('system:keyboard:getlayout', () => system().keyboard.getlayout());
+    ipcMain.handle('system:keyboard:getlayouts', () => system().keyboard.getlayouts());
+    ipcMain.handle('system:keyboard:setlayout', (_, layout) => system().keyboard.setlayout(layout));
+    ipcMain.handle('system:keyboard:getrepeatrate', () => system().keyboard.getrepeatrate());
+    ipcMain.handle('system:keyboard:setrepeatrate', (_, delay, interval) => system().keyboard.setrepeatrate(delay, interval));
+
+    // --- Mouse ---
+    ipcMain.handle('system:mouse:getspeed', () => system().mouse.getspeed());
+    ipcMain.handle('system:mouse:setspeed', (_, speed) => system().mouse.setspeed(speed));
+    ipcMain.handle('system:mouse:getnaturalscroll', () => system().mouse.getnaturalscroll());
+    ipcMain.handle('system:mouse:setnaturalscroll', (_, enabled) => system().mouse.setnaturalscroll(enabled));
+
+    // --- Locale ---
+    ipcMain.handle('system:locale:getlocale', () => system().locale.getlocale());
+    ipcMain.handle('system:locale:getlocales', () => system().locale.getlocales());
+    ipcMain.handle('system:locale:setlocale', (_, locale) => system().locale.setlocale(locale));
+
+    // --- Date/Time ---
+    ipcMain.handle('system:datetime:getstatus', () => system().datetime.getstatus());
+    ipcMain.handle('system:datetime:gettimezones', () => system().datetime.gettimezones());
+    ipcMain.handle('system:datetime:settimezone', (_, tz) => system().datetime.settimezone(tz));
+    ipcMain.handle('system:datetime:setntp', (_, enabled) => system().datetime.setntp(enabled));
+
+    // --- Default Apps ---
+    ipcMain.handle('system:defaultapps:getbrowser', () => system().defaultapps.getdefaultbrowser());
+    ipcMain.handle('system:defaultapps:setbrowser', (_, desktop) => system().defaultapps.setdefaultbrowser(desktop));
+    ipcMain.handle('system:defaultapps:gethandler', (_, mime) => system().defaultapps.getfiletypehandler(mime));
+    ipcMain.handle('system:defaultapps:sethandler', (_, mime, desktop) => system().defaultapps.setfiletypehandler(mime, desktop));
+
+    // --- Printers ---
+    ipcMain.handle('system:printers:getprinters', () => system().printers.getprinters());
+    ipcMain.handle('system:printers:getdefault', () => system().printers.getdefault());
+    ipcMain.handle('system:printers:setdefault', (_, printer) => system().printers.setdefault(printer));
 
     // --- Session info (backwards compat: get-shell-info still works) ---
     const sessionInfo = () => ({
@@ -735,6 +830,27 @@ function setupipc() {
 }
 
 // =============================================================================
+//  THEME INSTALLATION — Apply GTK/Qt themes on session login
+// =============================================================================
+
+function installthemes() {
+    if (!IS_LINUX) return;
+    // Themes are bundled alongside the app — find them relative to the app path
+    const themesDir = app.isPackaged
+        ? path.join(process.resourcesPath, 'themes')
+        : path.join(__dirname, '..', 'themes');
+    const script = path.join(themesDir, 'install-themes.sh');
+    if (!fs.existsSync(script)) {
+        console.log('[NextarOS] Theme installer not found at', script);
+        return;
+    }
+    exec(`bash "${script}"`, (error, stdout, stderr) => {
+        if (error) console.error('[NextarOS] Theme install error:', stderr);
+        else console.log(stdout.trim());
+    });
+}
+
+// =============================================================================
 //  AUTO UPDATER
 // =============================================================================
 
@@ -867,6 +983,11 @@ if (!gotthelock) {
         // Auto-install session file on Linux (so display managers can see us)
         if (IS_LINUX && app.isPackaged) {
             installsession();
+        }
+
+        // Apply GTK/Qt themes on session login so native Linux apps match the DE
+        if (IS_LINUX && isDesktopSession) {
+            installthemes();
         }
 
         if (app.isPackaged) {

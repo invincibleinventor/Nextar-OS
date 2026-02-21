@@ -341,6 +341,7 @@ export default function Paint({ appId = 'paint', id }: { appId?: string; id?: st
         const overlay = overlayRef.current;
         if (!container || !canvas || !overlay) return;
 
+        let initialized = false;
         const resizeCanvas = () => {
             const ctx = canvas.getContext('2d');
             if (!ctx) return;
@@ -349,9 +350,9 @@ export default function Paint({ appId = 'paint', id }: { appId?: string; id?: st
             const h = container.clientHeight;
             if (w === 0 || h === 0) return;
 
-            // Save current content
+            // Save current content only after first init (skip default 300x150 buffer)
             let saved: ImageData | null = null;
-            if (canvas.width > 0 && canvas.height > 0) {
+            if (initialized && canvas.width > 0 && canvas.height > 0) {
                 saved = ctx.getImageData(0, 0, canvas.width, canvas.height);
             }
 
@@ -360,12 +361,12 @@ export default function Paint({ appId = 'paint', id }: { appId?: string; id?: st
             overlay.width = w;
             overlay.height = h;
 
-            // Fill white then restore content
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, w, h);
             if (saved) {
                 ctx.putImageData(saved, 0, 0);
             }
+            initialized = true;
         };
 
         const observer = new ResizeObserver(resizeCanvas);
@@ -437,153 +438,192 @@ export default function Paint({ appId = 'paint', id }: { appId?: string; id?: st
     useMenuRegistration(menus, isActive);
     useMenuAction(appId, menuActions, id);
 
-    // --- tool definitions for toolbar ---
+    // --- tool definitions for sidebar ---
 
-    const tools: { id: Tool; icon: React.ReactNode; label: string }[] = [
-        { id: 'pencil', icon: <IoPencilOutline size={16} />, label: 'Pencil' },
-        { id: 'line', icon: <IoRemoveOutline size={16} />, label: 'Line' },
-        { id: 'rectangle', icon: <IoSquareOutline size={16} />, label: 'Rectangle' },
-        { id: 'ellipse', icon: <IoEllipseOutline size={16} />, label: 'Ellipse' },
-        { id: 'eraser', icon: <IoTrashOutline size={16} />, label: 'Eraser' },
-        { id: 'fill', icon: <IoColorFillOutline size={16} />, label: 'Fill' },
-        { id: 'text', icon: <IoTextOutline size={16} />, label: 'Text' },
+    const tools: { id: Tool; icon: React.ReactNode; label: string; color: string }[] = [
+        { id: 'pencil', icon: <IoPencilOutline size={12} />, label: 'Pencil', color: 'var(--pastel-green)' },
+        { id: 'line', icon: <IoRemoveOutline size={12} />, label: 'Line', color: 'var(--pastel-blue)' },
+        { id: 'rectangle', icon: <IoSquareOutline size={12} />, label: 'Rectangle', color: 'var(--pastel-teal)' },
+        { id: 'ellipse', icon: <IoEllipseOutline size={12} />, label: 'Ellipse', color: 'var(--pastel-mauve)' },
+        { id: 'eraser', icon: <IoTrashOutline size={12} />, label: 'Eraser', color: 'var(--text-muted)' },
+        { id: 'fill', icon: <IoColorFillOutline size={12} />, label: 'Fill', color: 'var(--pastel-peach)' },
+        { id: 'text', icon: <IoTextOutline size={12} />, label: 'Text', color: 'var(--pastel-yellow)' },
+    ];
+
+    const palette = [
+        '#000000', '#434343', '#888888', '#ffffff',
+        'var(--pastel-red)', 'var(--pastel-peach)', 'var(--pastel-yellow)', 'var(--pastel-green)',
+        'var(--pastel-teal)', 'var(--pastel-blue)', 'var(--pastel-lavender)', 'var(--pastel-pink)',
+        'var(--pastel-mauve)', '#7a3b2e', '#1a5276', '#1e4d2b',
     ];
 
     return (
-        <div className="flex flex-col h-full w-full bg-surface select-none">
-            {/* Toolbar */}
-            <div className="flex items-center gap-1 px-2 py-1.5 border-b border-[--border-color] bg-surface flex-shrink-0 flex-wrap">
-                {/* Tool buttons */}
-                <div className="flex items-center gap-0.5 mr-2">
+        <div className="flex h-full w-full bg-[--bg-base] text-[--text-color] font-mono overflow-hidden select-none">
+            {/* Left Sidebar */}
+            <div className="w-[170px] border-r border-[--border-color] bg-surface flex flex-col h-full anime-gradient-top shrink-0 overflow-y-auto overflow-x-hidden pb-10">
+                {/* Tools */}
+                <div className="text-[10px] uppercase font-semibold text-[--text-muted] px-3 pt-3 pb-1 tracking-wide">Tools</div>
+                <div className="px-1.5 space-y-0.5">
                     {tools.map((t) => (
                         <button
                             key={t.id}
-                            title={t.label}
                             onClick={() => setTool(t.id)}
-                            className={`p-1.5transition-colors ${
+                            className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 cursor-pointer transition-colors ${
                                 tool === t.id
-                                    ? 'bg-overlay text-[--text-color] shadow-sm'
-                                    : 'text-[--text-muted] hover:bg-overlay hover:text-[--text-color]'
+                                    ? 'bg-accent text-[--bg-base]'
+                                    : 'text-[--text-color] hover:bg-overlay'
                             }`}
                         >
-                            {t.icon}
+                            <div
+                                className="w-5 h-5 flex items-center justify-center text-[--bg-base] shrink-0"
+                                style={{ backgroundColor: tool === t.id ? 'transparent' : t.color }}
+                            >
+                                {t.icon}
+                            </div>
+                            <span className="text-[12px] font-medium leading-none">{t.label}</span>
                         </button>
                     ))}
                 </div>
 
-                {/* Separator */}
-                <div className="w-px h-5 bg-[--border-color] mx-1" />
+                {/* Stroke & Fill */}
+                <div className="h-px bg-[--border-color] mx-3 my-3" />
+                <div className="px-3 space-y-2.5">
+                    <div>
+                        <div className="text-[10px] uppercase font-semibold text-[--text-muted] mb-1.5 tracking-wide">Stroke</div>
+                        <label className="relative w-8 h-8 block border border-[--border-color] cursor-pointer overflow-hidden" title="Stroke color">
+                            <input
+                                type="color"
+                                value={strokeColor}
+                                onChange={(e) => setStrokeColor(e.target.value)}
+                                className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                            />
+                            <div className="w-full h-full" style={{ backgroundColor: strokeColor }} />
+                        </label>
+                    </div>
+                    <div>
+                        <div className="text-[10px] uppercase font-semibold text-[--text-muted] mb-1.5 tracking-wide">Fill</div>
+                        <label className="relative w-8 h-8 block border border-[--border-color] cursor-pointer overflow-hidden" title="Fill color">
+                            <input
+                                type="color"
+                                value={fillColor}
+                                onChange={(e) => setFillColor(e.target.value)}
+                                className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                            />
+                            <div className="w-full h-full" style={{ backgroundColor: fillColor }} />
+                        </label>
+                    </div>
+                </div>
 
-                {/* Stroke color */}
-                <div className="flex items-center gap-1 mr-2">
-                    <span className="text-[10px] text-[--text-muted] uppercase tracking-wide">Stroke</span>
-                    <label className="relative w-6 h-6border border-[--border-color] cursor-pointer overflow-hidden" title="Stroke color">
+                {/* Color Palette */}
+                <div className="h-px bg-[--border-color] mx-3 my-3" />
+                <div className="px-3">
+                    <div className="text-[10px] uppercase font-semibold text-[--text-muted] mb-1.5 tracking-wide">Palette</div>
+                    <div className="grid grid-cols-4 gap-1">
+                        {palette.map((color, i) => (
+                            <button
+                                key={i}
+                                onClick={() => setStrokeColor(color.startsWith('var') ? getComputedStyle(document.documentElement).getPropertyValue(color.slice(4, -1)).trim() : color)}
+                                onContextMenu={(e) => {
+                                    e.preventDefault();
+                                    setFillColor(color.startsWith('var') ? getComputedStyle(document.documentElement).getPropertyValue(color.slice(4, -1)).trim() : color);
+                                }}
+                                className={`w-full aspect-square border border-[--border-color] transition-all hover:scale-110 hover:z-10`}
+                                style={{ backgroundColor: color }}
+                                title="Click: stroke / Right-click: fill"
+                            />
+                        ))}
+                    </div>
+                </div>
+
+                {/* Brush Size */}
+                <div className="h-px bg-[--border-color] mx-3 my-3" />
+                <div className="px-3">
+                    <div className="text-[10px] uppercase font-semibold text-[--text-muted] mb-1.5 tracking-wide">Size</div>
+                    <div className="flex items-center gap-2">
                         <input
-                            type="color"
-                            value={strokeColor}
-                            onChange={(e) => setStrokeColor(e.target.value)}
-                            className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                            type="range"
+                            min={1}
+                            max={50}
+                            value={brushSize}
+                            onChange={(e) => setBrushSize(Number(e.target.value))}
+                            className="flex-1 h-1 accent-[--accent-color] cursor-pointer"
                         />
-                        <div className="w-full h-full rounded" style={{ backgroundColor: strokeColor }} />
-                    </label>
+                        <span className="text-[10px] text-[--text-muted] w-6 text-right tabular-nums">{brushSize}px</span>
+                    </div>
                 </div>
+            </div>
 
-                {/* Fill color */}
-                <div className="flex items-center gap-1 mr-2">
-                    <span className="text-[10px] text-[--text-muted] uppercase tracking-wide">Fill</span>
-                    <label className="relative w-6 h-6border border-[--border-color] cursor-pointer overflow-hidden" title="Fill color">
-                        <input
-                            type="color"
-                            value={fillColor}
-                            onChange={(e) => setFillColor(e.target.value)}
-                            className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
-                        />
-                        <div className="w-full h-full rounded" style={{ backgroundColor: fillColor }} />
-                    </label>
-                </div>
-
-                {/* Separator */}
-                <div className="w-px h-5 bg-[--border-color] mx-1" />
-
-                {/* Brush size */}
-                <div className="flex items-center gap-1.5 mr-2">
-                    <span className="text-[10px] text-[--text-muted] uppercase tracking-wide">Size</span>
-                    <input
-                        type="range"
-                        min={1}
-                        max={50}
-                        value={brushSize}
-                        onChange={(e) => setBrushSize(Number(e.target.value))}
-                        className="w-20 h-1 accent-[--text-color] cursor-pointer"
-                        title={`${brushSize}px`}
-                    />
-                    <span className="text-[10px] text-[--text-muted] w-6 text-right tabular-nums">{brushSize}px</span>
-                </div>
-
-                {/* Separator */}
-                <div className="w-px h-5 bg-[--border-color] mx-1" />
-
-                {/* Undo / Redo */}
-                <div className="flex items-center gap-0.5 mr-2">
+            {/* Right Content */}
+            <div className="flex-1 flex flex-col min-w-0 min-h-0">
+                {/* Top Action Bar */}
+                <div className="h-10 border-b border-[--border-color] bg-surface flex items-center gap-1 px-3 shrink-0">
                     <button
                         title="Undo"
                         onClick={undo}
                         disabled={!canUndo}
-                        className={`p-1.5transition-colors ${
+                        className={`p-1.5 transition-colors ${
                             canUndo
                                 ? 'text-[--text-muted] hover:bg-overlay hover:text-[--text-color]'
                                 : 'text-[--text-muted] opacity-30 cursor-not-allowed'
                         }`}
                     >
-                        <IoArrowUndoOutline size={16} />
+                        <IoArrowUndoOutline size={15} />
                     </button>
                     <button
                         title="Redo"
                         onClick={redo}
                         disabled={!canRedo}
-                        className={`p-1.5transition-colors ${
+                        className={`p-1.5 transition-colors ${
                             canRedo
                                 ? 'text-[--text-muted] hover:bg-overlay hover:text-[--text-color]'
                                 : 'text-[--text-muted] opacity-30 cursor-not-allowed'
                         }`}
                     >
-                        <IoArrowRedoOutline size={16} />
+                        <IoArrowRedoOutline size={15} />
+                    </button>
+
+                    <div className="w-px h-5 bg-[--border-color] mx-1" />
+
+                    <button
+                        title="Clear Canvas"
+                        onClick={clearCanvas}
+                        className="p-1.5 text-[--text-muted] hover:bg-overlay hover:text-[--text-color] transition-colors"
+                    >
+                        <IoTrashOutline size={15} />
+                    </button>
+
+                    <div className="flex-1" />
+
+                    <button
+                        title="Export as PNG"
+                        onClick={exportPNG}
+                        className="p-1.5 text-[--text-muted] hover:bg-overlay hover:text-[--text-color] transition-colors"
+                    >
+                        <IoDownloadOutline size={15} />
                     </button>
                 </div>
 
-                {/* Separator */}
-                <div className="w-px h-5 bg-[--border-color] mx-1" />
-
-                {/* Export */}
-                <button
-                    title="Export as PNG"
-                    onClick={exportPNG}
-                    className="p-1.5text-[--text-muted] hover:bg-overlay hover:text-[--text-color] transition-colors"
-                >
-                    <IoDownloadOutline size={16} />
-                </button>
-            </div>
-
-            {/* Canvas area */}
-            <div ref={containerRef} className="flex-1 relative overflow-hidden" style={{ cursor: 'crosshair' }}>
-                <canvas
-                    ref={canvasRef}
-                    className="absolute inset-0"
-                    onMouseDown={handleMouseDown}
-                    onMouseMove={handleMouseMove}
-                    onMouseUp={handleMouseUp}
-                    onMouseLeave={() => {
-                        if (isDrawing.current) {
-                            isDrawing.current = false;
-                            clearOverlay();
-                            snapshotBeforeShape.current = null;
-                        }
-                    }}
-                />
-                <canvas
-                    ref={overlayRef}
-                    className="absolute inset-0 pointer-events-none"
-                />
+                {/* Canvas area */}
+                <div ref={containerRef} className="flex-1 relative overflow-hidden min-h-0" style={{ cursor: 'crosshair' }}>
+                    <canvas
+                        ref={canvasRef}
+                        className="block w-full h-full"
+                        onMouseDown={handleMouseDown}
+                        onMouseMove={handleMouseMove}
+                        onMouseUp={handleMouseUp}
+                        onMouseLeave={() => {
+                            if (isDrawing.current) {
+                                isDrawing.current = false;
+                                clearOverlay();
+                                snapshotBeforeShape.current = null;
+                            }
+                        }}
+                    />
+                    <canvas
+                        ref={overlayRef}
+                        className="absolute inset-0 w-full h-full pointer-events-none"
+                    />
+                </div>
             </div>
         </div>
     );

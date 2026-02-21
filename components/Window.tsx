@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { useWindows } from './WindowContext';
 import { apps, componentmap } from './data';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useDevice } from './DeviceContext';
 import { useSettings } from './SettingsContext';
 import { useProcess } from './ProcessContext';
@@ -155,6 +155,7 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
 
   const previousStateRef = useRef({ position, size });
   const [isdragging, setisdragging] = useState(false);
+  const [snappreview, setsnappreview] = useState<'left' | 'right' | 'top' | null>(null);
 
   const windowref = useRef(null);
   const positionref = useRef(position);
@@ -352,6 +353,18 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
         left: newleft,
       });
       lasttop = newtop;
+
+      // Snap zone detection (20px from edges)
+      const SNAP_THRESHOLD = 20;
+      if (movex <= SNAP_THRESHOLD) {
+        setsnappreview('left');
+      } else if (movex >= screenwidth - SNAP_THRESHOLD) {
+        setsnappreview('right');
+      } else if (movey <= panelheight + SNAP_THRESHOLD) {
+        setsnappreview('top');
+      } else {
+        setsnappreview(null);
+      }
     };
 
     const cleanup = () => {
@@ -362,11 +375,29 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
       dragCleanupRef.current = null;
     };
 
-    const onmouseup = () => {
+    const onmouseup = (upEvent: any) => {
+      const upX = 'touches' in upEvent ? upEvent.changedTouches?.[0]?.clientX ?? 0 : upEvent.clientX;
+      const upY = 'touches' in upEvent ? upEvent.changedTouches?.[0]?.clientY ?? 0 : upEvent.clientY;
+      const { innerWidth: sw, innerHeight: sh } = window;
+      const SNAP_THRESHOLD = 20;
+
       setisdragging(false);
+      setsnappreview(null);
       cleanup();
 
-      if (!wasmaximized && lasttop <= panelheight) {
+      // Save pre-snap state for restore
+      if (upX <= SNAP_THRESHOLD) {
+        // Snap left half
+        previousStateRef.current = { position, size };
+        setposition({ top: panelheight, left: 0 });
+        setsize({ width: Math.round(sw / 2), height: sh - panelheight - dockheight });
+      } else if (upX >= sw - SNAP_THRESHOLD) {
+        // Snap right half
+        previousStateRef.current = { position, size };
+        setposition({ top: panelheight, left: Math.round(sw / 2) });
+        setsize({ width: Math.round(sw / 2), height: sh - panelheight - dockheight });
+      } else if (!wasmaximized && upY <= panelheight + SNAP_THRESHOLD) {
+        // Snap maximize
         previousStateRef.current = { position, size };
         updatewindow(id, { ismaximized: true });
       }
@@ -472,10 +503,10 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
         ${(ismobile && isRecentAppView) ? 'absolute inset-0 w-full h-full' : 'absolute'}`}
       data-window-id={id}
       style={{
-        top: (ismobile && isRecentAppView) ? 0 : (ismobile ? 44 : (ismaximized ? 35 : (position?.top || 0))),
+        top: (ismobile && isRecentAppView) ? 0 : (ismobile ? 44 : (ismaximized ? panelheight : (position?.top || 0))),
         left: (ismobile && isRecentAppView) ? 0 : (ismobile ? 0 : (ismaximized ? 0 : (position?.left || 0))),
         width: (ismobile && isRecentAppView) ? '100%' : (ismobile ? '100%' : (ismaximized ? '100vw' : (size?.width || 0))),
-        height: (ismobile && isRecentAppView) ? '100%' : (ismobile ? 'calc(100% - 44px)' : (ismaximized ? 'calc(100vh - 105px)' : (size?.height || 0))),
+        height: (ismobile && isRecentAppView) ? '100%' : (ismobile ? 'calc(100% - 44px)' : (ismaximized ? `calc(100vh - ${panelheight + dockheight}px)` : (size?.height || 0))),
         zIndex: isminimized ? -1 : zindex,
         willChange: 'transform, opacity, top, left, width, height',
         pointerEvents: (shouldblur || isRecentAppView || isminimized || issystemgestureactive) ? 'none' : 'auto'
@@ -592,11 +623,30 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
     </motion.div >
   );
 
+  const snapOverlay = snappreview && isdragging ? (
+    <motion.div
+      key={snappreview}
+      className="fixed z-[198] pointer-events-none border-2 border-accent/50 backdrop-blur-md overflow-hidden"
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.15, ease: 'easeOut' }}
+      style={{
+        top: snappreview === 'top' ? panelheight : panelheight + 4,
+        left: snappreview === 'right' ? 'calc(50% + 2px)' : (snappreview === 'top' ? 0 : 4),
+        width: snappreview === 'top' ? '100%' : 'calc(50% - 6px)',
+        height: snappreview === 'top' ? `calc(100vh - ${panelheight}px - ${dockheight}px)` : `calc(100vh - ${panelheight}px - ${dockheight}px - 8px)`,
+        background: 'rgba(237, 135, 150, 0.08)',
+        boxShadow: 'inset 0 0 40px rgba(237, 135, 150, 0.06), 0 0 20px rgba(237, 135, 150, 0.1)',
+      }}
+    />
+  ) : null;
+
   if (ismobile && mounted && portaltarget) {
     return createPortal(content, portaltarget);
   }
 
-  return content;
+  return <>{content}<AnimatePresence>{snapOverlay}</AnimatePresence></>;
 };
 
 Window.displayName = 'Window';

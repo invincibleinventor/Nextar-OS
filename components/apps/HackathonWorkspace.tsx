@@ -15,6 +15,8 @@ import dynamic from 'next/dynamic';
 import { useProjects } from '../ProjectContext';
 import { useTheme } from '../ThemeContext';
 import { useWindows } from '../WindowContext';
+import { useDevice } from '../DeviceContext';
+import { openSystemItem } from '../data';
 import { useNotifications } from '../NotificationContext';
 import { useMenuAction } from '../hooks/useMenuAction';
 import { useMenuRegistration } from '../AppMenuContext';
@@ -332,9 +334,10 @@ const HackathonTimer: React.FC = () => {
 };
 
 export default function HackathonWorkspace({ windowId, projectId, appId = 'hackathonworkspace', id }: { windowId?: string; projectId?: string; appId?: string; id?: string }) {
-    const { currentProject, currentFiles, openProject, updateFile, createFile, deleteFileById, createSnapshot } = useProjects();
+    const { projects, currentProject, currentFiles, openProject, createProject, updateFile, createFile, deleteFileById, createSnapshot } = useProjects();
     const { theme } = useTheme();
-    const { activewindow, addwindow } = useWindows();
+    const { activewindow, addwindow, windows, updatewindow, setactivewindow } = useWindows();
+    const { ismobile } = useDevice();
     const { addToast } = useNotifications();
     const isActiveWindow = activewindow === (id || windowId);
 
@@ -941,12 +944,59 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
     const isAppRunnable = ['javascriptreact', 'typescriptreact', 'javascript'].includes(activeFileLang);
 
     if (!currentProject) {
+        const sysContext = { addwindow, windows, updatewindow, setactivewindow, ismobile };
+        const handleBlankProject = async () => {
+            const name = `project-${Date.now().toString(36).slice(-4)}`;
+            try {
+                const project = await createProject(name, 'vanilla-html');
+                await openProject(project.id);
+            } catch (e) { console.error(e); }
+        };
         return (
-            <div className="flex items-center justify-center h-full bg-[--bg-base] text-[--text-color] font-mono">
-                <div className="text-center space-y-3">
-                    <div className="text-4xl">🚀</div>
-                    <div className="text-lg font-medium">No project loaded</div>
-                    <div className="text-[13px] text-[--text-muted]">Open a project from the Project Dashboard</div>
+            <div className="flex flex-col items-center justify-center h-full bg-[--bg-base] text-[--text-color] font-mono gap-6">
+                <div className="flex items-center gap-3 mb-2">
+                    <div className="w-8 h-8 bg-pastel-green flex items-center justify-center">
+                        <VscRepo className="text-white" size={18} />
+                    </div>
+                    <span className="text-sm font-semibold">Code Editor</span>
+                </div>
+                <div className="flex flex-col gap-2 w-[280px]">
+                    <button
+                        onClick={() => openSystemItem('explorer', sysContext)}
+                        className="w-full flex items-center gap-3 px-4 py-3 bg-surface border border-[--border-color] hover:bg-overlay hover:border-accent/40 transition-all group"
+                    >
+                        <div className="w-6 h-6 bg-pastel-blue flex items-center justify-center shrink-0">
+                            <VscFiles className="text-white" size={13} />
+                        </div>
+                        <div className="text-left">
+                            <div className="text-[12px] font-semibold group-hover:text-accent transition-colors">Open from File Explorer</div>
+                            <div className="text-[10px] text-[--text-muted]">Browse and open an existing project</div>
+                        </div>
+                    </button>
+                    <button
+                        onClick={handleBlankProject}
+                        className="w-full flex items-center gap-3 px-4 py-3 bg-surface border border-[--border-color] hover:bg-overlay hover:border-accent/40 transition-all group"
+                    >
+                        <div className="w-6 h-6 bg-pastel-teal flex items-center justify-center shrink-0">
+                            <VscNewFile className="text-white" size={13} />
+                        </div>
+                        <div className="text-left">
+                            <div className="text-[12px] font-semibold group-hover:text-accent transition-colors">Blank Project</div>
+                            <div className="text-[10px] text-[--text-muted]">Start with an empty HTML/CSS/JS project</div>
+                        </div>
+                    </button>
+                    <button
+                        onClick={() => openSystemItem('templatesmanager', sysContext)}
+                        className="w-full flex items-center gap-3 px-4 py-3 bg-surface border border-[--border-color] hover:bg-overlay hover:border-accent/40 transition-all group"
+                    >
+                        <div className="w-6 h-6 bg-pastel-peach flex items-center justify-center shrink-0">
+                            <VscSettingsGear className="text-white" size={13} />
+                        </div>
+                        <div className="text-left">
+                            <div className="text-[12px] font-semibold group-hover:text-accent transition-colors">Create from Template</div>
+                            <div className="text-[10px] text-[--text-muted]">Pick a starter template to scaffold</div>
+                        </div>
+                    </button>
                 </div>
             </div>
         );

@@ -582,9 +582,9 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
             return (
                 <span className="flex items-center flex-wrap gap-0">
                     <span className="bg-[#a6da95] text-[#1e2030] px-2 py-0 text-[11px] font-bold inline-flex items-center">{username}</span>
-                    <span className="text-[#a6da95] bg-[#363a4f]">\ue0b0</span>
+                    <span className="text-[#a6da95] bg-[#363a4f]">{'\ue0b0'}</span>
                     <span className="bg-[#363a4f] text-[#8aadf4] px-2 py-0 text-[11px] font-bold inline-flex items-center">{path}</span>
-                    <span className="text-[#363a4f]">\ue0b0</span>
+                    <span className="text-[#363a4f]">{'\ue0b0'}</span>
                     {command && <span className="text-[#cad3f5] ml-2">{command}</span>}
                 </span>
             );
@@ -593,7 +593,7 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
             return (
                 <span>
                     <span className="text-[#8aadf4]">{path}</span>
-                    <span className="text-[#c6a0f6]"> \u276f </span>
+                    <span className="text-[#c6a0f6]">{' \u276f '}</span>
                     {command && <span className="text-[#cad3f5]">{command}</span>}
                 </span>
             );
@@ -665,7 +665,7 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
                         autoComplete="off"
                         disabled={isrunning}
                     />
-                    {isrunning && <span className="text-[#f5a97f] animate-pulse ml-2">\u23f3</span>}
+                    {isrunning && <span className="text-[#f5a97f] animate-pulse ml-2">{'\u23f3'}</span>}
                 </div>
                 <div ref={endref} />
             </div>

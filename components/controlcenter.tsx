@@ -394,7 +394,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
           [&::-webkit-slider-thumb]:rounded-none [&::-webkit-slider-thumb]:bg-pastel-red
         `}
                           style={{
-                            background: `linear-gradient(to right, #ed8796 ${brightnessval}%, var(--border-color) ${brightnessval}%)`,
+                            background: `linear-gradient(to right, var(--pastel-red) ${brightnessval}%, var(--border-color) ${brightnessval}%)`,
                           }}
                         />
                       </div>
@@ -428,7 +428,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
           [&::-webkit-slider-thumb]:rounded-none [&::-webkit-slider-thumb]:bg-pastel-red
         `}
                             style={{
-                              background: `linear-gradient(to right, #ed8796 ${volumeval}%, var(--border-color) ${volumeval}%)`,
+                              background: `linear-gradient(to right, var(--pastel-red) ${volumeval}%, var(--border-color) ${volumeval}%)`,
                             }}
                           />
                         </div>

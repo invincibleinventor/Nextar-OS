@@ -1,0 +1,350 @@
+/*
+ * NextarOS GTK3 Theme
+ * Based on Catppuccin Macchiato palette to match the DE's native UI.
+ *
+ * Base:    #24273a   Surface:  #363a4f   Overlay:  #494d64
+ * Text:    #cad3f5   Subtext:  #a5adcb   Muted:    #6e738d
+ * Accent:  #ed8796   Blue:     #8aadf4   Green:    #a6da95
+ * Yellow:  #eed49f   Peach:    #f5a97f   Pink:     #f5bde6
+ * Mauve:   #c6a0f6   Teal:     #8bd5ca   Border:   #5b6078
+ */
+
+/* === Global Defaults === */
+* {
+    -GtkWidget-link-color: #8aadf4;
+    -GtkWidget-visited-link-color: #c6a0f6;
+}
+
+window, .background {
+    background-color: #24273a;
+    color: #cad3f5;
+}
+
+/* === Header Bars === */
+headerbar, .titlebar {
+    background-color: #1e2030;
+    color: #cad3f5;
+    border-bottom: 1px solid #5b6078;
+    padding: 4px 8px;
+    min-height: 36px;
+}
+
+headerbar .title, .titlebar .title {
+    color: #cad3f5;
+    font-weight: bold;
+}
+
+headerbar .subtitle {
+    color: #a5adcb;
+    font-size: 0.85em;
+}
+
+/* === Buttons === */
+button {
+    background-color: #363a4f;
+    color: #cad3f5;
+    border: 1px solid #5b6078;
+    border-radius: 6px;
+    padding: 4px 12px;
+    min-height: 28px;
+    transition: all 150ms ease;
+}
+
+button:hover {
+    background-color: #494d64;
+    border-color: #6e738d;
+}
+
+button:active, button:checked {
+    background-color: #5b6078;
+}
+
+button:disabled {
+    opacity: 0.5;
+}
+
+button.suggested-action {
+    background-color: #ed8796;
+    color: #24273a;
+    border-color: #ed8796;
+    font-weight: bold;
+}
+
+button.suggested-action:hover {
+    background-color: #f5a97f;
+    border-color: #f5a97f;
+}
+
+button.destructive-action {
+    background-color: #ed8796;
+    color: #24273a;
+    border-color: #ed8796;
+}
+
+/* === Entries & Text Inputs === */
+entry, textview, textview text {
+    background-color: #363a4f;
+    color: #cad3f5;
+    border: 1px solid #5b6078;
+    border-radius: 6px;
+    padding: 6px 8px;
+    caret-color: #ed8796;
+}
+
+entry:focus, textview:focus {
+    border-color: #ed8796;
+    box-shadow: 0 0 0 1px alpha(#ed8796, 0.3);
+}
+
+entry selection, textview selection {
+    background-color: alpha(#ed8796, 0.3);
+    color: #cad3f5;
+}
+
+/* === Menus === */
+menu, .menu, .context-menu {
+    background-color: #363a4f;
+    color: #cad3f5;
+    border: 1px solid #5b6078;
+    border-radius: 8px;
+    padding: 4px;
+}
+
+menuitem, .menuitem {
+    padding: 4px 12px;
+    border-radius: 4px;
+}
+
+menuitem:hover {
+    background-color: #ed8796;
+    color: #24273a;
+}
+
+menuitem:disabled {
+    color: #6e738d;
+}
+
+/* === Sidebars & Lists === */
+.sidebar, placessidebar {
+    background-color: #1e2030;
+    color: #cad3f5;
+    border-right: 1px solid #5b6078;
+}
+
+.sidebar row:selected, placessidebar row:selected {
+    background-color: alpha(#ed8796, 0.2);
+    color: #cad3f5;
+}
+
+list, listbox {
+    background-color: #24273a;
+    color: #cad3f5;
+}
+
+row {
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+row:hover {
+    background-color: #363a4f;
+}
+
+row:selected {
+    background-color: alpha(#ed8796, 0.2);
+    color: #cad3f5;
+}
+
+/* === Scrollbars === */
+scrollbar slider {
+    background-color: #5b6078;
+    border-radius: 10px;
+    min-width: 6px;
+    min-height: 6px;
+}
+
+scrollbar slider:hover {
+    background-color: #6e738d;
+}
+
+scrollbar slider:active {
+    background-color: #ed8796;
+}
+
+scrollbar trough {
+    background-color: transparent;
+}
+
+/* === Switches === */
+switch {
+    background-color: #494d64;
+    border-radius: 14px;
+    min-width: 48px;
+    min-height: 24px;
+    border: 1px solid #5b6078;
+}
+
+switch:checked {
+    background-color: #ed8796;
+    border-color: #ed8796;
+}
+
+switch slider {
+    background-color: #cad3f5;
+    border-radius: 50%;
+    min-width: 20px;
+    min-height: 20px;
+    margin: 1px;
+}
+
+/* === Check & Radio Buttons === */
+check, radio {
+    background-color: #363a4f;
+    border: 2px solid #5b6078;
+    border-radius: 4px;
+    min-width: 18px;
+    min-height: 18px;
+}
+
+check:checked, radio:checked {
+    background-color: #ed8796;
+    border-color: #ed8796;
+    color: #24273a;
+}
+
+radio {
+    border-radius: 50%;
+}
+
+/* === Scales / Sliders === */
+scale trough {
+    background-color: #494d64;
+    border-radius: 10px;
+    min-height: 6px;
+}
+
+scale highlight {
+    background-color: #ed8796;
+    border-radius: 10px;
+}
+
+scale slider {
+    background-color: #cad3f5;
+    border-radius: 50%;
+    min-width: 18px;
+    min-height: 18px;
+    border: 2px solid #ed8796;
+}
+
+/* === Tabs / Notebooks === */
+notebook header {
+    background-color: #1e2030;
+    border-bottom: 1px solid #5b6078;
+}
+
+notebook tab {
+    background-color: transparent;
+    color: #a5adcb;
+    padding: 6px 16px;
+    border-bottom: 2px solid transparent;
+}
+
+notebook tab:checked {
+    color: #ed8796;
+    border-bottom-color: #ed8796;
+}
+
+notebook stack {
+    background-color: #24273a;
+}
+
+/* === Tooltips === */
+tooltip, tooltip.background {
+    background-color: #363a4f;
+    color: #cad3f5;
+    border: 1px solid #5b6078;
+    border-radius: 6px;
+    padding: 4px 8px;
+}
+
+/* === Progress Bars === */
+progressbar trough {
+    background-color: #494d64;
+    border-radius: 10px;
+}
+
+progressbar progress {
+    background-color: #ed8796;
+    border-radius: 10px;
+    min-height: 6px;
+}
+
+/* === Spinners === */
+spinner {
+    color: #ed8796;
+}
+
+/* === Separators === */
+separator {
+    background-color: #5b6078;
+    min-height: 1px;
+    min-width: 1px;
+}
+
+/* === Dialog === */
+dialog .dialog-vbox {
+    background-color: #24273a;
+}
+
+messagedialog .titlebar {
+    background-color: #1e2030;
+}
+
+/* === File Chooser === */
+placessidebar, .navigation-sidebar {
+    background-color: #1e2030;
+}
+
+filechooser .path-bar button {
+    background-color: #363a4f;
+    border-color: #5b6078;
+}
+
+/* === Info Bars === */
+infobar {
+    border-radius: 6px;
+}
+
+infobar.info {
+    background-color: alpha(#8aadf4, 0.2);
+    color: #8aadf4;
+}
+
+infobar.warning {
+    background-color: alpha(#eed49f, 0.2);
+    color: #eed49f;
+}
+
+infobar.error {
+    background-color: alpha(#ed8796, 0.2);
+    color: #ed8796;
+}
+
+/* === Selection / Highlight === */
+*:selected {
+    background-color: alpha(#ed8796, 0.3);
+    color: #cad3f5;
+}
+
+/* === Links === */
+*:link {
+    color: #8aadf4;
+}
+
+*:link:hover {
+    color: #c6a0f6;
+}
+
+*:link:visited {
+    color: #c6a0f6;
+}

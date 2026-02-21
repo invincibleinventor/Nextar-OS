@@ -93,7 +93,7 @@ const Desktop = () => {
           ismaximized: false,
           position: { top: 100, left: 100 },
           size: { width: 800, height: 500 },
-          props: { initialpath: ['System', 'Users', homeDir, 'Desktop'] }
+          props: { initialpath: ['Disk Drive', 'Users', homeDir, 'Desktop'] }
         });
         return;
       }
@@ -404,8 +404,8 @@ const Desktop = () => {
         // Local/self-hosted: open Installer for setup
         openSystemItem('welcome', context);
       } else {
-        // Prod/deployed: open About (portfolio)
-        openSystemItem('aboutnextaros', context);
+        // Prod/deployed: open Portfolio
+        openSystemItem('portfolio', context);
       }
       haslaunchedwelcome.current = true;
     }
@@ -579,7 +579,7 @@ const Desktop = () => {
                         </div>
                       </div>
                       <span
-                        className={`text-[11px] w-full font-semibold text-center break-words leading-tight line-clamp-2 px-1  ${isSelected ? 'bg-accent' : ''} ${inverselabelcolor && islightbackground ? 'text-black' : 'text-white'}`}
+                        className={`text-[11px] w-full font-semibold text-center break-words leading-tight line-clamp-1 px-1  ${isSelected ? 'bg-accent' : ''} ${inverselabelcolor && islightbackground ? 'text-black' : 'text-white'}`}
                       >{item.name}</span>
                     </div>
                   )
