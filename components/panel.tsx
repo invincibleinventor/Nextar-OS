@@ -8,10 +8,10 @@ import Control from './controlcenter';
 import Logo from './mainlogo';
 import { useAppMenus } from './AppMenuContext';
 
-import { IoWifi, IoBatteryFull, IoToggle, IoSettingsOutline, IoSparkles } from 'react-icons/io5';
+import { IoWifi, IoBatteryFull, IoBatteryHalf, IoBatteryDead, IoToggle, IoSettingsOutline, IoSparkles } from 'react-icons/io5';
 import { BsToggles2 } from "react-icons/bs";
 import { useDevice } from './DeviceContext';
-import { IoIosBatteryFull } from 'react-icons/io';
+import { IoIosBatteryFull, IoIosBatteryCharging } from 'react-icons/io';
 import { useAuth } from './AuthContext';
 import { useNotifications } from './NotificationContext';
 import { iselectron, power, battery, wifi } from '@/utils/platform';
@@ -367,12 +367,27 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
                         {!isOnline && (
                             <span className="text-[9px] font-bold text-pastel-red px-1 py-0.5 bg-pastel-red/15">OFFLINE</span>
                         )}
-                        <IoWifi className={`w-[18px] h-[18px] ${!isOnline ? 'text-pastel-red' : wifistatus.connected ? 'text-pastel-blue' : 'text-pastel-lavender'}`} />
+                        <div className="relative group">
+                            <IoWifi className={`w-[18px] h-[18px] ${!isOnline ? 'text-pastel-red' : wifistatus.connected ? 'text-pastel-blue' : 'text-pastel-lavender'}`} />
+                            {wifistatus.connected && wifistatus.ssid && (
+                                <div className="absolute top-full mt-1 right-0 bg-overlay text-[--text-color] text-[10px] px-2 py-1 border border-[--border-color] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-[600]">
+                                    {wifistatus.ssid}
+                                </div>
+                            )}
+                        </div>
                         <div className='flex items-center space-x-1'>
                             {batterystatus.available && (
                                 <span className="text-[11px] font-medium text-[--text-color]">{batterystatus.percentage}%</span>
                             )}
-                            <IoIosBatteryFull className={`w-[24px] h-[24px] ${batterystatus.charging ? 'text-pastel-green' : 'text-pastel-yellow'}`} />
+                            {batterystatus.charging ? (
+                                <IoIosBatteryCharging className="w-[24px] h-[24px] text-pastel-green" />
+                            ) : batterystatus.percentage > 60 ? (
+                                <IoBatteryFull className="w-[22px] h-[22px] text-pastel-green" />
+                            ) : batterystatus.percentage > 20 ? (
+                                <IoBatteryHalf className="w-[22px] h-[22px] text-pastel-yellow" />
+                            ) : (
+                                <IoBatteryDead className="w-[22px] h-[22px] text-pastel-red" />
+                            )}
                         </div>
                     </div>
                     <div className="relative">

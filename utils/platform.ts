@@ -222,6 +222,47 @@ export const desktop = {
     }
 };
 
+export const keyboard = {
+    async getlayout() { if (iselectron) return await electronapi.keyboard.getlayout(); return { success: false }; },
+    async getlayouts() { if (iselectron) return await electronapi.keyboard.getlayouts(); return { success: false }; },
+    async setlayout(layout: string) { if (iselectron) return await electronapi.keyboard.setlayout(layout); return { success: false }; },
+    async getrepeatrate() { if (iselectron) return await electronapi.keyboard.getrepeatrate(); return { success: false }; },
+    async setrepeatrate(delay: number, interval: number) { if (iselectron) return await electronapi.keyboard.setrepeatrate(delay, interval); return { success: false }; },
+};
+
+export const mouse = {
+    async getspeed() { if (iselectron) return await electronapi.mouse.getspeed(); return { success: false }; },
+    async setspeed(speed: number) { if (iselectron) return await electronapi.mouse.setspeed(speed); return { success: false }; },
+    async getnaturalscroll() { if (iselectron) return await electronapi.mouse.getnaturalscroll(); return { success: false }; },
+    async setnaturalscroll(enabled: boolean) { if (iselectron) return await electronapi.mouse.setnaturalscroll(enabled); return { success: false }; },
+};
+
+export const locale = {
+    async getlocale() { if (iselectron) return await electronapi.locale.getlocale(); return { success: false }; },
+    async getlocales() { if (iselectron) return await electronapi.locale.getlocales(); return { success: false }; },
+    async setlocale(loc: string) { if (iselectron) return await electronapi.locale.setlocale(loc); return { success: false }; },
+};
+
+export const datetime = {
+    async getstatus() { if (iselectron) return await electronapi.datetime.getstatus(); return { success: false }; },
+    async gettimezones() { if (iselectron) return await electronapi.datetime.gettimezones(); return { success: false }; },
+    async settimezone(tz: string) { if (iselectron) return await electronapi.datetime.settimezone(tz); return { success: false }; },
+    async setntp(enabled: boolean) { if (iselectron) return await electronapi.datetime.setntp(enabled); return { success: false }; },
+};
+
+export const defaultapps = {
+    async getbrowser() { if (iselectron) return await electronapi.defaultapps.getbrowser(); return { success: false }; },
+    async setbrowser(desktop: string) { if (iselectron) return await electronapi.defaultapps.setbrowser(desktop); return { success: false }; },
+    async gethandler(mime: string) { if (iselectron) return await electronapi.defaultapps.gethandler(mime); return { success: false }; },
+    async sethandler(mime: string, desktop: string) { if (iselectron) return await electronapi.defaultapps.sethandler(mime, desktop); return { success: false }; },
+};
+
+export const printers = {
+    async getprinters() { if (iselectron) return await electronapi.printers.getprinters(); return { success: false }; },
+    async getdefault() { if (iselectron) return await electronapi.printers.getdefault(); return { success: false }; },
+    async setdefault(printer: string) { if (iselectron) return await electronapi.printers.setdefault(printer); return { success: false }; },
+};
+
 export const systeminfo = {
     async getnetworkinfo() {
         if (iselectron) return await electronapi.system.getnetworkinfo();
@@ -230,6 +271,13 @@ export const systeminfo = {
     async getdiskusage() {
         if (iselectron) return await electronapi.system.getdiskusage();
         return { success: false, disks: [] };
+    }
+};
+
+export const icons = {
+    async getdata(iconpath: string): Promise<{ success: boolean; dataurl?: string }> {
+        if (iselectron) return await electronapi.icons.getdata(iconpath);
+        return { success: false };
     }
 };
 

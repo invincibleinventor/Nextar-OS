@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
 import { useDevice } from './DeviceContext';
 
 const BG = '#f0edf5';
@@ -49,12 +50,11 @@ export default function BootScreen() {
                         {/* Logo mark */}
                         <motion.div
                             className="w-16 h-16 mb-6 flex items-center justify-center"
-                            style={{ background: INK }}
-                            initial={{ scale: 0, rotate: -180 }}
-                            animate={{ scale: 1, rotate: 0 }}
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
                             transition={{ type: 'spring', stiffness: 200, damping: 15 }}
                         >
-                            <span className="text-2xl font-black" style={{ color: BG }}>N</span>
+                            <Image src="/logo.svg" alt="NextarOS" width={64} height={64} className="w-full h-full" />
                         </motion.div>
 
                         <motion.div

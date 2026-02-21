@@ -26,7 +26,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [reducetransparency, setreducetransparency] = useState(false);
     const [soundeffects, setsoundeffects] = useState(false);
     const [wallpaperurl, setwallpaperurl] = useState('/bg-dark.jpg');
-    const [accentcolor, setaccentcolor] = useState('#ed8796');
+    const [accentcolor, setaccentcolor] = useState('#e78284');
     const [islightbackground, setislightbackground] = useState(false);
     const [inverselabelcolor, setinverselabelcolor] = useState(false);
 

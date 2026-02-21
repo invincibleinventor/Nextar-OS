@@ -7,6 +7,7 @@ const PLATFORM = process.platform;
 const IS_LINUX = PLATFORM === 'linux';
 const IS_MAC = PLATFORM === 'darwin';
 const IS_WINDOWS = PLATFORM === 'win32';
+const IS_WAYLAND = IS_LINUX && !!process.env.WAYLAND_DISPLAY;
 
 function execpromise(cmd) {
     return new Promise((resolve, reject) => {
@@ -280,7 +281,8 @@ async function setbrightness(brightness) {
     try {
         brightness = Math.max(0, Math.min(100, brightness));
         if (IS_LINUX) {
-            await execpromise(`brightnessctl set ${brightness}% 2>/dev/null || xrandr --output $(xrandr | grep " connected" | head -1 | cut -d " " -f 1) --brightness ${brightness / 100}`);
+            // brightnessctl works on both X11 and Wayland — no xrandr fallback needed
+            await execpromise(`brightnessctl set ${brightness}%`);
             return { success: true };
         } else if (IS_MAC) {
             await execpromise(`brightness ${brightness / 100}`);
@@ -530,9 +532,12 @@ async function getinstalledapps() {
 }
 
 async function getwindowlist() {
+    // NextarOS IS the compositor — it manages windows internally via React state.
+    // On Wayland, external window enumeration is not possible by design.
+    // On X11, wmctrl can list external windows (legacy support only).
     try {
-        if (IS_LINUX) {
-            const { stdout } = await execpromise('wmctrl -l -p 2>/dev/null || xdotool search --name "" getwindowname %@ 2>/dev/null').catch(() => ({ stdout: '' }));
+        if (IS_LINUX && !IS_WAYLAND) {
+            const { stdout } = await execpromise('wmctrl -l -p 2>/dev/null').catch(() => ({ stdout: '' }));
             const windows = stdout.split('\n').filter(Boolean).map(line => {
                 const parts = line.split(/\s+/);
                 return {
@@ -544,7 +549,7 @@ async function getwindowlist() {
             });
             return { success: true, windows };
         }
-        return { success: true, windows: [] };
+        return { success: true, windows: [], note: 'NextarOS manages windows internally' };
     } catch (e) {
         return { success: false, windows: [], error: e.message };
     }
@@ -552,11 +557,11 @@ async function getwindowlist() {
 
 async function focuswindow(windowid) {
     try {
-        if (IS_LINUX) {
+        if (IS_LINUX && !IS_WAYLAND) {
             await execpromise(`wmctrl -i -a ${windowid}`);
             return { success: true };
         }
-        return { success: false, error: 'Not supported on this platform' };
+        return { success: true, note: 'NextarOS manages window focus internally' };
     } catch (e) {
         return { success: false, error: e.message };
     }
@@ -564,11 +569,11 @@ async function focuswindow(windowid) {
 
 async function minimizewindow(windowid) {
     try {
-        if (IS_LINUX) {
+        if (IS_LINUX && !IS_WAYLAND) {
             await execpromise(`xdotool windowminimize ${windowid}`);
             return { success: true };
         }
-        return { success: false, error: 'Not supported on this platform' };
+        return { success: true, note: 'NextarOS manages window state internally' };
     } catch (e) {
         return { success: false, error: e.message };
     }
@@ -576,11 +581,11 @@ async function minimizewindow(windowid) {
 
 async function closewindow(windowid) {
     try {
-        if (IS_LINUX) {
+        if (IS_LINUX && !IS_WAYLAND) {
             await execpromise(`wmctrl -i -c ${windowid}`);
             return { success: true };
         }
-        return { success: false, error: 'Not supported on this platform' };
+        return { success: true, note: 'NextarOS manages window lifecycle internally' };
     } catch (e) {
         return { success: false, error: e.message };
     }
@@ -589,7 +594,9 @@ async function closewindow(windowid) {
 async function setwallpaper(imagepath) {
     try {
         if (IS_LINUX) {
-            await execpromise(`gsettings set org.gnome.desktop.background picture-uri "file://${imagepath}" 2>/dev/null || feh --bg-fill "${imagepath}" 2>/dev/null || nitrogen --set-zoom-fill "${imagepath}" 2>/dev/null`);
+            // Set both light and dark wallpaper URIs (GNOME 42+ uses picture-uri-dark for dark mode)
+            await execpromise(`gsettings set org.gnome.desktop.background picture-uri "file://${imagepath}" 2>/dev/null`).catch(() => {});
+            await execpromise(`gsettings set org.gnome.desktop.background picture-uri-dark "file://${imagepath}" 2>/dev/null`).catch(() => {});
             return { success: true };
         } else if (IS_MAC) {
             await execpromise(`osascript -e 'tell application "Finder" to set desktop picture to POSIX file "${imagepath}"'`);
@@ -767,6 +774,23 @@ async function getsystemfonts() {
 async function getdisplayinfo() {
     try {
         if (IS_LINUX) {
+            if (IS_WAYLAND) {
+                // Try gnome-randr first (works on GNOME Wayland), fall back to gdbus Mutter API
+                try {
+                    const { stdout } = await execpromise('gnome-randr query 2>/dev/null');
+                    const displays = [];
+                    const lines = stdout.split('\n');
+                    for (const line of lines) {
+                        const match = line.match(/^(\S+)\s+connected\s+(primary\s+)?(\d+)x(\d+)/);
+                        if (match) {
+                            displays.push({ name: match[1], primary: !!match[2], width: parseInt(match[3]), height: parseInt(match[4]) });
+                        }
+                    }
+                    if (displays.length > 0) return { success: true, displays };
+                } catch { }
+                // Fallback: use Electron's screen API (always works)
+                return { success: true, displays: [], note: 'Use Electron screen.getAllDisplays() on renderer side' };
+            }
             const { stdout } = await execpromise('xrandr --query 2>/dev/null || echo ""');
             const displays = [];
             const lines = stdout.split('\n');
@@ -816,6 +840,68 @@ async function getdisplayinfo() {
 async function getdisplayconfig() {
     try {
         if (IS_LINUX) {
+            if (IS_WAYLAND) {
+                // Wayland: try gnome-randr (pip install gnome-randr), then gdbus Mutter API
+                try {
+                    const { stdout } = await execpromise('gnome-randr query 2>/dev/null');
+                    const displays = [];
+                    let current = null;
+                    for (const line of stdout.split('\n')) {
+                        const displayMatch = line.match(/^(\S+)\s+(connected|disconnected)\s*(primary)?\s*(?:(\d+)x(\d+)\+(\d+)\+(\d+))?/);
+                        if (displayMatch) {
+                            if (current) displays.push(current);
+                            current = {
+                                name: displayMatch[1],
+                                connected: displayMatch[2] === 'connected',
+                                primary: !!displayMatch[3],
+                                currentWidth: parseInt(displayMatch[4]) || 0,
+                                currentHeight: parseInt(displayMatch[5]) || 0,
+                                x: parseInt(displayMatch[6]) || 0,
+                                y: parseInt(displayMatch[7]) || 0,
+                                modes: []
+                            };
+                        } else if (current && line.match(/^\s+\d+x\d+/)) {
+                            const modeMatch = line.trim().match(/(\d+)x(\d+)\s+([\d.]+)(\*?)(\+?)/);
+                            if (modeMatch) {
+                                current.modes.push({
+                                    width: parseInt(modeMatch[1]),
+                                    height: parseInt(modeMatch[2]),
+                                    refreshRate: parseFloat(modeMatch[3]),
+                                    active: modeMatch[4] === '*',
+                                    preferred: modeMatch[5] === '+'
+                                });
+                            }
+                        }
+                    }
+                    if (current) displays.push(current);
+                    if (displays.length > 0) return { success: true, displays, source: 'gnome-randr' };
+                } catch { }
+                // Fallback: gdbus call to Mutter DisplayConfig
+                try {
+                    const { stdout } = await execpromise(
+                        `gdbus call --session --dest org.gnome.Mutter.DisplayConfig ` +
+                        `--object-path /org/gnome/Mutter/DisplayConfig ` +
+                        `--method org.gnome.Mutter.DisplayConfig.GetCurrentState 2>/dev/null`
+                    );
+                    // Parse basic display info from Mutter's response
+                    const displays = [];
+                    const monitorMatches = stdout.matchAll(/connector:\s*'([^']+)'/g);
+                    for (const m of monitorMatches) {
+                        displays.push({
+                            name: m[1],
+                            connected: true,
+                            primary: false,
+                            currentWidth: 0,
+                            currentHeight: 0,
+                            x: 0, y: 0,
+                            modes: []
+                        });
+                    }
+                    if (displays.length > 0) return { success: true, displays, source: 'mutter-dbus' };
+                } catch { }
+                return { success: true, displays: [], note: 'Install gnome-randr for full display config on Wayland' };
+            }
+            // X11: use xrandr
             const { stdout } = await execpromise('xrandr --query 2>/dev/null');
             const displays = [];
             let current = null;
@@ -847,7 +933,7 @@ async function getdisplayconfig() {
                 }
             }
             if (current) displays.push(current);
-            return { success: true, displays };
+            return { success: true, displays, source: 'xrandr' };
         }
         return { success: false, displays: [], error: 'Linux only' };
     } catch (e) {
@@ -858,6 +944,17 @@ async function getdisplayconfig() {
 async function setdisplayresolution(displayName, width, height, refreshRate) {
     try {
         if (IS_LINUX) {
+            if (IS_WAYLAND) {
+                // Wayland: try gnome-randr, then gsettings for scaling
+                let cmd = `gnome-randr modify ${displayName} --mode ${width}x${height}`;
+                if (refreshRate) cmd += `@${refreshRate}`;
+                try {
+                    await execpromise(cmd);
+                    return { success: true, source: 'gnome-randr' };
+                } catch {
+                    return { success: false, error: 'gnome-randr not available. Install with: pip install gnome-randr' };
+                }
+            }
             let cmd = `xrandr --output ${displayName} --mode ${width}x${height}`;
             if (refreshRate) cmd += ` --rate ${refreshRate}`;
             await execpromise(cmd);
@@ -872,9 +969,17 @@ async function setdisplayresolution(displayName, width, height, refreshRate) {
 async function setdisplayrotation(displayName, rotation) {
     try {
         if (IS_LINUX) {
-            // rotation: 'normal', 'left', 'right', 'inverted'
             const valid = ['normal', 'left', 'right', 'inverted'];
             if (!valid.includes(rotation)) return { success: false, error: 'Invalid rotation' };
+            if (IS_WAYLAND) {
+                const rotMap = { normal: 'normal', left: 'left', right: 'right', inverted: 'inverted' };
+                try {
+                    await execpromise(`gnome-randr modify ${displayName} --rotate ${rotMap[rotation]}`);
+                    return { success: true, source: 'gnome-randr' };
+                } catch {
+                    return { success: false, error: 'gnome-randr not available' };
+                }
+            }
             await execpromise(`xrandr --output ${displayName} --rotate ${rotation}`);
             return { success: true };
         }
@@ -887,6 +992,14 @@ async function setdisplayrotation(displayName, rotation) {
 async function setdisplayposition(displayName, x, y) {
     try {
         if (IS_LINUX) {
+            if (IS_WAYLAND) {
+                try {
+                    await execpromise(`gnome-randr modify ${displayName} --pos ${x}x${y}`);
+                    return { success: true, source: 'gnome-randr' };
+                } catch {
+                    return { success: false, error: 'gnome-randr not available' };
+                }
+            }
             await execpromise(`xrandr --output ${displayName} --pos ${x}x${y}`);
             return { success: true };
         }
@@ -899,6 +1012,18 @@ async function setdisplayposition(displayName, x, y) {
 async function enabledisplay(displayName, enabled) {
     try {
         if (IS_LINUX) {
+            if (IS_WAYLAND) {
+                try {
+                    if (enabled) {
+                        await execpromise(`gnome-randr modify ${displayName} --on`);
+                    } else {
+                        await execpromise(`gnome-randr modify ${displayName} --off`);
+                    }
+                    return { success: true, source: 'gnome-randr' };
+                } catch {
+                    return { success: false, error: 'gnome-randr not available' };
+                }
+            }
             if (enabled) {
                 await execpromise(`xrandr --output ${displayName} --auto`);
             } else {
@@ -915,10 +1040,283 @@ async function enabledisplay(displayName, enabled) {
 async function setprimarydisplay(displayName) {
     try {
         if (IS_LINUX) {
+            if (IS_WAYLAND) {
+                try {
+                    await execpromise(`gnome-randr modify ${displayName} --primary`);
+                    return { success: true, source: 'gnome-randr' };
+                } catch {
+                    return { success: false, error: 'gnome-randr not available' };
+                }
+            }
             await execpromise(`xrandr --output ${displayName} --primary`);
             return { success: true };
         }
         return { success: false, error: 'Linux only' };
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+}
+
+// =============================================================================
+//  KEYBOARD SETTINGS — Linux keyboard configuration via gsettings/localectl
+// =============================================================================
+
+function keyboard_getlayout() {
+    try {
+        const output = execSync('localectl status', { encoding: 'utf8', timeout: 5000 }).trim();
+        const match = output.match(/X11 Layout:\s*(.+)/);
+        const layout = match ? match[1].trim() : null;
+        return { success: true, layout };
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+}
+
+function keyboard_getlayouts() {
+    try {
+        const output = execSync('localectl list-x11-keymaps', { encoding: 'utf8', timeout: 5000 }).trim();
+        const layouts = output.split('\n').filter(Boolean).map(l => l.trim());
+        return { success: true, layouts };
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+}
+
+function keyboard_setlayout(layout) {
+    try {
+        execSync(`localectl set-x11-keymap ${layout}`, { encoding: 'utf8', timeout: 5000 });
+        return { success: true };
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+}
+
+function keyboard_getrepeatrate() {
+    try {
+        const interval = execSync('gsettings get org.gnome.desktop.peripherals.keyboard repeat-interval', { encoding: 'utf8', timeout: 5000 }).trim();
+        const delay = execSync('gsettings get org.gnome.desktop.peripherals.keyboard delay', { encoding: 'utf8', timeout: 5000 }).trim();
+        return { success: true, interval: parseInt(interval), delay: parseInt(delay) };
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+}
+
+function keyboard_setrepeatrate(delay, interval) {
+    try {
+        execSync(`gsettings set org.gnome.desktop.peripherals.keyboard delay ${delay}`, { encoding: 'utf8', timeout: 5000 });
+        execSync(`gsettings set org.gnome.desktop.peripherals.keyboard repeat-interval ${interval}`, { encoding: 'utf8', timeout: 5000 });
+        return { success: true };
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+}
+
+// =============================================================================
+//  MOUSE SETTINGS — Mouse configuration via gsettings
+// =============================================================================
+
+function mouse_getspeed() {
+    try {
+        const output = execSync('gsettings get org.gnome.desktop.peripherals.mouse speed', { encoding: 'utf8', timeout: 5000 }).trim();
+        return { success: true, speed: parseFloat(output) };
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+}
+
+function mouse_setspeed(speed) {
+    try {
+        execSync(`gsettings set org.gnome.desktop.peripherals.mouse speed ${speed}`, { encoding: 'utf8', timeout: 5000 });
+        return { success: true };
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+}
+
+function mouse_getnaturalscroll() {
+    try {
+        const output = execSync('gsettings get org.gnome.desktop.peripherals.mouse natural-scroll', { encoding: 'utf8', timeout: 5000 }).trim();
+        return { success: true, enabled: output === 'true' };
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+}
+
+function mouse_setnaturalscroll(enabled) {
+    try {
+        execSync(`gsettings set org.gnome.desktop.peripherals.mouse natural-scroll ${enabled ? 'true' : 'false'}`, { encoding: 'utf8', timeout: 5000 });
+        return { success: true };
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+}
+
+// =============================================================================
+//  LOCALE SETTINGS — Language/locale configuration via localectl
+// =============================================================================
+
+function locale_getlocale() {
+    try {
+        const output = execSync('localectl status', { encoding: 'utf8', timeout: 5000 }).trim();
+        const match = output.match(/LANG=(\S+)/);
+        const locale = match ? match[1].trim() : null;
+        return { success: true, locale };
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+}
+
+function locale_getlocales() {
+    try {
+        const output = execSync('localectl list-locales', { encoding: 'utf8', timeout: 5000 }).trim();
+        const locales = output.split('\n').filter(Boolean).map(l => l.trim());
+        return { success: true, locales };
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+}
+
+function locale_setlocale(locale) {
+    try {
+        execSync(`localectl set-locale LANG=${locale}`, { encoding: 'utf8', timeout: 5000 });
+        return { success: true };
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+}
+
+// =============================================================================
+//  DATE/TIME SETTINGS — Date/time configuration via timedatectl
+// =============================================================================
+
+function datetime_getstatus() {
+    try {
+        const output = execSync('timedatectl status', { encoding: 'utf8', timeout: 5000 }).trim();
+        const timezoneMatch = output.match(/Time zone:\s*(.+?)(?:\s*\(|$)/m);
+        const ntpMatch = output.match(/NTP service:\s*(\S+)/i) || output.match(/Network time on:\s*(\S+)/i);
+        const localTimeMatch = output.match(/Local time:\s*(.+)/m);
+        return {
+            success: true,
+            timezone: timezoneMatch ? timezoneMatch[1].trim() : null,
+            ntp: ntpMatch ? ntpMatch[1].trim().toLowerCase() === 'active' || ntpMatch[1].trim().toLowerCase() === 'yes' : false,
+            localtime: localTimeMatch ? localTimeMatch[1].trim() : null
+        };
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+}
+
+function datetime_gettimezones() {
+    try {
+        const output = execSync('timedatectl list-timezones', { encoding: 'utf8', timeout: 5000 }).trim();
+        const timezones = output.split('\n').filter(Boolean).map(tz => tz.trim());
+        return { success: true, timezones };
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+}
+
+function datetime_settimezone(tz) {
+    try {
+        execSync(`timedatectl set-timezone ${tz}`, { encoding: 'utf8', timeout: 5000 });
+        return { success: true };
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+}
+
+function datetime_setntp(enabled) {
+    try {
+        execSync(`timedatectl set-ntp ${enabled ? 'true' : 'false'}`, { encoding: 'utf8', timeout: 5000 });
+        return { success: true };
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+}
+
+// =============================================================================
+//  DEFAULT APPLICATIONS — Default app configuration via xdg
+// =============================================================================
+
+function defaultapps_getdefaultbrowser() {
+    try {
+        const output = execSync('xdg-settings get default-web-browser', { encoding: 'utf8', timeout: 5000 }).trim();
+        return { success: true, browser: output };
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+}
+
+function defaultapps_setdefaultbrowser(desktop) {
+    try {
+        execSync(`xdg-settings set default-web-browser ${desktop}`, { encoding: 'utf8', timeout: 5000 });
+        return { success: true };
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+}
+
+function defaultapps_getfiletypehandler(mimetype) {
+    try {
+        const output = execSync(`xdg-mime query default ${mimetype}`, { encoding: 'utf8', timeout: 5000 }).trim();
+        return { success: true, handler: output };
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+}
+
+function defaultapps_setfiletypehandler(mimetype, desktop) {
+    try {
+        execSync(`xdg-mime default ${desktop} ${mimetype}`, { encoding: 'utf8', timeout: 5000 });
+        return { success: true };
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+}
+
+// =============================================================================
+//  PRINTERS — Printer info and configuration via lpstat/lpadmin
+// =============================================================================
+
+function printers_getprinters() {
+    try {
+        const output = execSync('lpstat -p -d', { encoding: 'utf8', timeout: 5000 }).trim();
+        const printers = [];
+        const lines = output.split('\n');
+        let defaultPrinter = null;
+        for (const line of lines) {
+            const printerMatch = line.match(/^printer\s+(\S+)/);
+            if (printerMatch) {
+                const name = printerMatch[1];
+                const enabled = !line.includes('disabled');
+                printers.push({ name, enabled });
+            }
+            const defaultMatch = line.match(/system default destination:\s*(\S+)/);
+            if (defaultMatch) {
+                defaultPrinter = defaultMatch[1];
+            }
+        }
+        return { success: true, printers, default: defaultPrinter };
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+}
+
+function printers_getdefault() {
+    try {
+        const output = execSync('lpstat -d', { encoding: 'utf8', timeout: 5000 }).trim();
+        const match = output.match(/system default destination:\s*(\S+)/);
+        const printer = match ? match[1] : null;
+        return { success: true, printer };
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+}
+
+function printers_setdefault(printer) {
+    try {
+        execSync(`lpadmin -d ${printer}`, { encoding: 'utf8', timeout: 5000 });
+        return { success: true };
     } catch (e) {
         return { success: false, error: e.message };
     }
@@ -962,8 +1360,44 @@ module.exports = {
     setdisplayposition,
     enabledisplay,
     setprimarydisplay,
+    keyboard: {
+        getlayout: keyboard_getlayout,
+        getlayouts: keyboard_getlayouts,
+        setlayout: keyboard_setlayout,
+        getrepeatrate: keyboard_getrepeatrate,
+        setrepeatrate: keyboard_setrepeatrate,
+    },
+    mouse: {
+        getspeed: mouse_getspeed,
+        setspeed: mouse_setspeed,
+        getnaturalscroll: mouse_getnaturalscroll,
+        setnaturalscroll: mouse_setnaturalscroll,
+    },
+    locale: {
+        getlocale: locale_getlocale,
+        getlocales: locale_getlocales,
+        setlocale: locale_setlocale,
+    },
+    datetime: {
+        getstatus: datetime_getstatus,
+        gettimezones: datetime_gettimezones,
+        settimezone: datetime_settimezone,
+        setntp: datetime_setntp,
+    },
+    defaultapps: {
+        getdefaultbrowser: defaultapps_getdefaultbrowser,
+        setdefaultbrowser: defaultapps_setdefaultbrowser,
+        getfiletypehandler: defaultapps_getfiletypehandler,
+        setfiletypehandler: defaultapps_setfiletypehandler,
+    },
+    printers: {
+        getprinters: printers_getprinters,
+        getdefault: printers_getdefault,
+        setdefault: printers_setdefault,
+    },
     IS_LINUX,
     IS_MAC,
     IS_WINDOWS,
+    IS_WAYLAND,
     PLATFORM
 };

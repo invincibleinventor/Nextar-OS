@@ -37,12 +37,10 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
 
     const photos = useMemo(() => {
         if (!user) return [];
-        const icloudFolder = files.find(f => f.name === 'iCloud Drive' && f.owner === user.username);
-        const icloudId = icloudFolder ? icloudFolder.id : (user.username === 'guest' ? 'guest-icloud' : `user-${user.username}-icloud`);
 
         return files.filter(f =>
-            (photomimetypes.some(mt => f.mimetype.startsWith('image/') || f.mimetype === mt)) &&
-            (f.parent === icloudId)
+            f.mimetype.startsWith('image/') &&
+            f.owner === user.username
         )
             .map(f => ({
                 id: f.id,

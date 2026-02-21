@@ -24,7 +24,7 @@ export const initialnotifications: Notification[] = [
         title: 'Welcome to NextarOS!',
         description: 'Your cloud desktop is ready. Explore your apps and make it yours!',
         time: '2h ago',
-        icon: '/code.png',
+        icon: '/about.png',
         appid: 'projectdashboard'
     }
 ];
