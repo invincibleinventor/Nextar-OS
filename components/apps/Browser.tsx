@@ -198,7 +198,7 @@ export default function Browser({ initialurl = 'https://google.com', appId = 'br
                         <div className="flex flex-col items-center justify-center h-full text-[--text-muted] p-8">
                             <h1 className="text-2xl font-bold text-[--text-muted] mb-8">Favorites</h1>
                             <div className="grid grid-cols-4 gap-6">
-                                {['Apple', 'iCloud', 'GitHub', 'LinkedIn'].map(site => (
+                                {['Google', 'GitHub', 'LinkedIn', 'YouTube'].map(site => (
                                     <div key={site} className="flex flex-col items-center gap-2 cursor-pointer">
                                         <div className="w-14 h-14 bg-overlay flex items-center justify-center">
                                             <span className="text-xl font-bold text-[--text-muted]">{site[0]}</span>
@@ -320,7 +320,7 @@ export default function Browser({ initialurl = 'https://google.com', appId = 'br
                             <Image src="/icons/browser.png" width={96} height={96} className="w-24 h-24 mb-8 opacity-20 filter grayscale" alt="Browser" />
                             <h1 className="text-2xl font-bold text-[--text-muted] mb-8">Favorites</h1>
                             <div className="grid grid-cols-4 gap-8">
-                                {['Apple', 'iCloud', 'GitHub', 'LinkedIn'].map(site => (
+                                {['Google', 'GitHub', 'LinkedIn', 'YouTube'].map(site => (
                                     <div key={site} className="flex flex-col items-center gap-2 group cursor-pointer" onClick={() => handleSearch({ preventDefault: () => { }, currentTarget: { querySelector: () => ({ value: `https://${site.toLowerCase()}.com` }) } } as any)}>
                                         <div className="w-14 h-14 bg-overlay flex items-center justify-center group-hover:scale-105 transition-transform">
                                             <span className="text-xl font-bold text-[--text-muted]">{site[0]}</span>

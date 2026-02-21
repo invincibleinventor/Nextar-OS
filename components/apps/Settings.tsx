@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
-import { IoChevronForward, IoChevronBack, IoColorPaletteOutline, IoNotificationsOutline, IoSettingsOutline, IoWifi, IoBluetooth, IoGlobeOutline, IoMoon, IoAccessibilityOutline, IoSearch, IoImageOutline, IoVolumeHigh, IoCheckmark, IoRefresh, IoServerOutline, IoCloudOutline } from 'react-icons/io5';
+import { IoChevronForward, IoChevronBack, IoColorPaletteOutline, IoNotificationsOutline, IoSettingsOutline, IoWifi, IoBluetooth, IoGlobeOutline, IoMoon, IoAccessibilityOutline, IoSearch, IoImageOutline, IoVolumeHigh, IoCheckmark, IoRefresh, IoServerOutline, IoCloudOutline, IoKeypadOutline, IoHandLeftOutline, IoLanguageOutline, IoTimeOutline, IoBatteryChargingOutline, IoAppsOutline, IoPrintOutline, IoDesktopOutline } from 'react-icons/io5';
 import { useSettings } from '../SettingsContext';
 import { useTheme } from '../ThemeContext';
 import { useWindows } from '../WindowContext';
@@ -11,24 +11,34 @@ import { personal, openSystemItem } from '../data';
 import { motion, AnimatePresence } from 'framer-motion'
 import UserManagement from './Settings/UserManagement';
 import { IoPeopleOutline } from 'react-icons/io5';
-import { iselectron, wifi as wifiapi, bluetooth as bluetoothapi, audio as audioapi } from '@/utils/platform';
+import { iselectron, wifi as wifiapi, bluetooth as bluetoothapi, audio as audioapi, keyboard as keyboardapi, mouse as mouseapi, locale as localeapi, datetime as datetimeapi, defaultapps as defaultappsapi, printers as printersapi } from '@/utils/platform';
 import { useCheerpXSafe } from '../CheerpXContext';
 
 const sidebaritems = [
-    { id: 'wifi', label: 'Wi-Fi', icon: IoWifi, color: '#8aadf4' },
-    { id: 'bluetooth', label: 'Bluetooth', icon: IoBluetooth, color: '#8aadf4' },
-    { id: 'network', label: 'Network', icon: IoGlobeOutline, color: '#8aadf4' },
+    { id: 'wifi', label: 'Wi-Fi', icon: IoWifi, color: 'var(--pastel-blue)' },
+    { id: 'bluetooth', label: 'Bluetooth', icon: IoBluetooth, color: 'var(--pastel-blue)' },
+    { id: 'network', label: 'Network', icon: IoGlobeOutline, color: 'var(--pastel-blue)' },
     { type: 'spacer' },
-    { id: 'notifications', label: 'Notifications', icon: IoNotificationsOutline, color: '#ed8796' },
-    { id: 'sound', label: 'Sound', icon: IoVolumeHigh, color: '#f5bde6' },
-    { id: 'focus', label: 'Focus', icon: IoMoon, color: '#c6a0f6' },
+    { id: 'notifications', label: 'Notifications', icon: IoNotificationsOutline, color: 'var(--pastel-red)' },
+    { id: 'sound', label: 'Sound', icon: IoVolumeHigh, color: 'var(--pastel-pink)' },
+    { id: 'focus', label: 'Focus', icon: IoMoon, color: 'var(--pastel-mauve)' },
     { type: 'spacer' },
-    { id: 'general', label: 'General', icon: IoSettingsOutline, color: '#6e738d' },
-    { id: 'appearance', label: 'Appearance', icon: IoColorPaletteOutline, color: '#f5a97f' },
-    { id: 'accessibility', label: 'Accessibility', icon: IoAccessibilityOutline, color: '#8bd5ca' },
-    { id: 'wallpaper', label: 'Wallpaper', icon: IoImageOutline, color: '#8aadf4' },
+    { id: 'general', label: 'General', icon: IoSettingsOutline, color: 'var(--text-muted)' },
+    { id: 'appearance', label: 'Appearance', icon: IoColorPaletteOutline, color: 'var(--pastel-peach)' },
+    { id: 'accessibility', label: 'Accessibility', icon: IoAccessibilityOutline, color: 'var(--pastel-teal)' },
+    { id: 'wallpaper', label: 'Wallpaper', icon: IoImageOutline, color: 'var(--pastel-blue)' },
     { type: 'spacer' },
-    { id: 'storage', label: 'Storage', icon: IoServerOutline, color: '#a6da95' },
+    { id: 'displays', label: 'Displays', icon: IoDesktopOutline, color: 'var(--pastel-blue)' },
+    { id: 'keyboard', label: 'Keyboard', icon: IoKeypadOutline, color: 'var(--pastel-yellow)' },
+    { id: 'mouse', label: 'Mouse & Touchpad', icon: IoHandLeftOutline, color: 'var(--pastel-peach)' },
+    { type: 'spacer' },
+    { id: 'language', label: 'Language & Region', icon: IoLanguageOutline, color: 'var(--pastel-mauve)' },
+    { id: 'datetime', label: 'Date & Time', icon: IoTimeOutline, color: 'var(--pastel-teal)' },
+    { id: 'power', label: 'Power', icon: IoBatteryChargingOutline, color: 'var(--pastel-green)' },
+    { type: 'spacer' },
+    { id: 'defaultapps', label: 'Default Apps', icon: IoAppsOutline, color: 'var(--pastel-pink)' },
+    { id: 'printers', label: 'Printers', icon: IoPrintOutline, color: 'var(--text-muted)' },
+    { id: 'storage', label: 'Storage', icon: IoServerOutline, color: 'var(--pastel-green)' },
 ];
 
 export default function Settings({ initialPage, windowId }: { initialPage?: string, windowId?: string }) {
@@ -60,6 +70,33 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
 
     const [wallpaperinput, setwallpaperinput] = useState(wallpaperurl);
     useEffect(() => { setwallpaperinput(wallpaperurl); }, [wallpaperurl]);
+
+    // Keyboard state
+    const [kbLayout, setKbLayout] = useState('');
+    const [kbLayouts, setKbLayouts] = useState<string[]>([]);
+    const [kbRepeatDelay, setKbRepeatDelay] = useState(500);
+    const [kbRepeatInterval, setKbRepeatInterval] = useState(30);
+
+    // Mouse state
+    const [mouseSpeed, setMouseSpeed] = useState(0);
+    const [naturalScroll, setNaturalScroll] = useState(false);
+
+    // Locale state
+    const [currentLocale, setCurrentLocale] = useState('');
+    const [availableLocales, setAvailableLocales] = useState<string[]>([]);
+
+    // DateTime state
+    const [dtTimezone, setDtTimezone] = useState('');
+    const [dtNtp, setDtNtp] = useState(true);
+    const [dtLocalTime, setDtLocalTime] = useState('');
+    const [dtTimezones, setDtTimezones] = useState<string[]>([]);
+
+    // Default Apps state
+    const [defaultBrowser, setDefaultBrowser] = useState('');
+
+    // Printers state
+    const [printerList, setPrinterList] = useState<any[]>([]);
+    const [defaultPrinter, setDefaultPrinter] = useState('');
 
     const fetchwifistatus = useCallback(async () => {
         if (!iselectron) return;
@@ -102,6 +139,58 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
         setmuted(status.muted || false);
     }, []);
 
+    const fetchkeyboard = useCallback(async () => {
+        if (!iselectron) return;
+        const layout = await keyboardapi.getlayout();
+        if (layout.success) setKbLayout(layout.layout || '');
+        const layouts = await keyboardapi.getlayouts();
+        if (layouts.success) setKbLayouts(layouts.layouts || []);
+        const repeat = await keyboardapi.getrepeatrate();
+        if (repeat.success) { setKbRepeatDelay(repeat.delay || 500); setKbRepeatInterval(repeat.interval || 30); }
+    }, []);
+
+    const fetchmouse = useCallback(async () => {
+        if (!iselectron) return;
+        const speed = await mouseapi.getspeed();
+        if (speed.success) setMouseSpeed(speed.speed || 0);
+        const ns = await mouseapi.getnaturalscroll();
+        if (ns.success) setNaturalScroll(ns.enabled || false);
+    }, []);
+
+    const fetchlocale = useCallback(async () => {
+        if (!iselectron) return;
+        const loc = await localeapi.getlocale();
+        if (loc.success) setCurrentLocale(loc.locale || '');
+        const locs = await localeapi.getlocales();
+        if (locs.success) setAvailableLocales(locs.locales || []);
+    }, []);
+
+    const fetchdatetime = useCallback(async () => {
+        if (!iselectron) return;
+        const status = await datetimeapi.getstatus();
+        if (status.success) {
+            setDtTimezone(status.timezone || '');
+            setDtNtp(status.ntp ?? true);
+            setDtLocalTime(status.localtime || '');
+        }
+        const tzs = await datetimeapi.gettimezones();
+        if (tzs.success) setDtTimezones(tzs.timezones || []);
+    }, []);
+
+    const fetchdefaultapps = useCallback(async () => {
+        if (!iselectron) return;
+        const browser = await defaultappsapi.getbrowser();
+        if (browser.success) setDefaultBrowser(browser.browser || '');
+    }, []);
+
+    const fetchprinters = useCallback(async () => {
+        if (!iselectron) return;
+        const result = await printersapi.getprinters();
+        if (result.success) setPrinterList(result.printers || []);
+        const def = await printersapi.getdefault();
+        if (def.success) setDefaultPrinter(def.printer || '');
+    }, []);
+
     useEffect(() => {
         if (activetab === 'wifi') {
             fetchwifistatus();
@@ -111,6 +200,18 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
             fetchbtdevices();
         } else if (activetab === 'sound') {
             fetchaudiostatus();
+        } else if (activetab === 'keyboard') {
+            fetchkeyboard();
+        } else if (activetab === 'mouse') {
+            fetchmouse();
+        } else if (activetab === 'language') {
+            fetchlocale();
+        } else if (activetab === 'datetime') {
+            fetchdatetime();
+        } else if (activetab === 'defaultapps') {
+            fetchdefaultapps();
+        } else if (activetab === 'printers') {
+            fetchprinters();
         } else if (activetab === 'storage') {
             (async () => {
                 try {
@@ -131,7 +232,7 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                 }
             })();
         }
-    }, [activetab, fetchwifistatus, fetchwifinetworks, fetchbtstatus, fetchbtdevices, fetchaudiostatus]);
+    }, [activetab, fetchwifistatus, fetchwifinetworks, fetchbtstatus, fetchbtdevices, fetchaudiostatus, fetchkeyboard, fetchmouse, fetchlocale, fetchdatetime, fetchdefaultapps, fetchprinters]);
 
     useEffect(() => {
         if (!containerref.current) return;
@@ -512,7 +613,7 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                             <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2 mt-4">Accent Color</div>
                             <SettingsGroup>
                                 <div className="p-4 flex gap-3 flex-wrap">
-                                    {['#ed8796', '#f5a97f', '#eed49f', '#a6da95', '#8bd5ca', '#8aadf4', '#b7bdf8', '#f5bde6', '#c6a0f6'].map((color) => (
+                                    {['#e78284', '#ef9f76', '#e5c890', '#a6d189', '#81c8be', '#8caaee', '#babbf1', '#f4b8e4', '#ca9ee6'].map((color) => (
                                         <button
                                             key={color}
                                             onClick={() => setaccentcolor(color)}
@@ -865,7 +966,230 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                         </>
                     )}
 
-                    {activetab !== 'general' && activetab !== 'appearance' && activetab !== 'users' && activetab !== 'wallpaper' && activetab !== 'wifi' && activetab !== 'bluetooth' && activetab !== 'sound' && activetab !== 'network' && activetab !== 'storage' && (
+                    {activetab === 'displays' && (
+                        <>
+                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Display</div>
+                            {!iselectron ? (
+                                <SettingsGroup>
+                                    <SettingsRow label="Display Settings" value="Requires native mode" last />
+                                </SettingsGroup>
+                            ) : (
+                                <SettingsGroup>
+                                    <SettingsRow label="Resolution" value="System managed" />
+                                    <SettingsRow label="Refresh Rate" value="System managed" />
+                                    <SettingsRow label="Scale" value="System managed" last />
+                                </SettingsGroup>
+                            )}
+                            <p className="text-[10px] text-[--text-muted] pl-3 mt-2">Display configuration is managed by the Wayland compositor.</p>
+                        </>
+                    )}
+
+                    {activetab === 'keyboard' && (
+                        <>
+                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Keyboard</div>
+                            {!iselectron ? (
+                                <SettingsGroup>
+                                    <SettingsRow label="Keyboard Settings" value="Requires native mode" last />
+                                </SettingsGroup>
+                            ) : (
+                                <>
+                                    <SettingsGroup>
+                                        <SettingsRow label="Layout" value={kbLayout || 'Loading...'} />
+                                        <div className="px-4 py-3 border-b border-[--border-color]">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-[13px] font-medium text-[--text-color]">Change Layout</span>
+                                            </div>
+                                            <select
+                                                value={kbLayout}
+                                                onChange={async (e) => {
+                                                    const layout = e.target.value;
+                                                    await keyboardapi.setlayout(layout);
+                                                    setKbLayout(layout);
+                                                }}
+                                                className="mt-2 w-full bg-overlay text-[--text-color] text-[13px] px-2 py-1.5 outline-none border border-[--border-color]"
+                                            >
+                                                {kbLayouts.slice(0, 100).map(l => <option key={l} value={l}>{l}</option>)}
+                                            </select>
+                                        </div>
+                                    </SettingsGroup>
+                                    <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2 mt-4">Key Repeat</div>
+                                    <SettingsGroup>
+                                        <div className="px-4 py-3 border-b border-[--border-color]">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <span className="text-[13px] font-medium text-[--text-color]">Delay (ms)</span>
+                                                <span className="text-[12px] text-[--text-muted]">{kbRepeatDelay}</span>
+                                            </div>
+                                            <input type="range" min="100" max="2000" step="50" value={kbRepeatDelay}
+                                                onChange={(e) => setKbRepeatDelay(Number(e.target.value))}
+                                                onMouseUp={() => keyboardapi.setrepeatrate(kbRepeatDelay, kbRepeatInterval)}
+                                                className="w-full accent-accent" />
+                                        </div>
+                                        <div className="px-4 py-3">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <span className="text-[13px] font-medium text-[--text-color]">Interval (ms)</span>
+                                                <span className="text-[12px] text-[--text-muted]">{kbRepeatInterval}</span>
+                                            </div>
+                                            <input type="range" min="10" max="200" step="5" value={kbRepeatInterval}
+                                                onChange={(e) => setKbRepeatInterval(Number(e.target.value))}
+                                                onMouseUp={() => keyboardapi.setrepeatrate(kbRepeatDelay, kbRepeatInterval)}
+                                                className="w-full accent-accent" />
+                                        </div>
+                                    </SettingsGroup>
+                                </>
+                            )}
+                        </>
+                    )}
+
+                    {activetab === 'mouse' && (
+                        <>
+                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Mouse & Touchpad</div>
+                            {!iselectron ? (
+                                <SettingsGroup>
+                                    <SettingsRow label="Mouse Settings" value="Requires native mode" last />
+                                </SettingsGroup>
+                            ) : (
+                                <>
+                                    <SettingsGroup>
+                                        <div className="px-4 py-3 border-b border-[--border-color]">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <span className="text-[13px] font-medium text-[--text-color]">Pointer Speed</span>
+                                                <span className="text-[12px] text-[--text-muted]">{mouseSpeed.toFixed(2)}</span>
+                                            </div>
+                                            <input type="range" min="-1" max="1" step="0.05" value={mouseSpeed}
+                                                onChange={(e) => setMouseSpeed(Number(e.target.value))}
+                                                onMouseUp={() => mouseapi.setspeed(mouseSpeed)}
+                                                className="w-full accent-accent" />
+                                        </div>
+                                        <SettingsRow label="Natural Scrolling" toggle toggleValue={naturalScroll} onToggle={async (v: boolean) => { setNaturalScroll(v); await mouseapi.setnaturalscroll(v); }} last />
+                                    </SettingsGroup>
+                                </>
+                            )}
+                        </>
+                    )}
+
+                    {activetab === 'language' && (
+                        <>
+                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Language & Region</div>
+                            {!iselectron ? (
+                                <SettingsGroup>
+                                    <SettingsRow label="Language" value="Requires native mode" last />
+                                </SettingsGroup>
+                            ) : (
+                                <SettingsGroup>
+                                    <SettingsRow label="Current Locale" value={currentLocale || 'Loading...'} />
+                                    <div className="px-4 py-3">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-[13px] font-medium text-[--text-color]">Change Locale</span>
+                                        </div>
+                                        <select
+                                            value={currentLocale}
+                                            onChange={async (e) => {
+                                                const loc = e.target.value;
+                                                await localeapi.setlocale(loc);
+                                                setCurrentLocale(loc);
+                                            }}
+                                            className="mt-2 w-full bg-overlay text-[--text-color] text-[13px] px-2 py-1.5 outline-none border border-[--border-color]"
+                                        >
+                                            {availableLocales.slice(0, 200).map(l => <option key={l} value={l}>{l}</option>)}
+                                        </select>
+                                        <p className="text-[10px] text-[--text-muted] mt-2">Changes require a session restart to take full effect.</p>
+                                    </div>
+                                </SettingsGroup>
+                            )}
+                        </>
+                    )}
+
+                    {activetab === 'datetime' && (
+                        <>
+                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Date & Time</div>
+                            {!iselectron ? (
+                                <SettingsGroup>
+                                    <SettingsRow label="Date & Time" value="Requires native mode" last />
+                                </SettingsGroup>
+                            ) : (
+                                <>
+                                    <SettingsGroup>
+                                        <SettingsRow label="Local Time" value={dtLocalTime || 'Loading...'} />
+                                        <SettingsRow label="Timezone" value={dtTimezone || 'Loading...'} />
+                                        <SettingsRow label="Automatic Date & Time (NTP)" toggle toggleValue={dtNtp} onToggle={async (v: boolean) => { setDtNtp(v); await datetimeapi.setntp(v); }} last />
+                                    </SettingsGroup>
+                                    <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2 mt-4">Timezone</div>
+                                    <SettingsGroup>
+                                        <div className="px-4 py-3">
+                                            <select
+                                                value={dtTimezone}
+                                                onChange={async (e) => {
+                                                    const tz = e.target.value;
+                                                    await datetimeapi.settimezone(tz);
+                                                    setDtTimezone(tz);
+                                                }}
+                                                className="w-full bg-overlay text-[--text-color] text-[13px] px-2 py-1.5 outline-none border border-[--border-color]"
+                                            >
+                                                {dtTimezones.map(tz => <option key={tz} value={tz}>{tz}</option>)}
+                                            </select>
+                                        </div>
+                                    </SettingsGroup>
+                                </>
+                            )}
+                        </>
+                    )}
+
+                    {activetab === 'power' && (
+                        <>
+                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Power</div>
+                            {!iselectron ? (
+                                <SettingsGroup>
+                                    <SettingsRow label="Power Settings" value="Requires native mode" last />
+                                </SettingsGroup>
+                            ) : (
+                                <SettingsGroup>
+                                    <SettingsRow label="Power Management" value="Managed by system" />
+                                    <SettingsRow label="Suspend" value="Automatic" last />
+                                </SettingsGroup>
+                            )}
+                        </>
+                    )}
+
+                    {activetab === 'defaultapps' && (
+                        <>
+                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Default Applications</div>
+                            {!iselectron ? (
+                                <SettingsGroup>
+                                    <SettingsRow label="Default Apps" value="Requires native mode" last />
+                                </SettingsGroup>
+                            ) : (
+                                <SettingsGroup>
+                                    <SettingsRow label="Web Browser" value={defaultBrowser || 'Loading...'} />
+                                    <div className="px-4 py-3">
+                                        <p className="text-[10px] text-[--text-muted]">Default applications are managed via xdg-settings on the host system.</p>
+                                    </div>
+                                </SettingsGroup>
+                            )}
+                        </>
+                    )}
+
+                    {activetab === 'printers' && (
+                        <>
+                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Printers</div>
+                            {!iselectron ? (
+                                <SettingsGroup>
+                                    <SettingsRow label="Printers" value="Requires native mode" last />
+                                </SettingsGroup>
+                            ) : printerList.length === 0 ? (
+                                <SettingsGroup>
+                                    <SettingsRow label="No printers found" value="" last />
+                                </SettingsGroup>
+                            ) : (
+                                <SettingsGroup>
+                                    {printerList.map((p: any, i: number) => (
+                                        <SettingsRow key={i} label={p.name || p} value={p.name === defaultPrinter ? 'Default' : ''} last={i === printerList.length - 1} />
+                                    ))}
+                                </SettingsGroup>
+                            )}
+                        </>
+                    )}
+
+                    {!['general','appearance','users','wallpaper','wifi','bluetooth','sound','network','storage','displays','keyboard','mouse','language','datetime','power','defaultapps','printers','notifications','focus','accessibility'].includes(activetab) && (
                         <div className="flex flex-col items-center justify-center py-20 text-center opacity-50">
                             <IoSettingsOutline size={48} className="mb-4" />
                             <h3 className="text-lg font-semibold">Settings for {sidebaritems.find(i => i.id === activetab)?.label}</h3>

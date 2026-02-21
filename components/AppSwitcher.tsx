@@ -91,7 +91,7 @@ export default function AppSwitcher({ isOpen, onClose }: { isOpen: boolean; onCl
                                 className={`flex flex-col items-center gap-2 p-3 cursor-pointer transition-all duration-150 ${isSelected ? 'bg-overlay scale-110' : 'opacity-60 hover:opacity-100'
                                     }`}
                             >
-                                <div className={`w-16 h-16 overflow-hidden ${win.isminimized ? 'opacity-50' : ''}`}>
+                                <div className={`relative w-16 h-16 overflow-hidden ${win.isminimized ? 'opacity-40' : ''}`}>
                                     <Image
                                         src={appData?.icon || '/app-default.png'}
                                         alt={win.appname}
@@ -99,10 +99,20 @@ export default function AppSwitcher({ isOpen, onClose }: { isOpen: boolean; onCl
                                         height={64}
                                         className="object-cover"
                                     />
+                                    {win.isminimized && (
+                                        <div className="absolute bottom-0 left-0 right-0 bg-[--text-muted]/80 text-white text-[8px] text-center py-[1px] font-mono">
+                                            MIN
+                                        </div>
+                                    )}
                                 </div>
-                                <span className="text-[--text-color] text-xs font-medium text-center max-w-[80px] truncate">
-                                    {win.appname}
+                                <span className="text-[--text-color] text-[11px] font-medium text-center max-w-[90px] truncate">
+                                    {win.title || win.appname}
                                 </span>
+                                {win.title && win.title !== win.appname && (
+                                    <span className="text-[--text-muted] text-[9px] text-center max-w-[90px] truncate -mt-1">
+                                        {win.appname}
+                                    </span>
+                                )}
                             </div>
                         );
                     })}

@@ -44,6 +44,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
         openwith: (filepath, appname) => ipcRenderer.invoke('system-open-with', filepath, appname)
     },
 
+    icons: {
+        getdata: (iconpath) => ipcRenderer.invoke('get-icon-data', iconpath),
+    },
+
     clipboard: {
         readtext: () => ipcRenderer.invoke('get-clipboard-text'),
         writetext: (text) => ipcRenderer.invoke('set-clipboard-text', text),
@@ -142,6 +146,47 @@ contextBridge.exposeInMainWorld('electronAPI', {
     system: {
         getnetworkinfo: () => ipcRenderer.invoke('system-network-info'),
         getdiskusage: () => ipcRenderer.invoke('system-disk-usage')
+    },
+
+    keyboard: {
+        getlayout: () => ipcRenderer.invoke('system:keyboard:getlayout'),
+        getlayouts: () => ipcRenderer.invoke('system:keyboard:getlayouts'),
+        setlayout: (layout) => ipcRenderer.invoke('system:keyboard:setlayout', layout),
+        getrepeatrate: () => ipcRenderer.invoke('system:keyboard:getrepeatrate'),
+        setrepeatrate: (delay, interval) => ipcRenderer.invoke('system:keyboard:setrepeatrate', delay, interval),
+    },
+
+    mouse: {
+        getspeed: () => ipcRenderer.invoke('system:mouse:getspeed'),
+        setspeed: (speed) => ipcRenderer.invoke('system:mouse:setspeed', speed),
+        getnaturalscroll: () => ipcRenderer.invoke('system:mouse:getnaturalscroll'),
+        setnaturalscroll: (enabled) => ipcRenderer.invoke('system:mouse:setnaturalscroll', enabled),
+    },
+
+    locale: {
+        getlocale: () => ipcRenderer.invoke('system:locale:getlocale'),
+        getlocales: () => ipcRenderer.invoke('system:locale:getlocales'),
+        setlocale: (locale) => ipcRenderer.invoke('system:locale:setlocale', locale),
+    },
+
+    datetime: {
+        getstatus: () => ipcRenderer.invoke('system:datetime:getstatus'),
+        gettimezones: () => ipcRenderer.invoke('system:datetime:gettimezones'),
+        settimezone: (tz) => ipcRenderer.invoke('system:datetime:settimezone', tz),
+        setntp: (enabled) => ipcRenderer.invoke('system:datetime:setntp', enabled),
+    },
+
+    defaultapps: {
+        getbrowser: () => ipcRenderer.invoke('system:defaultapps:getbrowser'),
+        setbrowser: (desktop) => ipcRenderer.invoke('system:defaultapps:setbrowser', desktop),
+        gethandler: (mime) => ipcRenderer.invoke('system:defaultapps:gethandler', mime),
+        sethandler: (mime, desktop) => ipcRenderer.invoke('system:defaultapps:sethandler', mime, desktop),
+    },
+
+    printers: {
+        getprinters: () => ipcRenderer.invoke('system:printers:getprinters'),
+        getdefault: () => ipcRenderer.invoke('system:printers:getdefault'),
+        setdefault: (printer) => ipcRenderer.invoke('system:printers:setdefault', printer),
     },
 
     terminal: {

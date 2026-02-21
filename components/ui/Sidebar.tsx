@@ -59,7 +59,7 @@ export default function Sidebar({ currentPath, onNavigate, className = '', show 
                                             }
                                         `}
                                     >
-                                        <div className="w-5 h-5 flex items-center justify-center text-[--bg-base] shrink-0" style={{ backgroundColor: active ? 'transparent' : (item.color || '#8aadf4') }}>
+                                        <div className="w-5 h-5 flex items-center justify-center text-[--bg-base] shrink-0" style={{ backgroundColor: active ? 'transparent' : (item.color || 'var(--pastel-blue)') }}>
                                             <item.icon size={12} className={active ? 'text-[--bg-base]' : ''} />
                                         </div>
                                         <span className="text-[13px] font-medium leading-none pb-0.5">{item.name}</span>

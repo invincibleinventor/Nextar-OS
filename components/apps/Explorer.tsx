@@ -4,7 +4,7 @@ import JSZip from 'jszip';
 import {
     IoCloseOutline, IoFolderOutline, IoDocumentTextOutline, IoAppsOutline,
     IoGridOutline, IoListOutline, IoChevronBack, IoChevronForward,
-    IoSearch, IoGlobeOutline, IoInformationCircleOutline, IoChevronDown, IoChevronUp, IoFolderOpenOutline, IoLockClosed,
+    IoSearch, IoInformationCircleOutline, IoChevronDown, IoChevronUp, IoFolderOpenOutline, IoLockClosed,
     IoDesktopOutline,
     IoDownloadOutline
 } from "react-icons/io5";
@@ -110,14 +110,11 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
         {
             title: 'Favorites',
             items: [
-                { name: 'Desktop', icon: IoDesktopOutline, path: ['System', 'Users', userhome, 'Desktop'] },
-                { name: 'Documents', icon: IoDocumentTextOutline, path: ['System', 'Users', userhome, 'Documents'] },
-                { name: 'Downloads', icon: IoDownloadOutline, path: ['System', 'Users', userhome, 'Downloads'] },
-                ...(isGuest ? [
-                    { name: 'Projects', icon: IoFolderOutline, path: ['System', 'Users', userhome, 'Projects'] },
-                    { name: 'About Me', icon: IoDocumentTextOutline, path: ['System', 'Users', userhome, 'About Me'] },
-                ] : []),
-                { name: 'Applications', icon: IoAppsOutline, path: ['System', 'Applications'] },
+                { name: 'Desktop', icon: IoDesktopOutline, path: ['Disk Drive', 'Users', userhome, 'Desktop'] },
+                { name: 'Documents', icon: IoDocumentTextOutline, path: ['Disk Drive', 'Users', userhome, 'Documents'] },
+                { name: 'Downloads', icon: IoDownloadOutline, path: ['Disk Drive', 'Users', userhome, 'Downloads'] },
+                { name: 'Projects', icon: IoFolderOutline, path: ['Disk Drive', 'Users', userhome, 'Projects'] },
+                { name: 'Applications', icon: IoAppsOutline, path: ['Disk Drive', 'Applications'] },
             ]
         },
         ...(iselectron ? [{
@@ -126,17 +123,11 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                 { name: 'Home', icon: IoHomeOutline, path: ['_native_', '/home'] },
                 { name: 'Root (/)', icon: IoServerOutline, path: ['_native_', '/'] },
             ]
-        }] : [{
-            title: 'iCloud',
-            items: [
-                { name: 'iCloud Drive', icon: IoFolderOutline, path: ['iCloud Drive'] },
-            ]
-        }]),
+        }] : []),
         {
             title: 'Locations',
             items: [
-                { name: 'System', icon: IoAppsOutline, path: ['System'] },
-                { name: 'Network', icon: IoGlobeOutline, path: ['Network'] },
+                { name: 'Disk Drive', icon: IoAppsOutline, path: ['Disk Drive'] },
             ]
         },
     ], [userhome, isGuest]);
@@ -150,11 +141,11 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
             pathsegments.unshift(item.name);
             currentId = item.parent;
         }
-        return pathsegments.length > 0 ? pathsegments : ['System', 'Users', userhome, 'Desktop'];
+        return pathsegments.length > 0 ? pathsegments : ['Disk Drive', 'Users', userhome, 'Desktop'];
     };
 
     const initialPathFromOpen = openPath ? getPathFromId(openPath) : null;
-    const [currentpath, setcurrentpath] = useState<string[]>(initialPathFromOpen || initialpath || ['System', 'Users', userhome, 'Desktop']);
+    const [currentpath, setcurrentpath] = useState<string[]>(initialPathFromOpen || initialpath || ['Disk Drive', 'Users', userhome, 'Desktop']);
     const [searchquery, setsearchquery] = useState("");
 
 
@@ -291,7 +282,13 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
 
     const handlesidebarclick = (itemname: string, path: string[]) => {
         setselected(itemname);
-        setcurrentpath(path);
+        if (path[0] === '_native_' && iselectron) {
+            setFsMode('native');
+            nativeNavigate(path[1]);
+        } else {
+            setFsMode('vfs');
+            setcurrentpath(path);
+        }
         if (ismobile) setmobileview('files');
         else if (isnarrow) setshowsidebar(false);
         setSelectedFileIds([]);
@@ -299,6 +296,17 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
     };
 
     const getcurrentfiles = (): filesystemitem[] => {
+        if (fsMode === 'native' && iselectron) {
+            let result = nativeFiles;
+            if (searchquery) {
+                result = result.filter(f => f.name.toLowerCase().includes(searchquery.toLowerCase()));
+            }
+            if (!showhidden) {
+                result = result.filter(f => !f.name.startsWith('.'));
+            }
+            return result;
+        }
+
         let result: filesystemitem[] = [];
 
         if (isTrashView) {
@@ -355,9 +363,23 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
 
 
     const filesList = getcurrentfiles();
-    const activefile = selectedFileIds.length > 0 ? files.find(f => f.id === selectedFileIds[0]) : null;
+    const activefile = selectedFileIds.length > 0
+        ? (fsMode === 'native' ? nativeFiles.find(f => f.id === selectedFileIds[0]) : files.find(f => f.id === selectedFileIds[0]))
+        : null;
 
     const handlefileopen = (file: filesystemitem) => {
+        if (fsMode === 'native' && file.id.startsWith('native:')) {
+            const fullpath = file.id.replace('native:', '');
+            if (file.mimetype === 'inode/directory') {
+                nativeNavigate(fullpath);
+                setsearchquery("");
+                setSelectedFileIds([]);
+            } else {
+                nativefs.openpath(fullpath);
+            }
+            return;
+        }
+
         if (file.mimetype === 'inode/directory') {
             setcurrentpath([...currentpath, file.name]);
             setsearchquery("");
@@ -477,9 +499,9 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
         'view-list': () => { },
         'go-back': () => currentpath.length > 1 && setcurrentpath(currentpath.slice(0, -1)),
         'go-up': () => currentpath.length > 1 && setcurrentpath(currentpath.slice(0, -1)),
-        'go-desktop': () => setcurrentpath(['System', 'Users', userhome, 'Desktop']),
-        'go-documents': () => setcurrentpath(['System', 'Users', userhome, 'Documents']),
-        'go-downloads': () => setcurrentpath(['System', 'Users', userhome, 'Downloads']),
+        'go-desktop': () => setcurrentpath(['Disk Drive', 'Users', userhome, 'Desktop']),
+        'go-documents': () => setcurrentpath(['Disk Drive', 'Users', userhome, 'Documents']),
+        'go-downloads': () => setcurrentpath(['Disk Drive', 'Users', userhome, 'Downloads']),
         'cut': () => {
             if (selectedFileIds.length > 0) cutItem(selectedFileIds);
         },
@@ -582,7 +604,20 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
         }
     };
 
-    const handleModalConfirm = (inputValue: string) => {
+    const handleModalConfirm = async (inputValue: string) => {
+        if (fsMode === 'native' && iselectron) {
+            if (fileModal.type === 'create-folder') {
+                await nativefs.mkdir(`${nativePath}/${inputValue}`.replace(/\/+/g, '/'));
+            } else if (fileModal.type === 'rename' && contextMenu?.fileId) {
+                const oldPath = contextMenu.fileId.replace('native:', '');
+                const parentDir = oldPath.substring(0, oldPath.lastIndexOf('/'));
+                await nativefs.rename(oldPath, `${parentDir}/${inputValue}`.replace(/\/+/g, '/'));
+            }
+            setFileModal({ ...fileModal, isOpen: false });
+            loadNativeDirectory(nativePath);
+            return;
+        }
+
         let currentparentid = 'root';
         for (const foldername of currentpath) {
             const folder = files.find(i => i.name.trim() === foldername.trim() && i.parent === currentparentid && !i.isTrash);
@@ -602,6 +637,27 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
     const SOURCE_FILE_REGEX = /\.(py|js|ts|tsx|jsx|html|css|json|md|txt|yml|yaml|xml|sh|bash|c|cpp|h|hpp|java|rb|php|go|rs|swift|kt|r|lua|pl|ex|exs|dart)$/i;
 
     const getContextMenuItems = () => {
+        if (fsMode === 'native' && iselectron) {
+            const nativeItem = contextMenu?.fileId ? nativeFiles.find(f => f.id === contextMenu.fileId) : null;
+            if (nativeItem) {
+                const fullpath = nativeItem.id.replace('native:', '');
+                return [
+                    { label: 'Open', action: () => handlefileopen(nativeItem) },
+                    { separator: true, label: '' },
+                    { label: 'Rename', action: () => setFileModal({ isOpen: true, type: 'rename', initialValue: nativeItem.name }) },
+                    { separator: true, label: '' },
+                    { label: 'Move to Trash', action: async () => { await nativefs.trash(fullpath); loadNativeDirectory(nativePath); }, danger: true },
+                ];
+            } else {
+                return [
+                    { label: 'New Folder', action: () => setFileModal({ isOpen: true, type: 'create-folder', initialValue: '' }) },
+                    { separator: true, label: '' },
+                    { label: 'Refresh', action: () => loadNativeDirectory(nativePath) },
+                    { label: 'Show Hidden Files', action: () => setshowhidden(!showhidden) },
+                ];
+            }
+        }
+
         const activeFileItem = contextMenu?.fileId ? files.find(f => f.id === contextMenu?.fileId) : null;
 
         if (activeFileItem) {
@@ -948,10 +1004,16 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                 className="flex-1 overflow-y-auto"
                                 onContextMenu={(e) => handleContextMenu(e)}
                             >
-                                {isLoading ? (
+                                {(isLoading || nativeLoading) ? (
                                     <div className="flex flex-col items-center justify-center h-full text-[--text-muted]">
                                         <div className="animate-spin h-8 w-8 border-b-2 border-[--text-muted] mb-2"></div>
                                         <span className="text-[13px]">Loading Files...</span>
+                                    </div>
+                                ) : nativeError ? (
+                                    <div className="flex flex-col items-center justify-center h-full text-[--text-muted]">
+                                        <span className="text-4xl mb-2 opacity-50">!</span>
+                                        <span className="text-[13px] text-pastel-red">{nativeError}</span>
+                                        <button onClick={() => nativeNavigate('/home')} className="mt-3 px-3 py-1.5 text-xs bg-overlay hover:bg-surface transition-colors">Go Home</button>
                                     </div>
                                 ) : filesList.length === 0 ? (
                                     <div className="flex flex-col items-center justify-center h-full text-[--text-muted]">
@@ -1089,13 +1151,44 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                             </button>
                         )}
                         <div className="flex items-center gap-0.5 shrink-0">
-                            <button onClick={() => currentpath.length > 1 && setcurrentpath(currentpath.slice(0, -1))} className={`p-0.5 ${currentpath.length > 1 ? 'text-[--text-color] cursor-pointer hover:bg-overlay' : 'text-[--text-muted] opacity-30'}`}>
+                            <button onClick={() => {
+                                if (fsMode === 'native') {
+                                    if (nativeHistoryIdx > 0) {
+                                        setNativeHistoryIdx(nativeHistoryIdx - 1);
+                                        setNativePath(nativeHistory[nativeHistoryIdx - 1]);
+                                    }
+                                } else {
+                                    if (currentpath.length > 1) setcurrentpath(currentpath.slice(0, -1));
+                                }
+                            }} className={`p-0.5 ${(fsMode === 'native' ? nativeHistoryIdx > 0 : currentpath.length > 1) ? 'text-[--text-color] cursor-pointer hover:bg-overlay' : 'text-[--text-muted] opacity-30'}`}>
                                 <IoChevronBack className="text-lg" />
                             </button>
-                            <IoChevronForward className="text-lg text-[--text-muted] opacity-30" />
+                            <button onClick={() => {
+                                if (fsMode === 'native' && nativeHistoryIdx < nativeHistory.length - 1) {
+                                    setNativeHistoryIdx(nativeHistoryIdx + 1);
+                                    setNativePath(nativeHistory[nativeHistoryIdx + 1]);
+                                }
+                            }} className={`p-0.5 ${(fsMode === 'native' && nativeHistoryIdx < nativeHistory.length - 1) ? 'text-[--text-color] cursor-pointer hover:bg-overlay' : 'text-[--text-muted] opacity-30'}`}>
+                                <IoChevronForward className="text-lg" />
+                            </button>
                         </div>
                         {isTrashView ? (
                             <span className="text-[13px] font-semibold text-[--text-color] ml-1">Trash</span>
+                        ) : fsMode === 'native' ? (
+                            <div className="flex items-center gap-0.5 ml-1 min-w-0 overflow-hidden flex-1">
+                                {nativePath.split('/').filter(Boolean).map((seg, i, arr) => (
+                                    <React.Fragment key={i}>
+                                        {i > 0 && <span className="text-[--text-muted] text-xs opacity-40 shrink-0">/</span>}
+                                        <button
+                                            onClick={() => nativeNavigate('/' + arr.slice(0, i + 1).join('/'))}
+                                            className={`text-[12px] shrink-0 px-1 py-0.5 hover:bg-overlay hover:text-accent transition-colors truncate max-w-[120px] ${i === arr.length - 1 ? 'font-semibold text-[--text-color]' : 'text-[--text-muted]'}`}
+                                        >
+                                            {seg}
+                                        </button>
+                                    </React.Fragment>
+                                ))}
+                                {nativePath === '/' && <span className="text-[12px] font-semibold text-[--text-color] px-1">/</span>}
+                            </div>
                         ) : (
                             <div className="flex items-center gap-0.5 ml-1 min-w-0 overflow-hidden flex-1">
                                 {currentpath.map((seg, i) => (
@@ -1323,7 +1416,20 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                 })}
                             </div>
                         )}
-                        {filesList.length === 0 && (
+                        {nativeLoading && (
+                            <div className="flex flex-col items-center justify-center h-full text-[--text-muted]">
+                                <div className="animate-spin h-8 w-8 border-b-2 border-[--text-muted] mb-2"></div>
+                                <span className="text-[13px]">Loading Files...</span>
+                            </div>
+                        )}
+                        {nativeError && (
+                            <div className="flex flex-col items-center justify-center h-full text-[--text-muted]">
+                                <span className="text-2xl mb-2 opacity-50">!</span>
+                                <span className="text-[13px] text-pastel-red">{nativeError}</span>
+                                <button onClick={() => nativeNavigate('/home')} className="mt-3 px-3 py-1.5 text-xs bg-overlay hover:bg-surface transition-colors">Go Home</button>
+                            </div>
+                        )}
+                        {filesList.length === 0 && !nativeLoading && !nativeError && (
                             <div className="flex flex-col items-center justify-center h-full text-[--text-muted]">
                                 <span className="text-4xl mb-2 opacity-50">¯\_(ツ)_/¯</span>
                                 <span className="text-[13px]">No items found</span>
@@ -1332,10 +1438,13 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                         )}
                     </div>
 
-                    <div className="h-[24px] bg-surface border-t border-[--border-color] flex items-center px-4 justify-center shrink-0">
+                    <div className="h-[24px] bg-surface border-t border-[--border-color] flex items-center px-4 justify-between shrink-0">
                         <span className="text-[10px] text-[--text-muted] font-medium">
                             {filesList.length} item{filesList.length !== 1 && 's'}
                         </span>
+                        {fsMode === 'native' && (
+                            <span className="text-[10px] text-[--text-muted] opacity-60">{nativePath}</span>
+                        )}
                     </div>
                 </div>
 

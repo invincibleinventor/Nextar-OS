@@ -25,43 +25,43 @@ interface TintedAppIconProps {
 }
 
 const appIconMap: Record<string, { icon: IconType; bg: string }> = {
-    'explorer': { icon: IoFolderOutline, bg: '#8aadf4' },
-    'settings': { icon: IoSettingsOutline, bg: '#6e738d' },
-    'code': { icon: IoCodeSlashOutline, bg: '#a6da95' },
-    'mail': { icon: IoMailOutline, bg: '#8aadf4' },
-    'calendar': { icon: IoCalendarOutline, bg: '#ed8796' },
-    'textedit': { icon: IoDocumentTextOutline, bg: '#eed49f' },
-    'notes': { icon: IoReaderOutline, bg: '#f5a97f' },
-    'music': { icon: IoMusicalNotesOutline, bg: '#f5bde6' },
-    'calculator': { icon: IoCalculatorOutline, bg: '#8bd5ca' },
-    'appstore': { icon: IoStorefrontOutline, bg: '#8aadf4' },
-    'terminal': { icon: IoTerminalOutline, bg: '#24263a' },
-    'photos': { icon: IoImagesOutline, bg: '#c6a0f6' },
-    'browser': { icon: IoGlobeOutline, bg: '#8aadf4' },
-    'welcome': { icon: IoDownloadOutline, bg: '#8aadf4' },
-    'fileviewer': { icon: IoDocumentTextOutline, bg: '#b7bdf8' },
-    'apidocs': { icon: IoBookOutline, bg: '#8bd5ca' },
-    'systemmonitor': { icon: IoStatsChartOutline, bg: '#f5a97f' },
-    'launchpad-item': { icon: IoGridOutline, bg: '#b7bdf8' },
-    'trash-folder': { icon: IoTrashOutline, bg: '#6e738d' },
-    'aboutbala': { icon: IoInformationCircleOutline, bg: '#8aadf4' },
-    'aboutnextaros': { icon: IoHelpCircleOutline, bg: '#f5bde6' },
-    'getinfo': { icon: IoInformationCircleOutline, bg: '#6e738d' },
-    'projectdashboard': { icon: IoRocketOutline, bg: '#a6da95' },
-    'hackathonworkspace': { icon: IoLayersOutline, bg: '#8aadf4' },
-    'ideaboard': { icon: IoBulbOutline, bg: '#eed49f' },
-    'shipchecklist': { icon: IoCheckboxOutline, bg: '#8bd5ca' },
-    'apiplayground': { icon: IoCodeSlashOutline, bg: '#8bd5ca' },
-    'templatesmanager': { icon: IoLayersOutline, bg: '#f5a97f' },
-    'clock': { icon: IoTimeOutline, bg: '#f5a97f' },
-    'weather': { icon: IoCloudOutline, bg: '#8aadf4' },
-    'reminders': { icon: IoAlarmOutline, bg: '#ed8796' },
-    'videoplayer': { icon: IoVideocamOutline, bg: '#c6a0f6' },
-    'paint': { icon: IoBrushOutline, bg: '#a6da95' },
-    'contacts': { icon: IoPeopleOutline, bg: '#8bd5ca' },
+    'explorer': { icon: IoFolderOutline, bg: 'var(--pastel-blue)' },
+    'settings': { icon: IoSettingsOutline, bg: 'var(--text-muted)' },
+    'code': { icon: IoCodeSlashOutline, bg: 'var(--pastel-green)' },
+    'mail': { icon: IoMailOutline, bg: 'var(--pastel-blue)' },
+    'calendar': { icon: IoCalendarOutline, bg: 'var(--pastel-red)' },
+    'textedit': { icon: IoDocumentTextOutline, bg: 'var(--pastel-yellow)' },
+    'notes': { icon: IoReaderOutline, bg: 'var(--pastel-peach)' },
+    'music': { icon: IoMusicalNotesOutline, bg: 'var(--pastel-pink)' },
+    'calculator': { icon: IoCalculatorOutline, bg: 'var(--pastel-teal)' },
+    'appstore': { icon: IoStorefrontOutline, bg: 'var(--pastel-blue)' },
+    'terminal': { icon: IoTerminalOutline, bg: 'var(--bg-overlay)' },
+    'photos': { icon: IoImagesOutline, bg: 'var(--pastel-mauve)' },
+    'browser': { icon: IoGlobeOutline, bg: 'var(--pastel-blue)' },
+    'welcome': { icon: IoDownloadOutline, bg: 'var(--pastel-blue)' },
+    'fileviewer': { icon: IoDocumentTextOutline, bg: 'var(--pastel-lavender)' },
+    'apidocs': { icon: IoBookOutline, bg: 'var(--pastel-teal)' },
+    'systemmonitor': { icon: IoStatsChartOutline, bg: 'var(--pastel-peach)' },
+    'launchpad-item': { icon: IoGridOutline, bg: 'var(--pastel-lavender)' },
+    'trash-folder': { icon: IoTrashOutline, bg: 'var(--text-muted)' },
+    'aboutnextaros': { icon: IoHelpCircleOutline, bg: 'var(--pastel-pink)' },
+    'getinfo': { icon: IoInformationCircleOutline, bg: 'var(--text-muted)' },
+    'projectdashboard': { icon: IoRocketOutline, bg: 'var(--pastel-green)' },
+    'hackathonworkspace': { icon: IoLayersOutline, bg: 'var(--pastel-blue)' },
+    'ideaboard': { icon: IoBulbOutline, bg: 'var(--pastel-yellow)' },
+    'shipchecklist': { icon: IoCheckboxOutline, bg: 'var(--pastel-teal)' },
+    'apiplayground': { icon: IoCodeSlashOutline, bg: 'var(--pastel-teal)' },
+    'templatesmanager': { icon: IoLayersOutline, bg: 'var(--pastel-peach)' },
+    'clock': { icon: IoTimeOutline, bg: 'var(--pastel-peach)' },
+    'weather': { icon: IoCloudOutline, bg: 'var(--pastel-blue)' },
+    'reminders': { icon: IoAlarmOutline, bg: 'var(--pastel-red)' },
+    'videoplayer': { icon: IoVideocamOutline, bg: 'var(--pastel-mauve)' },
+    'paint': { icon: IoBrushOutline, bg: 'var(--pastel-green)' },
+    'contacts': { icon: IoPeopleOutline, bg: 'var(--pastel-teal)' },
+    'python': { icon: IoTerminalOutline, bg: 'var(--pastel-yellow)' },
 };
 
-const excludedApps: string[] = ['aboutbala'];
+const excludedApps: string[] = ['portfolio'];
 
 export default function TintedAppIcon({ appId, appName, originalIcon, size = 40, className = '', useFill = true }: TintedAppIconProps) {
     if (excludedApps.includes(appId)) {
@@ -153,7 +153,7 @@ export function getAppIcon(appId: string): IconType | null {
 }
 
 export function getAppColor(appId: string): string {
-    return appIconMap[appId]?.bg || '#6e738d';
+    return appIconMap[appId]?.bg || 'var(--text-muted)';
 }
 
 export function isExcludedApp(appId: string): boolean {

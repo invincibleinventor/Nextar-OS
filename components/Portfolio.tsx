@@ -264,7 +264,7 @@ const JpButton = ({ children, primary = false, onClick, href }: { children: Reac
             onClick={onClick}
             href={href}
             target={href ? '_blank' : undefined}
-            className="px-6 md:px-8 py-2.5 md:py-3 font-bold text-xs md:text-[13px] uppercase tracking-wider rounded-md"
+            className="px-6 md:px-8 py-2.5 md:py-3 font-bold text-xs md:text-[13px] uppercase tracking-wider rounded-none"
             style={{
                 background: primary ? PINK : 'transparent',
                 color: primary ? INK : INK,
@@ -342,9 +342,9 @@ const HeroSection = ({ onBoot, embedded }: { onBoot: () => void; embedded?: bool
             </motion.div>
 
             <motion.div className="relative z-20 max-w-4xl mx-auto px-6 md:px-8 py-16 md:py-20" style={{ y }}>
-                <nav className={`${embedded ? 'sticky' : 'fixed'} top-0 left-0 right-0 z-50 px-4 md:px-8 py-4 md:py-5 flex items-center justify-between`} style={{ background: BG }}>
+                <nav className={`${embedded ? 'sticky' : 'fixed'} top-10 left-0 right-0 z-50 px-4 md:px-8 py-4 md:py-5 flex items-center justify-between`} style={{ background: BG }}>
                     <motion.div className="flex items-center gap-3" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-sm flex items-center justify-center font-black text-[13px] md:text-lg" style={{ background: PINK, color: INK }}>B</div>
+                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-none flex items-center justify-center font-black text-[13px] md:text-lg" style={{ background: PINK, color: INK }}>B</div>
                         <div className="flex flex-col">
                             <TranslatableName />
                             <span className="text-[10px] tracking-widest" style={{ color: GRAY }}>DEVELOPER</span>
@@ -454,7 +454,7 @@ const ProjectsSection = () => {
             <div className="max-w-6xl mx-auto relative z-10">
                 <motion.div className="flex items-center gap-6 mb-20" initial={{ opacity: 0, y: 30 }} viewport={{ once: true }} whileInView={{ opacity: 1, y: 0 }}>
                     <div className="flex items-center gap-3">
-                        <motion.div className="w-16 h-16 rounded-sm flex items-center justify-center" style={{ background: PINK }} whileHover={{ rotate: 5 }}>
+                        <motion.div className="w-16 h-16 rounded-none flex items-center justify-center" style={{ background: PINK }} whileHover={{ rotate: 5 }}>
                             <span className="text-3xl font-black" style={{ color: BG }}>壱</span>
                         </motion.div>
                         <div>
@@ -628,7 +628,7 @@ const SkillsSection = () => {
 
             <div className="max-w-5xl mx-auto relative z-10">
                 <motion.div className="flex items-center gap-6 mb-16" initial={{ opacity: 0, y: 30 }} viewport={{ once: true }} whileInView={{ opacity: 1, y: 0 }}>
-                    <motion.div className="w-16 h-16 rounded-sm flex items-center justify-center" style={{ background: PINK }} whileHover={{ rotate: -5 }}>
+                    <motion.div className="w-16 h-16 rounded-none flex items-center justify-center" style={{ background: PINK }} whileHover={{ rotate: -5 }}>
                         <span className="text-3xl font-black" style={{ color: BG }}>弐</span>
                     </motion.div>
                     <div>
@@ -727,7 +727,7 @@ const AboutSection = () => {
 
             <div className="max-w-5xl mx-auto relative z-10">
                 <motion.div className="flex items-center gap-6 mb-16" initial={{ opacity: 0, y: 30 }} viewport={{ once: true }} whileInView={{ opacity: 1, y: 0 }}>
-                    <motion.div className="w-16 h-16 rounded-sm flex items-center justify-center" style={{ background: PINK }} whileHover={{ rotate: 5 }}>
+                    <motion.div className="w-16 h-16 rounded-none flex items-center justify-center" style={{ background: PINK }} whileHover={{ rotate: 5 }}>
                         <span className="text-3xl font-black" style={{ color: BG }}>参</span>
                     </motion.div>
                     <div>
@@ -891,7 +891,7 @@ const ContactSection = ({ onBoot, embedded, onGetStarted }: { onBoot: () => void
 
             <div className="max-w-4xl mx-auto relative z-10">
                 <motion.div className="flex items-center gap-6 mb-12" initial={{ opacity: 0, y: 30 }} viewport={{ once: true }} whileInView={{ opacity: 1, y: 0 }}>
-                    <motion.div className="w-16 h-16 rounded-sm flex items-center justify-center" style={{ background: PINK }} whileHover={{ rotate: -5 }}>
+                    <motion.div className="w-16 h-16 rounded-none flex items-center justify-center" style={{ background: PINK }} whileHover={{ rotate: -5 }}>
                         <span className="text-3xl font-black" style={{ color: BG }}>四</span>
                     </motion.div>
                     <div>
@@ -1026,7 +1026,7 @@ const TourCard = ({ onTakeTour, onSkip }: { onTakeTour: () => void; onSkip: () =
             transition={{ duration: 0.6 }}
         >
             <motion.div
-                className="w-20 h-20 mx-auto mb-8 rounded-sm flex items-center justify-center"
+                className="w-20 h-20 mx-auto mb-8 rounded-none flex items-center justify-center"
                 style={{ background: PINK }}
                 animate={{ rotate: [0, 5, -5, 0] }}
                 transition={{ duration: 4, repeat: Infinity }}
@@ -1077,7 +1077,7 @@ const MobileHints = () => {
         <AnimatePresence>
             {visible && (
                 <motion.div
-                    className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-sm pointer-events-none"
+                    className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] px-5 py-3 rounded-none pointer-events-none"
                     style={{ background: `${INK}e0`, color: BG }}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -1132,7 +1132,7 @@ export default function Portfolio({ embedded }: { embedded?: boolean } = {}) {
             {!embedded && <TextureOverlay />}
             {!embedded && <AnimatePresence>{booting && <BootSequence onComplete={handlecomplete} />}</AnimatePresence>}
 
-            <div ref={containerref} className={`portfolio-scroll ${embedded ? 'w-full h-full snap-y snap-mandatory' : 'fixed inset-0 snap-y snap-mandatory'} overflow-y-auto overflow-x-hidden`} style={{ fontFamily: '"Zen Kaku Gothic New", -apple-system, BlinkMacSystemFont, sans-serif', contain: embedded ? 'layout style paint' : undefined, willChange: embedded ? 'transform' : undefined }}>
+            <div ref={containerref} className={`portfolio-scroll ${embedded ? 'w-full h-full snap-y snap-mandatory' : 'fixed inset-0 snap-y snap-mandatory'} overflow-y-auto overflow-x-hidden `} style={{ fontFamily: '"Zen Kaku Gothic New", -apple-system, BlinkMacSystemFont, sans-serif', contain: embedded ? 'layout style paint' : undefined, willChange: embedded ? 'transform' : undefined }}>
                 <HeroSection onBoot={handleboot} embedded={embedded} />
                 {embedded && <TourCard onTakeTour={handletaketour} onSkip={handleskiptoprojects} />}
                 <ProjectsSection />

@@ -15,20 +15,35 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-
+.one-line-ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --accent-color: #ed8796;
+  --accent-color: #e78284;
   --bg-base: #eff1f5;
   --bg-surface: #e6e9ef;
   --bg-overlay: #dce0e8;
   --border-color: #bcc0cc;
   --text-color: #4c4f69;
-  --text-muted: #8c8fa1;
+  --text-muted: #6c6f85;
+
+  /* Catppuccin Frappé accent palette — vibrant on light backgrounds */
+  --pastel-red: #e78284;
+  --pastel-peach: #ef9f76;
+  --pastel-yellow: #e5c890;
+  --pastel-green: #a6d189;
+  --pastel-teal: #81c8be;
+  --pastel-blue: #8caaee;
+  --pastel-lavender: #babbf1;
+  --pastel-pink: #f4b8e4;
+  --pastel-mauve: #ca9ee6;
 
   /* Z-index scale */
   --z-windows: 100;
@@ -45,12 +60,24 @@ body {
 }
 
 .dark {
+  --accent-color: #e78284;
   --bg-base: #161822;
   --bg-surface: #1e2030;
   --bg-overlay: #24263a;
   --border-color: #363a4f;
   --text-color: #cad3f5;
   --text-muted: #6e738d;
+
+  /* Catppuccin Macchiato accent palette — vibrant on dark backgrounds */
+  --pastel-red: #ed8796;
+  --pastel-peach: #f5a97f;
+  --pastel-yellow: #eed49f;
+  --pastel-green: #a6da95;
+  --pastel-teal: #8bd5ca;
+  --pastel-blue: #8aadf4;
+  --pastel-lavender: #b7bdf8;
+  --pastel-pink: #f5bde6;
+  --pastel-mauve: #c6a0f6;
 }
 
 
@@ -371,77 +398,77 @@ body {
 
 /* Rich shadow utilities for the pastel anime aesthetic */
 .shadow-pastel {
-  box-shadow: 0 4px 20px -4px rgba(237, 135, 150, 0.35),
-              0 2px 8px -2px rgba(183, 189, 248, 0.25);
+  box-shadow: 0 4px 20px -4px color-mix(in srgb, var(--pastel-red) 35%, transparent),
+              0 2px 8px -2px color-mix(in srgb, var(--pastel-lavender) 25%, transparent);
 }
 .shadow-pastel-lg {
-  box-shadow: 0 8px 32px -6px rgba(237, 135, 150, 0.4),
-              0 4px 16px -4px rgba(183, 189, 248, 0.3);
+  box-shadow: 0 8px 32px -6px color-mix(in srgb, var(--pastel-red) 40%, transparent),
+              0 4px 16px -4px color-mix(in srgb, var(--pastel-lavender) 30%, transparent);
 }
 .shadow-pastel-active {
-  box-shadow: 0 8px 40px -8px rgba(237, 135, 150, 0.5),
-              0 4px 20px -4px rgba(198, 160, 246, 0.35),
+  box-shadow: 0 8px 40px -8px color-mix(in srgb, var(--pastel-red) 50%, transparent),
+              0 4px 20px -4px color-mix(in srgb, var(--pastel-mauve) 35%, transparent),
               0 0 0 1px var(--border-color);
 }
 .shadow-pastel-pink {
-  box-shadow: 0 4px 20px -4px rgba(245, 189, 230, 0.45);
+  box-shadow: 0 4px 20px -4px color-mix(in srgb, var(--pastel-pink) 45%, transparent);
 }
 .shadow-pastel-blue {
-  box-shadow: 0 4px 20px -4px rgba(138, 173, 244, 0.45);
+  box-shadow: 0 4px 20px -4px color-mix(in srgb, var(--pastel-blue) 45%, transparent);
 }
 .shadow-pastel-mauve {
-  box-shadow: 0 4px 20px -4px rgba(198, 160, 246, 0.45);
+  box-shadow: 0 4px 20px -4px color-mix(in srgb, var(--pastel-mauve) 45%, transparent);
 }
 .shadow-pastel-teal {
-  box-shadow: 0 4px 20px -4px rgba(139, 213, 202, 0.45);
+  box-shadow: 0 4px 20px -4px color-mix(in srgb, var(--pastel-teal) 45%, transparent);
 }
 .dark .shadow-pastel {
-  box-shadow: 0 4px 20px -4px rgba(237, 135, 150, 0.15),
-              0 2px 8px -2px rgba(183, 189, 248, 0.1);
+  box-shadow: 0 4px 20px -4px color-mix(in srgb, var(--pastel-red) 15%, transparent),
+              0 2px 8px -2px color-mix(in srgb, var(--pastel-lavender) 10%, transparent);
 }
 .dark .shadow-pastel-lg {
-  box-shadow: 0 8px 32px -6px rgba(237, 135, 150, 0.2),
-              0 4px 16px -4px rgba(183, 189, 248, 0.15);
+  box-shadow: 0 8px 32px -6px color-mix(in srgb, var(--pastel-red) 20%, transparent),
+              0 4px 16px -4px color-mix(in srgb, var(--pastel-lavender) 15%, transparent);
 }
 .dark .shadow-pastel-active {
-  box-shadow: 0 8px 40px -8px rgba(237, 135, 150, 0.3),
-              0 4px 20px -4px rgba(198, 160, 246, 0.2),
+  box-shadow: 0 8px 40px -8px color-mix(in srgb, var(--pastel-red) 30%, transparent),
+              0 4px 20px -4px color-mix(in srgb, var(--pastel-mauve) 20%, transparent),
               0 0 0 1px var(--border-color);
 }
 .dark .shadow-pastel-pink {
-  box-shadow: 0 4px 20px -4px rgba(245, 189, 230, 0.25);
+  box-shadow: 0 4px 20px -4px color-mix(in srgb, var(--pastel-pink) 25%, transparent);
 }
 .dark .shadow-pastel-blue {
-  box-shadow: 0 4px 20px -4px rgba(138, 173, 244, 0.25);
+  box-shadow: 0 4px 20px -4px color-mix(in srgb, var(--pastel-blue) 25%, transparent);
 }
 .dark .shadow-pastel-mauve {
-  box-shadow: 0 4px 20px -4px rgba(198, 160, 246, 0.25);
+  box-shadow: 0 4px 20px -4px color-mix(in srgb, var(--pastel-mauve) 25%, transparent);
 }
 .dark .shadow-pastel-teal {
-  box-shadow: 0 4px 20px -4px rgba(139, 213, 202, 0.25);
+  box-shadow: 0 4px 20px -4px color-mix(in srgb, var(--pastel-teal) 25%, transparent);
 }
 
 /* Pastel icon backgrounds per-color */
-.icon-bg-red { background: #ed8796; }
-.icon-bg-peach { background: #f5a97f; }
-.icon-bg-yellow { background: #eed49f; }
-.icon-bg-green { background: #a6da95; }
-.icon-bg-teal { background: #8bd5ca; }
-.icon-bg-blue { background: #8aadf4; }
-.icon-bg-lavender { background: #b7bdf8; }
-.icon-bg-pink { background: #f5bde6; }
-.icon-bg-mauve { background: #c6a0f6; }
+.icon-bg-red { background: var(--pastel-red); }
+.icon-bg-peach { background: var(--pastel-peach); }
+.icon-bg-yellow { background: var(--pastel-yellow); }
+.icon-bg-green { background: var(--pastel-green); }
+.icon-bg-teal { background: var(--pastel-teal); }
+.icon-bg-blue { background: var(--pastel-blue); }
+.icon-bg-lavender { background: var(--pastel-lavender); }
+.icon-bg-pink { background: var(--pastel-pink); }
+.icon-bg-mauve { background: var(--pastel-mauve); }
 
-/* Catppuccin folder colors */
-.folder-blue { color: #8aadf4; }
-.folder-pink { color: #f5bde6; }
-.folder-mauve { color: #c6a0f6; }
-.folder-red { color: #ed8796; }
-.folder-peach { color: #f5a97f; }
-.folder-yellow { color: #eed49f; }
-.folder-green { color: #a6da95; }
-.folder-teal { color: #8bd5ca; }
-.folder-lavender { color: #b7bdf8; }
+/* Folder colors */
+.folder-blue { color: var(--pastel-blue); }
+.folder-pink { color: var(--pastel-pink); }
+.folder-mauve { color: var(--pastel-mauve); }
+.folder-red { color: var(--pastel-red); }
+.folder-peach { color: var(--pastel-peach); }
+.folder-yellow { color: var(--pastel-yellow); }
+.folder-green { color: var(--pastel-green); }
+.folder-teal { color: var(--pastel-teal); }
+.folder-lavender { color: var(--pastel-lavender); }
 
 /* Settings toggle - pastel style */
 .toggle-pastel {
@@ -449,7 +476,7 @@ body {
   transition: background 0.2s;
 }
 .toggle-pastel.active {
-  background: #a6da95;
+  background: var(--pastel-green);
 }
 
 /* Flat input styling */

@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 1000" width="100%" height="100%">
+  <defs>
+    <mask id="star-cutout">
+      <rect width="1100" height="1000" fill="white" />
+      
+      <path d="M 260 270 
+               L 310 410 
+               C 500 230, 800 250, 1020 390 
+               C 800 410, 600 460, 360 550 
+               L 440 720 
+               L 280 620 
+               L 120 850 
+               L 190 590 
+               L 20 540 
+               L 180 430 
+               Z" 
+            fill="black" 
+            stroke="black" 
+            stroke-width="2" 
+            stroke-linejoin="round" />
+    </mask>
+  </defs>
+
+  <path d="M 100 950 
+           L 100 150 
+           L 350 150 
+           L 700 616 
+           L 700 280 
+           L 580 280 
+           L 825 20 
+           L 1070 280 
+           L 950 280 
+           L 950 950 
+           L 700 950 
+           L 350 483 
+           L 350 950 
+           Z" 
+        fill="#151515" 
+        mask="url(#star-cutout)" />
+</svg>
