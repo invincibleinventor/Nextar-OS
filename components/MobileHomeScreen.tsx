@@ -491,7 +491,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
             <div
                 ref={scrollcontainerref}
                 className="flex w-full h-full overflow-x-auto snap-x snap-mandatory scrollbar-hide [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-                style={{ scrollBehavior: 'smooth', WebkitOverflowScrolling: 'touch', touchAction: 'pan-x pan-y' }}
+                style={{ scrollBehavior: 'smooth', WebkitOverflowScrolling: 'touch', touchAction: 'pan-x pan-y', overscrollBehaviorX: 'contain' }}
                 onScroll={(e) => {
                     const scrollLeft = e.currentTarget.scrollLeft;
                     const width = e.currentTarget.offsetWidth;
@@ -503,7 +503,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
             >
                 {/* App grid pages */}
                 {gridPages.map((pageItems, pageIndex) => (
-                    <div key={`page-${pageIndex}`} className="w-[100vw] h-full flex flex-col pt-6 relative snap-center flex-shrink-0">
+                    <div key={`page-${pageIndex}`} className="w-[100vw] h-full flex flex-col pt-6 relative snap-start flex-shrink-0 [scroll-snap-stop:always]">
                         {renderGridPage(pageItems, pageIndex)}
 
                         {editmode && pageIndex === 0 && (
@@ -544,7 +544,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                 ))}
 
                 {/* App Library page */}
-                <div className="w-[100vw] h-full pt-0 snap-center flex-shrink-0">
+                <div className="w-[100vw] h-full pt-0 snap-start flex-shrink-0 [scroll-snap-stop:always]">
                     <AppLibrary />
                 </div>
             </div>
