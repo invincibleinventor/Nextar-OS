@@ -13,7 +13,6 @@ export const WindowProvider = ({ children }: any) => {
     setwindows((prevwindows) => {
       const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
-      // For non-multiwindow apps, reuse existing window instead of creating duplicate
       if (newwindow.multiwindow === false) {
         const existing = prevwindows.find(w => w.appname === newwindow.appname);
         if (existing) {

@@ -1,8 +1,3 @@
-/**
- * Code Ancestry Tracking — Track origin of every code region.
- * Classifies code as: typed (character-by-character), pasted, auto-completed, or AI-generated.
- */
-
 export type CodeOrigin = 'typed' | 'pasted' | 'autocomplete' | 'ai-generated' | 'unknown';
 
 export interface AncestryRegion {
@@ -12,42 +7,33 @@ export interface AncestryRegion {
     endColumn: number;
     origin: CodeOrigin;
     timestamp: number;
-    /** Typing speed for 'typed' regions (chars per second) */
     typingSpeed?: number;
 }
 
 export interface AncestryTracker {
     getRegions(filePath: string): AncestryRegion[];
-    getHeatMap(filePath: string): Map<number, CodeOrigin>; // line -> dominant origin
+    getHeatMap(filePath: string): Map<number, CodeOrigin>;
     destroy(): void;
 }
 
-/**
- * Create an ancestry tracker that hooks into Monaco editor events.
- * Call this once per editor instance.
- */
 export function createAncestryTracker(): AncestryTracker {
     const fileRegions = new Map<string, AncestryRegion[]>();
     let lastKeystrokeTime = 0;
     let isPasting = false;
-    let keystrokeBuffer: number[] = []; // inter-key intervals
+    let keystrokeBuffer: number[] = [];
 
-    /** Detect if a change event looks like a paste (large text, single event) */
     function classifyChange(text: string, _timeSinceLastKeystroke: number): CodeOrigin {
         if (isPasting) return 'pasted';
 
-        // Multi-line insert or large single-line insert = likely paste
         const lines = text.split('\n');
         if (lines.length > 3) return 'pasted';
         if (text.length > 50) return 'pasted';
 
-        // Very fast input (< 10ms between "keystrokes") for multiple chars = autocomplete
         if (text.length > 1 && text.length <= 50) return 'autocomplete';
 
         return 'typed';
     }
 
-    /** Record a content change from Monaco's onDidChangeModelContent */
     function recordChange(filePath: string, change: {
         range: { startLineNumber: number; startColumn: number; endLineNumber: number; endColumn: number };
         text: string;
@@ -61,7 +47,7 @@ export function createAncestryTracker(): AncestryTracker {
             if (keystrokeBuffer.length > 20) keystrokeBuffer.shift();
         }
 
-        if (!change.text) return; // deletion
+        if (!change.text) return;
 
         const origin = classifyChange(change.text, timeSinceLast);
         const lines = change.text.split('\n');
@@ -85,15 +71,12 @@ export function createAncestryTracker(): AncestryTracker {
         if (!fileRegions.has(filePath)) fileRegions.set(filePath, []);
         fileRegions.get(filePath)!.push(region);
 
-        // Limit stored regions per file
         const regions = fileRegions.get(filePath)!;
         if (regions.length > 5000) fileRegions.set(filePath, regions.slice(-3000));
     }
 
-    /** Mark that a paste event is happening (call from clipboard listener) */
     function markPaste() { isPasting = true; setTimeout(() => { isPasting = false; }, 100); }
 
-    /** Mark a region as AI-generated (call when AI inserts code) */
     function markAIGenerated(filePath: string, startLine: number, endLine: number) {
         if (!fileRegions.has(filePath)) fileRegions.set(filePath, []);
         fileRegions.get(filePath)!.push({
@@ -106,7 +89,6 @@ export function createAncestryTracker(): AncestryTracker {
         return fileRegions.get(filePath) || [];
     }
 
-    /** Get per-line heat map (most recent origin for each line) */
     function getHeatMap(filePath: string): Map<number, CodeOrigin> {
         const regions = getRegions(filePath);
         const map = new Map<number, CodeOrigin>();
@@ -118,7 +100,6 @@ export function createAncestryTracker(): AncestryTracker {
         return map;
     }
 
-    // Expose recordChange and markPaste as module-level helpers
     (createAncestryTracker as any)._recordChange = recordChange;
     (createAncestryTracker as any)._markPaste = markPaste;
     (createAncestryTracker as any)._markAIGenerated = markAIGenerated;
@@ -130,7 +111,6 @@ export function createAncestryTracker(): AncestryTracker {
     };
 }
 
-/** Singleton tracker instance */
 let tracker: AncestryTracker | null = null;
 export function getAncestryTracker(): AncestryTracker {
     if (!tracker) tracker = createAncestryTracker();

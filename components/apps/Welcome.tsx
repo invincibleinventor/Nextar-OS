@@ -135,13 +135,7 @@ export default function Welcome(props: any) {
                 await saveAllFiles(userFs);
             }
 
-            const loggedIn = await login(password);
-
-            if (loggedIn) {
-                alert(`Account created! You are now logged in as ${name} (${role}).`);
-            } else {
-                alert(`Account created! Please log in with your credentials.`);
-            }
+            await login(password);
             setView('welcome');
 
         } catch (err: any) {
@@ -310,8 +304,12 @@ export default function Welcome(props: any) {
                     ) : (
                         <div className="text-center space-y-6">
                             <div className="relative w-20 h-20 mx-auto">
-                                <div className="absolute inset-0 overflow-hidden border-2 border-[--border-color]">
-                                    <Image src="/pfp.png" alt="Profile" width={80} height={80} className="w-full h-full object-cover" />
+                                <div className="absolute inset-0 overflow-hidden border-2 border-[--border-color] bg-[--bg-overlay] flex items-center justify-center">
+                                    {user?.username === 'guest' ? (
+                                        <IoPersonAdd size={36} className="text-[--text-muted]" />
+                                    ) : (
+                                        <Image src="/pfp.png" alt="Profile" width={80} height={80} className="w-full h-full object-cover" />
+                                    )}
                                 </div>
                                 {user?.username === 'guest' && (
                                     <div className="absolute -bottom-1 -right-1 bg-accent text-[--text-color] text-[10px] font-bold px-1.5 py-0.5 border border-[--border-color]">
@@ -499,6 +497,7 @@ export default function Welcome(props: any) {
 
                 <button
                     onClick={() => {
+                        if (step === 1 && user?.username === 'guest') return;
                         if (step < steps.length - 1) {
                             setstep(step + 1);
                         } else {
@@ -508,7 +507,7 @@ export default function Welcome(props: any) {
                             removewindow(props.windowId || 'welcome');
                         }
                     }}
-                    className="flex items-center gap-1.5 bg-accent text-[--text-color] px-4 py-1.5 text-[13px] font-medium hover:bg-accent/80 transition-colors"
+                    className={`flex items-center gap-1.5 bg-accent text-[--text-color] px-4 py-1.5 text-[13px] font-medium transition-colors ${step === 1 && user?.username === 'guest' ? 'opacity-30 cursor-not-allowed' : 'hover:bg-accent/80'}`}
                 >
                     {step < steps.length - 1 ? 'Continue' : 'Get Started'}
                 </button>

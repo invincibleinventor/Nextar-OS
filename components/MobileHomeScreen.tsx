@@ -38,6 +38,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
     const touchstartpos = useRef<{ x: number; y: number } | null>(null);
     const scrollcontainerref = useRef<HTMLDivElement>(null);
     const [iconorder, seticonorder] = useState<string[]>([]);
+    const [hiddenAppIds, setHiddenAppIds] = useState<string[]>([]);
 
     const desktopItems = files.filter(item => item.parent === currentUserDesktopId && !item.isTrash);
 
@@ -45,6 +46,10 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
         const savedorder = localStorage.getItem('mobile-icon-order');
         if (savedorder) {
             seticonorder(JSON.parse(savedorder));
+        }
+        const savedHidden = localStorage.getItem('mobile-hidden-apps');
+        if (savedHidden) {
+            setHiddenAppIds(JSON.parse(savedHidden));
         }
     }, []);
 
@@ -73,7 +78,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
         };
     }, []);
 
-    const dockAppIds = ['explorer', 'browser', 'mail', 'settings'];
+    const dockAppIds = ['calculator', 'notes', 'calendar', 'browser'];
 
     const isDockItem = (item: filesystemitem) => {
         if (item.mimetype !== 'application/x-executable') return false;
@@ -81,10 +86,25 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
         return dockAppIds.includes(appId);
     };
 
-    const getorderedgriditems = useCallback(() => {
-        const griditems = desktopItems.filter(item => !isDockItem(item));
+    const pinnedFirstPageIds = ['portfolio', 'explorer', 'hackathonworkspace', 'photos'];
 
-        if (iconorder.length === 0) return griditems;
+    const getorderedgriditems = useCallback(() => {
+        const griditems = desktopItems.filter(item => !isDockItem(item) && !hiddenAppIds.includes(item.id));
+
+        if (iconorder.length === 0) {
+            const pinned: filesystemitem[] = [];
+            const rest: filesystemitem[] = [];
+            for (const item of griditems) {
+                const appId = extractAppId(item.id);
+                if (pinnedFirstPageIds.includes(appId)) {
+                    pinned.push(item);
+                } else {
+                    rest.push(item);
+                }
+            }
+            pinned.sort((a, b) => pinnedFirstPageIds.indexOf(extractAppId(a.id)) - pinnedFirstPageIds.indexOf(extractAppId(b.id)));
+            return [...pinned, ...rest];
+        }
 
         const orderedItems: filesystemitem[] = [];
         const remainingItems = [...griditems];
@@ -98,20 +118,23 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
         });
 
         return [...orderedItems, ...remainingItems];
-    }, [desktopItems, iconorder]);
+    }, [desktopItems, iconorder, hiddenAppIds]);
 
     const griditems = getorderedgriditems();
 
     const gridPages = useMemo(() => {
         const pages: filesystemitem[][] = [];
-        for (let i = 0; i < griditems.length; i += ITEMS_PER_PAGE) {
-            pages.push(griditems.slice(i, i + ITEMS_PER_PAGE));
+        const firstPageCount = iconorder.length === 0 ? pinnedFirstPageIds.length : ITEMS_PER_PAGE;
+        const firstPage = griditems.slice(0, firstPageCount);
+        pages.push(firstPage);
+        const remaining = griditems.slice(firstPageCount);
+        for (let i = 0; i < remaining.length; i += ITEMS_PER_PAGE) {
+            pages.push(remaining.slice(i, i + ITEMS_PER_PAGE));
         }
-        if (pages.length === 0) pages.push([]);
         return pages;
-    }, [griditems]);
+    }, [griditems, iconorder]);
 
-    const totalPages = gridPages.length + 1; // +1 for App Library
+    const totalPages = gridPages.length + 1;
 
     const handleItemClick = (item: filesystemitem) => {
         if (editmode) {
@@ -122,7 +145,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
     };
 
     const dockapps = apps.filter(a =>
-        a.id === 'explorer' || a.id === 'browser' || a.id === 'mail' || a.id === 'settings'
+        a.id === 'calculator' || a.id === 'notes' || a.id === 'calendar' || a.id === 'browser'
     ).slice(0, 4);
 
     const handlelongpressstart = (item: filesystemitem | null, e: React.TouchEvent | React.MouseEvent) => {
@@ -166,6 +189,12 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
         const neworderids = newItems.map(item => item.id);
         seticonorder(neworderids);
         localStorage.setItem('mobile-icon-order', JSON.stringify(neworderids));
+    };
+
+    const hideAppFromHomeScreen = (itemId: string) => {
+        const newHidden = [...hiddenAppIds, itemId];
+        setHiddenAppIds(newHidden);
+        localStorage.setItem('mobile-hidden-apps', JSON.stringify(newHidden));
     };
 
     const handleRename = (itemId: string) => {
@@ -335,12 +364,15 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                             }}
                             onClick={() => !editmode && !isRenaming && handleItemClick(item)}
                             onTouchStart={(e) => {
+                                e.stopPropagation();
                                 if (!editmode && !isRenaming) handlelongpressstart(item, e);
                             }}
-                            onTouchEnd={() => {
+                            onTouchEnd={(e) => {
+                                e.stopPropagation();
                                 handlelongpressend();
                             }}
-                            onTouchCancel={() => {
+                            onTouchCancel={(e) => {
+                                e.stopPropagation();
                                 handlelongpressend();
                             }}
                             onContextMenu={(e) => {
@@ -357,7 +389,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             if (item.mimetype === 'application/x-executable' || item.id.startsWith('desktop-app-')) {
-                                                moveToTrash(item.id);
+                                                hideAppFromHomeScreen(item.id);
                                             } else {
                                                 setConfirmDelete(item.id);
                                             }
@@ -501,7 +533,6 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                     }
                 }}
             >
-                {/* App grid pages */}
                 {gridPages.map((pageItems, pageIndex) => (
                     <div key={`page-${pageIndex}`} className="w-[100vw] h-full flex flex-col pt-6 relative snap-start flex-shrink-0 [scroll-snap-stop:always]">
                         {renderGridPage(pageItems, pageIndex)}
@@ -520,7 +551,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                             </motion.button>
                         )}
 
-                        <div data-tour={pageIndex === 0 ? "ios-dock" : undefined} className={`mx-auto mb-7 p-3 w-max flex items-center justify-between gap-4 transition-all duration-300 ${isoverlayopen ? 'bg-transparent' : 'bg-[--bg-surface]/80 border border-[--border-color]/50'}`}>
+                        <div data-tour={pageIndex === 0 ? "ios-dock" : undefined} className={`mx-auto mb-7 p-3 w-max flex items-center justify-between gap-4 transition-all duration-300 ${isoverlayopen ? 'bg-transparent' : 'backdrop-blur-lg filter border border-[--border-color]/50'}`} style={!isoverlayopen ? { backgroundColor: 'color-mix(in srgb, var(--bg-surface) 50%, transparent)' } : undefined}>
                             {dockapps.map(app => (
                                 <motion.button
                                     key={app.id}
@@ -543,18 +574,16 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                     </div>
                 ))}
 
-                {/* App Library page */}
                 <div className="w-[100vw] h-full pt-0 snap-start flex-shrink-0 [scroll-snap-stop:always]">
                     <AppLibrary />
                 </div>
             </div>
 
-            {/* Page dots */}
             <div className={`absolute bottom-[140px] left-0 right-0 flex justify-center gap-1.5 z-20 pointer-events-none transition-opacity duration-300 ${isoverlayopen || page >= gridPages.length ? 'opacity-0' : 'opacity-100'}`}>
                 {gridPages.map((_, i) => (
-                    <div key={`dot-${i}`} className={`w-[6px] h-[6px] rounded-full transition-all duration-300 ${page === i ? 'bg-pastel-red scale-110' : 'bg-[--text-muted]/50'}`} />
+                    <div key={`dot-${i}`} className={`w-[6px] h-[6px] rounded-none transition-all duration-300 ${page === i ? 'bg-pastel-red scale-110' : 'bg-neutral-400'}`} />
                 ))}
-                <div className={`w-[6px] h-[6px] rounded-full transition-all duration-300 ${page >= gridPages.length ? 'bg-pastel-red scale-110' : 'bg-[--text-muted]/50'}`} />
+                <div className={`w-[6px] h-[6px] rounded-none transition-all duration-300 ${page >= gridPages.length ? 'bg-pastel-red scale-110' : 'bg-neutral-400'}`} />
             </div>
         </div>
     );

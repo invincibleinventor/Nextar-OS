@@ -129,7 +129,6 @@ export default function Weather({ appId = 'weather', id }: { appId?: string; id?
 
     return (
         <div className="h-full flex flex-col bg-[--bg-base] text-[--text-color] overflow-hidden select-none font-mono">
-            {/* Search */}
             <div className="relative px-4 pt-3 pb-2">
                 <input
                     className="w-full bg-overlay border border-[--border-color] px-3 py-2 text-[13px] outline-none text-[--text-color] placeholder-[--text-muted] focus:border-accent"
@@ -155,7 +154,6 @@ export default function Weather({ appId = 'weather', id }: { appId?: string; id?
             ) : current ? (
                 <div className="flex-1 overflow-y-auto px-4 pb-4">
                     <div className="max-w-[640px] mx-auto">
-                        {/* Current Weather Hero */}
                         <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Current Weather</div>
                         <div className="bg-overlay border border-[--border-color] overflow-hidden mb-6">
                             <div className="p-5">
@@ -190,7 +188,6 @@ export default function Weather({ appId = 'weather', id }: { appId?: string; id?
                             </div>
                         </div>
 
-                        {/* Hourly Forecast */}
                         <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Hourly Forecast</div>
                         <div className="bg-overlay border border-[--border-color] overflow-hidden mb-6">
                             <div className="flex gap-3 overflow-x-auto p-4 scrollbar-none">
@@ -207,7 +204,6 @@ export default function Weather({ appId = 'weather', id }: { appId?: string; id?
                             </div>
                         </div>
 
-                        {/* 5-Day Forecast */}
                         <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">5-Day Forecast</div>
                         <div className="bg-overlay border border-[--border-color] overflow-hidden mb-6">
                             {daily.map((d, i) => {
@@ -231,7 +227,6 @@ export default function Weather({ appId = 'weather', id }: { appId?: string; id?
                             })}
                         </div>
 
-                        {/* Details */}
                         {daily.length > 0 && (
                             <>
                                 <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Details</div>

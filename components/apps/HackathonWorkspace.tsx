@@ -704,8 +704,6 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
         if (content !== undefined) {
             await updateFile(activeTab, content);
             setOpenTabs(prev => prev.map(t => t.fileId === activeTab ? { ...t, modified: false } : t));
-            const tab = openTabs.find(t => t.fileId === activeTab);
-            addToast(`Saved ${tab?.name || 'file'}`, 'success');
         }
     }, [activeTab, fileContents, updateFile, openTabs, addToast]);
 
@@ -1004,58 +1002,63 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
 
     return (
         <div className="flex flex-col h-full bg-[--bg-base] text-[--text-muted] text-xs overflow-hidden relative font-mono">
-            <div className="flex items-center justify-between px-2 py-1 bg-surface border-b border-[--border-color] shrink-0">
-                <div className="flex items-center gap-2">
-                    <button onClick={() => setSidebarOpen(p => !p)} className={`p-1 hover:bg-overlay ${sidebarOpen ? 'text-[--text-color]' : 'text-[--text-muted]'}`} title="Toggle sidebar (Cmd+B)">
+            <div className="flex items-center justify-between px-2 py-1 bg-surface border-b border-[--border-color] shrink-0 min-w-0 overflow-x-auto">
+                <div className="flex items-center gap-2 min-w-0 shrink-0">
+                    <button onClick={() => setSidebarOpen(p => !p)} className={`p-1 hover:bg-overlay shrink-0 ${sidebarOpen ? 'text-[--text-color]' : 'text-[--text-muted]'}`} title="Toggle sidebar (Cmd+B)">
                         <VscFiles size={14} />
                     </button>
-                    <button onClick={() => setGitPanelOpen(p => !p)} className={`p-1 hover:bg-overlay ${gitPanelOpen ? 'text-[--text-color]' : 'text-[--text-muted]'}`} title="Git panel">
+                    {!ismobile && <button onClick={() => setGitPanelOpen(p => !p)} className={`p-1 hover:bg-overlay shrink-0 ${gitPanelOpen ? 'text-[--text-color]' : 'text-[--text-muted]'}`} title="Git panel">
                         <VscGitMerge size={14} />
-                    </button>
-                    <span className="text-[--text-color] font-medium">{currentProject.name}</span>
-                    {detectedFramework && (
-                        <span className="px-1.5 py-0.5 bg-overlay text-[10px] text-pastel-blue">{detectedFramework}</span>
+                    </button>}
+                    <span className="text-[--text-color] font-medium truncate max-w-[120px]">{currentProject.name}</span>
+                    {!ismobile && detectedFramework && (
+                        <span className="px-1.5 py-0.5 bg-overlay text-[10px] text-pastel-blue shrink-0">{detectedFramework}</span>
                     )}
-                    {currentProject.stack && !detectedFramework && (
+                    {!ismobile && currentProject.stack && !detectedFramework && (
                         <div className="flex items-center gap-1 ml-2">
                             {currentProject.stack.slice(0, 3).map(s => (
                                 <span key={s} className="px-1.5 py-0.5 bg-overlay text-[10px] text-[--text-muted]">{s}</span>
                             ))}
                         </div>
                     )}
-                    {hasPackageJson && (
+                    {!ismobile && hasPackageJson && (
                         <button
                             onClick={() => { setBottomPanelOpen(true); setBottomPanelTab('terminal'); }}
-                            className="flex items-center gap-1 px-1.5 py-0.5 text-[10px] text-pastel-green hover:bg-overlay"
+                            className="flex items-center gap-1 px-1.5 py-0.5 text-[10px] text-pastel-green hover:bg-overlay shrink-0"
                             title="Open terminal to run dev server"
                         >
                             <VscRunAll size={10} /> Dev Server
                         </button>
                     )}
                 </div>
-                <div className="flex items-center gap-1">
-                    <HackathonTimer />
-                    <button onClick={() => setSnapshotPanelOpen(p => !p)} className="p-1 hover:bg-overlay text-[--text-muted] hover:text-[--text-color]" title="Snapshots">
+                <div className="flex items-center gap-1 shrink-0">
+                    {!ismobile && <HackathonTimer />}
+                    {!ismobile && <button onClick={() => setSnapshotPanelOpen(p => !p)} className="p-1 hover:bg-overlay text-[--text-muted] hover:text-[--text-color]" title="Snapshots">
                         <VscHistory size={14} />
+                    </button>}
+                    <button onClick={saveCurrentFile} className="p-1 hover:bg-overlay text-[--text-muted] hover:text-[--text-color]" title="Save">
+                        <VscSave size={14} />
                     </button>
-                    <button onClick={async () => { await createSnapshot(); addToast('Snapshot created', 'success'); }} className="p-1 hover:bg-overlay text-[--text-muted] hover:text-[--text-color]" title="Quick snapshot">
-                        <VscSaveAll size={14} />
-                    </button>
-                    <button onClick={() => setPreviewOpen(p => !p)} className={`p-1 hover:bg-overlay ${previewOpen ? 'text-[--text-color]' : 'text-[--text-muted]'}`} title="Toggle preview">
-                        {previewOpen ? <VscEye size={14} /> : <VscEyeClosed size={14} />}
-                    </button>
-                    <button onClick={() => setBottomPanelOpen(p => !p)} className={`p-1 hover:bg-overlay ${bottomPanelOpen ? 'text-[--text-color]' : 'text-[--text-muted]'}`} title="Toggle terminal (Cmd+`)">
+                    <button onClick={() => setBottomPanelOpen(p => !p)} className={`p-1 hover:bg-overlay ${bottomPanelOpen ? 'text-[--text-color]' : 'text-[--text-muted]'}`} title="Toggle terminal">
                         <VscTerminal size={14} />
                     </button>
-                    <button onClick={() => setFocusMode(p => !p)} className={`p-1 hover:bg-overlay ${focusMode ? 'text-pastel-peach' : 'text-[--text-muted]'}`} title="Focus mode (Cmd+Shift+F)">
-                        <VscSplitHorizontal size={14} />
-                    </button>
+                    {!ismobile && <>
+                        <button onClick={async () => { await createSnapshot(); addToast('Snapshot created', 'success'); }} className="p-1 hover:bg-overlay text-[--text-muted] hover:text-[--text-color]" title="Quick snapshot">
+                            <VscSaveAll size={14} />
+                        </button>
+                        <button onClick={() => setPreviewOpen(p => !p)} className={`p-1 hover:bg-overlay ${previewOpen ? 'text-[--text-color]' : 'text-[--text-muted]'}`} title="Toggle preview">
+                            {previewOpen ? <VscEye size={14} /> : <VscEyeClosed size={14} />}
+                        </button>
+                        <button onClick={() => setFocusMode(p => !p)} className={`p-1 hover:bg-overlay ${focusMode ? 'text-pastel-peach' : 'text-[--text-muted]'}`} title="Focus mode">
+                            <VscSplitHorizontal size={14} />
+                        </button>
+                    </>}
                 </div>
             </div>
 
             <div className="flex flex-1 overflow-hidden relative">
                 {sidebarOpen && !focusMode && (
-                    <div className="w-56 bg-surface border-r border-[--border-color] flex flex-col shrink-0">
+                    <div className={`${ismobile ? 'absolute inset-y-0 left-0 z-40 w-[70%] max-w-[240px]' : 'w-56 shrink-0'} bg-surface border-r border-[--border-color] flex flex-col`}>
                         <div className="flex items-center justify-between px-2 py-1.5 border-b border-[--border-color]">
                             <span className="text-[10px] uppercase tracking-wider text-[--text-muted] font-medium">Explorer</span>
                             <div className="flex items-center gap-0.5">
@@ -1092,8 +1095,11 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                         )}
                     </div>
                 )}
+                {ismobile && sidebarOpen && !focusMode && (
+                    <div className="absolute inset-0 z-30 bg-black/30" onClick={() => setSidebarOpen(false)} />
+                )}
 
-                {gitPanelOpen && !focusMode && (
+                {gitPanelOpen && !focusMode && !ismobile && (
                     <div className="w-64 bg-surface border-r border-[--border-color] flex flex-col shrink-0">
                         <div className="flex items-center justify-between px-2 py-1.5 border-b border-[--border-color]">
                             <span className="text-[10px] uppercase tracking-wider text-[--text-muted] font-medium flex items-center gap-1">

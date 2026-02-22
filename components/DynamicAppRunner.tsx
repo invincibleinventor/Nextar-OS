@@ -59,7 +59,6 @@ export default function DynamicAppRunner({ code, appname, appicon, fileid, codeH
             setbabelloaded(true);
             return;
         }
-        // Check if script is already being loaded by another instance
         const existing = document.querySelector('script[data-babel-standalone]');
         if (existing) {
             const check = setInterval(() => {
@@ -71,7 +70,6 @@ export default function DynamicAppRunner({ code, appname, appicon, fileid, codeH
         script.src = 'https://unpkg.com/@babel/standalone/babel.min.js';
         script.setAttribute('data-babel-standalone', 'true');
         script.onload = () => {
-            // Poll until window.Babel is actually available
             const check = setInterval(() => {
                 if (window.Babel) { clearInterval(check); setbabelloaded(true); }
             }, 50);

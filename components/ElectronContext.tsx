@@ -101,7 +101,6 @@ export function ElectronProvider({ children }: { children: React.ReactNode }) {
             const theme = await getnativetheme();
             setnativetheme(theme);
 
-            // Load shell/performance info
             if (iselectron && electronapi?.shellinfo) {
                 try {
                     const si = await electronapi.shellinfo.get();

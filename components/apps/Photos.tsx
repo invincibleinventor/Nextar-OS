@@ -38,10 +38,7 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
     const photos = useMemo(() => {
         if (!user) return [];
 
-        return files.filter(f =>
-            f.mimetype.startsWith('image/') &&
-            f.owner === user.username
-        )
+        return files.filter(f => f.mimetype.startsWith('image/'))
             .map(f => ({
                 id: f.id,
                 src: f.link || f.content || `/appimages/${f.name.toLowerCase()}`,
@@ -306,7 +303,7 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
                                     alt={viewingimage.title}
                                     width={1000}
                                     height={700}
-                                    className="max-h-auto max-w-auto object-contain transition-transform"
+                                    className="max-w-full max-h-full object-contain transition-transform"
                                     style={{
                                         transform: `scale(${zoom}) rotate(${rotation}deg)`,
                                         filter: filterStyle,

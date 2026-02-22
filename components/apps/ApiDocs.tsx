@@ -229,7 +229,6 @@ export default function ApiDocs({ windowId }: { windowId?: string }) {
         return () => window.removeEventListener('app-back', handleAppBack);
     }, [windowId, ismobile, activewindow, selectedapi]);
 
-    // Cmd/Ctrl+K shortcut for search
     useEffect(() => {
         const handler = (e: KeyboardEvent) => {
             if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -246,7 +245,6 @@ export default function ApiDocs({ windowId }: { windowId?: string }) {
         return () => window.removeEventListener('keydown', handler);
     }, []);
 
-    // Scroll spy for right anchor nav
     useEffect(() => {
         if (ismobile || selectedapi) return;
         const container = contentRef.current;
@@ -318,7 +316,6 @@ export default function ApiDocs({ windowId }: { windowId?: string }) {
 
     const activeCats = selectedCat ? filteredcategories.filter(c => c.name === selectedCat) : filteredcategories;
 
-    // All section IDs for the right-side nav
     const sectionIds = useMemo(() => {
         const ids: { id: string; label: string }[] = [{ id: 'quickstart', label: 'Quick Start' }];
         activeCats.forEach(cat => {
@@ -457,7 +454,6 @@ export default function ApiDocs({ windowId }: { windowId?: string }) {
                     </div>
                 ) : (
                     <>
-                        {/* Quick Start */}
                         <div data-section-id="quickstart" className="bg-surface p-6 border border-[--border-color]">
                             <div className="flex items-center gap-3 mb-5">
                                 <div className="w-10 h-10 bg-accent flex items-center justify-center shrink-0">
@@ -511,7 +507,6 @@ export default function ApiDocs({ windowId }: { windowId?: string }) {
                             </div>
                         </div>
 
-                        {/* API Categories */}
                         {activeCats.map(cat => (
                             <div key={cat.name} data-section-id={cat.name} className="space-y-3">
                                 <div className="flex items-center gap-3 sticky top-0 bg-[--bg-base] py-2 z-10">
@@ -562,7 +557,6 @@ export default function ApiDocs({ windowId }: { windowId?: string }) {
                             </div>
                         ))}
 
-                        {/* apps.json schema */}
                         <div data-section-id="schema" className="bg-surface p-6 border border-[--border-color]">
                             <div className="flex items-center gap-3 mb-4">
                                 <IoCodeSlash className="text-accent" size={20} />
@@ -590,7 +584,6 @@ export default function ApiDocs({ windowId }: { windowId?: string }) {
         </div>
     );
 
-    // Right-side anchor nav (desktop only, when not viewing single API)
     const anchorNav = !ismobile && !selectedapi && (
         <div className="w-40 border-l border-[--border-color] bg-surface overflow-y-auto shrink-0 hidden lg:block">
             <div className="p-3 sticky top-0">

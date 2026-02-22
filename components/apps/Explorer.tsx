@@ -1222,7 +1222,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                     style={viewmode === 'list' ? { color: 'var(--text-color)' } : undefined}
                                     title="List View"
                                 >
-                                    <IoListOutline className="text-[13px]" />
+                                    <IoListOutline className="text-[13px] text-inherit" />
                                 </button>
                             </div>
                             {!isTrashView && (
@@ -1232,7 +1232,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                         className="p-1 hover:bg-[--bg-base] transition-colors"
                                         title="New Folder"
                                     >
-                                        <IoFolderOpenOutline className="text-base" />
+                                        <IoFolderOpenOutline className="text-base text-inherit" />
                                     </button>
                                     <div className="w-px h-3.5 bg-[--border-color] mx-1"></div>
                                     <button
@@ -1240,7 +1240,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                         className="p-1 hover:bg-[--bg-base] transition-colors"
                                         title="New File"
                                     >
-                                        <IoDocumentTextOutline className="text-base" />
+                                        <IoDocumentTextOutline className="text-base text-inherit" />
                                     </button>
                                 </div>
                             )}
@@ -1258,11 +1258,11 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                             </div>
                             <button
                                 onClick={() => setshowpreview(!showpreview)}
-                                className={`p-1 transition-colors ${showpreview ? 'bg-overlay' : 'hover:bg-overlay'}`}
+                                className={`p-1 text-white transition-colors ${showpreview ? 'bg-overlay' : 'hover:bg-overlay'}`}
                                 style={showpreview ? { color: 'var(--accent-color)' } : undefined}
                                 title="Toggle Preview"
                             >
-                                <IoInformationCircleOutline className="text-base" />
+                                <IoInformationCircleOutline className="text-base text-inherit" />
                             </button>
                         </div>
                     </div>

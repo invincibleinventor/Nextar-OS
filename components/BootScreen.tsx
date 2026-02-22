@@ -45,9 +45,7 @@ export default function BootScreen() {
                     exit={{ opacity: 0, transition: { duration: 0.6, ease: 'easeInOut' } }}
                     initial={{ opacity: 1 }}
                 >
-                    {/* Center content */}
                     <div className="relative z-10 flex flex-col items-center">
-                        {/* Logo mark */}
                         <motion.div
                             className="w-16 h-16 mb-6 flex items-center justify-center"
                             initial={{ scale: 0, opacity: 0 }}
@@ -77,7 +75,6 @@ export default function BootScreen() {
                             Booting
                         </motion.div>
 
-                        {/* Progress bar */}
                         <div className="relative">
                             <div className="w-52 h-1.5 overflow-hidden" style={{ background: LIGHTGRAY }}>
                                 <motion.div

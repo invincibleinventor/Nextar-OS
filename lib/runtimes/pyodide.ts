@@ -18,7 +18,6 @@ export async function bootPyodide(): Promise<any> {
 
     bootPromise = (async () => {
         try {
-            // Dynamic import from CDN — avoids bundling 100MB+ Pyodide
             const script = document.createElement('script');
             script.src = `${PYODIDE_CDN}pyodide.js`;
             await new Promise<void>((resolve, reject) => {
@@ -34,7 +33,6 @@ export async function bootPyodide(): Promise<any> {
                 indexURL: PYODIDE_CDN,
             });
 
-            // Pre-load micropip for package installation
             await pyodideInstance.loadPackage('micropip');
 
             pyodideStatus = 'ready';
@@ -53,14 +51,12 @@ export async function runPython(code: string, stdin?: string): Promise<Execution
     const pyodide = await bootPyodide();
     const startTime = performance.now();
 
-    // Redirect stdout/stderr
     pyodide.runPython(`
 import sys, io
 sys.stdout = io.StringIO()
 sys.stderr = io.StringIO()
 `);
 
-    // Set up stdin if provided
     if (stdin) {
         pyodide.runPython(`
 import io

@@ -36,7 +36,6 @@ export default function VideoPlayer({ appId = 'videoplayer', id, fileUrl }: { ap
 
     const vid = videoRef.current;
 
-    // Get user's Videos folder ID
     const videosFolderId = useMemo(() => {
         if (!user) return '';
         const username = user.username;
@@ -46,7 +45,6 @@ export default function VideoPlayer({ appId = 'videoplayer', id, fileUrl }: { ap
         return videosFolder?.id || (isGuest ? 'guest-videos' : `${uid}-videos`);
     }, [user, files]);
 
-    // Get videos from VFS
     const vfsVideos = useMemo(() => {
         if (!videosFolderId) return [];
         return files.filter(f =>
@@ -93,7 +91,6 @@ export default function VideoPlayer({ appId = 'videoplayer', id, fileUrl }: { ap
         setDuration(0);
     }, []);
 
-    // Menu registration
     const videoMenus = useMemo(() => ({
         Playback: [
             { title: 'Play/Pause', actionId: 'vp-toggle', shortcut: 'Space' },
@@ -123,7 +120,6 @@ export default function VideoPlayer({ appId = 'videoplayer', id, fileUrl }: { ap
     useMenuRegistration(videoMenus, isActiveWindow);
     useMenuAction(appId, menuActions, id);
 
-    // Keyboard shortcuts
     useEffect(() => {
         if (!isActiveWindow) return;
         const onKey = (e: KeyboardEvent) => {
@@ -144,14 +140,12 @@ export default function VideoPlayer({ appId = 'videoplayer', id, fileUrl }: { ap
         return () => window.removeEventListener('keydown', onKey);
     }, [isActiveWindow, togglePlay, seek, changeVolume, toggleMute, toggleFullscreen, goToLibrary, src]);
 
-    // Auto-hide controls
     const resetHideTimer = useCallback(() => {
         setShowControls(true);
         if (hideTimer.current) clearTimeout(hideTimer.current);
         if (playing) hideTimer.current = setTimeout(() => setShowControls(false), 3000);
     }, [playing]);
 
-    // Video time update
     useEffect(() => {
         if (!vid) return;
         const onTime = () => { if (!dragging) setCurrentTime(vid.currentTime); };
@@ -163,7 +157,6 @@ export default function VideoPlayer({ appId = 'videoplayer', id, fileUrl }: { ap
         return () => { vid.removeEventListener('timeupdate', onTime); vid.removeEventListener('loadedmetadata', onMeta); vid.removeEventListener('ended', onEnd); };
     }, [vid, dragging]);
 
-    // Load fileUrl prop
     useEffect(() => { if (fileUrl) setSrc(fileUrl); }, [fileUrl]);
 
     const handleUploadToVFS = useCallback(async (file: File) => {
@@ -208,7 +201,6 @@ export default function VideoPlayer({ appId = 'videoplayer', id, fileUrl }: { ap
 
     const progress = duration ? (currentTime / duration) * 100 : 0;
 
-    // Library view
     if (!src) {
         return (
             <div
@@ -277,7 +269,6 @@ export default function VideoPlayer({ appId = 'videoplayer', id, fileUrl }: { ap
         );
     }
 
-    // Player view
     return (
         <div
             ref={containerRef}
@@ -297,14 +288,12 @@ export default function VideoPlayer({ appId = 'videoplayer', id, fileUrl }: { ap
                 onPause={() => setPlaying(false)}
             />
 
-            {/* Controls overlay */}
             <div
                 className="absolute inset-x-0 bottom-0 transition-opacity duration-300"
                 style={{ opacity: showControls ? 1 : 0, pointerEvents: showControls ? 'auto' : 'none' }}
                 onClick={e => e.stopPropagation()}
             >
                 <div className="bg-gradient-to-t from-black/80 to-transparent pt-12 pb-3 px-4">
-                    {/* Progress bar */}
                     <div
                         className="group relative h-1.5 cursor-pointer mb-3 hover:h-2.5 transition-all"
                         style={{ background: 'rgba(255,255,255,0.2)' }}
@@ -320,14 +309,12 @@ export default function VideoPlayer({ appId = 'videoplayer', id, fileUrl }: { ap
                     </div>
 
                     <div className="flex items-center gap-3">
-                        {/* Back to library */}
                         <button className="text-white/70 hover:text-white transition-colors text-xs font-mono" onClick={(e) => { e.stopPropagation(); goToLibrary(); }}>
                             Library
                         </button>
 
                         <div className="w-px h-4 bg-white/20" />
 
-                        {/* Play/Pause */}
                         <button className="text-white hover:text-pastel-blue transition-colors" onClick={togglePlay}>
                             {playing ? (
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1" /><rect x="14" y="4" width="4" height="16" rx="1" /></svg>
@@ -336,7 +323,6 @@ export default function VideoPlayer({ appId = 'videoplayer', id, fileUrl }: { ap
                             )}
                         </button>
 
-                        {/* Time */}
                         <span className="text-xs text-white/70 tabular-nums min-w-[80px] font-mono">
                             {fmt(currentTime)} / {fmt(duration)}
                         </span>
@@ -347,7 +333,6 @@ export default function VideoPlayer({ appId = 'videoplayer', id, fileUrl }: { ap
 
                         <div className="flex-1" />
 
-                        {/* Volume */}
                         <button className="text-white hover:text-pastel-peach transition-colors" onClick={toggleMute}>
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <polygon points="11,5 6,9 2,9 2,15 6,15 11,19" fill="currentColor" opacity="0.6" />
@@ -363,7 +348,6 @@ export default function VideoPlayer({ appId = 'videoplayer', id, fileUrl }: { ap
                             className="w-16 h-1 accent-accent cursor-pointer"
                         />
 
-                        {/* Speed */}
                         <div className="relative">
                             <button className="text-xs text-white/70 hover:text-pastel-green transition-colors px-1.5 py-0.5 font-mono" onClick={() => setShowSpeed(!showSpeed)}>
                                 {speed}x
@@ -379,7 +363,6 @@ export default function VideoPlayer({ appId = 'videoplayer', id, fileUrl }: { ap
                             )}
                         </div>
 
-                        {/* PiP */}
                         <button className="text-white/70 hover:text-pastel-teal transition-colors" onClick={togglePiP} title="Picture in Picture">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                                 <rect x="2" y="3" width="20" height="18" rx="2" />
@@ -387,7 +370,6 @@ export default function VideoPlayer({ appId = 'videoplayer', id, fileUrl }: { ap
                             </svg>
                         </button>
 
-                        {/* Fullscreen */}
                         <button className="text-white/70 hover:text-pastel-peach transition-colors" onClick={toggleFullscreen} title="Fullscreen">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                                 <polyline points="15,3 21,3 21,9" /><polyline points="9,21 3,21 3,15" />
@@ -398,7 +380,6 @@ export default function VideoPlayer({ appId = 'videoplayer', id, fileUrl }: { ap
                 </div>
             </div>
 
-            {/* Large center play button when paused */}
             {!playing && showControls && (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                     <div className="w-16 h-16 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.5)' }}>

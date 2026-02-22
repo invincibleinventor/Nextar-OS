@@ -793,7 +793,6 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
                     )}
 
                     <div className="flex-1 flex flex-col min-h-0">
-                        {/* Breadcrumb */}
                         {!ismobile && currentFile && (
                             <div className="h-6 flex items-center px-3 bg-[--bg-base] border-b border-[--border-color] text-[11px] text-[--text-muted] gap-1 shrink-0 overflow-hidden">
                                 {breadcrumb.map((seg, i) => (
@@ -838,7 +837,6 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
 
                         {showpanel && (
                             <div className="flex flex-col shrink-0" style={{ height: panelHeight }}>
-                                {/* Drag handle */}
                                 <div
                                     className="h-1 cursor-row-resize bg-[--border-color] hover:bg-accent transition-colors shrink-0"
                                     onMouseDown={handlePanelDragStart}

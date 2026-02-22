@@ -72,7 +72,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
             time: 'Now',
             type: 'system',
             appname: 'System',
-            icon: '/icons/system.png',
+            icon: '/icons/settings.png',
             appid: 'system',
             actions,
         });

@@ -1,5 +1,3 @@
-// --- Core Types ---
-
 interface ElectronPlatform {
     platform: string;
     islinux: boolean;
@@ -128,8 +126,6 @@ interface ElectronDisplayChangeEvent {
     changedMetrics?: string[];
 }
 
-// --- New Feature Types ---
-
 interface ElectronDialogFileFilter {
     name: string;
     extensions: string[];
@@ -235,8 +231,6 @@ interface ElectronDisplayInfo {
     width: number;
     height: number;
 }
-
-// --- Main API Interface ---
 
 interface ElectronAPI {
     iselectron: boolean;
@@ -411,8 +405,6 @@ interface ElectronAPI {
         setrotation: (display: string, rotation: string) => Promise<{ success: boolean; error?: string }>;
         onchanged: (callback: (data: ElectronDisplayChangeEvent) => void) => void;
     };
-
-    // --- Capability APIs ---
 
     dialogs: {
         openfile: (options?: ElectronOpenFileOptions) => Promise<{ canceled: boolean; filePaths: string[] }>;

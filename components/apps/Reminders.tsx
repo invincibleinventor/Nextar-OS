@@ -182,7 +182,6 @@ export default function Reminders({ appId = 'reminders', id }: { appId?: string;
 
     return (
         <div className="flex h-full bg-[--bg-base] text-[--text-color] font-mono text-xs overflow-hidden" tabIndex={0} onKeyDown={handleKeyDown}>
-            {/* Sidebar */}
             <div className="w-[200px] shrink-0 border-r border-[--border-color] bg-surface flex flex-col overflow-hidden anime-gradient-top">
                 <div className="p-3 space-y-0.5 flex-1 overflow-y-auto">
                     <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Smart Lists</div>
@@ -251,7 +250,6 @@ export default function Reminders({ appId = 'reminders', id }: { appId?: string;
                 </div>
             </div>
 
-            {/* Main */}
             <div className="flex-1 flex flex-col overflow-hidden">
                 <div className="h-[50px] flex items-center justify-between px-4 border-b border-[--border-color] bg-surface shrink-0">
                     <div>
@@ -332,7 +330,6 @@ export default function Reminders({ appId = 'reminders', id }: { appId?: string;
                     })}
                 </div>
 
-                {/* Add Reminder */}
                 {selectedView !== 'completed' && (
                     <div className="px-3 py-2 border-t border-[--border-color] shrink-0">
                         <div className="flex items-center gap-2">

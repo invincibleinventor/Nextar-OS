@@ -518,7 +518,6 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
         }
         if (e.key === 'Tab') {
             e.preventDefault();
-            // Simple tab completion for filenames
             const parts = currline.split(' ');
             const partial = parts[parts.length - 1] || '';
             if (partial) {
@@ -598,7 +597,6 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
                 </span>
             );
         }
-        // classic
         return (
             <span>
                 <span className="text-[#a6da95]">{username}</span>
@@ -629,12 +627,10 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
         return <span className={colorClass}>{line.text}</span>;
     };
 
-    // Web mode: use XTermShell with proper xterm.js rendering
     if (!iselectron) {
         return <XTermShell fontSize={fontSize} />;
     }
 
-    // Electron mode: keep the existing native terminal UI
     return (
         <div
             ref={containerref}

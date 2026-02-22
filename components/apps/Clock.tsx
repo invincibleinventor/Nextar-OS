@@ -42,13 +42,11 @@ export default function Clock({ appId = 'clock', id }: { appId?: string; id?: st
   });
   const [showPicker, setShowPicker] = useState(false);
 
-  // Stopwatch
   const [swRunning, setSwRunning] = useState(false);
   const [swElapsed, setSwElapsed] = useState(0);
   const [swStart, setSwStart] = useState(0);
   const [laps, setLaps] = useState<number[]>([]);
 
-  // Timer
   const [tH, setTH] = useState(0);
   const [tM, setTM] = useState(5);
   const [tS, setTS] = useState(0);
@@ -57,20 +55,17 @@ export default function Clock({ appId = 'clock', id }: { appId?: string; id?: st
   const [timerTotal, setTimerTotal] = useState(0);
   const [timerDone, setTimerDone] = useState(false);
 
-  // Clock tick
   useEffect(() => {
     const iv = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(iv);
   }, []);
 
-  // Stopwatch tick
   useEffect(() => {
     if (!swRunning) return;
     const iv = setInterval(() => setSwElapsed(Date.now() - swStart), 16);
     return () => clearInterval(iv);
   }, [swRunning, swStart]);
 
-  // Timer tick
   useEffect(() => {
     if (!timerRunning) return;
     const iv = setInterval(() => {
@@ -82,21 +77,18 @@ export default function Clock({ appId = 'clock', id }: { appId?: string; id?: st
     return () => clearInterval(iv);
   }, [timerRunning]);
 
-  // Flash reset
   useEffect(() => {
     if (!timerDone) return;
     const t = setTimeout(() => setTimerDone(false), 3000);
     return () => clearTimeout(t);
   }, [timerDone]);
 
-  // Persist zones
   useEffect(() => { localStorage.setItem(LS_KEY, JSON.stringify(selected)); }, [selected]);
 
   const toggleZone = useCallback((zId: string) => {
     setSelected(prev => prev.includes(zId) ? prev.filter(z => z !== zId) : [...prev, zId]);
   }, []);
 
-  // Menus
   const menus = useMemo(() => ({
     View: [
       { title: 'Clock', actionId: 'tab-clock' },
@@ -114,7 +106,6 @@ export default function Clock({ appId = 'clock', id }: { appId?: string; id?: st
   useMenuRegistration(menus, isActive);
   useMenuAction(appId, actions, id);
 
-  // Analog clock values
   const sec = now.getSeconds();
   const min = now.getMinutes();
   const hr = now.getHours() % 12;
@@ -122,12 +113,10 @@ export default function Clock({ appId = 'clock', id }: { appId?: string; id?: st
   const minDeg = min * 6 + sec * 0.1;
   const hrDeg = hr * 30 + min * 0.5;
 
-  // Format stopwatch
   const swMin = Math.floor(swElapsed / 60000);
   const swSec = Math.floor((swElapsed % 60000) / 1000);
   const swMs = Math.floor((swElapsed % 1000) / 10);
 
-  // Timer ring
   const timerPct = timerTotal > 0 ? timerLeft / timerTotal : 0;
   const timerMin = Math.floor(timerLeft / 60000);
   const timerSec = Math.floor((timerLeft % 60000) / 1000);
@@ -144,7 +133,6 @@ export default function Clock({ appId = 'clock', id }: { appId?: string; id?: st
 
   return (
     <div className={`flex flex-col h-full bg-[--bg-base] text-[--text-color] overflow-hidden font-mono select-none ${timerDone ? 'animate-pulse' : ''}`}>
-      {/* Tab bar */}
       <div className="h-[50px] flex items-center gap-1 px-4 border-b border-[--border-color] bg-surface shrink-0">
         {tabs.map(t => (
           <button key={t.key} onClick={() => setTab(t.key)}
@@ -156,11 +144,9 @@ export default function Clock({ appId = 'clock', id }: { appId?: string; id?: st
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        {/* CLOCK TAB */}
         {tab === 'clock' && (
           <div className="p-8 pt-10">
             <div className="max-w-[640px] mx-auto">
-              {/* Analog face */}
               <div className="flex flex-col items-center mb-6">
                 <div className="relative w-40 h-40">
                   <svg viewBox="0 0 120 120" className="w-full h-full">
@@ -171,27 +157,22 @@ export default function Clock({ appId = 'clock', id }: { appId?: string; id?: st
                       const x2 = 60 + 53 * Math.cos(a), y2 = 60 + 53 * Math.sin(a);
                       return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--text-muted)" strokeWidth={i % 3 === 0 ? 2 : 1} strokeLinecap="round" />;
                     })}
-                    {/* Hour */}
                     <line x1="60" y1="60" x2="60" y2="28" stroke="var(--text-color)" strokeWidth="2.5" strokeLinecap="round"
                       transform={`rotate(${hrDeg} 60 60)`} />
-                    {/* Minute */}
                     <line x1="60" y1="60" x2="60" y2="18" stroke="var(--text-color)" strokeWidth="1.5" strokeLinecap="round"
                       transform={`rotate(${minDeg} 60 60)`} />
-                    {/* Second */}
                     <line x1="60" y1="65" x2="60" y2="14" className="text-accent" stroke="currentColor" strokeWidth="0.8" strokeLinecap="round"
                       transform={`rotate(${secDeg} 60 60)`} />
                     <circle cx="60" cy="60" r="2" className="fill-accent" />
                   </svg>
                 </div>
 
-                {/* Digital */}
                 <div className="text-center mt-4">
                   <div className="text-2xl font-semibold tracking-wider">{pad(now.getHours())}:{pad(now.getMinutes())}:{pad(now.getSeconds())}</div>
                   <div className="text-xs text-[--text-muted] mt-1">{now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</div>
                 </div>
               </div>
 
-              {/* World clocks */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3">World Clocks</div>
@@ -223,7 +204,6 @@ export default function Clock({ appId = 'clock', id }: { appId?: string; id?: st
           </div>
         )}
 
-        {/* STOPWATCH TAB */}
         {tab === 'stopwatch' && (
           <div className="p-8 pt-10">
             <div className="max-w-[640px] mx-auto">
@@ -267,7 +247,6 @@ export default function Clock({ appId = 'clock', id }: { appId?: string; id?: st
           </div>
         )}
 
-        {/* TIMER TAB */}
         {tab === 'timer' && (
           <div className="p-8 pt-10">
             <div className="max-w-[640px] mx-auto">
@@ -298,7 +277,6 @@ export default function Clock({ appId = 'clock', id }: { appId?: string; id?: st
                   </>
                 ) : (
                   <>
-                    {/* Countdown ring */}
                     <div className="relative w-36 h-36">
                       <svg viewBox="0 0 120 120" className="w-full h-full -rotate-90">
                         <circle cx="60" cy="60" r="54" fill="none" stroke="var(--border-color)" strokeWidth="4" />

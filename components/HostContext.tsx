@@ -1,25 +1,5 @@
 'use client';
 
-/**
- * NextarOS Backend Companion API Spec
- *
- * GET  /api/health            → { ok: true, capabilities: string[] }
- * GET  /api/system/info       → { cpu, memory, disk, network, hostname, os }
- *
- * GET  /api/fs/read?path=     → { content: string }
- * POST /api/fs/write          → { path, content } → { ok: true }
- * GET  /api/fs/list?path=     → { items: [{ name, type, size, modified }] }
- * DELETE /api/fs/delete        → { path } → { ok: true }
- *
- * WS   /api/shell             → WebSocket: bidirectional terminal I/O
- *
- * GET  /api/docker/containers → [{ id, name, status, image }]
- * POST /api/docker/exec       → { containerId, command } → { output }
- *
- * POST /api/auth/login        → { username, password } → { token }
- * GET  /api/auth/session      → { user, expires }
- */
-
 import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
 
 interface HostContextType {
