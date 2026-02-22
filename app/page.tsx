@@ -683,7 +683,7 @@ const Desktop = () => {
                   window.dispatchEvent(new CustomEvent('home-pressed'));
                 }}
               >
-                <div className="w-full h-[6px] mb-[12px] cursor-pointer rounded-none bg-white mix-blend-difference" style={{ boxShadow: '0 0 8px rgba(128,128,128,0.5), 0 0 20px rgba(128,128,128,0.2)' }}></div>
+                <div className="w-full h-[6px]  cursor-pointer rounded-none bg-white mix-blend-difference" style={{ boxShadow: '0 0 8px rgba(128,128,128,0.5), 0 0 20px rgba(128,128,128,0.2)' }}></div>
               </motion.div>
             </div>
           </div>
