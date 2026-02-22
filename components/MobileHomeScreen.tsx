@@ -144,9 +144,8 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
         openSystemItem(item, { addwindow, windows, setactivewindow, updatewindow, ismobile, files });
     };
 
-    const dockapps = apps.filter(a =>
-        a.id === 'calculator' || a.id === 'notes' || a.id === 'calendar' || a.id === 'browser'
-    ).slice(0, 4);
+    const dockids = ['browser', 'calendar', 'calculator', 'explorer'];
+    const dockapps = dockids.map(id => apps.find(a => a.id === id)).filter(Boolean) as typeof apps;
 
     const handlelongpressstart = (item: filesystemitem | null, e: React.TouchEvent | React.MouseEvent) => {
         const touch = 'touches' in e ? e.touches[0] : e;
@@ -550,32 +549,34 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                                 Done
                             </motion.button>
                         )}
-
-                        <div data-tour={pageIndex === 0 ? "ios-dock" : undefined} className={`mx-auto mb-7 p-3 w-max flex items-center justify-between gap-4 transition-all duration-300 ${isoverlayopen ? 'bg-transparent' : 'backdrop-blur-lg filter border border-[--border-color]/50'}`} style={!isoverlayopen ? { backgroundColor: 'color-mix(in srgb, var(--bg-surface) 50%, transparent)' } : undefined}>
-                            {dockapps.map(app => (
-                                <motion.button
-                                    key={app.id}
-                                    onClick={() => {
-                                        openSystemItem(app.id, { addwindow, windows, setactivewindow, updatewindow, ismobile });
-                                    }}
-                                    whileTap={{ scale: 0.85 }}
-                                    className="w-[65px] h-[65px] aspect-square overflow-hidden relative"
-                                >
-                                    <TintedAppIcon
-                                        appId={app.id}
-                                        appName={app.appname}
-                                        originalIcon={app.icon}
-                                        size={65}
-                                        useFill={false}
-                                    />
-                                </motion.button>
-                            ))}
-                        </div>
                     </div>
                 ))}
 
                 <div className="w-[100vw] h-full pt-0 snap-start flex-shrink-0 [scroll-snap-stop:always]">
                     <AppLibrary />
+                </div>
+            </div>
+
+            <div data-tour="ios-dock" className={`absolute bottom-0 left-0 right-0 z-20 flex justify-center pb-7 pointer-events-auto transition-all duration-300 ${page >= gridPages.length ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+                <div className={`p-3 flex items-center justify-between gap-4 transition-all duration-300 ${isoverlayopen ? 'bg-transparent' : 'backdrop-blur-lg filter border border-[--border-color]/50'}`} style={!isoverlayopen ? { backgroundColor: 'color-mix(in srgb, var(--bg-surface) 50%, transparent)' } : undefined}>
+                    {dockapps.map(app => (
+                        <motion.button
+                            key={app.id}
+                            onClick={() => {
+                                openSystemItem(app.id, { addwindow, windows, setactivewindow, updatewindow, ismobile });
+                            }}
+                            whileTap={{ scale: 0.85 }}
+                            className="w-[65px] h-[65px] aspect-square overflow-hidden relative"
+                        >
+                            <TintedAppIcon
+                                appId={app.id}
+                                appName={app.appname}
+                                originalIcon={app.icon}
+                                size={65}
+                                useFill={false}
+                            />
+                        </motion.button>
+                    ))}
                 </div>
             </div>
 
