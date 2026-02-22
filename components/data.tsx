@@ -85,7 +85,6 @@ export const componentmap: { [key: string]: any } = {
     'apps/Photos': dynamic(() => import('./apps/Photos')),
     'apps/Terminal': dynamic(() => import('./apps/Terminal')),
     'apps/Launchpad': dynamic(() => import('./apps/Launchpad')),
-    'apps/Python': dynamic(() => import('./apps/Python')),
     'apps/FileViewer': dynamic(() => import('./apps/FileViewer')),
     'apps/Notes': dynamic(() => import('./apps/Notes')),
     'apps/Music': dynamic(() => import('./apps/Music')),
@@ -141,11 +140,8 @@ export const personal = {
 
 import { getAllApps, getFilteredPackages } from '@/packages/registry';
 
-// Apps are now loaded from the package registry (packages/registry.ts).
-// Each app is defined as a manifest — like .desktop files in Linux DEs.
 export const apps: appdata[] = getAllApps() as appdata[];
 
-// Legacy inline definitions kept as reference, actual source of truth is the registry.
 const _legacyApps: appdata[] = [
     {
         id: 'explorer',
@@ -595,19 +591,6 @@ const _legacyApps: appdata[] = [
         defaultsize: { width: 700, height: 550 },
         category: 'Social',
     },
-    {
-        id: 'python',
-        appname: 'Python',
-        icon: '/terminal.png',
-        maximizeable: true,
-        componentname: 'apps/Python',
-        additionaldata: {},
-        multiwindow: false,
-        titlebarblurred: false,
-        pinned: false,
-        defaultsize: { width: 800, height: 550 },
-        category: 'Developer Tools',
-    },
 ];
 
 export function getfilteredapps(iselectron: boolean): appdata[] {
@@ -936,6 +919,53 @@ export const generateGuestFilesystem = (): filesystemitem[] => {
         owner: 'guest'
     });
 
+    const GUEST_PROJECTS = [
+        { name: 'NextarOS', desc: 'Browser-based macOS/iOS simulation with window management and installable apps', url: 'https://github.com/invincibleinventor/nextar-os', live: 'https://baladev.in', tags: ['Next.js', 'React'] },
+        { name: 'SASTracker', desc: 'Question paper archive for SASTRA students with AI solutions', url: 'https://github.com/invincibleinventor/sastracker', live: 'https://sastracker.vercel.app', tags: ['React', 'Supabase'] },
+        { name: 'SquadSearch', desc: 'Anonymous hiring platform verifying skills via GitHub', url: 'https://github.com/invincibleinventor/squadsearch', live: 'https://squadsearch.vercel.app', tags: ['Next.js'] },
+        { name: 'Falar', desc: 'Social media platform with posts and messaging', url: 'https://github.com/invincibleinventor/falarapp', live: 'https://falarapp.vercel.app', tags: ['React'] },
+        { name: 'AIButton', desc: 'Crowdsourced AI content detection for LinkedIn posts', url: 'https://github.com/invincibleinventor/aibutton', live: null, tags: ['Chrome'] },
+        { name: 'CleanMyLinkedIn', desc: 'Chrome extension filtering LinkedIn engagement bait', url: 'https://github.com/invincibleinventor/cleanmylinkedin', live: null, tags: ['Chrome'] },
+        { name: 'EzyPing', desc: 'Website change monitoring tool', url: 'https://github.com/invincibleinventor/ezyping', live: 'https://ezyping.vercel.app', tags: ['Python'] },
+    ];
+
+    GUEST_PROJECTS.forEach(p => {
+        const slug = p.name.toLowerCase().replace(/\s+/g, '-');
+        fs.push({
+            id: `guest-project-${slug}`,
+            name: p.name,
+            parent: 'guest-projects',
+            mimetype: 'inode/directory',
+            date: 'Today',
+            size: '--',
+            isSystem: true,
+            isReadOnly: true,
+            owner: 'guest'
+        });
+        fs.push({
+            id: `guest-project-${slug}-readme`,
+            name: 'README.md',
+            parent: `guest-project-${slug}`,
+            mimetype: 'text/markdown',
+            date: 'Today',
+            size: '1 KB',
+            content: `# ${p.name}\n\n${p.desc}\n\n## Tech Stack\n${p.tags.map(t => `- ${t}`).join('\n')}\n\n## Links\n- GitHub: ${p.url}${p.live ? `\n- Live: ${p.live}` : ''}`,
+            isReadOnly: true,
+            owner: 'guest'
+        });
+        fs.push({
+            id: `guest-project-${slug}-img`,
+            name: `${slug}.png`,
+            parent: `guest-project-${slug}`,
+            mimetype: 'image/png',
+            date: 'Today',
+            size: '50 KB',
+            link: `/projects/${slug}.png`,
+            isReadOnly: true,
+            owner: 'guest'
+        });
+    });
+
     apps.forEach(a => {
         if (a.id !== 'explorer' && a.id !== 'launchpad' && !a.nativeOnly) {
             fs.push({
@@ -1202,11 +1232,11 @@ const FileConfig: Record<string, {
 }> = {
     'inode/directory': {
         appId: 'explorer',
-        icon: <IoFolderOutline className="w-full h-full text-pastel-blue" />,
+        icon: <Image src="/icons/folder.png" alt="Folder" width={64} height={64} className="w-full h-full object-contain dark:invert-0 invert" />,
     },
     'inode/shortcut': {
         appId: 'explorer',
-        icon: <IoFolderOutline className="w-full h-full text-pastel-lavender" />,
+        icon: <Image src="/icons/folder.png" alt="Folder" width={64} height={64} className="w-full h-full object-contain dark:invert-0 invert" />,
     },
     'application/x-executable': {
         appId: 'app-launch',
@@ -1238,7 +1268,7 @@ const FileConfig: Record<string, {
     },
     'application/pdf': {
         appId: 'fileviewer',
-        icon: <IoDocumentTextOutline className="w-full h-full text-pastel-red" />,
+        icon: <Image src="/icons/file.png" alt="File" width={64} height={64} className="w-full h-full object-contain dark:invert-0 invert" />,
         getLaunchProps: (file) => ({
             content: file.content,
             title: file.name,
@@ -1253,8 +1283,8 @@ const FileConfig: Record<string, {
         })
     },
     'text/markdown': {
-        appId: 'fileviewer',
-        icon: <IoDocumentTextOutline className="w-full h-full text-[--text-muted]" />,
+        appId: 'hackathonworkspace',
+        icon: <Image src="/icons/file.png" alt="File" width={64} height={64} className="w-full h-full object-contain dark:invert-0 invert" />,
         getLaunchProps: (file) => ({
             id: file.id,
             content: file.content,
@@ -1263,8 +1293,8 @@ const FileConfig: Record<string, {
         })
     },
     'text/plain': {
-        appId: 'textedit',
-        icon: <IoDocumentTextOutline className="w-full h-full text-pastel-peach" />,
+        appId: 'hackathonworkspace',
+        icon: <Image src="/icons/file.png" alt="File" width={64} height={64} className="w-full h-full object-contain dark:invert-0 invert" />,
         getLaunchProps: (file) => ({
             id: file.id,
             content: file.content,
@@ -1312,7 +1342,7 @@ export const getFileIcon = (mimetype: string, name: string, itemicon?: React.Rea
     }
     const config = FileConfig[mimetype];
     if (config && config.icon) return config.icon;
-    return <IoDocumentTextOutline className="w-full h-full text-[--text-muted]" />;
+    return <Image src="/icons/file.png" alt="File" width={64} height={64} className="w-full h-full object-contain dark:invert-0 invert" />;
 };
 
 const FolderPathMap: Record<string, string[]> = {
@@ -1427,7 +1457,7 @@ const resolveTarget = (itemOrId: string | filesystemitem, currentFiles?: filesys
 
     if (mimetype.startsWith('text/')) {
         return {
-            appId: 'fileviewer',
+            appId: 'hackathonworkspace',
             props: { id: file.id, content: file.content, title: file.name, type: file.mimetype },
             title: file.name
         };

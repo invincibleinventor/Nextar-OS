@@ -121,7 +121,6 @@ const Desktop = () => {
       const target = e.target as HTMLElement;
       const isTyping = target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target.isContentEditable;
 
-      // Window management shortcuts — always active
       if ((e.metaKey || e.ctrlKey) && e.key === 'q') {
         e.preventDefault();
         const aw = activewindowref.current;
@@ -139,7 +138,6 @@ const Desktop = () => {
         return;
       }
 
-      // Skip remaining shortcuts when user is typing in an input
       if (isTyping) return;
 
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -249,16 +247,13 @@ const Desktop = () => {
         const backEvent = new CustomEvent('app-back', { cancelable: true });
         window.dispatchEvent(backEvent);
         if (!backEvent.defaultPrevented) {
-          // Minimize all visible windows to go to home screen
           setwindows((prev: any[]) => prev.map((w: any) => ({ ...w, isminimized: true })));
         }
         return;
       }
 
-      // No visible windows - try home screen back (e.g., app library → home)
       const homeBackEvent = new CustomEvent('app-back', { cancelable: true });
       window.dispatchEvent(homeBackEvent);
-      // If not handled (already on home page 0), do nothing
     };
 
     window.addEventListener('popstate', handlePopState);
@@ -399,13 +394,13 @@ const Desktop = () => {
 
   useEffect(() => {
     if (osstate === 'unlocked' && user && !haslaunchedwelcome.current) {
-      const mode = process.env.NEXT_PUBLIC_NEXTAROS_MODE || 'prod';
-      if (mode === 'local') {
-        // Local/self-hosted: open Installer for setup
-        openSystemItem('welcome', context);
-      } else {
-        // Prod/deployed: open Portfolio
-        openSystemItem('portfolio', context);
+      if (!ismobile) {
+        const mode = process.env.NEXT_PUBLIC_NEXTAROS_MODE || 'prod';
+        if (mode === 'local') {
+          openSystemItem('welcome', context);
+        } else {
+          openSystemItem('portfolio', context);
+        }
       }
       haslaunchedwelcome.current = true;
     }
@@ -688,7 +683,7 @@ const Desktop = () => {
                   window.dispatchEvent(new CustomEvent('home-pressed'));
                 }}
               >
-                <div className="w-full h-[5px] mb-[12px] bg-neutral-300/90 dark:bg-white/80   cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.3)] backdrop-blur-md"></div>
+                <div className="w-full h-[6px] mb-[12px] cursor-pointer rounded-none bg-white mix-blend-difference" style={{ boxShadow: '0 0 8px rgba(128,128,128,0.5), 0 0 20px rgba(128,128,128,0.2)' }}></div>
               </motion.div>
             </div>
           </div>

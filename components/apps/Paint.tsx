@@ -28,7 +28,6 @@ export default function Paint({ appId = 'paint', id }: { appId?: string; id?: st
     const [canUndo, setCanUndo] = useState(false);
     const [canRedo, setCanRedo] = useState(false);
 
-    // Drawing state kept in refs to avoid re-renders during strokes
     const isDrawing = useRef(false);
     const startX = useRef(0);
     const startY = useRef(0);
@@ -37,8 +36,6 @@ export default function Paint({ appId = 'paint', id }: { appId?: string; id?: st
     const undoStack = useRef<ImageData[]>([]);
     const redoStack = useRef<ImageData[]>([]);
     const snapshotBeforeShape = useRef<ImageData | null>(null);
-
-    // --- helpers ---
 
     const getCtx = useCallback(() => canvasRef.current?.getContext('2d') ?? null, []);
     const getOverlayCtx = useCallback(() => overlayRef.current?.getContext('2d') ?? null, []);
@@ -111,8 +108,6 @@ export default function Paint({ appId = 'paint', id }: { appId?: string; id?: st
         setCanRedo(false);
     }, [clearCanvas]);
 
-    // --- flood fill ---
-
     const floodFill = useCallback((sx: number, sy: number, color: string) => {
         const ctx = getCtx();
         const canvas = canvasRef.current;
@@ -124,7 +119,6 @@ export default function Paint({ appId = 'paint', id }: { appId?: string; id?: st
         const imageData = ctx.getImageData(0, 0, w, h);
         const data = imageData.data;
 
-        // Parse hex color to RGBA
         const r = parseInt(color.slice(1, 3), 16);
         const g = parseInt(color.slice(3, 5), 16);
         const b = parseInt(color.slice(5, 7), 16);
@@ -133,7 +127,6 @@ export default function Paint({ appId = 'paint', id }: { appId?: string; id?: st
         const startIdx = idx(sy, sx);
         const tr = data[startIdx], tg = data[startIdx + 1], tb = data[startIdx + 2], ta = data[startIdx + 3];
 
-        // Don't fill if same color
         if (tr === r && tg === g && tb === b && ta === 255) return;
 
         const match = (i: number) =>
@@ -162,8 +155,6 @@ export default function Paint({ appId = 'paint', id }: { appId?: string; id?: st
         ctx.putImageData(imageData, 0, 0);
     }, [getCtx, saveState]);
 
-    // --- text tool ---
-
     const handleTextTool = useCallback((x: number, y: number) => {
         const text = prompt('Enter text:');
         if (!text) return;
@@ -175,8 +166,6 @@ export default function Paint({ appId = 'paint', id }: { appId?: string; id?: st
         ctx.textBaseline = 'top';
         ctx.fillText(text, x, y);
     }, [getCtx, saveState, strokeColor, brushSize]);
-
-    // --- drawing ---
 
     const clearOverlay = useCallback(() => {
         const octx = getOverlayCtx();
@@ -214,7 +203,6 @@ export default function Paint({ appId = 'paint', id }: { appId?: string; id?: st
         lastX.current = x;
         lastY.current = y;
 
-        // Save snapshot for shape preview
         const ctx = getCtx();
         const canvas = canvasRef.current;
         if (ctx && canvas) {
@@ -254,7 +242,6 @@ export default function Paint({ appId = 'paint', id }: { appId?: string; id?: st
             lastX.current = x;
             lastY.current = y;
         } else {
-            // Shape preview on overlay canvas
             const octx = getOverlayCtx();
             const overlay = overlayRef.current;
             if (!octx || !overlay) return;
@@ -293,11 +280,8 @@ export default function Paint({ appId = 'paint', id }: { appId?: string; id?: st
         isDrawing.current = false;
         const { x, y } = getCanvasCoords(e);
 
-        // Commit shape to main canvas
         if (tool === 'line' || tool === 'rectangle' || tool === 'ellipse') {
             saveState();
-            // Restore to pre-shape snapshot (shouldn't have changed, but be safe)
-            // Then draw the final shape on the main canvas
             const ctx = getCtx();
             if (!ctx) return;
             ctx.strokeStyle = strokeColor;
@@ -333,8 +317,6 @@ export default function Paint({ appId = 'paint', id }: { appId?: string; id?: st
         snapshotBeforeShape.current = null;
     }, [tool, getCanvasCoords, getCtx, saveState, clearOverlay, strokeColor, fillColor, brushSize]);
 
-    // --- resize handling ---
-
     useEffect(() => {
         const container = containerRef.current;
         const canvas = canvasRef.current;
@@ -350,7 +332,6 @@ export default function Paint({ appId = 'paint', id }: { appId?: string; id?: st
             const h = container.clientHeight;
             if (w === 0 || h === 0) return;
 
-            // Save current content only after first init (skip default 300x150 buffer)
             let saved: ImageData | null = null;
             if (initialized && canvas.width > 0 && canvas.height > 0) {
                 saved = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -376,8 +357,6 @@ export default function Paint({ appId = 'paint', id }: { appId?: string; id?: st
         return () => observer.disconnect();
     }, []);
 
-    // --- keyboard shortcuts ---
-
     useEffect(() => {
         if (!isActive) return;
         const onKey = (e: KeyboardEvent) => {
@@ -394,8 +373,6 @@ export default function Paint({ appId = 'paint', id }: { appId?: string; id?: st
         window.addEventListener('keydown', onKey);
         return () => window.removeEventListener('keydown', onKey);
     }, [isActive, undo, redo]);
-
-    // --- menus ---
 
     const menus = useMemo(() => ({
         File: [
@@ -438,8 +415,6 @@ export default function Paint({ appId = 'paint', id }: { appId?: string; id?: st
     useMenuRegistration(menus, isActive);
     useMenuAction(appId, menuActions, id);
 
-    // --- tool definitions for sidebar ---
-
     const tools: { id: Tool; icon: React.ReactNode; label: string; color: string }[] = [
         { id: 'pencil', icon: <IoPencilOutline size={12} />, label: 'Pencil', color: 'var(--pastel-green)' },
         { id: 'line', icon: <IoRemoveOutline size={12} />, label: 'Line', color: 'var(--pastel-blue)' },
@@ -459,9 +434,7 @@ export default function Paint({ appId = 'paint', id }: { appId?: string; id?: st
 
     return (
         <div className="flex h-full w-full bg-[--bg-base] text-[--text-color] font-mono overflow-hidden select-none">
-            {/* Left Sidebar */}
             <div className="w-[170px] border-r border-[--border-color] bg-surface flex flex-col h-full anime-gradient-top shrink-0 overflow-y-auto overflow-x-hidden pb-10">
-                {/* Tools */}
                 <div className="text-[10px] uppercase font-semibold text-[--text-muted] px-3 pt-3 pb-1 tracking-wide">Tools</div>
                 <div className="px-1.5 space-y-0.5">
                     {tools.map((t) => (
@@ -485,7 +458,6 @@ export default function Paint({ appId = 'paint', id }: { appId?: string; id?: st
                     ))}
                 </div>
 
-                {/* Stroke & Fill */}
                 <div className="h-px bg-[--border-color] mx-3 my-3" />
                 <div className="px-3 space-y-2.5">
                     <div>
@@ -514,7 +486,6 @@ export default function Paint({ appId = 'paint', id }: { appId?: string; id?: st
                     </div>
                 </div>
 
-                {/* Color Palette */}
                 <div className="h-px bg-[--border-color] mx-3 my-3" />
                 <div className="px-3">
                     <div className="text-[10px] uppercase font-semibold text-[--text-muted] mb-1.5 tracking-wide">Palette</div>
@@ -535,7 +506,6 @@ export default function Paint({ appId = 'paint', id }: { appId?: string; id?: st
                     </div>
                 </div>
 
-                {/* Brush Size */}
                 <div className="h-px bg-[--border-color] mx-3 my-3" />
                 <div className="px-3">
                     <div className="text-[10px] uppercase font-semibold text-[--text-muted] mb-1.5 tracking-wide">Size</div>
@@ -553,9 +523,7 @@ export default function Paint({ appId = 'paint', id }: { appId?: string; id?: st
                 </div>
             </div>
 
-            {/* Right Content */}
             <div className="flex-1 flex flex-col min-w-0 min-h-0">
-                {/* Top Action Bar */}
                 <div className="h-10 border-b border-[--border-color] bg-surface flex items-center gap-1 px-3 shrink-0">
                     <button
                         title="Undo"
@@ -603,7 +571,6 @@ export default function Paint({ appId = 'paint', id }: { appId?: string; id?: st
                     </button>
                 </div>
 
-                {/* Canvas area */}
                 <div ref={containerRef} className="flex-1 relative overflow-hidden min-h-0" style={{ cursor: 'crosshair' }}>
                     <canvas
                         ref={canvasRef}

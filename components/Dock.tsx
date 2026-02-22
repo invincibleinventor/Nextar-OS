@@ -87,7 +87,6 @@ const Dock = () => {
       return;
     }
 
-    // Multi-window cycling
     let nextIdx = 0;
     if (lastClickedApp.current.name === name) {
       nextIdx = (lastClickedApp.current.index + 1) % appwins.length;
@@ -178,7 +177,6 @@ const Dock = () => {
 
     const items: any[] = [];
 
-    // Window list
     if (appWins.length > 0) {
       appWins.forEach((win: any) => {
         items.push({

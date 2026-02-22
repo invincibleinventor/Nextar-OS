@@ -129,7 +129,6 @@ export const RuntimeProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const resolveRuntime = useCallback((language: string): RuntimeId => {
         const lang = language.toLowerCase();
 
-        // Python: always use Pyodide (local WASM) — auto-boots on first use
         if (lang === 'python') return 'pyodide';
 
         if (['javascript', 'typescript', 'node'].includes(lang)) {
@@ -218,7 +217,6 @@ export const RuntimeProvider: React.FC<{ children: React.ReactNode }> = ({ child
                     };
             }
         } catch (err: any) {
-            // If Pyodide failed, fall back to Piston for Python
             if (runtime === 'pyodide' && pistonRuntimes[request.language.toLowerCase()]) {
                 try {
                     const pistonConfig = pistonRuntimes[request.language.toLowerCase()];
@@ -247,7 +245,6 @@ export const RuntimeProvider: React.FC<{ children: React.ReactNode }> = ({ child
                         durationMs: performance.now() - startTime,
                     };
                 } catch {
-                    // Both runtimes failed
                 }
             }
             return {

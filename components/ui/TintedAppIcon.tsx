@@ -3,17 +3,15 @@ import React from 'react';
 import Image from 'next/image';
 import { IconType } from 'react-icons';
 import {
-    IoFolderOutline, IoSettingsOutline, IoCodeSlashOutline,
-    IoMailOutline, IoCalendarOutline, IoDocumentTextOutline,
-    IoMusicalNotesOutline, IoCalculatorOutline,
-    IoTerminalOutline, IoImagesOutline, IoInformationCircleOutline,
-    IoGlobeOutline, IoReaderOutline, IoStatsChartOutline,
-    IoStorefrontOutline, IoBookOutline, IoHomeOutline, IoTrashOutline,
-    IoGridOutline, IoDownloadOutline, IoRocketOutline,
-    IoBulbOutline, IoCheckboxOutline, IoLayersOutline,
-    IoTimeOutline, IoCloudOutline, IoAlarmOutline, IoVideocamOutline,
-    IoBrushOutline, IoPeopleOutline, IoHelpCircleOutline
-} from 'react-icons/io5';
+    LuFolder, LuSettings, LuCode, LuMail, LuCalendarDays,
+    LuFileText, LuStickyNote, LuMusic, LuCalculator,
+    LuShoppingBag, LuTerminal, LuImages, LuGlobe,
+    LuCloudDownload, LuFile, LuBookOpen, LuChartColumn,
+    LuLayoutGrid, LuTrash2, LuCircleHelp, LuInfo,
+    LuRocket, LuLaptop, LuLightbulb, LuListChecks,
+    LuPlug, LuLayoutTemplate, LuClock, LuCloudRain,
+    LuBell, LuClapperboard, LuPaintbrush, LuContact
+} from 'react-icons/lu';
 
 interface TintedAppIconProps {
     appId: string;
@@ -25,40 +23,39 @@ interface TintedAppIconProps {
 }
 
 const appIconMap: Record<string, { icon: IconType; bg: string }> = {
-    'explorer': { icon: IoFolderOutline, bg: 'var(--pastel-blue)' },
-    'settings': { icon: IoSettingsOutline, bg: 'var(--text-muted)' },
-    'code': { icon: IoCodeSlashOutline, bg: 'var(--pastel-green)' },
-    'mail': { icon: IoMailOutline, bg: 'var(--pastel-blue)' },
-    'calendar': { icon: IoCalendarOutline, bg: 'var(--pastel-red)' },
-    'textedit': { icon: IoDocumentTextOutline, bg: 'var(--pastel-yellow)' },
-    'notes': { icon: IoReaderOutline, bg: 'var(--pastel-peach)' },
-    'music': { icon: IoMusicalNotesOutline, bg: 'var(--pastel-pink)' },
-    'calculator': { icon: IoCalculatorOutline, bg: 'var(--pastel-teal)' },
-    'appstore': { icon: IoStorefrontOutline, bg: 'var(--pastel-blue)' },
-    'terminal': { icon: IoTerminalOutline, bg: 'var(--bg-overlay)' },
-    'photos': { icon: IoImagesOutline, bg: 'var(--pastel-mauve)' },
-    'browser': { icon: IoGlobeOutline, bg: 'var(--pastel-blue)' },
-    'welcome': { icon: IoDownloadOutline, bg: 'var(--pastel-blue)' },
-    'fileviewer': { icon: IoDocumentTextOutline, bg: 'var(--pastel-lavender)' },
-    'apidocs': { icon: IoBookOutline, bg: 'var(--pastel-teal)' },
-    'systemmonitor': { icon: IoStatsChartOutline, bg: 'var(--pastel-peach)' },
-    'launchpad-item': { icon: IoGridOutline, bg: 'var(--pastel-lavender)' },
-    'trash-folder': { icon: IoTrashOutline, bg: 'var(--text-muted)' },
-    'aboutnextaros': { icon: IoHelpCircleOutline, bg: 'var(--pastel-pink)' },
-    'getinfo': { icon: IoInformationCircleOutline, bg: 'var(--text-muted)' },
-    'projectdashboard': { icon: IoRocketOutline, bg: 'var(--pastel-green)' },
-    'hackathonworkspace': { icon: IoLayersOutline, bg: 'var(--pastel-blue)' },
-    'ideaboard': { icon: IoBulbOutline, bg: 'var(--pastel-yellow)' },
-    'shipchecklist': { icon: IoCheckboxOutline, bg: 'var(--pastel-teal)' },
-    'apiplayground': { icon: IoCodeSlashOutline, bg: 'var(--pastel-teal)' },
-    'templatesmanager': { icon: IoLayersOutline, bg: 'var(--pastel-peach)' },
-    'clock': { icon: IoTimeOutline, bg: 'var(--pastel-peach)' },
-    'weather': { icon: IoCloudOutline, bg: 'var(--pastel-blue)' },
-    'reminders': { icon: IoAlarmOutline, bg: 'var(--pastel-red)' },
-    'videoplayer': { icon: IoVideocamOutline, bg: 'var(--pastel-mauve)' },
-    'paint': { icon: IoBrushOutline, bg: 'var(--pastel-green)' },
-    'contacts': { icon: IoPeopleOutline, bg: 'var(--pastel-teal)' },
-    'python': { icon: IoTerminalOutline, bg: 'var(--pastel-yellow)' },
+    'explorer': { icon: LuFolder, bg: 'var(--pastel-blue)' },
+    'settings': { icon: LuSettings, bg: 'var(--text-muted)' },
+    'code': { icon: LuCode, bg: 'var(--pastel-green)' },
+    'mail': { icon: LuMail, bg: 'var(--pastel-blue)' },
+    'calendar': { icon: LuCalendarDays, bg: 'var(--pastel-red)' },
+    'textedit': { icon: LuFileText, bg: 'var(--pastel-yellow)' },
+    'notes': { icon: LuStickyNote, bg: 'var(--pastel-peach)' },
+    'music': { icon: LuMusic, bg: 'var(--pastel-pink)' },
+    'calculator': { icon: LuCalculator, bg: 'var(--pastel-teal)' },
+    'appstore': { icon: LuShoppingBag, bg: 'var(--pastel-blue)' },
+    'terminal': { icon: LuTerminal, bg: 'var(--bg-overlay)' },
+    'photos': { icon: LuImages, bg: 'var(--pastel-mauve)' },
+    'browser': { icon: LuGlobe, bg: 'var(--pastel-blue)' },
+    'welcome': { icon: LuCloudDownload, bg: 'var(--pastel-blue)' },
+    'fileviewer': { icon: LuFile, bg: 'var(--pastel-lavender)' },
+    'apidocs': { icon: LuBookOpen, bg: 'var(--pastel-teal)' },
+    'systemmonitor': { icon: LuChartColumn, bg: 'var(--pastel-peach)' },
+    'launchpad-item': { icon: LuLayoutGrid, bg: 'var(--pastel-lavender)' },
+    'trash-folder': { icon: LuTrash2, bg: 'var(--text-muted)' },
+    'aboutnextaros': { icon: LuCircleHelp, bg: 'var(--pastel-pink)' },
+    'getinfo': { icon: LuInfo, bg: 'var(--text-muted)' },
+    'projectdashboard': { icon: LuRocket, bg: 'var(--pastel-green)' },
+    'hackathonworkspace': { icon: LuLaptop, bg: 'var(--pastel-blue)' },
+    'ideaboard': { icon: LuLightbulb, bg: 'var(--pastel-yellow)' },
+    'shipchecklist': { icon: LuListChecks, bg: 'var(--pastel-teal)' },
+    'apiplayground': { icon: LuPlug, bg: 'var(--pastel-teal)' },
+    'templatesmanager': { icon: LuLayoutTemplate, bg: 'var(--pastel-peach)' },
+    'clock': { icon: LuClock, bg: 'var(--pastel-peach)' },
+    'weather': { icon: LuCloudRain, bg: 'var(--pastel-blue)' },
+    'reminders': { icon: LuBell, bg: 'var(--pastel-red)' },
+    'videoplayer': { icon: LuClapperboard, bg: 'var(--pastel-mauve)' },
+    'paint': { icon: LuPaintbrush, bg: 'var(--pastel-green)' },
+    'contacts': { icon: LuContact, bg: 'var(--pastel-teal)' },
 };
 
 const excludedApps: string[] = ['portfolio'];
@@ -72,7 +69,7 @@ export default function TintedAppIcon({ appId, appName, originalIcon, size = 40,
                     alt={appName}
                     fill
                     sizes="96px"
-                    className={`ease-in-out transition-all duration-200 object-cover shadow-pastel ${className}`}
+                    className={`ease-in-out transition-all duration-200 object-cover shadow-pastel-lg ${className}`}
                     draggable={false}
                 />
             );
@@ -83,7 +80,7 @@ export default function TintedAppIcon({ appId, appName, originalIcon, size = 40,
                 alt={appName}
                 width={size}
                 height={size}
-                className={`ease-in-out transition-all duration-200 object-cover shadow-pastel ${className}`}
+                className={`ease-in-out transition-all duration-200 object-cover shadow-pastel-lg ${className}`}
                 draggable={false}
             />
         );
@@ -99,7 +96,7 @@ export default function TintedAppIcon({ appId, appName, originalIcon, size = 40,
                     alt={appName}
                     fill
                     sizes="96px"
-                    className={`ease-in-out transition-all duration-200 object-cover shadow-pastel ${className}`}
+                    className={`ease-in-out transition-all duration-200 object-cover shadow-pastel-lg ${className}`}
                     draggable={false}
                 />
             );
@@ -110,7 +107,7 @@ export default function TintedAppIcon({ appId, appName, originalIcon, size = 40,
                 alt={appName}
                 width={size}
                 height={size}
-                className={`ease-in-out transition-all duration-200 object-cover shadow-pastel ${className}`}
+                className={`ease-in-out transition-all duration-200 object-cover shadow-pastel-lg ${className}`}
                 draggable={false}
             />
         );
@@ -121,7 +118,7 @@ export default function TintedAppIcon({ appId, appName, originalIcon, size = 40,
 
     if (useFill) {
         return (
-            <div className={`absolute inset-0 overflow-hidden shadow-pastel ${className}`}>
+            <div className={`absolute inset-0 overflow-hidden shadow-pastel-lg ${className}`}>
                 <div
                     className="absolute inset-0"
                     style={{ background: bgColor }}
@@ -134,7 +131,7 @@ export default function TintedAppIcon({ appId, appName, originalIcon, size = 40,
     }
 
     return (
-        <div style={{ width: size, height: size }} className="relative flex items-center justify-center overflow-hidden shadow-pastel">
+        <div style={{ width: size, height: size }} className="relative flex items-center justify-center overflow-hidden shadow-pastel-lg">
             <div
                 className={`absolute ${className}`}
                 style={{

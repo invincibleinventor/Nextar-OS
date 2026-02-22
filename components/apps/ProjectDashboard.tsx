@@ -30,7 +30,6 @@ const categoryColors: Record<string, string> = {
     'mobile': '#ef4444',
 };
 
-// --- Template Card ---
 const TemplateCard: React.FC<{
     template: ProjectTemplate;
     onSelect: (template: ProjectTemplate) => void;
@@ -57,7 +56,6 @@ const TemplateCard: React.FC<{
     );
 };
 
-// --- Project Card ---
 const ProjectCard: React.FC<{
     project: { id: string; name: string; templateId: string; updatedAt: number; stack?: string[]; status: string; description?: string };
     onOpen: (id: string) => void;
@@ -120,7 +118,6 @@ function getTimeAgo(timestamp: number): string {
     return `${days}d ago`;
 }
 
-// --- Create Project Dialog ---
 const CreateProjectDialog: React.FC<{
     template: ProjectTemplate;
     onClose: () => void;
@@ -186,7 +183,6 @@ const CreateProjectDialog: React.FC<{
     );
 };
 
-// === MAIN DASHBOARD ===
 export default function ProjectDashboard({ windowId, appId = 'projectdashboard', id }: { windowId?: string; appId?: string; id?: string }) {
     const { projects, createProject, deleteProjectById, openProject, isLoading } = useProjects();
     const { addwindow, activewindow } = useWindows();
@@ -269,7 +265,6 @@ export default function ProjectDashboard({ windowId, appId = 'projectdashboard',
 
     return (
         <div className="flex flex-col h-full bg-[--bg-base] text-[--text-color] overflow-hidden font-mono">
-            {/* Header */}
             <div className="px-6 pt-5 pb-4 border-b border-[--border-color] shrink-0">
                 <div className="flex items-center justify-between mb-4">
                     <div>
@@ -294,7 +289,6 @@ export default function ProjectDashboard({ windowId, appId = 'projectdashboard',
                     </div>
                 </div>
 
-                {/* Search */}
                 <div className="relative">
                     <IoSearchOutline size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[--text-muted]" />
                     <input
@@ -305,7 +299,6 @@ export default function ProjectDashboard({ windowId, appId = 'projectdashboard',
                     />
                 </div>
 
-                {/* Category filter for templates */}
                 {view === 'templates' && (
                     <div className="flex items-center gap-1 mt-3">
                         {categories.map(cat => (
@@ -321,7 +314,6 @@ export default function ProjectDashboard({ windowId, appId = 'projectdashboard',
                 )}
             </div>
 
-            {/* Content */}
             <div className="flex-1 overflow-y-auto p-6">
                 {view === 'projects' ? (
                     <>
@@ -383,7 +375,6 @@ export default function ProjectDashboard({ windowId, appId = 'projectdashboard',
                 )}
             </div>
 
-            {/* Create Project Dialog */}
             {selectedTemplate && (
                 <CreateProjectDialog
                     template={selectedTemplate}

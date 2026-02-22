@@ -33,7 +33,6 @@ export async function bootWebContainer(): Promise<WebContainer> {
 export async function mountFiles(files: Record<string, string>): Promise<void> {
     const container = await bootWebContainer();
 
-    // Convert flat file map to WebContainer directory tree structure
     const tree: any = {};
     for (const [path, content] of Object.entries(files)) {
         const parts = path.split('/').filter(Boolean);
@@ -79,8 +78,6 @@ export async function runNodeCommand(command: string, args: string[] = []): Prom
 
     const process = await container.spawn(command, args, { env: {} });
 
-    // WebContainer merges stdout+stderr into process.output. We split by heuristic:
-    // Lines starting with common error prefixes go to stderr.
     const errorPrefixes = /^(error|warn|ERR!|Error:|TypeError|SyntaxError|ReferenceError|ENOENT|EACCES|npm ERR)/i;
     await process.output.pipeTo(new WritableStream({
         write(data) {
@@ -115,10 +112,8 @@ export async function startDevServer(
 ): Promise<{ url: string; port: number }> {
     const container = await bootWebContainer();
 
-    // Start the dev server (fire-and-forget — it runs until killed)
     container.spawn(command, args);
 
-    // Wait for the server to be ready
     return new Promise((resolve) => {
         container.on('server-ready', (port, url) => {
             resolve({ url, port });

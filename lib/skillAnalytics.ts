@@ -1,8 +1,3 @@
-/**
- * Skill Heat Map Analytics — Track and classify student skills based on
- * commands run, errors encountered, and time-per-task patterns.
- */
-
 export type SkillCategory =
     | 'variables' | 'loops' | 'conditionals' | 'functions' | 'recursion'
     | 'arrays' | 'strings' | 'objects' | 'classes' | 'async-await'
@@ -24,13 +19,10 @@ export interface SkillProfile {
     studentId: string;
     updatedAt: number;
     skills: Map<SkillCategory, SkillEntry>;
-    /** Strong skills sorted by confidence */
     strengths: SkillCategory[];
-    /** Weak skills sorted by confidence */
     weaknesses: SkillCategory[];
 }
 
-/** Classify a terminal command into skill categories */
 function classifyCommand(command: string): SkillCategory[] {
     const cmd = command.trim().toLowerCase();
     const cats: SkillCategory[] = [];
@@ -46,7 +38,6 @@ function classifyCommand(command: string): SkillCategory[] {
     return cats.length ? cats : ['terminal'];
 }
 
-/** Classify a compilation/runtime error into skill categories */
 function classifyError(error: string): SkillCategory[] {
     const e = error.toLowerCase();
     const cats: SkillCategory[] = [];
@@ -92,7 +83,6 @@ export class SkillAnalyzer {
         };
     }
 
-    /** Record a successful command execution */
     recordSuccess(command: string, durationMs: number) {
         const categories = classifyCommand(command);
         for (const cat of categories) {
@@ -105,7 +95,6 @@ export class SkillAnalyzer {
         this.recompute();
     }
 
-    /** Record a failed command/compilation */
     recordFailure(command: string, error: string, durationMs: number) {
         const cmdCats = classifyCommand(command);
         const errCats = classifyError(error);
@@ -120,17 +109,14 @@ export class SkillAnalyzer {
         this.recompute();
     }
 
-    /** Get the full skill profile */
     getProfile(): SkillProfile {
         return { ...this.profile, skills: new Map(this.profile.skills) };
     }
 
-    /** Get skill entries as an array sorted by category */
     getSkillArray(): SkillEntry[] {
         return Array.from(this.profile.skills.values()).sort((a, b) => a.category.localeCompare(b.category));
     }
 
-    /** Serialize for storage */
     serialize(): string {
         return JSON.stringify({
             ...this.profile,
@@ -138,7 +124,6 @@ export class SkillAnalyzer {
         });
     }
 
-    /** Restore from serialized data */
     static deserialize(data: string): SkillAnalyzer {
         const parsed = JSON.parse(data);
         const analyzer = new SkillAnalyzer(parsed.studentId);

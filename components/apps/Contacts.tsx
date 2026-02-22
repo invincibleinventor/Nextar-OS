@@ -177,7 +177,6 @@ export default function Contacts({ appId = 'contacts', id }: { appId?: string; i
         URL.revokeObjectURL(url);
     }, [selected]);
 
-    // Menu integration
     const contactMenus = useMemo(() => ({
         File: [
             { title: 'New Contact', actionId: 'contacts-new', shortcut: '⌘N' },
@@ -213,9 +212,7 @@ export default function Contacts({ appId = 'contacts', id }: { appId?: string; i
 
     return (
         <div className="flex h-full w-full bg-[--bg-base] font-mono text-[--text-color] overflow-hidden">
-            {/* Sidebar */}
             <div className="w-[250px] flex flex-col border-r border-[--border-color] bg-surface shrink-0 anime-gradient-top">
-                {/* Search + New */}
                 <div className="flex items-center gap-1.5 px-2.5 pt-2.5 pb-2">
                     <div className="flex-1 flex items-center gap-1.5 px-2 py-1.5 bg-overlay border border-[--border-color]">
                         <IoSearchOutline size={13} className="text-[--text-muted] shrink-0" />
@@ -236,7 +233,6 @@ export default function Contacts({ appId = 'contacts', id }: { appId?: string; i
                     </button>
                 </div>
 
-                {/* Contact list */}
                 <div className="flex-1 overflow-y-auto">
                     {grouped.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-full text-[--text-muted] px-4 text-center">
@@ -281,10 +277,8 @@ export default function Contacts({ appId = 'contacts', id }: { appId?: string; i
                 </div>
             </div>
 
-            {/* Detail / Edit panel */}
             <div className="flex-1 flex flex-col overflow-hidden">
                 {editing && draft ? (
-                    /* Edit / New form */
                     <div className="flex-1 overflow-y-auto p-6">
                         <div className="flex flex-col items-center mb-6">
                             <div
@@ -344,9 +338,7 @@ export default function Contacts({ appId = 'contacts', id }: { appId?: string; i
                         </div>
                     </div>
                 ) : selected ? (
-                    /* Detail view */
                     <div className="flex-1 overflow-y-auto">
-                        {/* Toolbar */}
                         <div className="flex items-center justify-end gap-1 px-4 py-2 border-b border-[--border-color] shrink-0">
                             <button
                                 onClick={startEdit}
@@ -372,7 +364,6 @@ export default function Contacts({ appId = 'contacts', id }: { appId?: string; i
                         </div>
 
                         <div className="p-6">
-                            {/* Avatar + Name */}
                             <div className="flex flex-col items-center mb-6">
                                 <div
                                     className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold text-white mb-3"
@@ -386,7 +377,6 @@ export default function Contacts({ appId = 'contacts', id }: { appId?: string; i
                                 )}
                             </div>
 
-                            {/* Fields */}
                             <div className="max-w-sm mx-auto">
                                 <DetailField label="Email" value={selected.email} />
                                 <DetailField label="Phone" value={selected.phone} />
@@ -395,7 +385,6 @@ export default function Contacts({ appId = 'contacts', id }: { appId?: string; i
                             </div>
                         </div>
 
-                        {/* Delete confirmation */}
                         {confirmDelete && (
                             <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/30">
                                 <div className="bg-surface border border-[--border-color]  p-5 shadow-lg max-w-xs w-full mx-4">
@@ -422,7 +411,6 @@ export default function Contacts({ appId = 'contacts', id }: { appId?: string; i
                         )}
                     </div>
                 ) : (
-                    /* Empty state */
                     <div className="flex-1 flex flex-col items-center justify-center text-[--text-muted]">
                         <IoPersonOutline size={36} className="opacity-20 mb-2" />
                         <span className="text-[12px] opacity-50">

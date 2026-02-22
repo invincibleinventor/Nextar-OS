@@ -1,9 +1,3 @@
-/**
- * Environment DNA — Cryptographic hash of environment state for tamper detection.
- * SHA-256 hash of sorted file paths + contents + installed packages.
- */
-
-/** Compute SHA-256 hash of a string using Web Crypto API */
 async function sha256(data: string): Promise<string> {
     const buf = new TextEncoder().encode(data);
     const hash = await crypto.subtle.digest('SHA-256', buf);

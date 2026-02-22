@@ -71,30 +71,24 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
     const [wallpaperinput, setwallpaperinput] = useState(wallpaperurl);
     useEffect(() => { setwallpaperinput(wallpaperurl); }, [wallpaperurl]);
 
-    // Keyboard state
     const [kbLayout, setKbLayout] = useState('');
     const [kbLayouts, setKbLayouts] = useState<string[]>([]);
     const [kbRepeatDelay, setKbRepeatDelay] = useState(500);
     const [kbRepeatInterval, setKbRepeatInterval] = useState(30);
 
-    // Mouse state
     const [mouseSpeed, setMouseSpeed] = useState(0);
     const [naturalScroll, setNaturalScroll] = useState(false);
 
-    // Locale state
     const [currentLocale, setCurrentLocale] = useState('');
     const [availableLocales, setAvailableLocales] = useState<string[]>([]);
 
-    // DateTime state
     const [dtTimezone, setDtTimezone] = useState('');
     const [dtNtp, setDtNtp] = useState(true);
     const [dtLocalTime, setDtLocalTime] = useState('');
     const [dtTimezones, setDtTimezones] = useState<string[]>([]);
 
-    // Default Apps state
     const [defaultBrowser, setDefaultBrowser] = useState('');
 
-    // Printers state
     const [printerList, setPrinterList] = useState<any[]>([]);
     const [defaultPrinter, setDefaultPrinter] = useState('');
 
@@ -566,7 +560,7 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                                 <SettingsRow label="Reduce Transparency" toggle toggleValue={reducetransparency} onToggle={setreducetransparency} />
                                 <SettingsRow label="Reduce Motion" toggle toggleValue={reducemotion} onToggle={setreducemotion} />
                                 <SettingsRow label="Sound Effects" toggle toggleValue={soundeffects} onToggle={setsoundeffects} />
-                                <SettingsRow label="Inverse Label Color" toggle toggleValue={inverselabelcolor} onToggle={setinverselabelcolor} last />
+                                <SettingsRow label="Adapt Wallpaper Colors" toggle toggleValue={inverselabelcolor} onToggle={setinverselabelcolor} last />
                             </SettingsGroup>
                         </>
                     )}

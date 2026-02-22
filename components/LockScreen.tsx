@@ -121,11 +121,9 @@ export default function LockScreen() {
 
         return (
             <div className="fixed inset-0 z-[800] flex flex-col items-center overflow-hidden font-mono">
-                {/* Wallpaper background with blur overlay */}
                 <div className="absolute inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: `url('${wallpaperurl}')` }} />
                 <div className="absolute inset-0 z-[1] backdrop-blur-xl" style={{ background: islightbackground ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)' }} />
 
-                {/* Top accent line */}
                 <motion.div
                     className="absolute top-0 left-0 right-0 h-[2px] z-20"
                     style={{ background: 'linear-gradient(90deg, transparent, var(--accent-color), transparent)' }}
@@ -134,7 +132,6 @@ export default function LockScreen() {
                     transition={{ duration: 0.8, delay: 0.3 }}
                 />
 
-                {/* Bottom accent line */}
                 <motion.div
                     className="absolute bottom-0 left-0 right-0 h-[2px] z-20"
                     style={{ background: 'linear-gradient(90deg, transparent, var(--accent-color), transparent)' }}
@@ -143,13 +140,11 @@ export default function LockScreen() {
                     transition={{ duration: 0.8, delay: 0.5 }}
                 />
 
-                {/* Corner bracket accents */}
                 <motion.div className="absolute top-4 left-4 z-10" style={{ width: 20, height: 20, borderLeft: '2px solid var(--accent-color)', borderTop: '2px solid var(--accent-color)' }} initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 0.35, scale: 1 }} transition={{ delay: 0.6, type: 'spring' }} />
                 <motion.div className="absolute top-4 right-4 z-10" style={{ width: 20, height: 20, borderRight: '2px solid var(--accent-color)', borderTop: '2px solid var(--accent-color)' }} initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 0.35, scale: 1 }} transition={{ delay: 0.7, type: 'spring' }} />
                 <motion.div className="absolute bottom-4 left-4 z-10" style={{ width: 20, height: 20, borderLeft: '2px solid var(--accent-color)', borderBottom: '2px solid var(--accent-color)' }} initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 0.35, scale: 1 }} transition={{ delay: 0.8, type: 'spring' }} />
                 <motion.div className="absolute bottom-4 right-4 z-10" style={{ width: 20, height: 20, borderRight: '2px solid var(--accent-color)', borderBottom: '2px solid var(--accent-color)' }} initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 0.35, scale: 1 }} transition={{ delay: 0.9, type: 'spring' }} />
 
-                {/* Decorative side elements */}
                 <motion.div
                     className="absolute left-3 top-1/2 -translate-y-1/2 z-10 flex flex-col items-center gap-2"
                     initial={{ opacity: 0, x: -10 }}
@@ -173,7 +168,6 @@ export default function LockScreen() {
 
                 <div className="h-12 w-full z-10" />
 
-                {/* Lock icon with pulsing ring */}
                 <motion.div
                     className="z-10 mt-4 mb-2 relative"
                     initial={{ scale: 0.8, opacity: 0 }}
@@ -187,7 +181,6 @@ export default function LockScreen() {
                     </div>
                 </motion.div>
 
-                {/* Time display - larger and more expressive */}
                 <motion.div
                     className="z-10 flex flex-col items-center mb-2"
                     initial={{ opacity: 0, y: 10 }}
@@ -203,7 +196,6 @@ export default function LockScreen() {
                         style={{ textShadow: islightbackground ? 'none' : '0 1px 8px rgba(0,0,0,0.5)' }}>{dateStr}</p>
                 </motion.div>
 
-                {/* Greeting */}
                 <motion.p
                     className={`z-10 text-sm font-medium tracking-wider uppercase mb-4 ${textMutedColor}`}
                     style={{ textShadow: textShadowSm }}
@@ -214,7 +206,6 @@ export default function LockScreen() {
                     {greeting}
                 </motion.p>
 
-                {/* User selection and login */}
                 <div className="z-20 w-full px-8 flex flex-col items-center gap-4 flex-1 justify-center">
                     <div className="flex items-center gap-5 overflow-x-auto w-full justify-center py-3 no-scrollbar">
                         {users.map(u => (
@@ -303,7 +294,6 @@ export default function LockScreen() {
                     </AnimatePresence>
                 </div>
 
-                {/* Bottom decorative area */}
                 <div className="w-full flex flex-col items-center pb-8 z-10 gap-3 mt-auto">
                     <motion.p
                         className={`text-[10px] tracking-[0.2em] uppercase font-medium ${textMutedColor}`}
@@ -322,11 +312,9 @@ export default function LockScreen() {
 
     return (
         <div className="fixed inset-0 z-[800] flex flex-col items-center justify-center text-[--text-color] font-mono overflow-hidden">
-            {/* Wallpaper background with blur overlay */}
             <div className="absolute inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: `url('${wallpaperurl}')` }} />
             <div className="absolute inset-0 z-[1] backdrop-blur-xl" style={{ background: islightbackground ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)' }} />
 
-            {/* Top & bottom accent lines */}
             <motion.div
                 className="absolute top-0 left-0 right-0 h-[2px] z-20"
                 style={{ background: 'linear-gradient(90deg, transparent, var(--accent-color), transparent)' }}
@@ -342,13 +330,11 @@ export default function LockScreen() {
                 transition={{ duration: 1, delay: 0.5 }}
             />
 
-            {/* Corner bracket accents with shadows */}
             <motion.div className="absolute top-6 left-6 z-10" style={{ width: 32, height: 32, borderLeft: '2px solid var(--accent-color)', borderTop: '2px solid var(--accent-color)', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }} initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 0.4, scale: 1 }} transition={{ delay: 0.6, type: 'spring' }} />
             <motion.div className="absolute top-6 right-6 z-10" style={{ width: 32, height: 32, borderRight: '2px solid var(--accent-color)', borderTop: '2px solid var(--accent-color)', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }} initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 0.4, scale: 1 }} transition={{ delay: 0.7, type: 'spring' }} />
             <motion.div className="absolute bottom-6 left-6 z-10" style={{ width: 32, height: 32, borderLeft: '2px solid var(--accent-color)', borderBottom: '2px solid var(--accent-color)', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }} initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 0.4, scale: 1 }} transition={{ delay: 0.8, type: 'spring' }} />
             <motion.div className="absolute bottom-6 right-6 z-10" style={{ width: 32, height: 32, borderRight: '2px solid var(--accent-color)', borderBottom: '2px solid var(--accent-color)', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }} initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 0.4, scale: 1 }} transition={{ delay: 0.9, type: 'spring' }} />
 
-            {/* Decorative side elements with shadows */}
             <motion.div
                 className="absolute left-8 top-1/2 -translate-y-1/2 z-10 hidden lg:flex flex-col items-center gap-3"
                 initial={{ opacity: 0, x: -20 }}
@@ -370,7 +356,6 @@ export default function LockScreen() {
                 <div style={{ width: 2, height: 60, background: 'var(--accent-color)', filter: 'drop-shadow(0 0 6px rgba(237,135,150,0.4))' }} />
             </motion.div>
 
-            {/* Time display */}
             <motion.div
                 className="z-10 absolute top-16 flex flex-col items-center gap-3"
                 initial={{ opacity: 0, y: -20 }}
@@ -386,7 +371,6 @@ export default function LockScreen() {
                     style={{ textShadow: islightbackground ? '0 1px 4px rgba(0,0,0,0.08)' : '0 1px 8px rgba(0,0,0,0.5)' }}>{dateStr}</span>
             </motion.div>
 
-            {/* User selection */}
             <motion.div
                 className="z-10 flex flex-col items-center w-full max-w-md mt-16"
                 initial={{ opacity: 0, y: 20 }}
@@ -437,7 +421,6 @@ export default function LockScreen() {
                     </motion.div>
                 </div>
 
-                {/* Password form */}
                 <AnimatePresence mode="wait">
                     {selectedUser && (
                         <motion.form
@@ -488,7 +471,6 @@ export default function LockScreen() {
                 </AnimatePresence>
             </motion.div>
 
-            {/* Bottom action buttons */}
             <motion.div
                 className="absolute bottom-10 flex gap-8 z-10"
                 initial={{ opacity: 0 }}

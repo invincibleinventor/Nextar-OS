@@ -157,7 +157,6 @@ export default function Notes({ isFocused = true, appId = 'notes', windowId }: {
         }
     };
 
-    // Sync contentEditable div when selected note changes (desktop)
     useEffect(() => {
         if (contentRef.current && selectedNote) {
             if (contentRef.current.innerHTML !== selectedNote.content) {
@@ -168,7 +167,6 @@ export default function Notes({ isFocused = true, appId = 'notes', windowId }: {
         }
     }, [selectedNote?.id]);
 
-    // Sync contentEditable div when selected note changes (mobile)
     useEffect(() => {
         if (mobileContentRef.current && selectedNote) {
             if (mobileContentRef.current.innerHTML !== selectedNote.content) {
@@ -188,7 +186,6 @@ export default function Notes({ isFocused = true, appId = 'notes', windowId }: {
 
     const execCommand = useCallback((command: string, value?: string) => {
         document.execCommand(command, false, value);
-        // Update content after command
         const ref = ismobile ? mobileContentRef : contentRef;
         if (ref.current && selectedNote) {
             const html = ref.current.innerHTML;

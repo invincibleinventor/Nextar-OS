@@ -485,8 +485,6 @@ export async function getshellinfo() {
     return { isShellMode: false, isDesktopSession: false, isLowMem: false, isUltraLowMem: false, totalMemMB: 0, disableGPU: false, platform: 'web', displayServer: 'unknown' as const, isPackaged: false, execPath: '', appPath: '' };
 }
 
-// --- Session Management (DE-level) ---
-
 export const desktopsession = {
     async getinfo() {
         if (iselectron && electronapi?.session) return await electronapi.session.getinfo();
@@ -513,8 +511,6 @@ export const desktopsession = {
     }
 };
 
-// --- Display Configuration (DE-level) ---
-
 export const displayconfig = {
     async getconfig(): Promise<{ success: boolean; displays: any[]; error?: string }> {
         if (iselectron && electronapi?.displayconfig) return await electronapi.displayconfig.getconfig();
@@ -536,16 +532,9 @@ export const displayconfig = {
     }
 };
 
-// =============================================================================
-//  CAPABILITY APIS — Web-fallback wrappers
-// =============================================================================
-
-// --- 1. Native Dialogs -------------------------------------------------------
-
 export const dialogs = {
     async openfile(options?: { title?: string; filters?: { name: string; extensions: string[] }[]; multiSelections?: boolean; defaultPath?: string }): Promise<{ canceled: boolean; filePaths: string[] }> {
         if (iselectron) return await electronapi.dialogs.openfile(options);
-        // Web fallback: use file input
         return new Promise((resolve) => {
             const input = document.createElement('input');
             input.type = 'file';
@@ -564,7 +553,6 @@ export const dialogs = {
 
     async opendirectory(options?: { title?: string; defaultPath?: string }): Promise<{ canceled: boolean; filePaths: string[] }> {
         if (iselectron) return await electronapi.dialogs.opendirectory(options);
-        // Web: directory picker if available
         if ('showDirectoryPicker' in window) {
             try {
                 const handle = await (window as any).showDirectoryPicker();
@@ -578,7 +566,6 @@ export const dialogs = {
 
     async savefile(options?: { title?: string; filters?: { name: string; extensions: string[] }[]; defaultPath?: string }): Promise<{ canceled: boolean; filePath?: string }> {
         if (iselectron) return await electronapi.dialogs.savefile(options);
-        // Web: showSaveFilePicker if available
         if ('showSaveFilePicker' in window) {
             try {
                 const handle = await (window as any).showSaveFilePicker({
@@ -598,7 +585,6 @@ export const dialogs = {
 
     async messagebox(options?: { type?: string; title?: string; message?: string; detail?: string; buttons?: string[] }): Promise<{ response: number; checkboxChecked: boolean }> {
         if (iselectron) return await electronapi.dialogs.messagebox(options);
-        // Web fallback: confirm/alert
         const msg = `${options?.message || ''}\n${options?.detail || ''}`.trim();
         if (options?.buttons && options.buttons.length > 1) {
             const result = window.confirm(msg);
@@ -614,8 +600,6 @@ export const dialogs = {
     }
 };
 
-// --- 2. Screen Capture -------------------------------------------------------
-
 export const screencapture = {
     async getsources(options?: { types?: string[]; thumbnailSize?: { width: number; height: number } }): Promise<any[]> {
         if (iselectron) return await electronapi.screencapture.getsources(options);
@@ -627,8 +611,6 @@ export const screencapture = {
         return { success: false, error: 'Screen capture requires Electron' };
     }
 };
-
-// --- 3. File Watchers --------------------------------------------------------
 
 export const filewatcher = {
     async start(watchPath: string, options?: { recursive?: boolean }): Promise<{ success: boolean; id?: number; error?: string }> {
@@ -654,8 +636,6 @@ export const filewatcher = {
         if (iselectron) electronapi.filesystem.onwatcherror(callback);
     }
 };
-
-// --- 4. PTY Terminal ---------------------------------------------------------
 
 export const ptyterminal = {
     async spawn(options?: { shell?: string; args?: string[]; cols?: number; rows?: number; cwd?: string; env?: Record<string, string> }): Promise<{ success: boolean; id?: number; pid?: number; error?: string }> {
@@ -687,8 +667,6 @@ export const ptyterminal = {
     }
 };
 
-// --- 5. Printing -------------------------------------------------------------
-
 export const printing = {
     async page(options?: any): Promise<{ success: boolean }> {
         if (iselectron) return await electronapi.print.page(options);
@@ -707,8 +685,6 @@ export const printing = {
     }
 };
 
-// --- 6. File Associations ----------------------------------------------------
-
 export const fileassociations = {
     async register(extension: string, appName: string, appPath: string): Promise<{ success: boolean; error?: string }> {
         if (iselectron) return await electronapi.fileassociations.register(extension, appName, appPath);
@@ -716,15 +692,11 @@ export const fileassociations = {
     }
 };
 
-// --- 7. Protocol Handler -----------------------------------------------------
-
 export const protocolhandler = {
     onurl(callback: (url: string) => void) {
         if (iselectron) electronapi.events.onprotocolurl(callback);
     }
 };
-
-// --- 8. Secure Storage (OS Keychain) -----------------------------------------
 
 export const securestorage = {
     async isavailable(): Promise<boolean> {
@@ -743,8 +715,6 @@ export const securestorage = {
     }
 };
 
-// --- 9. Launch at Login ------------------------------------------------------
-
 export const autolaunch = {
     async getsettings(): Promise<{ openAtLogin: boolean; openAsHidden?: boolean }> {
         if (iselectron) return await electronapi.autolaunch.getsettings();
@@ -757,12 +727,9 @@ export const autolaunch = {
     }
 };
 
-// --- 10. Media Permissions ---------------------------------------------------
-
 export const mediapermissions = {
     async check(mediaType: 'microphone' | 'camera' | 'screen'): Promise<string> {
         if (iselectron) return await electronapi.media.checkpermission(mediaType);
-        // Web fallback: check via Permissions API
         try {
             const name = mediaType === 'camera' ? 'camera' : 'microphone';
             const result = await navigator.permissions.query({ name: name as PermissionName });
@@ -774,7 +741,6 @@ export const mediapermissions = {
 
     async request(mediaType: 'microphone' | 'camera'): Promise<{ granted: boolean }> {
         if (iselectron) return await electronapi.media.requestpermission(mediaType);
-        // Web fallback: request via getUserMedia
         try {
             const constraints = mediaType === 'camera' ? { video: true } : { audio: true };
             const stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -786,12 +752,9 @@ export const mediapermissions = {
     }
 };
 
-// --- 11. Dock Badge / Taskbar Progress ---------------------------------------
-
 export const appbadge = {
     async setbadge(badge: string): Promise<{ success: boolean; error?: string }> {
         if (iselectron) return await electronapi.appbadge.setbadge(badge);
-        // Web fallback: Badge API
         try {
             if ('setAppBadge' in navigator) {
                 const count = parseInt(badge);
@@ -817,12 +780,9 @@ export const appbadge = {
     }
 };
 
-// --- 12. Hardware Info -------------------------------------------------------
-
 export const hardwareinfo = {
     async getgpu(): Promise<any> {
         if (iselectron) return await electronapi.hardware.getgpu();
-        // Web fallback: WebGL renderer info
         try {
             const canvas = document.createElement('canvas');
             const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
@@ -841,13 +801,11 @@ export const hardwareinfo = {
 
     async getfonts(): Promise<{ success: boolean; fonts: string[]; error?: string }> {
         if (iselectron) return await electronapi.hardware.getfonts();
-        // Web: no reliable way to enumerate fonts
         return { success: false, fonts: [], error: 'Font enumeration requires Electron' };
     },
 
     async getdisplays(): Promise<{ success: boolean; displays: any[]; error?: string }> {
         if (iselectron) return await electronapi.hardware.getdisplays();
-        // Web fallback: screen info
         return {
             success: true,
             displays: [{
@@ -859,8 +817,6 @@ export const hardwareinfo = {
         };
     }
 };
-
-// --- 13. Menu Actions --------------------------------------------------------
 
 export const menuactions = {
     onaction(callback: (action: string) => void) {

@@ -42,8 +42,6 @@ const openDB = (): Promise<IDBDatabase> => {
     });
 };
 
-// --- Projects ---
-
 export const getAllProjects = (): Promise<Project[]> => {
     return openDB().then(db => {
         return new Promise((resolve, reject) => {
@@ -82,7 +80,6 @@ export const saveProject = (project: Project): Promise<void> => {
 
 export const deleteProject = (id: string): Promise<void> => {
     return openDB().then(async db => {
-        // Delete all project files first
         const files = await getProjectFiles(id);
         const snapshots = await getProjectSnapshots(id);
 
@@ -101,8 +98,6 @@ export const deleteProject = (id: string): Promise<void> => {
         });
     });
 };
-
-// --- Project Files ---
 
 export const getProjectFiles = (projectId: string): Promise<ProjectFile[]> => {
     return openDB().then(db => {
@@ -159,8 +154,6 @@ export const deleteProjectFile = (id: string): Promise<void> => {
         });
     });
 };
-
-// --- Snapshots ---
 
 export const getProjectSnapshots = (projectId: string): Promise<Snapshot[]> => {
     return openDB().then(db => {

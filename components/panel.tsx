@@ -134,7 +134,7 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
 
     useEffect(() => {
         if (isGuest && !hasShownGuestToast.current) {
-            addToast("Guest Mode Enabled. No data will be preserved.", "info");
+            addToast("Guest Mode Enabled. No data will be preserved.", "success");
             hasShownGuestToast.current = true;
         }
         if (!isGuest) {

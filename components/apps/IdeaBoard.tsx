@@ -32,7 +32,6 @@ const priorityStyles: Record<string, string> = {
     'high': 'bg-pastel-red/20 text-pastel-red',
 };
 
-// --- Task Card ---
 const TaskCard: React.FC<{
     task: Task;
     onEdit: (task: Task) => void;
@@ -86,7 +85,6 @@ const TaskCard: React.FC<{
     );
 };
 
-// --- Add/Edit Task Dialog ---
 const TaskDialog: React.FC<{
     task?: Task;
     onSave: (task: Omit<Task, 'id' | 'createdAt'> & { id?: string }) => void;
@@ -164,7 +162,6 @@ const TaskDialog: React.FC<{
     );
 };
 
-// === MAIN IDEA BOARD ===
 export default function IdeaBoard({ windowId, appId = 'ideaboard', id }: { windowId?: string; appId?: string; id?: string }) {
     const { currentProject } = useProjects();
     const { addToast } = useNotifications();
@@ -176,16 +173,14 @@ export default function IdeaBoard({ windowId, appId = 'ideaboard', id }: { windo
     const [editingTask, setEditingTask] = useState<Task | undefined>(undefined);
     const [showDialog, setShowDialog] = useState(false);
 
-    // Load tasks from localStorage
     useEffect(() => {
         if (!storageKey) return;
         try {
             const stored = localStorage.getItem(storageKey);
             if (stored) setTasks(JSON.parse(stored));
-        } catch { /* ignore */ }
+        } catch {}
     }, [storageKey]);
 
-    // Save tasks to localStorage
     useEffect(() => {
         if (!storageKey) return;
         localStorage.setItem(storageKey, JSON.stringify(tasks));
@@ -246,7 +241,6 @@ export default function IdeaBoard({ windowId, appId = 'ideaboard', id }: { windo
 
     return (
         <div className="flex flex-col h-full bg-[--bg-base] text-[--text-color] overflow-hidden font-mono">
-            {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-[--border-color] shrink-0">
                 <div>
                     <h2 className="text-[13px] font-semibold flex items-center gap-2">
@@ -270,7 +264,6 @@ export default function IdeaBoard({ windowId, appId = 'ideaboard', id }: { windo
                 </button>
             </div>
 
-            {/* Kanban Board */}
             <div className="flex-1 flex overflow-x-auto p-4 gap-3">
                 {columns.map(col => {
                     const colTasks = tasks.filter(t => t.status === col.id);
@@ -304,7 +297,6 @@ export default function IdeaBoard({ windowId, appId = 'ideaboard', id }: { windo
                 })}
             </div>
 
-            {/* Task Dialog */}
             {showDialog && (
                 <TaskDialog
                     task={editingTask}

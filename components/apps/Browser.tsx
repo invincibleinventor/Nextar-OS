@@ -14,7 +14,7 @@ interface browserprops {
     id?: string;
 }
 
-export default function Browser({ initialurl = 'https://google.com', appId = 'browser', id }: browserprops) {
+export default function Browser({ initialurl = 'https://duckduckgo.com', appId = 'browser', id }: browserprops) {
     const [url, seturl] = useState(initialurl);
     const [inputvalue, setinputvalue] = useState(initialurl);
     const { ismobile } = useDevice();
@@ -116,7 +116,7 @@ export default function Browser({ initialurl = 'https://google.com', appId = 'br
         'zoom-reset': () => setZoom(1),
         'go-back': () => goBack(),
         'go-forward': () => goForward(),
-        'go-home': () => navigateTo('https://google.com'),
+        'go-home': () => navigateTo('https://duckduckgo.com'),
     }), [url, goBack, goForward, navigateTo]);
 
     const browserMenus = useMemo(() => ({

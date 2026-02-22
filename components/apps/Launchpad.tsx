@@ -42,7 +42,6 @@ export default function Launchpad({ onclose }: { onclose: () => void }) {
         }
     }, []);
 
-    // Resolve native Linux app icons via IPC (file:// is blocked from app:// origin)
     useEffect(() => {
         if (!iselectron || linuxapps.length === 0) return;
         const toResolve = linuxapps.filter(a => a.icon && a.icon.startsWith('/') && !iconCache[a.icon]);

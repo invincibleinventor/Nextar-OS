@@ -1,24 +1,15 @@
-/**
- * Micro-Checkpoints (Coding DVR) — Delta-compressed environment snapshots
- * stored in IndexedDB. Enables rewind to any point in a coding session.
- */
-
 export interface Checkpoint {
     id: string;
     sessionId: string;
     timestamp: number;
-    /** Delta from previous checkpoint (or full snapshot if first) */
     deltas: FileDelta[];
-    /** Metadata */
     label?: string;
 }
 
 export interface FileDelta {
     path: string;
     type: 'add' | 'modify' | 'delete';
-    /** Content for add/modify (omitted for delete) */
     content?: string;
-    /** Previous content hash for verification */
     prevHash?: string;
 }
 
@@ -64,7 +55,6 @@ export class CheckpointManager {
         this.getFiles = getFiles;
     }
 
-    /** Start auto-checkpointing every N seconds */
     startAutoCheckpoint(intervalSeconds = 30) {
         this.stopAutoCheckpoint();
         this.intervalId = setInterval(() => this.createCheckpoint(), intervalSeconds * 1000);
@@ -74,7 +64,6 @@ export class CheckpointManager {
         if (this.intervalId) { clearInterval(this.intervalId); this.intervalId = null; }
     }
 
-    /** Create a checkpoint by diffing current state against previous */
     async createCheckpoint(label?: string): Promise<Checkpoint> {
         const files = await this.getFiles();
         const currentState = new Map<string, FileState>();
@@ -105,7 +94,6 @@ export class CheckpointManager {
             label,
         };
 
-        // Save to IDB
         const db = await openDB();
         await new Promise<void>((resolve, reject) => {
             const tx = db.transaction(STORE_NAME, 'readwrite');
@@ -118,7 +106,6 @@ export class CheckpointManager {
         return checkpoint;
     }
 
-    /** Get all checkpoints for this session */
     async getCheckpoints(): Promise<Checkpoint[]> {
         const db = await openDB();
         return new Promise((resolve, reject) => {
@@ -130,7 +117,6 @@ export class CheckpointManager {
         });
     }
 
-    /** Reconstruct file state at a given checkpoint by replaying deltas */
     async reconstructAtCheckpoint(targetId: string): Promise<Map<string, string>> {
         const checkpoints = await this.getCheckpoints();
         const state = new Map<string, string>();
@@ -149,7 +135,6 @@ export class CheckpointManager {
         return state;
     }
 
-    /** Purge old checkpoints, keeping only the last N */
     async purge(keepLast: number): Promise<void> {
         const checkpoints = await this.getCheckpoints();
         if (checkpoints.length <= keepLast) return;

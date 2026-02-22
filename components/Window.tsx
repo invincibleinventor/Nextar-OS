@@ -203,7 +203,6 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
     if (!ismobile || !isRecentAppView) {
       if (ismobile && windowref.current) {
         const el = windowref.current as HTMLElement;
-        // Explicitly reset to mobile fullscreen values after RAF loop manipulated them
         el.style.visibility = '';
         el.style.top = '44px';
         el.style.left = '0px';
@@ -216,7 +215,6 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
       return;
     }
 
-    // Hide immediately before paint to prevent full-screen flash
     const windowElement = windowref.current as HTMLElement | null;
     if (windowElement) {
       windowElement.style.visibility = 'hidden';
@@ -354,7 +352,6 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
       });
       lasttop = newtop;
 
-      // Snap zone detection (20px from edges)
       const SNAP_THRESHOLD = 20;
       if (movex <= SNAP_THRESHOLD) {
         setsnappreview('left');
@@ -385,19 +382,15 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
       setsnappreview(null);
       cleanup();
 
-      // Save pre-snap state for restore
       if (upX <= SNAP_THRESHOLD) {
-        // Snap left half
         previousStateRef.current = { position, size };
         setposition({ top: panelheight, left: 0 });
         setsize({ width: Math.round(sw / 2), height: sh - panelheight - dockheight });
       } else if (upX >= sw - SNAP_THRESHOLD) {
-        // Snap right half
         previousStateRef.current = { position, size };
         setposition({ top: panelheight, left: Math.round(sw / 2) });
         setsize({ width: Math.round(sw / 2), height: sh - panelheight - dockheight });
       } else if (!wasmaximized && upY <= panelheight + SNAP_THRESHOLD) {
-        // Snap maximize
         previousStateRef.current = { position, size };
         updatewindow(id, { ismaximized: true });
       }
@@ -587,35 +580,43 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
       {!ismobile && !ismaximized && (
         <>
           <div
-            className="absolute w-full h-[6px] top-0 left-0 cursor-ns-resize z-50"
+            className="absolute w-full h-[8px] -top-[4px] left-0 z-[60]"
+            style={{ cursor: 'ns-resize' }}
             onMouseDown={(e) => { e.stopPropagation(); handleresizestart(e, 'top'); }}
           />
           <div
-            className="absolute w-full h-[6px] bottom-0 left-0 cursor-ns-resize z-50"
+            className="absolute w-full h-[8px] -bottom-[4px] left-0 z-[60]"
+            style={{ cursor: 'ns-resize' }}
             onMouseDown={(e) => { e.stopPropagation(); handleresizestart(e, 'bottom'); }}
           />
           <div
-            className="absolute top-0 left-0 w-[6px] h-full cursor-ew-resize z-50"
+            className="absolute top-0 -left-[4px] w-[8px] h-full z-[60]"
+            style={{ cursor: 'ew-resize' }}
             onMouseDown={(e) => { e.stopPropagation(); handleresizestart(e, 'left'); }}
           />
           <div
-            className="absolute top-0 right-0 w-[6px] h-full cursor-ew-resize z-50"
+            className="absolute top-0 -right-[4px] w-[8px] h-full z-[60]"
+            style={{ cursor: 'ew-resize' }}
             onMouseDown={(e) => { e.stopPropagation(); handleresizestart(e, 'right'); }}
           />
           <div
-            className="absolute w-4 h-4 left-0 top-0 cursor-nwse-resize z-[51]"
+            className="absolute w-5 h-5 -left-[4px] -top-[4px] z-[61]"
+            style={{ cursor: 'nwse-resize' }}
             onMouseDown={(e) => { e.stopPropagation(); handleresizestart(e, 'top-left'); }}
           />
           <div
-            className="absolute w-4 h-4 right-0 top-0 cursor-nesw-resize z-[51]"
+            className="absolute w-5 h-5 -right-[4px] -top-[4px] z-[61]"
+            style={{ cursor: 'nesw-resize' }}
             onMouseDown={(e) => { e.stopPropagation(); handleresizestart(e, 'top-right'); }}
           />
           <div
-            className="absolute w-4 h-4 left-0 bottom-0 cursor-nesw-resize z-[51]"
+            className="absolute w-5 h-5 -left-[4px] -bottom-[4px] z-[61]"
+            style={{ cursor: 'nesw-resize' }}
             onMouseDown={(e) => { e.stopPropagation(); handleresizestart(e, 'bottom-left'); }}
           />
           <div
-            className="absolute w-4 h-4 right-0 bottom-0 cursor-nwse-resize z-[51]"
+            className="absolute w-5 h-5 -right-[4px] -bottom-[4px] z-[61]"
+            style={{ cursor: 'nwse-resize' }}
             onMouseDown={(e) => { e.stopPropagation(); handleresizestart(e, 'bottom-right'); }}
           />
         </>

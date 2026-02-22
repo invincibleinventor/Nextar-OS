@@ -1,8 +1,3 @@
-/**
- * Guided Sandbox Rails — Invisible constraints that redirect students when violated.
- * Teachers define rails; students work freely within them.
- */
-
 import type { LabRail } from '../types/lab';
 
 export interface RailCheckResult {
@@ -23,8 +18,7 @@ interface RailContext {
 
 const checkers: Record<string, RailChecker> = {
     'file-access': (_, ctx) => {
-        // config.allowedPaths: string[] — glob-like patterns
-        return { allowed: true }; // base — overridden per-rail below
+        return { allowed: true };
     },
     'command-whitelist': (_, ctx) => {
         return { allowed: true };
@@ -53,7 +47,6 @@ export class SandboxRailsEngine {
         this.onViolation = onViolation;
     }
 
-    /** Check if a file access is allowed */
     checkFileAccess(filePath: string): RailCheckResult {
         for (const rail of this.rails) {
             if (rail.type === 'file-access') {
@@ -70,7 +63,6 @@ export class SandboxRailsEngine {
         return { allowed: true };
     }
 
-    /** Check if a command is allowed */
     checkCommand(command: string): RailCheckResult {
         const cmd = command.trim().split(/\s+/)[0];
         for (const rail of this.rails) {
@@ -90,7 +82,6 @@ export class SandboxRailsEngine {
         return { allowed: true };
     }
 
-    /** Check if a package installation is allowed */
     checkPackageInstall(packageName: string): RailCheckResult {
         for (const rail of this.rails) {
             if (rail.type === 'package-lock') {
@@ -103,7 +94,6 @@ export class SandboxRailsEngine {
         return { allowed: true };
     }
 
-    /** Check if output matches expected format */
     checkOutput(output: string, questionId: string): RailCheckResult {
         for (const rail of this.rails) {
             if (rail.type === 'output-format' && rail.config.questionId === questionId) {
@@ -116,7 +106,6 @@ export class SandboxRailsEngine {
         return { allowed: true };
     }
 
-    /** Check time limit */
     checkTimeLimit(elapsedMinutes: number): RailCheckResult {
         for (const rail of this.rails) {
             if (rail.type === 'time-limit') {
@@ -144,7 +133,6 @@ export class SandboxRailsEngine {
     }
 }
 
-/** Simple glob matching (supports * and **) */
 function matchGlob(path: string, pattern: string): boolean {
     const regex = pattern
         .replace(/[.+^${}()|[\]\\]/g, '\\$&')

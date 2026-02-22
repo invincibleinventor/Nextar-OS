@@ -34,18 +34,16 @@ body {
   --text-color: #4c4f69;
   --text-muted: #6c6f85;
 
-  /* Catppuccin Frappé accent palette — vibrant on light backgrounds */
-  --pastel-red: #e78284;
-  --pastel-peach: #ef9f76;
-  --pastel-yellow: #e5c890;
-  --pastel-green: #a6d189;
-  --pastel-teal: #81c8be;
-  --pastel-blue: #8caaee;
-  --pastel-lavender: #babbf1;
-  --pastel-pink: #f4b8e4;
-  --pastel-mauve: #ca9ee6;
+  --pastel-red: #ed8796;
+  --pastel-peach: #f5a97f;
+  --pastel-yellow: #eed49f;
+  --pastel-green: #a6da95;
+  --pastel-teal: #8bd5ca;
+  --pastel-blue: #8aadf4;
+  --pastel-lavender: #b7bdf8;
+  --pastel-pink: #f5bde6;
+  --pastel-mauve: #c6a0f6;
 
-  /* Z-index scale */
   --z-windows: 100;
   --z-dock: 200;
   --z-panel: 300;
@@ -68,7 +66,6 @@ body {
   --text-color: #cad3f5;
   --text-muted: #6e738d;
 
-  /* Catppuccin Macchiato accent palette — vibrant on dark backgrounds */
   --pastel-red: #ed8796;
   --pastel-peach: #f5a97f;
   --pastel-yellow: #eed49f;
@@ -303,7 +300,6 @@ body {
   border-bottom: 2px solid var(--accent-color);
 }
 
-/* Anime glow effects */
 .anime-glow {
   box-shadow: 0 0 16px -2px color-mix(in srgb, var(--accent-color) 55%, transparent),
               0 0 6px -1px color-mix(in srgb, var(--accent-color) 35%, transparent);
@@ -327,7 +323,6 @@ body {
               0 0 8px -2px color-mix(in srgb, var(--accent-color) 20%, transparent);
 }
 
-/* Anime-style focus ring */
 .anime-focus:focus-within {
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-color) 60%, transparent);
   border-color: var(--accent-color) !important;
@@ -336,7 +331,6 @@ body {
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-color) 40%, transparent);
 }
 
-/* Anime gradient overlays */
 .anime-gradient-fade {
   background: linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--accent-color) 12%, var(--bg-base)) 100%);
 }
@@ -350,7 +344,6 @@ body {
   background: linear-gradient(180deg, color-mix(in srgb, var(--accent-color) 6%, var(--bg-surface)) 0%, var(--bg-surface) 100%);
 }
 
-/* Anime accent stripe for active states */
 .anime-active {
   position: relative;
 }
@@ -364,7 +357,6 @@ body {
   background: var(--accent-color);
 }
 
-/* Anime hover lift */
 .anime-hover {
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
@@ -376,7 +368,6 @@ body {
   box-shadow: 0 4px 12px -2px color-mix(in srgb, var(--accent-color) 20%, transparent);
 }
 
-/* Anime pulse for notifications/badges */
 @keyframes anime-pulse {
   0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent-color) 40%, transparent); }
   50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-color) 0%, transparent); }
@@ -385,7 +376,6 @@ body {
   animation: anime-pulse 2s ease-in-out infinite;
 }
 
-/* Anime sparkle for selected items */
 @keyframes anime-shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
@@ -396,7 +386,6 @@ body {
   animation: anime-shimmer 3s ease-in-out infinite;
 }
 
-/* Rich shadow utilities for the pastel anime aesthetic */
 .shadow-pastel {
   box-shadow: 0 4px 20px -4px color-mix(in srgb, var(--pastel-red) 35%, transparent),
               0 2px 8px -2px color-mix(in srgb, var(--pastel-lavender) 25%, transparent);
@@ -448,7 +437,6 @@ body {
   box-shadow: 0 4px 20px -4px color-mix(in srgb, var(--pastel-teal) 25%, transparent);
 }
 
-/* Pastel icon backgrounds per-color */
 .icon-bg-red { background: var(--pastel-red); }
 .icon-bg-peach { background: var(--pastel-peach); }
 .icon-bg-yellow { background: var(--pastel-yellow); }
@@ -459,7 +447,6 @@ body {
 .icon-bg-pink { background: var(--pastel-pink); }
 .icon-bg-mauve { background: var(--pastel-mauve); }
 
-/* Folder colors */
 .folder-blue { color: var(--pastel-blue); }
 .folder-pink { color: var(--pastel-pink); }
 .folder-mauve { color: var(--pastel-mauve); }
@@ -470,7 +457,6 @@ body {
 .folder-teal { color: var(--pastel-teal); }
 .folder-lavender { color: var(--pastel-lavender); }
 
-/* Settings toggle - pastel style */
 .toggle-pastel {
   background: var(--border-color);
   transition: background 0.2s;
@@ -479,7 +465,6 @@ body {
   background: var(--pastel-green);
 }
 
-/* Flat input styling */
 .input-pastel {
   background: var(--bg-overlay);
   border: 1px solid var(--border-color);
@@ -494,13 +479,11 @@ body {
   color: var(--text-muted);
 }
 
-/* Anime text glow */
 .anime-text-glow {
   text-shadow: 0 0 12px color-mix(in srgb, var(--accent-color) 40%, transparent),
                0 0 4px color-mix(in srgb, var(--accent-color) 20%, transparent);
 }
 
-/* Anime underline accent for tab-like navigation */
 .anime-tab-active {
   position: relative;
 }
@@ -515,7 +498,6 @@ body {
   box-shadow: 0 0 6px color-mix(in srgb, var(--accent-color) 50%, transparent);
 }
 
-/* Anime card - combines surface + border + subtle glow for card-like components */
 .anime-card {
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
@@ -529,7 +511,6 @@ body {
   box-shadow: 0 0 8px -2px color-mix(in srgb, var(--accent-color) 15%, transparent);
 }
 
-/* Freeze all animations/transitions inside recent app previews for performance */
 .recent-app-frozen {
   contain: layout paint style;
   transform: translateZ(0);
@@ -550,7 +531,6 @@ body {
   visibility: hidden;
 }
 
-/* Rich text editor - contentEditable support */
 .rich-text-editor {
   -webkit-user-select: text;
   user-select: text;
@@ -569,7 +549,6 @@ body {
   pointer-events: none;
 }
 
-/* Accent button text: light text in light mode, dark text in dark mode */
 .bg-accent {
   color: white !important;
 }
