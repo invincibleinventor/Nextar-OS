@@ -21,11 +21,13 @@ interface ContextMenuProps {
 const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose, className = '' }) => {
     const menuRef = useRef<HTMLDivElement>(null);
     const [mounted, setMounted] = useState(false);
+    const [closeable, setCloseable] = useState(false);
     const { ismobile } = useDevice();
 
     useEffect(() => {
         setMounted(true);
-        return () => setMounted(false);
+        const timer = setTimeout(() => setCloseable(true), 300);
+        return () => { setMounted(false); clearTimeout(timer); };
     }, []);
 
     useEffect(() => {
@@ -84,7 +86,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose, classNa
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    onClick={onClose}
+                    onClick={() => closeable && onClose()}
                 />
                 <motion.div
                     key="context-sheet"

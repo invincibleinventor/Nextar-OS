@@ -1232,11 +1232,11 @@ const FileConfig: Record<string, {
 }> = {
     'inode/directory': {
         appId: 'explorer',
-        icon: <Image src="/icons/folder.png" alt="Folder" width={64} height={64} className="w-full h-full object-contain dark:invert-0 invert" />,
+        icon: <Image src="/icons/folder.png" alt="Folder" width={64} height={64} className="w-full h-full object-contain" />,
     },
     'inode/shortcut': {
         appId: 'explorer',
-        icon: <Image src="/icons/folder.png" alt="Folder" width={64} height={64} className="w-full h-full object-contain dark:invert-0 invert" />,
+        icon: <Image src="/icons/folder.png" alt="Folder" width={64} height={64} className="w-full h-full object-contain" />,
     },
     'application/x-executable': {
         appId: 'app-launch',
@@ -1268,7 +1268,7 @@ const FileConfig: Record<string, {
     },
     'application/pdf': {
         appId: 'fileviewer',
-        icon: <Image src="/icons/file.png" alt="File" width={64} height={64} className="w-full h-full object-contain dark:invert-0 invert" />,
+        icon: <Image src="/icons/file.png" alt="File" width={64} height={64} className="w-full h-full object-contain" />,
         getLaunchProps: (file) => ({
             content: file.content,
             title: file.name,
@@ -1284,7 +1284,7 @@ const FileConfig: Record<string, {
     },
     'text/markdown': {
         appId: 'hackathonworkspace',
-        icon: <Image src="/icons/file.png" alt="File" width={64} height={64} className="w-full h-full object-contain dark:invert-0 invert" />,
+        icon: <Image src="/icons/file.png" alt="File" width={64} height={64} className="w-full h-full object-contain" />,
         getLaunchProps: (file) => ({
             id: file.id,
             content: file.content,
@@ -1294,7 +1294,7 @@ const FileConfig: Record<string, {
     },
     'text/plain': {
         appId: 'hackathonworkspace',
-        icon: <Image src="/icons/file.png" alt="File" width={64} height={64} className="w-full h-full object-contain dark:invert-0 invert" />,
+        icon: <Image src="/icons/file.png" alt="File" width={64} height={64} className="w-full h-full object-contain" />,
         getLaunchProps: (file) => ({
             id: file.id,
             content: file.content,
@@ -1342,7 +1342,7 @@ export const getFileIcon = (mimetype: string, name: string, itemicon?: React.Rea
     }
     const config = FileConfig[mimetype];
     if (config && config.icon) return config.icon;
-    return <Image src="/icons/file.png" alt="File" width={64} height={64} className="w-full h-full object-contain dark:invert-0 invert" />;
+    return <Image src="/icons/file.png" alt="File" width={64} height={64} className="w-full h-full object-contain" />;
 };
 
 const FolderPathMap: Record<string, string[]> = {
