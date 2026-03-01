@@ -341,7 +341,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                             key={item.id}
                             layout
                             layoutId={item.id}
-                            className="app-icon flex flex-col items-center gap-1.5 touch-pan-x"
+                            className="app-icon flex flex-col items-center gap-2 touch-pan-x"
                             initial={{ opacity: 0, scale: 0.8 }}
                             animate={editmode ? {
                                 opacity: 1,
@@ -649,7 +649,11 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                             ? { backgroundColor: 'transparent' }
                             : clay
                                 ? {
-                                    ...glassPanel,
+                                    background: 'color-mix(in srgb, var(--bg-glass) 60%, transparent)',
+                                    backdropFilter: 'blur(var(--glass-blur-heavy))',
+                                    WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
+                                    border: '1px solid var(--glass-border)',
+                                    boxShadow: 'var(--glass-shadow)',
                                     borderRadius: '22px',
                                   }
                                 : { backgroundColor: 'color-mix(in srgb, var(--bg-surface) 50%, transparent)' }

@@ -429,7 +429,7 @@ const Desktop = () => {
         data-tour="ios-statusbar"
         className={`absolute top-0 left-0 right-0 h-11 z-[300] flex items-center justify-between px-6 cursor-pointer ${clay ? '' : 'bg-[--bg-surface] border-b border-[--border-color]'}`}
         style={clay ? {
-          background: 'var(--bg-glass)',
+          background: 'color-mix(in srgb, var(--bg-glass) 55%, transparent)',
           backdropFilter: 'blur(var(--glass-blur-heavy))',
           WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
         } : undefined}
@@ -577,7 +577,7 @@ const Desktop = () => {
                         }
                       }}
                     >
-                      <div className="w-14 h-14 relative mb-1 drop-shadow-md">
+                      <div className="w-14 h-14 relative mb-1.5 drop-shadow-md">
                         <div className="w-full h-full aspect-square">
                           {getFileIcon(item.mimetype, item.name, item.icon, item.id, item.content || item.link)}
                         </div>
