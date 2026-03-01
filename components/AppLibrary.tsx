@@ -134,7 +134,7 @@ const AppLibrary = () => {
 
     return (
         <div
-            className="w-full h-full overflow-y-auto overflow-x-hidden pt-8 px-5 pb-32 scrollbar-hide select-none [&::-webkit-scrollbar]:hidden bg-[--bg-surface]"
+            className={`w-full h-full overflow-y-auto overflow-x-hidden pt-8 px-5 pb-32 scrollbar-hide select-none [&::-webkit-scrollbar]:hidden ${clay ? 'bg-[--bg-base]' : 'bg-[--bg-surface]'}`}
             style={{ touchAction: 'pan-x pan-y', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); }}
             onTouchMove={handlelongpressmove}
@@ -221,11 +221,11 @@ const AppLibrary = () => {
                         return (
                             <div key={category} className="flex flex-col gap-2 relative">
                                 <div
-                                    className={`p-4 w-auto aspect-square shrink-0 h-auto ${clay ? 'rounded-[16px]' : 'bg-[--bg-overlay] shadow-md'} ${hasoverflow ? 'cursor-pointer active:scale-95 transition-transform' : ''}`}
-                                    style={clay ? { ...glassCard, aspectRatio: '1/1' } : { aspectRatio: '1/1' }}
+                                    className={`p-3.5 w-auto aspect-square shrink-0 h-auto ${clay ? 'rounded-[20px]' : 'bg-[--bg-overlay] shadow-md'} ${hasoverflow ? 'cursor-pointer active:scale-[0.97] transition-transform' : ''}`}
+                                    style={clay ? { ...glassCard, aspectRatio: '1/1', borderRadius: 20, boxShadow: 'var(--shadow-sm)' } : { aspectRatio: '1/1' }}
                                     onClick={() => hasoverflow && setopenfolder(category)}
                                 >
-                                    <div className="grid grid-cols-2 grid-rows-2 gap-3 w-auto h-auto">
+                                    <div className="grid grid-cols-2 grid-rows-2 gap-2.5 w-auto h-auto">
                                         {displayapps.map((app) => (
                                             <div
                                                 key={app.id}
@@ -243,28 +243,26 @@ const AppLibrary = () => {
                                                 }}
                                                 className={`relative w-full h-full flex items-center justify-center ${!hasoverflow ? 'cursor-pointer active:scale-90' : ''} transition-transform`}
                                             >
-                                                <div className="shadow-md">
-                                                    <TintedAppIcon
-                                                        appId={app.id}
-                                                        appName={app.appname}
-                                                        originalIcon={app.icon}
-                                                        size={64}
-                                                        useFill={false}
-                                                    />
-                                                </div>
+                                                <TintedAppIcon
+                                                    appId={app.id}
+                                                    appName={app.appname}
+                                                    originalIcon={app.icon}
+                                                    size={ismobile ? 48 : 56}
+                                                    useFill={false}
+                                                />
                                             </div>
                                         ))}
                                         {hasoverflow && (
-                                            <div className="relative w-full h-full flex items-center justify-center bg-[--bg-overlay]">
+                                            <div className={`relative w-full h-full flex items-center justify-center ${clay ? 'rounded-[12px]' : ''}`} style={clay ? { background: 'var(--bg-glass-active)' } : { background: 'var(--bg-overlay)' }}>
                                                 <span
-                                                    className="font-bold text-lg text-[--text-color]"
+                                                    className="font-bold text-lg text-[--text-muted]"
                                                 >+{overflowcount}</span>
                                             </div>
                                         )}
                                     </div>
                                 </div>
                                 <span
-                                    className="text-center mt-1 text-[13px] font-semibold leading-none px-1 truncate text-[--text-muted]"
+                                    className={`text-center mt-1.5 text-[13px] font-semibold leading-none px-1 truncate ${clay ? 'text-[--text-color]' : 'text-[--text-muted]'}`}
                                 >
                                     {category}
                                 </span>
@@ -296,12 +294,13 @@ const AppLibrary = () => {
                                 <h2 className="text-xl font-bold text-[--text-color]">{openfolder}</h2>
                                 <button
                                     onClick={() => setopenfolder(null)}
-                                    className="p-2 bg-overlay active:scale-90 transition-transform"
+                                    className={`p-2 active:scale-90 transition-transform ${clay ? 'rounded-full' : 'bg-overlay'}`}
+                                    style={clay ? { background: 'var(--bg-glass-active)' } : undefined}
                                 >
                                     <IoClose size={20} className="text-[--text-color]" />
                                 </button>
                             </div>
-                            <div className="grid grid-cols-3 gap-4">
+                            <div className="grid grid-cols-3 gap-5">
                                 {getcategoryapps(openfolder).map((app) => (
                                     <div
                                         key={app.id}
@@ -314,15 +313,13 @@ const AppLibrary = () => {
                                         }}
                                         className="flex flex-col items-center gap-2 cursor-pointer active:scale-90 transition-transform"
                                     >
-                                        <div className="w-16 h-16 shadow-md">
-                                            <TintedAppIcon
-                                                appId={app.id}
-                                                appName={app.appname}
-                                                originalIcon={app.icon}
-                                                size={64}
-                                                useFill={false}
-                                            />
-                                        </div>
+                                        <TintedAppIcon
+                                            appId={app.id}
+                                            appName={app.appname}
+                                            originalIcon={app.icon}
+                                            size={60}
+                                            useFill={false}
+                                        />
                                         <span className="text-[11px] text-center text-[--text-color] font-semibold truncate w-full">
                                             {app.appname}
                                         </span>

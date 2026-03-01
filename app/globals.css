@@ -350,6 +350,18 @@ body {
   box-shadow: 0 0 16px -2px color-mix(in srgb, var(--accent-color) 55%, transparent),
               0 0 6px -1px color-mix(in srgb, var(--accent-color) 35%, transparent);
 }
+.anime-window-active {
+  box-shadow: 0 8px 32px -6px rgba(0,0,0,0.25),
+              0 0 0 1px color-mix(in srgb, var(--accent-color) 40%, transparent),
+              0 0 16px -2px color-mix(in srgb, var(--accent-color) 55%, transparent),
+              0 2px 8px -2px color-mix(in srgb, var(--accent-color) 15%, transparent);
+}
+.dark .anime-window-active {
+  box-shadow: 0 8px 32px -6px rgba(0,0,0,0.4),
+              0 0 0 1px color-mix(in srgb, var(--accent-color) 30%, transparent),
+              0 0 12px -2px color-mix(in srgb, var(--accent-color) 30%, transparent),
+              0 2px 8px -2px color-mix(in srgb, var(--accent-color) 10%, transparent);
+}
 .anime-glow-sm {
   box-shadow: 0 0 8px -1px color-mix(in srgb, var(--accent-color) 45%, transparent);
 }
@@ -736,8 +748,12 @@ body {
 /* Window chrome — clay only */
 .clay .window {
   overflow: hidden;
-  border-radius: var(--radius-xl) !important;
   font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, system-ui, sans-serif !important;
+}
+@media (min-width: 768px) {
+  .clay .window {
+    border-radius: var(--radius-xl) !important;
+  }
 }
 
 /* ================================================================

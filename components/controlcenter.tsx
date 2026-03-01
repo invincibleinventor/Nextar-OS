@@ -168,7 +168,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
        CLAY MODE — Redesigned Neo-Glass Control Center
        ═══════════════════════════════════════════ */
     <div
-      className={`${ismobile ? 'w-full max-w-[380px] pointer-events-auto' : 'w-full'} p-4 flex flex-col gap-3`}
+      className={`${ismobile ? 'w-full sm:max-w-[380px] sm:mx-auto pointer-events-auto' : 'w-full'} p-4 flex flex-col gap-3`}
       onClick={(e) => e.stopPropagation()}
     >
 
@@ -490,7 +490,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
        CLASSIC MODE — kept minimal
        ═══════════════════════════════════════════ */
     <div
-      className={`${ismobile ? 'w-full max-w-[360px] pointer-events-auto' : 'w-full'} p-4 flex flex-col gap-3`}
+      className={`${ismobile ? 'w-full sm:max-w-[360px] sm:mx-auto pointer-events-auto' : 'w-full'} p-4 flex flex-col gap-3`}
       onClick={(e) => e.stopPropagation()}
     >
       {/* User row */}
@@ -511,7 +511,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
 
       {/* Connectivity grid */}
       <div className="grid grid-cols-2 gap-3">
-        <button onClick={togglewifi} className="w-full text-left rounded-[14px] p-3 transition-all active:scale-[0.97] cursor-pointer select-none" style={wifienabled ? { background: 'var(--pastel-blue)', border: '1px solid transparent' } : { background: 'var(--bg-overlay)', border: '1px solid var(--border-color)' }}>
+        <button onClick={togglewifi} className="w-full text-left rounded-[14px] p-3 transition-all active:scale-[0.97] cursor-pointer select-none" style={wifienabled ? { background: 'var(--accent-color)', border: '1px solid transparent' } : { background: 'var(--bg-overlay)', border: '1px solid var(--border-color)' }}>
           <div className="flex items-center gap-2.5">
             <div className="w-[30px] h-[30px] rounded-full flex items-center justify-center shrink-0" style={wifienabled ? { background: 'rgba(255,255,255,0.25)' } : { background: 'var(--bg-overlay)' }}>
               <FaWifi size={13} className={wifienabled ? 'text-white' : 'text-[--text-color]'} />
@@ -522,7 +522,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
             </div>
           </div>
         </button>
-        <button onClick={togglebluetooth} className="w-full text-left rounded-[14px] p-3 transition-all active:scale-[0.97] cursor-pointer select-none" style={bluetoothstatus.enabled ? { background: 'var(--pastel-blue)', border: '1px solid transparent' } : { background: 'var(--bg-overlay)', border: '1px solid var(--border-color)' }}>
+        <button onClick={togglebluetooth} className="w-full text-left rounded-[14px] p-3 transition-all active:scale-[0.97] cursor-pointer select-none" style={bluetoothstatus.enabled ? { background: 'var(--accent-color)', border: '1px solid transparent' } : { background: 'var(--bg-overlay)', border: '1px solid var(--border-color)' }}>
           <div className="flex items-center gap-2.5">
             <div className="w-[30px] h-[30px] rounded-full flex items-center justify-center shrink-0" style={bluetoothstatus.enabled ? { background: 'rgba(255,255,255,0.25)' } : { background: 'var(--bg-overlay)' }}>
               <FaBluetoothB size={13} className={bluetoothstatus.enabled ? 'text-white' : 'text-[--text-color]'} />
@@ -537,7 +537,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
 
       {/* Quick toggles */}
       <div className="grid grid-cols-3 gap-3">
-        <button onClick={togglefullscreen} className="w-full text-left rounded-[14px] p-2.5 transition-all active:scale-[0.97] cursor-pointer select-none" style={isfullscreen ? { background: 'var(--pastel-blue)', border: '1px solid transparent' } : { background: 'var(--bg-overlay)', border: '1px solid var(--border-color)' }}>
+        <button onClick={togglefullscreen} className="w-full text-left rounded-[14px] p-2.5 transition-all active:scale-[0.97] cursor-pointer select-none" style={isfullscreen ? { background: 'var(--accent-color)', border: '1px solid transparent' } : { background: 'var(--bg-overlay)', border: '1px solid var(--border-color)' }}>
           <div className="flex flex-col items-center justify-center gap-1.5">
             <div className="w-[28px] h-[28px] rounded-full flex items-center justify-center shrink-0" style={isfullscreen ? { background: 'rgba(255,255,255,0.25)' } : { background: 'var(--bg-overlay)' }}>
               {isfullscreen ? <IoContract size={18} className="text-white" /> : <IoExpand size={18} className="text-[--text-color]" />}
@@ -545,7 +545,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
             <span className={`text-[10px] font-semibold leading-tight ${isfullscreen ? 'text-white/80' : 'text-[--text-muted]'}`}>Fullscreen</span>
           </div>
         </button>
-        <button onClick={() => toggletheme()} className="w-full text-left rounded-[14px] p-2.5 transition-all active:scale-[0.97] cursor-pointer select-none" style={theme === 'dark' ? { background: 'var(--pastel-blue)', border: '1px solid transparent' } : { background: 'var(--bg-overlay)', border: '1px solid var(--border-color)' }}>
+        <button onClick={() => toggletheme()} className="w-full text-left rounded-[14px] p-2.5 transition-all active:scale-[0.97] cursor-pointer select-none" style={theme === 'dark' ? { background: 'var(--accent-color)', border: '1px solid transparent' } : { background: 'var(--bg-overlay)', border: '1px solid var(--border-color)' }}>
           <div className="flex flex-col items-center justify-center gap-1.5">
             <div className="w-[28px] h-[28px] rounded-full flex items-center justify-center shrink-0" style={theme === 'dark' ? { background: 'rgba(255,255,255,0.25)' } : { background: 'var(--bg-overlay)' }}>
               {theme === 'dark' ? <FaMoon size={16} className="text-white" /> : <FaSun size={16} className="text-[--text-color]" />}
