@@ -341,8 +341,8 @@ export default function Welcome(props: any) {
                             {user?.username === 'guest' ? (
                                 <div className="space-y-3">
                                     {!hasUsers ? (
-                                        <div className="space-y-3">
-                                            <div className={`p-4 ${clay ? 'rounded-[16px]' : ''}`}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            <div className={`p-4 flex flex-col ${clay ? 'rounded-[16px]' : ''}`}
                                                 style={clay ? { ...glassCard } : { background: 'color-mix(in srgb, var(--accent-color) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--accent-color) 20%, transparent)' }}>
                                                 <div className="flex items-center gap-3 mb-3">
                                                     <div className={`p-2 ${clay ? 'rounded-[10px] text-white' : 'bg-accent text-[--text-color]'}`}
@@ -356,14 +356,14 @@ export default function Welcome(props: any) {
                                                 </div>
                                                 <button
                                                     onClick={() => setView('create-account')}
-                                                    className={`py-2 text-[13px] font-medium transition-colors active:scale-[0.97] ${clay ? 'rounded-[12px] px-5 text-white hover:opacity-90' : 'w-full bg-accent text-[--text-color]'}`}
+                                                    className={`mt-auto py-2 text-[13px] font-medium transition-colors active:scale-[0.97] ${clay ? 'rounded-[12px] px-5 text-white hover:opacity-90' : 'w-full bg-accent text-[--text-color]'}`}
                                                     style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                                                 >
                                                     Set up System
                                                 </button>
                                             </div>
 
-                                            <div className={`p-4 ${clay ? 'rounded-[16px]' : 'bg-overlay border border-[--border-color]'}`} style={clay ? glassCard : undefined}>
+                                            <div className={`p-4 flex flex-col ${clay ? 'rounded-[16px]' : 'bg-overlay border border-[--border-color]'}`} style={clay ? glassCard : undefined}>
                                                 <div className="flex items-center gap-3 mb-3">
                                                     <div className={`p-2 ${clay ? 'rounded-[10px] text-white' : 'bg-accent text-[--text-color]'}`}
                                                         style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}>
@@ -376,7 +376,7 @@ export default function Welcome(props: any) {
                                                 </div>
                                                 <button
                                                     onClick={() => setView('restore-snapshot')}
-                                                    className={`py-2 text-[13px] font-medium transition-colors active:scale-[0.97] ${clay ? 'rounded-[12px] px-5 text-white hover:opacity-90' : 'w-full bg-accent text-[--text-color]'}`}
+                                                    className={`mt-auto py-2 text-[13px] font-medium transition-colors active:scale-[0.97] ${clay ? 'rounded-[12px] px-5 text-white hover:opacity-90' : 'w-full bg-accent text-[--text-color]'}`}
                                                     style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                                                 >
                                                     Restore Snapshot

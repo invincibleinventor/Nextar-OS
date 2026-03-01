@@ -311,7 +311,7 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
 
       if (!dragstarted && wasmaximized && Math.abs(movey - starty) > 10) {
         dragstarted = true;
-        updatewindow(id, { ismaximized: false });
+        updatewindow(id, { ismaximized: false, istiled: false });
         setTimeout(() => {
           setsize(prevsize);
           setposition({ top: movey - dragoffsety, left: movex - dragoffsetx });
@@ -319,6 +319,7 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
         setisdragging(true);
       } else if (!wasmaximized) {
         setisdragging(true);
+        updatewindow(id, { istiled: false });
       }
 
       if (!dragstarted && wasmaximized) return;
@@ -362,10 +363,12 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
         previousStateRef.current = { position, size };
         setposition({ top: panelheight, left: 0 });
         setsize({ width: Math.round(sw / 2), height: sh - panelheight - dockheight });
+        updatewindow(id, { istiled: true });
       } else if (upX >= sw - SNAP_THRESHOLD) {
         previousStateRef.current = { position, size };
         setposition({ top: panelheight, left: Math.round(sw / 2) });
         setsize({ width: Math.round(sw / 2), height: sh - panelheight - dockheight });
+        updatewindow(id, { istiled: true });
       } else if (!wasmaximized && upY <= panelheight + SNAP_THRESHOLD) {
         previousStateRef.current = { position, size };
         updatewindow(id, { ismaximized: true });
