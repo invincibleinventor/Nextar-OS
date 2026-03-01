@@ -248,7 +248,7 @@ export default function LockScreen() {
                                             className="relative w-[72px] h-[72px] rounded-full overflow-hidden flex items-center justify-center"
                                             style={{
                                                 boxShadow: avatarRing,
-                                                background: selectedUser ? undefined : (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.06)'),
+                                                background: isDark ? '#2C2C2E' : '#E5E5EA',
                                             }}
                                         >
                                             {selectedUser ? (
@@ -522,7 +522,7 @@ export default function LockScreen() {
                                     className="relative w-[88px] h-[88px] rounded-full overflow-hidden flex items-center justify-center"
                                     style={{
                                         boxShadow: avatarRing,
-                                        background: selectedUser ? undefined : (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.06)'),
+                                        background: isDark ? '#2C2C2E' : '#E5E5EA',
                                     }}
                                 >
                                     {selectedUser ? (
@@ -869,7 +869,8 @@ export default function LockScreen() {
                                     style={{
                                         boxShadow: selectedUser?.username === u.username
                                             ? '0 8px 32px rgba(237,135,150,0.5), 0 0 60px rgba(237,135,150,0.2)'
-                                            : '0 4px 20px rgba(0,0,0,0.3)'
+                                            : '0 4px 20px rgba(0,0,0,0.3)',
+                                        background: islightbackground ? '#E5E5EA' : '#2C2C2E',
                                     }}
                                 >
                                     <Image src={u.avatar || "/pfp.png"} alt={u.name} fill className="object-cover" />
@@ -1040,7 +1041,8 @@ export default function LockScreen() {
                                 style={{
                                     boxShadow: selectedUser?.username === u.username
                                         ? '0 8px 32px rgba(237,135,150,0.5), 0 0 60px rgba(237,135,150,0.2)'
-                                        : '0 4px 20px rgba(0,0,0,0.3)'
+                                        : '0 4px 20px rgba(0,0,0,0.3)',
+                                    background: islightbackground ? '#E5E5EA' : '#2C2C2E',
                                 }}
                             >
                                 <Image src={u.avatar || "/pfp.png"} alt={u.name} fill className="object-cover" />
