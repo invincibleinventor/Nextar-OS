@@ -72,14 +72,14 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                     />
 
                     <motion.div
-                        className="fixed inset-x-0 top-0 z-[492] pointer-events-none"
+                        className="fixed left-0 top-0 w-full z-[492] pointer-events-none overflow-hidden"
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
                         transition={{ delay: 0.1 }}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <div className="relative pt-16 px-6 flex flex-col items-center pointer-events-auto">
+                        <div className="relative pt-16 px-6 flex flex-col items-center pointer-events-auto" style={{ maxWidth: '100vw', boxSizing: 'border-box' }}>
                             <div className={`w-full max-w-lg overflow-hidden ${clay ? 'rounded-[16px]' : 'bg-surface border border-[--border-color] shadow-pastel'}`}
                                 style={clay ? glassPanel : undefined}
                             >
@@ -92,8 +92,8 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                                         onChange={(e) => setsearchquery(e.target.value)}
                                         placeholder="Next Search"
                                         autoFocus
-                                        className="flex-1 bg-transparent text-[--text-color] text-base font-medium outline-none placeholder:text-[--text-muted]"
-                                        style={{ color: 'var(--text-color)', WebkitTextFillColor: 'var(--text-color)', caretColor: 'var(--text-color)' }}
+                                        className="flex-1 min-w-0 bg-transparent text-[--text-color] text-base font-medium outline-none placeholder:text-[--text-muted]"
+                                        style={{ color: 'var(--text-color)', WebkitTextFillColor: 'var(--text-color)', caretColor: 'var(--text-color)', fontSize: '16px' }}
                                     />
                                     {searchquery && (
                                         <button onClick={() => setsearchquery('')} className="p-1 hover:bg-overlay ">
@@ -285,7 +285,9 @@ const AppCard = ({ win, appdata, onkill, onopen, islightbackground, clay }: any)
                         <span className="text-[13px] font-semibold text-[--text-muted]">{win.title}</span>
                     </div>
                 ) : (
-                    <div id={`recent-app-slot-${win.id}`} className="w-full h-full" />
+                    <div className="w-full h-full overflow-hidden">
+                        <div id={`recent-app-slot-${win.id}`} className="origin-top-left" style={{ transform: 'scale(0.82)', width: '121.95%', height: '121.95%' }} />
+                    </div>
                 )}
             </div>
         </motion.div>
