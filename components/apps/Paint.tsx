@@ -8,6 +8,8 @@ import {
     IoColorFillOutline, IoTextOutline, IoTrashOutline, IoDownloadOutline,
     IoArrowUndoOutline, IoArrowRedoOutline
 } from 'react-icons/io5';
+import { useIsClay } from '../hooks/useIsClay';
+import { glassSidebar, glassButton } from '../hooks/useClayStyles';
 
 type Tool = 'pencil' | 'line' | 'rectangle' | 'ellipse' | 'eraser' | 'fill' | 'text';
 
@@ -16,6 +18,7 @@ const MAX_HISTORY = 50;
 export default function Paint({ appId = 'paint', id }: { appId?: string; id?: string }) {
     const { activewindow } = useWindows();
     const isActive = activewindow === id;
+    const clay = useIsClay();
 
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -433,36 +436,39 @@ export default function Paint({ appId = 'paint', id }: { appId?: string; id?: st
     ];
 
     return (
-        <div className="flex h-full w-full bg-[--bg-base] text-[--text-color] font-mono overflow-hidden select-none">
-            <div className="w-[170px] border-r border-[--border-color] bg-surface flex flex-col h-full anime-gradient-top shrink-0 overflow-y-auto overflow-x-hidden pb-10">
+        <div className={`flex h-full w-full text-[--text-color] overflow-hidden select-none ${clay ? 'font-sans' : 'bg-[--bg-base] font-mono'}`}>
+            <div className={`${clay ? 'w-[200px]' : 'w-[170px]'} border-r flex flex-col h-full shrink-0 overflow-y-auto overflow-x-hidden pb-10 ${clay ? 'border-[--glass-border]' : 'border-[--border-color] bg-surface anime-gradient-top'}`} style={clay ? glassSidebar : undefined}>
                 <div className="text-[10px] uppercase font-semibold text-[--text-muted] px-3 pt-3 pb-1 tracking-wide">Tools</div>
                 <div className="px-1.5 space-y-0.5">
                     {tools.map((t) => (
                         <button
                             key={t.id}
                             onClick={() => setTool(t.id)}
-                            className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 cursor-pointer transition-colors ${
+                            className={`w-full flex items-center gap-2.5 px-2.5 cursor-pointer transition-colors ${
+                                clay ? 'py-2 rounded-[10px] active:scale-[0.97]' : 'py-1.5'
+                            } ${
                                 tool === t.id
-                                    ? 'bg-accent text-[--bg-base]'
-                                    : 'text-[--text-color] hover:bg-overlay'
+                                    ? 'text-white'
+                                    : clay ? 'text-[--text-color] hover:bg-[--bg-glass-hover]' : 'text-[--text-color] hover:bg-overlay'
                             }`}
+                            style={tool === t.id ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                         >
                             <div
-                                className="w-5 h-5 flex items-center justify-center text-[--bg-base] shrink-0"
-                                style={{ backgroundColor: tool === t.id ? 'transparent' : t.color }}
+                                className={`w-5 h-5 flex items-center justify-center shrink-0 ${clay ? 'rounded-[5px]' : ''} ${tool === t.id ? 'text-white' : 'text-[--bg-base]'}`}
+                                style={{ backgroundColor: tool === t.id ? 'rgba(255,255,255,0.25)' : t.color }}
                             >
                                 {t.icon}
                             </div>
-                            <span className="text-[12px] font-medium leading-none">{t.label}</span>
+                            <span className={`${clay ? 'text-[13px]' : 'text-[12px]'} font-medium leading-none`}>{t.label}</span>
                         </button>
                     ))}
                 </div>
 
-                <div className="h-px bg-[--border-color] mx-3 my-3" />
+                <div className={`h-px mx-3 my-3 ${clay ? 'bg-[--glass-border]' : 'bg-[--border-color]'}`} />
                 <div className="px-3 space-y-2.5">
                     <div>
                         <div className="text-[10px] uppercase font-semibold text-[--text-muted] mb-1.5 tracking-wide">Stroke</div>
-                        <label className="relative w-8 h-8 block border border-[--border-color] cursor-pointer overflow-hidden" title="Stroke color">
+                        <label className={`relative w-8 h-8 block border cursor-pointer overflow-hidden ${clay ? 'rounded-[8px] border-[--glass-border]' : 'border-[--border-color]'}`} title="Stroke color">
                             <input
                                 type="color"
                                 value={strokeColor}
@@ -474,7 +480,7 @@ export default function Paint({ appId = 'paint', id }: { appId?: string; id?: st
                     </div>
                     <div>
                         <div className="text-[10px] uppercase font-semibold text-[--text-muted] mb-1.5 tracking-wide">Fill</div>
-                        <label className="relative w-8 h-8 block border border-[--border-color] cursor-pointer overflow-hidden" title="Fill color">
+                        <label className={`relative w-8 h-8 block border cursor-pointer overflow-hidden ${clay ? 'rounded-[8px] border-[--glass-border]' : 'border-[--border-color]'}`} title="Fill color">
                             <input
                                 type="color"
                                 value={fillColor}
@@ -486,7 +492,7 @@ export default function Paint({ appId = 'paint', id }: { appId?: string; id?: st
                     </div>
                 </div>
 
-                <div className="h-px bg-[--border-color] mx-3 my-3" />
+                <div className={`h-px mx-3 my-3 ${clay ? 'bg-[--glass-border]' : 'bg-[--border-color]'}`} />
                 <div className="px-3">
                     <div className="text-[10px] uppercase font-semibold text-[--text-muted] mb-1.5 tracking-wide">Palette</div>
                     <div className="grid grid-cols-4 gap-1">
@@ -498,7 +504,7 @@ export default function Paint({ appId = 'paint', id }: { appId?: string; id?: st
                                     e.preventDefault();
                                     setFillColor(color.startsWith('var') ? getComputedStyle(document.documentElement).getPropertyValue(color.slice(4, -1)).trim() : color);
                                 }}
-                                className={`w-full aspect-square border border-[--border-color] transition-all hover:scale-110 hover:z-10`}
+                                className={`w-full aspect-square border transition-all hover:scale-110 hover:z-10 ${clay ? 'rounded-[6px] border-[--glass-border]' : 'border-[--border-color]'}`}
                                 style={{ backgroundColor: color }}
                                 title="Click: stroke / Right-click: fill"
                             />
@@ -506,7 +512,7 @@ export default function Paint({ appId = 'paint', id }: { appId?: string; id?: st
                     </div>
                 </div>
 
-                <div className="h-px bg-[--border-color] mx-3 my-3" />
+                <div className={`h-px mx-3 my-3 ${clay ? 'bg-[--glass-border]' : 'bg-[--border-color]'}`} />
                 <div className="px-3">
                     <div className="text-[10px] uppercase font-semibold text-[--text-muted] mb-1.5 tracking-wide">Size</div>
                     <div className="flex items-center gap-2">
@@ -524,16 +530,16 @@ export default function Paint({ appId = 'paint', id }: { appId?: string; id?: st
             </div>
 
             <div className="flex-1 flex flex-col min-w-0 min-h-0">
-                <div className="h-10 border-b border-[--border-color] bg-surface flex items-center gap-1 px-3 shrink-0">
+                <div className={`${clay ? 'h-[40px]' : 'h-10'} border-b flex items-center gap-1 px-3 shrink-0 ${clay ? 'border-[--glass-border] bg-transparent' : 'border-[--border-color] bg-surface'}`}>
                     <button
                         title="Undo"
                         onClick={undo}
                         disabled={!canUndo}
                         className={`p-1.5 transition-colors ${
                             canUndo
-                                ? 'text-[--text-muted] hover:bg-overlay hover:text-[--text-color]'
+                                ? clay ? 'text-[--text-muted] hover:bg-[--bg-glass-hover] hover:text-[--text-color]' : 'text-[--text-muted] hover:bg-overlay hover:text-[--text-color]'
                                 : 'text-[--text-muted] opacity-30 cursor-not-allowed'
-                        }`}
+                        } ${clay ? 'rounded-[8px] active:scale-[0.97]' : ''}`}
                     >
                         <IoArrowUndoOutline size={15} />
                     </button>
@@ -543,19 +549,19 @@ export default function Paint({ appId = 'paint', id }: { appId?: string; id?: st
                         disabled={!canRedo}
                         className={`p-1.5 transition-colors ${
                             canRedo
-                                ? 'text-[--text-muted] hover:bg-overlay hover:text-[--text-color]'
+                                ? clay ? 'text-[--text-muted] hover:bg-[--bg-glass-hover] hover:text-[--text-color]' : 'text-[--text-muted] hover:bg-overlay hover:text-[--text-color]'
                                 : 'text-[--text-muted] opacity-30 cursor-not-allowed'
-                        }`}
+                        } ${clay ? 'rounded-[8px] active:scale-[0.97]' : ''}`}
                     >
                         <IoArrowRedoOutline size={15} />
                     </button>
 
-                    <div className="w-px h-5 bg-[--border-color] mx-1" />
+                    <div className={`w-px h-5 mx-1 ${clay ? 'bg-[--glass-border]' : 'bg-[--border-color]'}`} />
 
                     <button
                         title="Clear Canvas"
                         onClick={clearCanvas}
-                        className="p-1.5 text-[--text-muted] hover:bg-overlay hover:text-[--text-color] transition-colors"
+                        className={`p-1.5 text-[--text-muted] hover:text-[--text-color] transition-colors ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'}`}
                     >
                         <IoTrashOutline size={15} />
                     </button>
@@ -565,7 +571,8 @@ export default function Paint({ appId = 'paint', id }: { appId?: string; id?: st
                     <button
                         title="Export as PNG"
                         onClick={exportPNG}
-                        className="p-1.5 text-[--text-muted] hover:bg-overlay hover:text-[--text-color] transition-colors"
+                        className={`p-1.5 text-[--text-muted] hover:text-[--text-color] transition-colors ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'}`}
+                        style={clay ? glassButton : undefined}
                     >
                         <IoDownloadOutline size={15} />
                     </button>

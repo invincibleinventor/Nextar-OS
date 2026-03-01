@@ -39,6 +39,8 @@ import { filesystemitem } from '../data';
 import { useMenuAction } from '../hooks/useMenuAction';
 import { useMenuRegistration } from '../AppMenuContext';
 import { useWindows } from '../WindowContext';
+import { useIsClay } from '../hooks/useIsClay';
+import { glassCard, glassInput } from '../hooks/useClayStyles';
 
 
 interface TextEditProps {
@@ -50,6 +52,7 @@ interface TextEditProps {
 }
 
 export default function TextEdit({ id, content: initialContent, title, isFocused, appId = 'textedit' }: TextEditProps) {
+    const clay = useIsClay();
     const { updateFileContent, files, createFile } = useFileSystem();
     const [content, setContent] = useState(initialContent || '');
     const [isSaved, setIsSaved] = useState(true);
@@ -299,25 +302,26 @@ export default function TextEdit({ id, content: initialContent, title, isFocused
     };
 
     return (
-        <div className="flex flex-col w-full h-full bg-[--bg-base] text-[--text-color] font-mono text-[13px] relative" onContextMenu={handleContextMenu}>
-            <div className="h-[50px] flex items-center px-4 pl-[80px] bg-surface border-b border-[--border-color] select-none gap-2 draggable-area">
-                <button onClick={handleOpen} className="p-1 hover:bg-overlay" title="Open">
+        <div className={`flex flex-col w-full h-full ${clay ? 'bg-[--bg-base] font-sans' : 'bg-[--bg-base] font-mono'} text-[--text-color] text-[13px] relative`} onContextMenu={handleContextMenu}>
+            <div className={`h-[40px] flex items-center px-3 ${clay ? 'border-b border-[--glass-border]' : 'bg-surface border-b border-[--border-color]'} select-none gap-1.5 draggable-area`}>
+                <button onClick={handleOpen} className={`p-1.5 ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'} transition-colors`} title="Open">
                     <IoFolderOpenOutline />
                 </button>
-                <button onClick={handleSave} disabled={files.find(f => f.id === currentFileId)?.isReadOnly} className={`p-1 ${files.find(f => f.id === currentFileId)?.isReadOnly ? 'opacity-50 cursor-not-allowed' : 'hover:bg-overlay'}`} title="Save">
+                <button onClick={handleSave} disabled={files.find(f => f.id === currentFileId)?.isReadOnly} className={`p-1.5 ${files.find(f => f.id === currentFileId)?.isReadOnly ? 'opacity-50 cursor-not-allowed' : clay ? 'hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'} ${clay ? 'rounded-[8px]' : ''} transition-colors`} title="Save">
                     <IoSaveOutline />
                 </button>
-                <div className="w-[1px] h-4 bg-[--border-color] mx-1"></div>
-                <button onClick={() => execCmd('bold')} className="p-1 hover:bg-overlay font-bold" title="Bold">B</button>
-                <button onClick={() => execCmd('italic')} className="p-1 hover:bg-overlay italic" title="Italic">I</button>
-                <button onClick={() => execCmd('underline')} className="p-1 hover:bg-overlay underline" title="Underline">U</button>
-                <div className="w-[1px] h-4 bg-[--border-color] mx-1"></div>
-                <button onClick={() => execCmd('justifyLeft')} className="p-1 hover:bg-overlay">Left</button>
-                <button onClick={() => execCmd('justifyCenter')} className="p-1 hover:bg-overlay">Center</button>
-                <div className="w-[1px] h-4 bg-[--border-color] mx-1"></div>
+                <div className={`w-[1px] h-4 ${clay ? 'bg-[--glass-border]' : 'bg-[--border-color]'} mx-1`}></div>
+                <button onClick={() => execCmd('bold')} className={`p-1.5 font-bold ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'} transition-colors`} title="Bold">B</button>
+                <button onClick={() => execCmd('italic')} className={`p-1.5 italic ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'} transition-colors`} title="Italic">I</button>
+                <button onClick={() => execCmd('underline')} className={`p-1.5 underline ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'} transition-colors`} title="Underline">U</button>
+                <div className={`w-[1px] h-4 ${clay ? 'bg-[--glass-border]' : 'bg-[--border-color]'} mx-1`}></div>
+                <button onClick={() => execCmd('justifyLeft')} className={`p-1.5 ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'} transition-colors`}>Left</button>
+                <button onClick={() => execCmd('justifyCenter')} className={`p-1.5 ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'} transition-colors`}>Center</button>
+                <div className={`w-[1px] h-4 ${clay ? 'bg-[--glass-border]' : 'bg-[--border-color]'} mx-1`}></div>
                 <select
                     onChange={(e) => { if (e.target.value === 'p') execCmd('formatBlock', 'p'); else execCmd('formatBlock', e.target.value); }}
-                    className="bg-overlay text-xs px-1 py-0.5 border border-[--border-color] outline-none text-[--text-color]"
+                    className={`text-xs px-1.5 py-0.5 outline-none text-[--text-color] ${clay ? 'rounded-[8px] border border-[--glass-border]' : 'bg-overlay border border-[--border-color]'}`}
+                    style={clay ? glassInput : undefined}
                     defaultValue="p"
                 >
                     <option value="p">Body</option>
@@ -325,12 +329,12 @@ export default function TextEdit({ id, content: initialContent, title, isFocused
                     <option value="h2">Heading 2</option>
                     <option value="h3">Heading 3</option>
                 </select>
-                <button onClick={() => execCmd('insertUnorderedList')} className="p-1 hover:bg-overlay" title="Bullet List"><IoListOutline size={14} /></button>
-                <button onClick={() => execCmd('insertOrderedList')} className="p-1 hover:bg-overlay" title="Numbered List"><IoCodeOutline size={14} /></button>
-                <div className="w-[1px] h-4 bg-[--border-color] mx-1"></div>
-                <button onClick={() => setShowPreview(!showPreview)} className={`p-1 ${showPreview ? 'bg-accent text-[--bg-base]' : 'hover:bg-overlay'}`} title={showPreview ? 'Edit Mode' : 'Markdown Preview'}><IoEyeOutline size={14} /></button>
-                <button onClick={handleExportPDF} className="p-1 hover:bg-overlay" title="Export as PDF"><IoPrintOutline size={14} /></button>
-                <button onClick={handleExportHTML} className="p-1 hover:bg-overlay" title="Export as HTML"><IoDownloadOutline size={14} /></button>
+                <button onClick={() => execCmd('insertUnorderedList')} className={`p-1.5 ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'} transition-colors`} title="Bullet List"><IoListOutline size={14} /></button>
+                <button onClick={() => execCmd('insertOrderedList')} className={`p-1.5 ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'} transition-colors`} title="Numbered List"><IoCodeOutline size={14} /></button>
+                <div className={`w-[1px] h-4 ${clay ? 'bg-[--glass-border]' : 'bg-[--border-color]'} mx-1`}></div>
+                <button onClick={() => setShowPreview(!showPreview)} className={`p-1.5 ${clay ? 'rounded-[8px] active:scale-[0.97]' : ''} ${showPreview ? (clay ? 'text-white' : 'bg-accent text-[--bg-base]') : (clay ? 'hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay')} transition-colors`} style={showPreview && clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined} title={showPreview ? 'Edit Mode' : 'Markdown Preview'}><IoEyeOutline size={14} /></button>
+                <button onClick={handleExportPDF} className={`p-1.5 ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'} transition-colors`} title="Export as PDF"><IoPrintOutline size={14} /></button>
+                <button onClick={handleExportHTML} className={`p-1.5 ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'} transition-colors`} title="Export as HTML"><IoDownloadOutline size={14} /></button>
                 <div className="flex-1"></div>
                 {files.find(f => f.id === currentFileId)?.isReadOnly && (
                     <div className="flex items-center gap-1 text-xs text-[--text-muted] mr-2">
@@ -344,36 +348,38 @@ export default function TextEdit({ id, content: initialContent, title, isFocused
             </div>
 
             {showFindReplace && (
-                <div className="absolute top-10 right-0 left-0 bg-surface border-b border-[--border-color] p-2 flex gap-2 items-center z-10 animate-in slide-in-from-top-2">
+                <div className={`absolute top-10 right-0 left-0 ${clay ? 'border-b border-[--glass-border]' : 'bg-surface border-b border-[--border-color]'} p-2 flex gap-2 items-center z-10 animate-in slide-in-from-top-2`} style={clay ? { background: 'var(--bg-glass)' } : undefined}>
                     <IoSearchOutline />
                     <input
-                        className="bg-overlay px-2 py-1 text-xs outline-none border border-transparent focus:border-accent"
+                        className={`px-2 py-1 text-xs outline-none ${clay ? 'rounded-[12px] border border-[--glass-border]' : 'bg-overlay border border-transparent focus:border-accent'}`}
+                        style={clay ? glassInput : undefined}
                         placeholder="Find..."
                         value={findText}
                         onChange={(e) => setFindText(e.target.value)}
                     />
                     <input
-                        className="bg-overlay px-2 py-1 text-xs outline-none border border-transparent focus:border-accent"
+                        className={`px-2 py-1 text-xs outline-none ${clay ? 'rounded-[12px] border border-[--glass-border]' : 'bg-overlay border border-transparent focus:border-accent'}`}
+                        style={clay ? glassInput : undefined}
                         placeholder="Replace with..."
                         value={replaceText}
                         onChange={(e) => setReplaceText(e.target.value)}
                     />
-                    <button onClick={handleFindReplace} className="px-2 py-1 bg-accent text-[--text-color] text-xs hover:bg-accent/80">Replace All</button>
-                    <button onClick={() => setShowFindReplace(false)} className="ml-auto p-1 hover:bg-overlay"><IoClose /></button>
+                    <button onClick={handleFindReplace} className={`px-3 py-1 text-xs text-white ${clay ? 'rounded-[12px] active:scale-[0.97]' : ''}`} style={{ background: 'var(--accent-color)' }}>Replace All</button>
+                    <button onClick={() => setShowFindReplace(false)} className={`ml-auto p-1 ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`}><IoClose /></button>
                 </div>
             )}
 
             {showPreview ? (
                 <div
                     ref={previewRef}
-                    className="flex-1 w-full h-full p-6 overflow-y-auto bg-transparent"
+                    className={`flex-1 w-full h-full p-6 overflow-y-auto ${clay ? 'bg-[--bg-base]' : 'bg-transparent'}`}
                     style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
                     dangerouslySetInnerHTML={{ __html: previewHTML }}
                 />
             ) : (
                 <div
                     ref={contentRef}
-                    className="flex-1 w-full h-full p-6 outline-none overflow-y-auto rich-text-editor bg-transparent"
+                    className={`flex-1 w-full h-full p-6 outline-none overflow-y-auto rich-text-editor ${clay ? 'bg-[--bg-base]' : 'bg-transparent'}`}
                     contentEditable={!files.find(f => f.id === currentFileId)?.isReadOnly}
                     onInput={handleInput}
                     onKeyDown={handleKeyDown}

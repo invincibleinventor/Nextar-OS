@@ -13,6 +13,8 @@ import UserManagement from './Settings/UserManagement';
 import { IoPeopleOutline } from 'react-icons/io5';
 import { iselectron, wifi as wifiapi, bluetooth as bluetoothapi, audio as audioapi, keyboard as keyboardapi, mouse as mouseapi, locale as localeapi, datetime as datetimeapi, defaultapps as defaultappsapi, printers as printersapi } from '@/utils/platform';
 import { useCheerpXSafe } from '../CheerpXContext';
+import { useIsClay } from '../hooks/useIsClay';
+import { glassCard, glassButton, glassSidebar, glassInput, clayClasses } from '../hooks/useClayStyles';
 
 const sidebaritems = [
     { id: 'wifi', label: 'Wi-Fi', icon: IoWifi, color: 'var(--pastel-blue)' },
@@ -26,7 +28,6 @@ const sidebaritems = [
     { id: 'general', label: 'General', icon: IoSettingsOutline, color: 'var(--text-muted)' },
     { id: 'appearance', label: 'Appearance', icon: IoColorPaletteOutline, color: 'var(--pastel-peach)' },
     { id: 'accessibility', label: 'Accessibility', icon: IoAccessibilityOutline, color: 'var(--pastel-teal)' },
-    { id: 'wallpaper', label: 'Wallpaper', icon: IoImageOutline, color: 'var(--pastel-blue)' },
     { type: 'spacer' },
     { id: 'displays', label: 'Displays', icon: IoDesktopOutline, color: 'var(--pastel-blue)' },
     { id: 'keyboard', label: 'Keyboard', icon: IoKeypadOutline, color: 'var(--pastel-yellow)' },
@@ -44,7 +45,7 @@ const sidebaritems = [
 export default function Settings({ initialPage, windowId }: { initialPage?: string, windowId?: string }) {
     const [activetab, setactivetab] = useState(initialPage || "general");
     const [showsidebar, setshowsidebar] = useState(true);
-    const { reducemotion, setreducemotion, reducetransparency, setreducetransparency, soundeffects, setsoundeffects, wallpaperurl, setwallpaperurl, accentcolor, setaccentcolor, inverselabelcolor, setinverselabelcolor } = useSettings();
+    const { reducemotion, setreducemotion, reducetransparency, setreducetransparency, soundeffects, setsoundeffects, wallpaperurl, setwallpaperurl, accentcolor, setaccentcolor, inverselabelcolor, setinverselabelcolor, icontintmode, seticontintmode, accentmode, setaccentmode, wallpaperdominantcolor } = useSettings();
     const { theme, toggletheme } = useTheme();
     const { addwindow, windows, updatewindow, setactivewindow, activewindow } = useWindows();
     const { ismobile } = useDevice();
@@ -52,6 +53,7 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
     const containerref = useRef<HTMLDivElement>(null);
     const [isnarrow, setisnarrow] = useState(false);
     const cheerpx = useCheerpXSafe();
+    const clay = useIsClay();
     const [storageInfo, setStorageInfo] = useState<{ projectCount: number; cxCacheSize: string } | null>(null);
     const [clearingCache, setClearingCache] = useState(false);
 
@@ -256,21 +258,29 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
     const Toggle = ({ value, onChange }: { value: boolean, onChange: (v: boolean) => void }) => (
         <button
             onClick={() => onChange(!value)}
-            className={`w-[51px] h-[31px] p-[2px] transition-colors ${value ? 'bg-pastel-green' : 'bg-[--border-color]'}`}
+            className={`w-[51px] h-[31px] p-[2px] transition-colors ${clay ? 'rounded-full' : ''} ${value ? 'bg-pastel-green' : clay ? '' : 'bg-[--border-color]'}`}
+            style={clay ? (value
+                ? { boxShadow: '0 0 8px color-mix(in srgb, var(--pastel-green) 40%, transparent)' }
+                : { boxShadow: 'var(--shadow-inset)', background: 'var(--bg-glass-active)' }
+            ) : undefined}
         >
-            <div className={`w-[27px] h-[27px]  bg-[--bg-base] transition-transform ${value ? 'translate-x-5' : 'translate-x-0'}`} />
+            <div className={`w-[27px] h-[27px] bg-[--bg-base] transition-transform ${clay ? 'rounded-full' : ''} ${value ? 'translate-x-5' : 'translate-x-0'}`}
+                style={clay ? { boxShadow: 'var(--shadow-xs)' } : undefined}
+            />
         </button>
     );
 
     const SettingsGroup = ({ children }: { children: React.ReactNode }) => (
-        <div className="bg-overlay border border-[--border-color] overflow-hidden mb-6">
+        <div className={`overflow-hidden mb-6 ${clay ? `${clayClasses.card}` : 'bg-overlay border border-[--border-color]'}`}
+            style={clay ? glassCard : undefined}
+        >
             {children}
         </div>
     );
 
     const SettingsRow = ({ label, value, onClick, toggle, toggleValue, onToggle, last }: any) => (
         <div
-            className={`flex items-center justify-between px-4 ${ismobile ? 'py-3.5' : 'py-2.5'} ${!last ? 'border-b border-[--border-color]' : ''} ${onClick ? 'active:bg-overlay' : ''}`}
+            className={`flex items-center justify-between px-4 ${ismobile ? 'py-3.5' : clay ? 'py-3' : 'py-2.5'} ${!last ? clay ? 'border-b border-[--text-muted]/10' : 'border-b border-[--border-color]' : ''} ${onClick ? clay ? 'active:bg-[--bg-glass-hover] active:scale-[0.99] transition-all' : 'active:bg-overlay' : ''}`}
             onClick={onClick}
         >
             <span className={`text-[--text-color] ${ismobile ? 'text-[16px]' : 'text-[13px] font-medium'}`}>{label}</span>
@@ -286,8 +296,10 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
         <div className={`flex-1 h-full overflow-y-auto bg-[--bg-base] ${ismobile ? '' : 'p-0 md:p-8 md:pt-10'}`}>
             <div className={`max-w-[640px] mx-auto ${ismobile ? '' : 'md:px-4'}`}>
                 {!ismobile && (
-                    <div className="flex items-center gap-3 mb-5 px-4 md:px-0">
-                        <div className="w-7 h-7 flex items-center justify-center text-[--bg-base]" style={{ backgroundColor: sidebaritems.find(i => i.id === activetab)?.color || '#6e738d' }}>
+                    <div className={`flex items-center gap-3 mb-5 px-4 md:px-0 ${clay ? 'pb-4' : ''}`}
+                        style={clay ? { borderBottom: '1px solid var(--glass-border)' } : undefined}
+                    >
+                        <div className={`w-7 h-7 flex items-center justify-center text-[--bg-base] ${clay ? 'rounded-[6px]' : ''}`} style={{ backgroundColor: sidebaritems.find(i => i.id === activetab)?.color || '#6e738d' }}>
                             {(() => {
                                 const item = sidebaritems.find(i => i.id === activetab);
                                 if (item && 'icon' in item && item.icon) {
@@ -304,8 +316,10 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                 <div className={`${ismobile ? 'p-4' : ''}`}>
                     {activetab === 'general' && (
                         <>
-                            <div className="flex flex-col items-center mb-6 bg-overlay p-5 border border-[--border-color]">
-                                <div className="w-14 h-14 bg-accent mb-3 flex items-center justify-center text-[--bg-base]">
+                            <div className={`flex flex-col items-center mb-6 p-5 ${clay ? `${clayClasses.card}` : 'bg-overlay border border-[--border-color]'}`}
+                                style={clay ? glassCard : undefined}
+                            >
+                                <div className={`w-14 h-14 bg-accent mb-3 flex items-center justify-center text-[--bg-base] ${clay ? 'rounded-[12px]' : ''}`}>
                                     <IoSettingsOutline size={28} />
                                 </div>
                                 <h2 className="text-lg font-bold text-[--text-color]">NextarOS</h2>
@@ -529,29 +543,185 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
 
                     {activetab === 'appearance' && (
                         <>
-                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Colors</div>
+                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Wallpaper</div>
+                            <SettingsGroup>
+                                <div className="p-4 grid grid-cols-3 gap-3">
+                                    {['/bg.jpg', '/bg-dark.jpg', '/wallpaper-1.jpg', '/wallpaper-2.jpg', '/wallpaper-3.jpg', '/wallpaper-4.jpg'].map((wp) => (
+                                        <button
+                                            key={wp}
+                                            onClick={() => setwallpaperurl(wp)}
+                                            className={`aspect-video bg-cover bg-center border-2 transition-all ${clay ? 'rounded-[10px]' : ''} ${wallpaperurl === wp ? 'border-accent ring-2' : 'border-[--border-color] hover:border-[--text-muted]'}`}
+                                            style={{ backgroundImage: `url('${wp}')`, ...(wallpaperurl === wp && clay ? { boxShadow: '0 0 0 3px color-mix(in srgb, var(--accent-color) 30%, transparent)' } : {}) }}
+                                        />
+                                    ))}
+                                </div>
+                                <div className="px-4 pb-3">
+                                    <input
+                                        type="text"
+                                        value={wallpaperinput}
+                                        onChange={(e) => setwallpaperinput(e.target.value)}
+                                        onBlur={() => setwallpaperurl(wallpaperinput)}
+                                        onKeyDown={(e) => { if (e.key === 'Enter') setwallpaperurl(wallpaperinput); }}
+                                        placeholder="Custom wallpaper URL..."
+                                        className={`w-full px-3 py-2 bg-overlay outline-none text-[13px] text-[--text-color] border border-[--border-color] focus:border-accent ${clay ? 'rounded-[8px] border-[--glass-border] bg-[--bg-glass-active] focus:border-accent' : ''}`}
+                                    />
+                                </div>
+                            </SettingsGroup>
+
+                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2 mt-4">Accent Color</div>
+                            <SettingsGroup>
+                                <div className="p-4 flex gap-3 flex-wrap">
+                                    {['#e78284', '#ef9f76', '#e5c890', '#a6d189', '#81c8be', '#8caaee', '#babbf1', '#f4b8e4', '#ca9ee6'].map((color) => (
+                                        <button
+                                            key={color}
+                                            onClick={() => setaccentcolor(color)}
+                                            className={`w-8 h-8 transition-all ${clay ? 'rounded-full' : ''} ${accentcolor === color ? 'ring-2 ring-offset-2 ring-[--text-muted] scale-110' : 'hover:scale-105'}`}
+                                            style={{ backgroundColor: color }}
+                                        />
+                                    ))}
+                                </div>
+                            </SettingsGroup>
+
+                            {clay && (
+                                <>
+                                    <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2 mt-4">Accent Mode</div>
+                                    <SettingsGroup>
+                                        <div className="p-3 flex gap-2">
+                                            {([
+                                                { id: 'light', label: 'Light', desc: 'Lighter accent' },
+                                                { id: 'dark', label: 'Dark', desc: 'Deeper accent' },
+                                                { id: 'twilight', label: 'Twilight', desc: 'As chosen' },
+                                                { id: 'adaptive', label: 'Adaptive', desc: 'From wallpaper' },
+                                            ] as const).map((mode) => (
+                                                <button
+                                                    key={mode.id}
+                                                    onClick={() => setaccentmode(mode.id)}
+                                                    className={`flex-1 flex flex-col items-center gap-1 py-2.5 px-2 rounded-[10px] transition-all text-center active:scale-[0.97] ${accentmode === mode.id ? 'text-white shadow-sm' : 'bg-[--bg-glass-active] text-[--text-color] hover:bg-[--bg-glass-hover]'}`}
+                                                    style={accentmode === mode.id ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
+                                                >
+                                                    <span className="text-[12px] font-semibold">{mode.label}</span>
+                                                    <span className={`text-[10px] leading-tight ${accentmode === mode.id ? 'text-white/70' : 'text-[--text-muted]'}`}>{mode.desc}</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                        {accentmode === 'adaptive' && (
+                                            <div className="px-4 py-2.5 flex items-center gap-3 border-t border-[--text-muted]/10">
+                                                <span className="text-[13px] text-[--text-muted]">Detected color</span>
+                                                <div className="flex items-center gap-2 ml-auto">
+                                                    <div className="w-5 h-5 rounded-full border border-[--glass-border]" style={{ backgroundColor: wallpaperdominantcolor }} />
+                                                    <span className="text-[12px] text-[--text-muted] font-mono">{wallpaperdominantcolor}</span>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </SettingsGroup>
+                                </>
+                            )}
+
+                            {clay && (
+                                <>
+                                    <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2 mt-4">Icon Tint</div>
+                                    <SettingsGroup>
+                                        <div className="p-3 flex flex-wrap gap-2">
+                                            {([
+                                                { id: 'light' as const, label: 'Light', desc: 'Mono light' },
+                                                { id: 'dark' as const, label: 'Dark', desc: 'Mono dark' },
+                                                { id: 'twilight' as const, label: 'Twilight', desc: 'Follows theme' },
+                                                { id: 'adaptive' as const, label: 'Adaptive', desc: 'From wallpaper' },
+                                                { id: 'coloured-light' as const, label: 'Color Light', desc: 'Individual light' },
+                                                { id: 'coloured-dark' as const, label: 'Color Dark', desc: 'Individual dark' },
+                                            ]).map((mode) => (
+                                                <button
+                                                    key={mode.id}
+                                                    onClick={() => seticontintmode(mode.id)}
+                                                    className={`flex-1 min-w-[30%] flex flex-col items-center gap-1 py-2.5 px-2 rounded-[10px] transition-all text-center active:scale-[0.97] ${icontintmode === mode.id ? 'text-white shadow-sm' : 'bg-[--bg-glass-active] text-[--text-color] hover:bg-[--bg-glass-hover]'}`}
+                                                    style={icontintmode === mode.id ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
+                                                >
+                                                    <span className="text-[12px] font-semibold">{mode.label}</span>
+                                                    <span className={`text-[10px] leading-tight ${icontintmode === mode.id ? 'text-white/70' : 'text-[--text-muted]'}`}>{mode.desc}</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                        {icontintmode === 'adaptive' && (
+                                            <div className="px-4 py-2.5 flex items-center gap-3 border-t border-[--text-muted]/10">
+                                                <span className="text-[13px] text-[--text-muted]">Detected color</span>
+                                                <div className="flex items-center gap-2 ml-auto">
+                                                    <div className="w-5 h-5 rounded-full border border-[--glass-border]" style={{ backgroundColor: wallpaperdominantcolor }} />
+                                                    <span className="text-[12px] text-[--text-muted] font-mono">{wallpaperdominantcolor}</span>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </SettingsGroup>
+                                </>
+                            )}
+
+                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2 mt-4">Colors</div>
                             <SettingsGroup>
                                 <div className="p-5 flex justify-center gap-8">
                                     <button onClick={() => theme !== 'light' && toggletheme()} className="flex flex-col items-center gap-2 group">
-                                        <div className={`w-32 h-20 border flex overflow-hidden transition-all ${theme === 'light' ? 'border-accent ring-2 ring-accent/20' : 'border-[--border-color] group-hover:border-[--text-muted]'}`}>
+                                        <div
+                                            className={`w-32 h-20 border flex overflow-hidden transition-all ${clay ? 'rounded-[10px]' : ''} ${theme === 'light' ? 'border-accent ring-2' : 'border-[--border-color] group-hover:border-[--text-muted]'}`}
+                                            style={theme === 'light' ? { boxShadow: '0 0 0 3px color-mix(in srgb, var(--accent-color) 20%, transparent)' } : undefined}
+                                        >
                                             <div className="w-1/3 bg-[#e6e9ef]" />
                                             <div className="w-2/3 bg-[#eff1f5] relative">
-                                                <div className="absolute top-2 left-2 w-10 h-2 bg-accent opacity-20"></div>
+                                                <div className="absolute top-2 left-2 w-10 h-2" style={{ background: 'var(--accent-color)', opacity: 0.2 }} />
                                                 <div className="absolute top-5 left-2 w-6 h-2 bg-[#bcc0cc]"></div>
                                             </div>
                                         </div>
                                         <span className={`text-[12px] font-medium ${theme === 'light' ? 'text-accent' : 'text-[--text-muted]'}`}>Light</span>
                                     </button>
                                     <button onClick={() => theme !== 'dark' && toggletheme()} className="flex flex-col items-center gap-2 group">
-                                        <div className={`w-32 h-20 border flex overflow-hidden transition-all ${theme === 'dark' ? 'border-accent ring-2 ring-accent/20' : 'border-[--border-color] group-hover:border-[--text-muted]'}`}>
+                                        <div
+                                            className={`w-32 h-20 border flex overflow-hidden transition-all ${clay ? 'rounded-[10px]' : ''} ${theme === 'dark' ? 'border-accent ring-2' : 'border-[--border-color] group-hover:border-[--text-muted]'}`}
+                                            style={theme === 'dark' ? { boxShadow: '0 0 0 3px color-mix(in srgb, var(--accent-color) 20%, transparent)' } : undefined}
+                                        >
                                             <div className="w-1/3 bg-[#1e2030]" />
                                             <div className="w-2/3 bg-[#161822] relative">
-                                                <div className="absolute top-2 left-2 w-10 h-2 bg-accent opacity-50"></div>
+                                                <div className="absolute top-2 left-2 w-10 h-2" style={{ background: 'var(--accent-color)', opacity: 0.5 }} />
                                                 <div className="absolute top-5 left-2 w-6 h-2 bg-[#363a4f]"></div>
                                             </div>
                                         </div>
                                         <span className={`text-[12px] font-medium ${theme === 'dark' ? 'text-accent' : 'text-[--text-muted]'}`}>Dark</span>
                                     </button>
+                                </div>
+                            </SettingsGroup>
+
+                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">UI Style</div>
+                            <SettingsGroup>
+                                <div className="p-5 flex justify-center gap-8">
+                                    <button
+                                        onClick={() => {
+                                            localStorage.setItem('nextaros-ui-style', 'neo');
+                                            document.documentElement.classList.add('clay');
+                                            window.location.reload();
+                                        }}
+                                        className="flex flex-col items-center gap-2 group"
+                                    >
+                                        <div className={`w-32 h-20 border flex items-center justify-center transition-all overflow-hidden ${clay ? 'border-accent ring-2' : 'border-[--border-color] group-hover:border-[--text-muted]'}`}
+                                            style={{ borderRadius: 12, background: 'linear-gradient(145deg, #F2F1F3 0%, #E0DFE1 100%)', ...(clay ? { boxShadow: '0 0 0 3px color-mix(in srgb, var(--accent-color) 20%, transparent)' } : {}) }}
+                                        >
+                                            <div className="w-14 h-8 rounded-[8px]" style={{ background: 'linear-gradient(145deg, #F8F7F9 0%, #E4E3E5 100%)', boxShadow: '2px 2px 5px rgba(160,160,170,0.3), -2px -2px 5px rgba(255,255,255,0.65)' }} />
+                                        </div>
+                                        <span className={`text-[12px] font-medium ${clay ? 'text-accent' : 'text-[--text-muted]'}`}>Neo-Glass</span>
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            localStorage.setItem('nextaros-ui-style', 'classic');
+                                            document.documentElement.classList.remove('clay');
+                                            window.location.reload();
+                                        }}
+                                        className="flex flex-col items-center gap-2 group"
+                                    >
+                                        <div className={`w-32 h-20 border flex items-center justify-center transition-all overflow-hidden ${clay ? 'rounded-[10px]' : ''} ${!clay ? 'border-accent ring-2' : 'border-[--border-color] group-hover:border-[--text-muted]'}`}
+                                            style={{ background: 'var(--bg-surface)', ...(!clay ? { boxShadow: '0 0 0 3px color-mix(in srgb, var(--accent-color) 20%, transparent)' } : {}) }}
+                                        >
+                                            <div className="w-14 h-8 border border-[--border-color]" style={{ background: 'var(--bg-overlay)' }} />
+                                        </div>
+                                        <span className={`text-[12px] font-medium ${!clay ? 'text-accent' : 'text-[--text-muted]'}`}>Classic</span>
+                                    </button>
+                                </div>
+                                <div className="px-4 pb-3">
+                                    <p className="text-[10px] text-[--text-muted] text-center">Switching style will reload the page</p>
                                 </div>
                             </SettingsGroup>
 
@@ -567,58 +737,11 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
 
                     {activetab === 'users' && (
 
-                        <div className="h-full -m-8 md:-m-0 border border-[--border-color] overflow-hidden">
+                        <div className={`h-full -m-8 md:-m-0 overflow-hidden ${clay ? 'border border-[--glass-border] rounded-[16px]' : 'border border-[--border-color]'}`}>
                             <UserManagement />
                         </div>
                     )}
 
-                    {activetab === 'wallpaper' && (
-                        <>
-                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Wallpaper URL</div>
-                            <SettingsGroup>
-                                <div className="p-4">
-                                    <input
-                                        type="text"
-                                        value={wallpaperinput}
-                                        onChange={(e) => setwallpaperinput(e.target.value)}
-                                        onBlur={() => setwallpaperurl(wallpaperinput)}
-                                        onKeyDown={(e) => { if (e.key === 'Enter') setwallpaperurl(wallpaperinput); }}
-                                        placeholder="https://example.com/wallpaper.jpg"
-                                        className="w-full px-3 py-2 bg-overlay outline-none text-[14px] text-[--text-color] border border-[--border-color] focus:border-accent"
-                                    />
-                                    <p className="text-[11px] text-[--text-muted] mt-2">Enter a URL and press Enter or click away to apply</p>
-                                </div>
-                            </SettingsGroup>
-
-                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2 mt-4">Preset Wallpapers</div>
-                            <SettingsGroup>
-                                <div className="p-4 grid grid-cols-3 gap-3">
-                                    {['/bg.jpg', '/bg-dark.jpg', '/wallpaper-1.jpg', '/wallpaper-2.jpg', '/wallpaper-3.jpg', '/wallpaper-4.jpg'].map((wp) => (
-                                        <button
-                                            key={wp}
-                                            onClick={() => setwallpaperurl(wp)}
-                                            className={`aspect-video bg-cover bg-center border-2 transition-all ${wallpaperurl === wp ? 'border-accent ring-2 ring-accent/30' : 'border-[--border-color] hover:border-[--text-muted]'}`}
-                                            style={{ backgroundImage: `url('${wp}')` }}
-                                        />
-                                    ))}
-                                </div>
-                            </SettingsGroup>
-
-                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2 mt-4">Accent Color</div>
-                            <SettingsGroup>
-                                <div className="p-4 flex gap-3 flex-wrap">
-                                    {['#e78284', '#ef9f76', '#e5c890', '#a6d189', '#81c8be', '#8caaee', '#babbf1', '#f4b8e4', '#ca9ee6'].map((color) => (
-                                        <button
-                                            key={color}
-                                            onClick={() => setaccentcolor(color)}
-                                            className={`w-8 h-8  transition-all ${accentcolor === color ? 'ring-2 ring-offset-2 ring-[--text-muted] scale-110' : 'hover:scale-105'}`}
-                                            style={{ backgroundColor: color }}
-                                        />
-                                    ))}
-                                </div>
-                            </SettingsGroup>
-                        </>
-                    )}
 
                     {activetab === 'wifi' && (
                         <>
@@ -642,7 +765,7 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                                 <>
                                     <div className="flex items-center justify-between text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2 mt-4">
                                         <span>Available Networks</span>
-                                        <button onClick={fetchwifinetworks} className="p-1 hover:bg-overlay">
+                                        <button onClick={fetchwifinetworks} className={`p-1 ${clay ? 'rounded-[6px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`}>
                                             <IoRefresh className={wifiloading ? 'animate-spin' : ''} size={14} />
                                         </button>
                                     </div>
@@ -673,7 +796,7 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                             )}
 
                             {!iselectron && (
-                                <div className="mt-4 p-4 bg-pastel-yellow/10 border border-pastel-yellow/30 text-[13px] text-pastel-yellow">
+                                <div className={`mt-4 p-4 text-[13px] ${clay ? 'text-[--text-muted] rounded-[12px]' : 'bg-pastel-yellow/10 border border-pastel-yellow/30 text-pastel-yellow'}`} style={clay ? glassCard : undefined}>
                                     Wi-Fi controls require native mode (Electron)
                                 </div>
                             )}
@@ -700,7 +823,7 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                                 <>
                                     <div className="flex items-center justify-between text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2 mt-4">
                                         <span>Devices</span>
-                                        <button onClick={fetchbtdevices} className="p-1 hover:bg-overlay">
+                                        <button onClick={fetchbtdevices} className={`p-1 ${clay ? 'rounded-[6px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`}>
                                             <IoRefresh className={btloading ? 'animate-spin' : ''} size={14} />
                                         </button>
                                     </div>
@@ -724,7 +847,7 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                             )}
 
                             {!iselectron && (
-                                <div className="mt-4 p-4 bg-pastel-yellow/10 border border-pastel-yellow/30 text-[13px] text-pastel-yellow">
+                                <div className={`mt-4 p-4 text-[13px] ${clay ? 'text-[--text-muted] rounded-[12px]' : 'bg-pastel-yellow/10 border border-pastel-yellow/30 text-pastel-yellow'}`} style={clay ? glassCard : undefined}>
                                     Bluetooth controls require native mode (Electron)
                                 </div>
                             )}
@@ -750,7 +873,7 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                                             setvolume(v);
                                             if (iselectron) await audioapi.setvolume(v);
                                         }}
-                                        className="w-full h-2 bg-[--border-color] appearance-none cursor-pointer accent-accent"
+                                        className={`w-full h-2 appearance-none cursor-pointer accent-accent ${clay ? 'bg-[--bg-glass-active] rounded-full' : 'bg-[--border-color]'}`}
                                     />
                                 </div>
                                 <SettingsRow
@@ -777,7 +900,7 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                             </SettingsGroup>
 
                             {!iselectron && (
-                                <div className="mt-4 p-4 bg-pastel-yellow/10 border border-pastel-yellow/30 text-[13px] text-pastel-yellow">
+                                <div className={`mt-4 p-4 text-[13px] ${clay ? 'text-[--text-muted] rounded-[12px]' : 'bg-pastel-yellow/10 border border-pastel-yellow/30 text-pastel-yellow'}`} style={clay ? glassCard : undefined}>
                                     System volume controls require native mode (Electron)
                                 </div>
                             )}
@@ -801,17 +924,18 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                                             }
                                         />
                                         {cheerpx && cheerpx.networkState === 'disconnected' && (
-                                            <div className="px-4 py-3 border-t border-[--border-color]">
+                                            <div className={`px-4 py-3 ${clay ? 'border-t border-[--text-muted]/10 flex justify-center' : 'border-t border-[--border-color]'}`}>
                                                 <button
                                                     onClick={() => cheerpx.connectNetwork()}
-                                                    className="w-full py-2 text-xs font-medium bg-accent text-[--bg-base] hover:opacity-90 transition-opacity"
+                                                    className={`text-xs font-medium transition-all ${clay ? 'px-5 py-2.5 rounded-[12px] text-white active:scale-[0.97]' : 'w-full py-2 bg-accent text-[--bg-base] hover:opacity-90'}`}
+                                                    style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                                                 >
                                                     Connect to Tailscale
                                                 </button>
                                             </div>
                                         )}
                                         {cheerpx && cheerpx.networkState === 'connecting' && (
-                                            <div className="px-4 py-3 border-t border-[--border-color] text-center">
+                                            <div className={`px-4 py-3 text-center ${clay ? 'border-t border-[--text-muted]/10' : 'border-t border-[--border-color]'}`}>
                                                 <div className="flex items-center justify-center gap-2 text-xs text-[--text-muted]">
                                                     <IoRefresh className="animate-spin" size={14} />
                                                     Establishing connection...
@@ -819,16 +943,19 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                                             </div>
                                         )}
                                         {cheerpx && cheerpx.networkState === 'login-ready' && cheerpx.networkLoginUrl && (
-                                            <div className="px-4 py-3 border-t border-[--border-color] space-y-2">
+                                            <div className={`px-4 py-3 space-y-2 ${clay ? 'border-t border-[--text-muted]/10' : 'border-t border-[--border-color]'}`}>
                                                 <p className="text-xs text-[--text-muted]">
                                                     Tailscale requires authentication. Click below to open the login page.
                                                 </p>
-                                                <button
-                                                    onClick={() => window.open(cheerpx.networkLoginUrl!, '_blank')}
-                                                    className="w-full py-2 text-xs font-medium bg-pastel-blue text-white hover:opacity-90 transition-opacity"
-                                                >
-                                                    Open Tailscale Login
-                                                </button>
+                                                <div className={clay ? 'flex justify-center pt-1' : ''}>
+                                                    <button
+                                                        onClick={() => window.open(cheerpx.networkLoginUrl!, '_blank')}
+                                                        className={`text-xs font-medium transition-all ${clay ? 'px-5 py-2.5 rounded-[12px] text-white active:scale-[0.97]' : 'w-full py-2 bg-pastel-blue text-white hover:opacity-90'}`}
+                                                        style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
+                                                    >
+                                                        Open Tailscale Login
+                                                    </button>
+                                                </div>
                                             </div>
                                         )}
                                         {cheerpx && cheerpx.networkState === 'connected' && (
@@ -837,7 +964,7 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                                     </SettingsGroup>
 
                                     {!cheerpx && (
-                                        <div className="mt-4 p-4 bg-pastel-yellow/10 border border-pastel-yellow/30 text-xs text-pastel-yellow">
+                                        <div className={`mt-4 p-4 text-[13px] ${clay ? 'text-[--text-muted] rounded-[12px]' : 'bg-pastel-yellow/10 border border-pastel-yellow/30 text-pastel-yellow'}`} style={clay ? glassCard : undefined}>
                                             CheerpX network requires the Linux VM to be running. Open Terminal first.
                                         </div>
                                     )}
@@ -845,10 +972,10 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                             )}
 
                             {iselectron && (
-                                <div className="flex flex-col items-center justify-center py-20 text-center opacity-50">
-                                    <IoGlobeOutline size={48} className="mb-4" />
-                                    <h3 className="text-lg font-semibold">Network</h3>
-                                    <p className="text-[13px]">Network settings available in web mode via CheerpX Tailscale.</p>
+                                <div className={`flex flex-col items-center justify-center py-20 text-center ${clay ? '' : 'opacity-50'}`}>
+                                    <IoGlobeOutline size={48} className={`mb-4 ${clay ? 'text-[--text-muted]' : ''}`} />
+                                    <h3 className={`text-lg font-semibold ${clay ? 'text-[--text-color]' : ''}`}>Network</h3>
+                                    <p className={`text-[13px] ${clay ? 'text-[--text-muted] max-w-[300px]' : ''}`}>Network settings available in web mode via CheerpX Tailscale.</p>
                                 </div>
                             )}
                         </>
@@ -866,7 +993,7 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
 
                             <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2 mt-4">Manage</div>
                             <SettingsGroup>
-                                <div className="px-4 py-3 border-b border-[--border-color]">
+                                <div className={`px-4 py-3 ${clay ? 'border-b border-[--text-muted]/10' : 'border-b border-[--border-color]'}`}>
                                     <div className="flex items-center justify-between mb-1">
                                         <span className={`text-[--text-color] ${ismobile ? 'text-[16px]' : 'text-[13px] font-medium'}`}>Clear CheerpX Cache</span>
                                     </div>
@@ -889,12 +1016,13 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                                             }
                                         }}
                                         disabled={clearingCache}
-                                        className="px-3 py-1.5 text-xs bg-pastel-red text-white hover:opacity-90 disabled:opacity-50 transition-opacity"
+                                        className={`text-xs hover:opacity-90 disabled:opacity-50 transition-opacity ${clay ? 'px-5 py-2.5 rounded-[12px] text-white active:scale-[0.97]' : 'px-3 py-1.5 bg-pastel-red text-white'}`}
+                                        style={clay ? { background: 'var(--pastel-red)' } : undefined}
                                     >
                                         {clearingCache ? 'Clearing...' : 'Clear Cache'}
                                     </button>
                                 </div>
-                                <div className="px-4 py-3 border-b border-[--border-color]">
+                                <div className={`px-4 py-3 ${clay ? 'border-b border-[--text-muted]/10' : 'border-b border-[--border-color]'}`}>
                                     <div className="flex items-center justify-between mb-1">
                                         <span className={`text-[--text-color] ${ismobile ? 'text-[16px]' : 'text-[13px] font-medium'}`}>Export All Projects</span>
                                     </div>
@@ -928,7 +1056,8 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                                                 alert('Export failed: ' + e);
                                             }
                                         }}
-                                        className="px-3 py-1.5 text-xs bg-accent text-[--bg-base] hover:opacity-90 transition-opacity"
+                                        className={`text-xs text-white hover:opacity-90 transition-opacity ${clay ? 'px-5 py-2.5 rounded-[12px] active:scale-[0.97]' : 'px-3 py-1.5'}`}
+                                        style={{ background: clay ? 'var(--accent-color)' : 'var(--accent-color)' }}
                                     >
                                         Export Projects
                                     </button>
@@ -951,7 +1080,8 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                                                 alert('Failed: ' + e);
                                             }
                                         }}
-                                        className="px-3 py-1.5 text-xs bg-pastel-peach text-[--bg-base] hover:opacity-90 transition-opacity"
+                                        className={`text-xs text-white hover:opacity-90 transition-opacity ${clay ? 'px-5 py-2.5 rounded-[12px] active:scale-[0.97]' : 'px-3 py-1.5 bg-pastel-peach'}`}
+                                        style={clay ? { background: 'var(--pastel-peach)' } : undefined}
                                     >
                                         Clear Tokens
                                     </button>
@@ -989,7 +1119,7 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                                 <>
                                     <SettingsGroup>
                                         <SettingsRow label="Layout" value={kbLayout || 'Loading...'} />
-                                        <div className="px-4 py-3 border-b border-[--border-color]">
+                                        <div className={`px-4 py-3 ${clay ? 'border-b border-[--text-muted]/10' : 'border-b border-[--border-color]'}`}>
                                             <div className="flex items-center justify-between">
                                                 <span className="text-[13px] font-medium text-[--text-color]">Change Layout</span>
                                             </div>
@@ -1000,7 +1130,7 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                                                     await keyboardapi.setlayout(layout);
                                                     setKbLayout(layout);
                                                 }}
-                                                className="mt-2 w-full bg-overlay text-[--text-color] text-[13px] px-2 py-1.5 outline-none border border-[--border-color]"
+                                                className={`mt-2 w-full text-[--text-color] text-[13px] px-2 py-1.5 outline-none ${clay ? 'rounded-[10px] bg-[--bg-glass-active] border border-[--glass-border]' : 'bg-overlay border border-[--border-color]'}`}
                                             >
                                                 {kbLayouts.slice(0, 100).map(l => <option key={l} value={l}>{l}</option>)}
                                             </select>
@@ -1008,7 +1138,7 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                                     </SettingsGroup>
                                     <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2 mt-4">Key Repeat</div>
                                     <SettingsGroup>
-                                        <div className="px-4 py-3 border-b border-[--border-color]">
+                                        <div className={`px-4 py-3 ${clay ? 'border-b border-[--text-muted]/10' : 'border-b border-[--border-color]'}`}>
                                             <div className="flex items-center justify-between mb-2">
                                                 <span className="text-[13px] font-medium text-[--text-color]">Delay (ms)</span>
                                                 <span className="text-[12px] text-[--text-muted]">{kbRepeatDelay}</span>
@@ -1044,7 +1174,7 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                             ) : (
                                 <>
                                     <SettingsGroup>
-                                        <div className="px-4 py-3 border-b border-[--border-color]">
+                                        <div className={`px-4 py-3 ${clay ? 'border-b border-[--text-muted]/10' : 'border-b border-[--border-color]'}`}>
                                             <div className="flex items-center justify-between mb-2">
                                                 <span className="text-[13px] font-medium text-[--text-color]">Pointer Speed</span>
                                                 <span className="text-[12px] text-[--text-muted]">{mouseSpeed.toFixed(2)}</span>
@@ -1082,7 +1212,7 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                                                 await localeapi.setlocale(loc);
                                                 setCurrentLocale(loc);
                                             }}
-                                            className="mt-2 w-full bg-overlay text-[--text-color] text-[13px] px-2 py-1.5 outline-none border border-[--border-color]"
+                                            className={`mt-2 w-full text-[--text-color] text-[13px] px-2 py-1.5 outline-none ${clay ? 'rounded-[10px] bg-[--bg-glass-active] border border-[--glass-border]' : 'bg-overlay border border-[--border-color]'}`}
                                         >
                                             {availableLocales.slice(0, 200).map(l => <option key={l} value={l}>{l}</option>)}
                                         </select>
@@ -1117,7 +1247,7 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                                                     await datetimeapi.settimezone(tz);
                                                     setDtTimezone(tz);
                                                 }}
-                                                className="w-full bg-overlay text-[--text-color] text-[13px] px-2 py-1.5 outline-none border border-[--border-color]"
+                                                className={`w-full text-[--text-color] text-[13px] px-2 py-1.5 outline-none ${clay ? 'rounded-[10px] bg-[--bg-glass-active] border border-[--glass-border]' : 'bg-overlay border border-[--border-color]'}`}
                                             >
                                                 {dtTimezones.map(tz => <option key={tz} value={tz}>{tz}</option>)}
                                             </select>
@@ -1183,11 +1313,11 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                         </>
                     )}
 
-                    {!['general','appearance','users','wallpaper','wifi','bluetooth','sound','network','storage','displays','keyboard','mouse','language','datetime','power','defaultapps','printers','notifications','focus','accessibility'].includes(activetab) && (
-                        <div className="flex flex-col items-center justify-center py-20 text-center opacity-50">
-                            <IoSettingsOutline size={48} className="mb-4" />
-                            <h3 className="text-lg font-semibold">Settings for {sidebaritems.find(i => i.id === activetab)?.label}</h3>
-                            <p className="text-[13px]">This section is under development.</p>
+                    {!['general','appearance','users','wifi','bluetooth','sound','network','storage','displays','keyboard','mouse','language','datetime','power','defaultapps','printers','notifications','focus','accessibility'].includes(activetab) && (
+                        <div className={`flex flex-col items-center justify-center py-20 text-center ${clay ? '' : 'opacity-50'}`}>
+                            <IoSettingsOutline size={48} className={`mb-4 ${clay ? 'text-[--text-muted]' : ''}`} />
+                            <h3 className={`text-lg font-semibold ${clay ? 'text-[--text-color]' : ''}`}>Settings for {sidebaritems.find(i => i.id === activetab)?.label}</h3>
+                            <p className={`text-[13px] ${clay ? 'text-[--text-muted] max-w-[300px]' : ''}`}>This section is under development.</p>
                         </div>
                     )}
                 </div>
@@ -1197,7 +1327,7 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
 
     if (ismobile) {
         return (
-            <div className="relative h-full w-full bg-[--bg-base] font-mono text-[--text-color] overflow-hidden">
+            <div className={`relative h-full w-full bg-[--bg-base] ${clay ? 'font-sans' : 'font-mono'} text-[--text-color] overflow-hidden`}>
                 <AnimatePresence mode="popLayout" initial={false}>
                     {showsidebar ? (
                         <motion.div
@@ -1206,23 +1336,25 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                             animate={{ x: 0, opacity: 1 }}
                             exit={{ x: '-30%', opacity: 0 }}
                             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                            className="absolute pb-10 inset-0 z-30 bg-surface flex flex-col"
+                            className={`absolute pb-10 inset-0 z-30 flex flex-col ${clay ? 'bg-[--bg-base]' : 'bg-surface'}`}
                         >
                             <div className="px-4 pt-12 pb-2">
                                 <h1 className="text-[32px] font-bold text-[--text-color]">Settings</h1>
                             </div>
                             <div className="px-4 py-2">
-                                <div className="relative">
+                                <div className={`relative ${clay ? 'rounded-full' : ''}`}
+                                    style={clay ? glassInput : undefined}>
                                     <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[--text-muted]" size={16} />
-                                    <input placeholder="Search" className="w-full bg-overlay pl-9 pr-3 py-2 text-[16px] outline-none text-[--text-color] placeholder-[--text-muted]" />
+                                    <input placeholder="Search" className={`w-full pl-9 pr-3 py-2 text-[16px] outline-none text-[--text-color] placeholder-[--text-muted] ${clay ? 'bg-transparent' : 'bg-overlay'}`} />
                                 </div>
                             </div>
                             <div className="flex-1 overflow-y-auto px-4 py-2 space-y-4">
                                 <div
-                                    className="flex items-center gap-3 p-4 bg-overlay border border-[--border-color] cursor-pointer"
+                                    className={`flex items-center gap-3 p-4 cursor-pointer ${clay ? `${clayClasses.card} active:scale-[0.99]` : 'bg-overlay border border-[--border-color]'}`}
+                                    style={clay ? glassCard : undefined}
                                     onClick={() => { setactivetab('users'); setshowsidebar(false); }}
                                 >
-                                    <div className="w-14 h-14  overflow-hidden shrink-0 border border-[--border-color]">
+                                    <div className={`w-14 h-14 overflow-hidden shrink-0 ${clay ? 'rounded-full' : 'border border-[--border-color]'}`}>
                                         <Image src={user?.avatar || '/me.png'} alt="Profile" width={56} height={56} className="w-full h-full object-cover" />
                                     </div>
                                     <div className="flex-1 min-w-0">
@@ -1232,14 +1364,16 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                                     <IoChevronForward className="text-[--text-muted]" size={24} />
                                 </div>
 
-                                <div className="bg-overlay border border-[--border-color] overflow-hidden">
+                                <div className={`overflow-hidden ${clay ? `${clayClasses.card}` : 'bg-overlay border border-[--border-color]'}`}
+                                    style={clay ? glassCard : undefined}
+                                >
                                     {sidebaritems.filter((i: any) => i.type !== 'spacer').map((item: any, i: number, arr: any[]) => (
                                         <div
                                             key={item.id}
                                             onClick={() => { setactivetab(item.id); setshowsidebar(false); }}
-                                            className={`flex items-center gap-3 px-4 py-3 cursor-pointer active:bg-overlay ${i !== arr.length - 1 ? 'border-b border-[--border-color]' : ''}`}
+                                            className={`flex items-center gap-3 px-4 py-3 cursor-pointer ${clay ? 'active:bg-[--bg-glass-hover]' : 'active:bg-overlay'} ${i !== arr.length - 1 ? (clay ? 'border-b border-[--text-muted]/10' : 'border-b border-[--border-color]') : ''}`}
                                         >
-                                            <div className="w-7 h-7 flex items-center justify-center text-[--bg-base] shrink-0" style={{ backgroundColor: item.color }}>
+                                            <div className={`w-7 h-7 flex items-center justify-center text-[--bg-base] shrink-0 ${clay ? 'rounded-[7px]' : ''}`} style={{ backgroundColor: item.color }}>
                                                 <item.icon size={16} />
                                             </div>
                                             <span className="text-[16px] font-medium flex-1 text-[--text-color]">{item.label}</span>
@@ -1258,7 +1392,7 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                             transition={{ type: 'tween', stiffness: 300, damping: 30 }}
                             className="absolute inset-0 z-30 bg-[--bg-base] flex flex-col"
                         >
-                            <div className="h-14 flex items-center px-2 border-b border-[--border-color] bg-surface">
+                            <div className={`h-14 flex items-center px-2 ${clay ? 'border-b border-[--glass-border]' : 'border-b border-[--border-color] bg-surface'}`}>
                                 <button
                                     onClick={() => setshowsidebar(true)}
                                     className="flex items-center text-accent px-2"
@@ -1279,21 +1413,25 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
     }
 
     return (
-        <div ref={containerref} className="flex h-full w-full font-mono text-[--text-color] overflow-hidden">
-            <div className="w-[260px] border-r border-[--border-color] bg-surface flex flex-col pt-3 h-full anime-gradient-top">
+        <div ref={containerref} className={`flex h-full w-full ${clay ? 'font-sans' : 'font-mono'} text-[--text-color] overflow-hidden`}>
+            <div className={`w-[260px] flex flex-col pt-3 h-full ${clay ? '' : 'border-r border-[--border-color] bg-surface anime-gradient-top'}`}
+                style={clay ? glassSidebar : undefined}
+            >
                 <div className="px-4 py-2 mb-2">
-                    <div className="relative">
+                    <div className={`relative ${clay ? 'rounded-full' : ''}`}
+                        style={clay ? glassInput : undefined}>
                         <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[--text-muted]" size={14} />
-                        <input placeholder="Search" className="w-full bg-overlay border border-[--border-color] pl-8 pr-3 py-1 text-[13px] outline-none text-[--text-color] placeholder-[--text-muted] transition-all focus:border-accent" />
+                        <input placeholder="Search" className={`w-full pl-8 pr-3 py-1 text-[13px] outline-none text-[--text-color] placeholder-[--text-muted] transition-all ${clay ? 'bg-transparent' : 'bg-overlay border border-[--border-color] focus:border-accent'}`}
+                        />
                     </div>
                 </div>
 
                 <div className="px-3 pb-2">
                     <div
-                        className="flex items-center gap-3 p-2 hover:bg-overlay cursor-pointer transition-colors"
+                        className={`flex items-center gap-3 p-2 cursor-pointer transition-all ${clay ? `${clayClasses.radiusSm} hover:bg-[--bg-glass-hover]` : 'hover:bg-overlay'}`}
                         onClick={() => setactivetab('users')}
                     >
-                        <div className="w-10 h-10  overflow-hidden shrink-0 border border-[--border-color]">
+                        <div className={`w-10 h-10 overflow-hidden shrink-0 ${clay ? 'rounded-full' : 'border border-[--border-color]'}`}>
                             <Image src={user?.avatar || '/me.png'} alt="Profile" width={40} height={40} className="w-full h-full object-cover" />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -1303,19 +1441,25 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto px-2 space-y-0.5">
+                <div className={`flex-1 overflow-y-auto px-2 ${clay ? 'space-y-1' : 'space-y-0.5'}`}>
                     {sidebaritems.map((item: any, i) => {
-                        if (item.type === 'spacer') return <div key={i} className="h-2" />;
+                        if (item.type === 'spacer') return <div key={i} className={clay ? 'h-3' : 'h-2'} />;
                         return (
                             <div
                                 key={item.id}
                                 onClick={() => setactivetab(item.id)}
-                                className={`flex items-center gap-2.5 px-3 py-1.5 cursor-pointer mx-1 transition-colors ${activetab === item.id ? 'bg-accent text-[--bg-base]' : 'text-[--text-color] hover:bg-overlay'}`}
+                                className={`flex items-center cursor-pointer mx-1 transition-all ${clay ? 'gap-3 px-3 py-2.5 rounded-[12px] active:scale-[0.97]' : 'gap-2.5 px-3 py-1.5'} ${activetab === item.id
+                                    ? clay ? 'text-white' : 'bg-accent text-[--bg-base]'
+                                    : clay
+                                        ? 'text-[--text-color] hover:bg-[--bg-glass-hover]'
+                                        : 'text-[--text-color] hover:bg-overlay'
+                                }`}
+                                style={activetab === item.id && clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                             >
-                                <div className="w-5 h-5 flex items-center justify-center text-[--bg-base] shrink-0 text-[12px]" style={{ backgroundColor: activetab === item.id ? 'transparent' : item.color }}>
-                                    <item.icon size={12} className={activetab === item.id ? 'text-[--bg-base]' : ''} />
+                                <div className={`${clay ? 'w-6 h-6 rounded-[7px]' : 'w-5 h-5'} flex items-center justify-center shrink-0`} style={{ backgroundColor: activetab === item.id ? 'rgba(255,255,255,0.25)' : item.color }}>
+                                    <item.icon size={clay ? 14 : 12} className="text-white" />
                                 </div>
-                                <span className="text-[13px] leading-none pb-[1px]">{item.label}</span>
+                                <span className={`${clay ? 'text-[14px] font-medium' : 'text-[13px]'} leading-none`}>{item.label}</span>
                             </div>
                         );
                     })}

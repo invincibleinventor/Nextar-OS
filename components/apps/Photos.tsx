@@ -7,6 +7,8 @@ import { useDevice } from '../DeviceContext';
 import { useFileSystem } from '../FileSystemContext';
 import { IoImagesOutline, IoChevronBack, IoGridOutline, IoAddOutline, IoRemoveOutline, IoRefreshOutline, IoDownloadOutline, IoColorFilterOutline } from 'react-icons/io5';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useIsClay } from '../hooks/useIsClay';
+import { glassSidebar, glassButton, glassCard, clayClasses } from '../hooks/useClayStyles';
 
 interface photosprops {
     singleview?: boolean;
@@ -22,6 +24,7 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
     const { ismobile } = useDevice();
     const { user } = useAuth();
     const { activewindow } = useWindows();
+    const clay = useIsClay();
     const containerref = useRef<HTMLDivElement>(null);
     const [isnarrow, setisnarrow] = useState(false);
     const [viewingimage, setviewingimage] = useState<{ src: string, title: string, id: string } | null>(
@@ -132,7 +135,7 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
 
     if (ismobile) {
         return (
-            <div className="flex flex-col h-full w-full bg-[--bg-base] font-mono overflow-hidden">
+            <div className={`flex flex-col h-full w-full overflow-hidden ${clay ? 'bg-[--bg-base] font-sans' : 'bg-[--bg-base] font-mono'}`}>
                 <AnimatePresence mode="popLayout">
                     {mobileview === 'grid' && (
                         <motion.div
@@ -142,7 +145,7 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
                             exit={{ opacity: 0 }}
                             className="flex-1 flex flex-col"
                         >
-                            <div className="h-14 flex items-center justify-between px-4 border-b border-[--border-color]">
+                            <div className={`h-14 flex items-center justify-between px-4 border-b ${clay ? 'border-[--glass-border]' : 'border-[--border-color]'}`}>
                                 <span className="text-[26px] text-[--text-color] font-bold">Photos</span>
                                 <div className="flex gap-4 text-accent">
                                     <IoGridOutline size={22} />
@@ -160,7 +163,7 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
                                         {photos.map((photo) => (
                                             <div
                                                 key={photo.id}
-                                                className="aspect-square relative cursor-pointer"
+                                                className={`aspect-square relative cursor-pointer ${clay ? 'rounded-[8px]' : ''}`}
                                                 onClick={() => handlePhotoClick(photo)}
                                             >
                                                 <Image
@@ -186,7 +189,7 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
                             exit={{ opacity: 0 }}
                             className="absolute inset-0 z-30 bg-black flex flex-col"
                         >
-                            <div className="h-14 flex items-center justify-between px-4 bg-surface">
+                            <div className={`h-14 flex items-center justify-between px-4 ${clay ? '' : 'bg-surface'}`}>
                                 <button
                                     onClick={() => { setviewingimage(null); setmobileview('grid'); resetFilters(); setShowFilters(false); }}
                                     className="text-[--text-color] flex items-center gap-1"
@@ -205,19 +208,20 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
                                     style={{ filter: filterStyle }}
                                 />
                             </div>
-                            <div className="flex flex-col bg-surface border-t border-[--border-color]">
+                            <div className={`flex flex-col border-t ${clay ? 'border-[--glass-border]' : 'border-[--border-color] bg-surface'}`}>
                                 <div className="h-12 flex items-center justify-between px-4">
                                     <span className="text-[--text-color] text-[13px]">{viewingimage.title}</span>
                                     <button
                                         onClick={() => setShowFilters(f => !f)}
-                                        className={`p-1.5 transition-colors ${showFilters ? 'bg-accent text-[--bg-base]' : 'text-[--text-muted] hover:text-[--text-color]'}`}
+                                        className={`p-1.5 transition-colors ${clay ? 'rounded-[8px] active:scale-[0.97]' : ''} ${showFilters ? 'text-white' : 'text-[--text-muted] hover:text-[--text-color]'}`}
+                                        style={showFilters ? { background: 'var(--accent-color)' } : undefined}
                                         title="Filters"
                                     >
                                         <IoColorFilterOutline size={18} />
                                     </button>
                                 </div>
                                 {showFilters && (
-                                    <div className="px-4 pb-3 flex flex-col gap-2 border-t border-[--border-color]">
+                                    <div className={`px-4 pb-3 flex flex-col gap-2 border-t ${clay ? 'border-[--glass-border]' : 'border-[--border-color]'}`}>
                                         <div className="flex items-center gap-3 pt-2">
                                             <span className="text-[11px] text-[--text-muted] w-16 shrink-0">Brightness</span>
                                             <input type="range" min={0} max={200} value={brightness} onChange={e => setBrightness(Number(e.target.value))} className="flex-1 accent-[--accent-color]" />
@@ -235,7 +239,8 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
                                         </div>
                                         <button
                                             onClick={resetFilters}
-                                            className="self-end mt-1 px-3 py-1 text-[11px] bg-overlay border border-[--border-color] text-[--text-muted] hover:text-[--text-color] transition-colors"
+                                            className={`self-end mt-1 px-3 py-1 text-[11px] text-[--text-muted] hover:text-[--text-color] transition-colors ${clay ? 'rounded-[8px] border border-[--glass-border] active:scale-[0.97]' : 'bg-overlay border border-[--border-color]'}`}
+                                            style={clay ? glassButton : undefined}
                                         >
                                             Reset
                                         </button>
@@ -250,13 +255,16 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
     }
 
     return (
-        <div ref={containerref} className="flex h-full w-full bg-[--bg-base] font-mono text-[--text-color] overflow-hidden">
-            <div className={`${viewingimage ? 'hidden' : ''} w-[200px] flex flex-col pt-4 border-r border-[--border-color] bg-surface shrink-0 anime-gradient-top`}>
-                <div className="px-4 mb-2 text-[11px] font-semibold text-[--text-muted] uppercase tracking-wide">Library</div>
+        <div ref={containerref} className={`flex h-full w-full text-[--text-color] overflow-hidden ${clay ? 'bg-[--bg-base] font-sans' : 'bg-[--bg-base] font-mono'}`}>
+            <div className={`${viewingimage ? 'hidden' : ''} ${clay ? 'w-[230px]' : 'w-[200px] border-r border-[--border-color]'} flex flex-col pt-4 shrink-0 ${clay ? '' : 'bg-surface anime-gradient-top'}`} style={clay ? glassSidebar : undefined}>
+                <div className={`px-4 mb-2 text-[11px] font-semibold text-[--text-muted] uppercase tracking-wide ${clay ? 'font-bold' : ''}`}>Library</div>
                 <div className="px-2">
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-accent/10 text-accent">
-                        <IoImagesOutline size={16} />
-                        <span className="text-[13px] font-medium">All Photos</span>
+                    <div
+                        className={`flex items-center gap-2 px-3 text-white ${clay ? 'py-2.5 rounded-[12px]' : 'py-1.5'}`}
+                        style={{ background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' }}
+                    >
+                        <IoImagesOutline size={clay ? 18 : 16} />
+                        <span className={`${clay ? 'text-[14px]' : 'text-[13px]'} font-medium`}>All Photos</span>
                         <span className="ml-auto text-[11px] opacity-70">{photos.length}</span>
                     </div>
                 </div>
@@ -270,9 +278,9 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="flex-1 flex flex-col bg-surface"
+                            className={`flex-1 flex flex-col ${clay ? 'bg-[--bg-base]' : 'bg-surface'}`}
                         >
-                            <div className="h-12 px-4 pl-20 flex items-center justify-between border-b border-[--border-color]">
+                            <div className={`h-12 px-4 pl-20 flex items-center justify-between border-b ${clay ? 'border-[--glass-border]' : 'border-[--border-color]'}`}>
                                 <button
                                     onClick={() => { setviewingimage(null); setZoom(1); setRotation(0); resetFilters(); setShowFilters(false); }}
                                     className="text-accent flex items-center gap-1 text-[13px] font-medium"
@@ -282,22 +290,23 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
                                 </button>
                                 <span className="text-[--text-muted] text-[13px]">{viewingimage.title}</span>
                                 <div className="flex items-center gap-1">
-                                    <button onClick={() => setZoom(z => Math.max(0.25, z - 0.25))} className="p-1.5 hover:bg-overlay text-[--text-muted] hover:text-[--text-color] transition-colors" title="Zoom Out"><IoRemoveOutline size={16} /></button>
+                                    <button onClick={() => setZoom(z => Math.max(0.25, z - 0.25))} className={`p-1.5 text-[--text-muted] hover:text-[--text-color] transition-colors ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'}`} title="Zoom Out"><IoRemoveOutline size={16} /></button>
                                     <span className="text-xs text-[--text-muted] w-10 text-center">{Math.round(zoom * 100)}%</span>
-                                    <button onClick={() => setZoom(z => Math.min(4, z + 0.25))} className="p-1.5 hover:bg-overlay text-[--text-muted] hover:text-[--text-color] transition-colors" title="Zoom In"><IoAddOutline size={16} /></button>
-                                    <button onClick={() => setRotation(r => (r + 90) % 360)} className="p-1.5 hover:bg-overlay text-[--text-muted] hover:text-[--text-color] transition-colors" title="Rotate"><IoRefreshOutline size={16} /></button>
-                                    <button onClick={handleDownload} className="p-1.5 hover:bg-overlay text-[--text-muted] hover:text-[--text-color] transition-colors" title="Download"><IoDownloadOutline size={16} /></button>
-                                    <div className="w-px h-4 bg-[--border-color] mx-1" />
+                                    <button onClick={() => setZoom(z => Math.min(4, z + 0.25))} className={`p-1.5 text-[--text-muted] hover:text-[--text-color] transition-colors ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'}`} title="Zoom In"><IoAddOutline size={16} /></button>
+                                    <button onClick={() => setRotation(r => (r + 90) % 360)} className={`p-1.5 text-[--text-muted] hover:text-[--text-color] transition-colors ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'}`} title="Rotate"><IoRefreshOutline size={16} /></button>
+                                    <button onClick={handleDownload} className={`p-1.5 text-[--text-muted] hover:text-[--text-color] transition-colors ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'}`} title="Download"><IoDownloadOutline size={16} /></button>
+                                    <div className={`w-px h-4 mx-1 ${clay ? 'bg-[--glass-border]' : 'bg-[--border-color]'}`} />
                                     <button
                                         onClick={() => setShowFilters(f => !f)}
-                                        className={`p-1.5 transition-colors ${showFilters ? 'bg-accent text-[--bg-base]' : 'hover:bg-overlay text-[--text-muted] hover:text-[--text-color]'}`}
+                                        className={`p-1.5 transition-colors ${clay ? 'rounded-[8px] active:scale-[0.97]' : ''} ${showFilters ? 'text-white' : (clay ? 'hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay') + ' text-[--text-muted] hover:text-[--text-color]'}`}
+                                        style={showFilters ? { background: 'var(--accent-color)' } : undefined}
                                         title="Filters"
                                     >
                                         <IoColorFilterOutline size={16} />
                                     </button>
                                 </div>
                             </div>
-                            <div className="flex-1 flex overflow-auto items-center justify-center p-8 bg-surface">
+                            <div className={`flex-1 flex overflow-auto items-center justify-center p-8 ${clay ? 'bg-[--bg-base]' : 'bg-surface'}`}>
                                 <Image
                                     src={viewingimage.src}
                                     alt={viewingimage.title}
@@ -311,7 +320,7 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
                                 />
                             </div>
                             {showFilters && (
-                                <div className="px-4 py-3 flex items-center gap-6 border-t border-[--border-color] bg-surface">
+                                <div className={`px-4 py-3 flex items-center gap-6 border-t ${clay ? 'border-[--glass-border]' : 'border-[--border-color] bg-surface'}`}>
                                     <div className="flex items-center gap-2 flex-1">
                                         <span className="text-[11px] text-[--text-muted] w-16 shrink-0">Brightness</span>
                                         <input type="range" min={0} max={200} value={brightness} onChange={e => setBrightness(Number(e.target.value))} className="flex-1 accent-[--accent-color]" />
@@ -329,7 +338,8 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
                                     </div>
                                     <button
                                         onClick={resetFilters}
-                                        className="px-3 py-1 text-[11px] bg-overlay border border-[--border-color] text-[--text-muted] hover:text-[--text-color] transition-colors shrink-0"
+                                        className={`px-3 py-1 text-[11px] text-[--text-muted] hover:text-[--text-color] transition-colors shrink-0 ${clay ? 'rounded-[8px] border border-[--glass-border] active:scale-[0.97]' : 'bg-overlay border border-[--border-color]'}`}
+                                        style={clay ? glassButton : undefined}
                                     >
                                         Reset
                                     </button>
@@ -344,7 +354,7 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
                             exit={{ opacity: 0 }}
                             className="flex-1 flex flex-col"
                         >
-                            <div className="h-[50px] flex items-center justify-between px-4 border-b border-[--border-color] bg-surface">
+                            <div className={`h-[50px] flex items-center justify-between px-4 border-b ${clay ? 'border-[--glass-border]' : 'border-[--border-color] bg-surface'}`}>
                                 <span className="font-semibold">All Photos</span>
                             </div>
                             <div className="flex-1 overflow-y-auto p-4">
@@ -359,7 +369,7 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
                                         {photos.map((photo) => (
                                             <div
                                                 key={photo.id}
-                                                className="aspect-square relative overflow-hidden cursor-pointer group"
+                                                className={`aspect-square relative overflow-hidden cursor-pointer group ${clay ? 'rounded-[12px]' : ''}`}
                                                 onClick={() => handlePhotoClick(photo)}
                                             >
                                                 <Image
@@ -369,7 +379,7 @@ export default function Photos({ singleview, src, title, windowId }: photosprops
                                                     className="object-cover group-hover:scale-105 transition-transform"
                                                     sizes="(max-width: 768px) 33vw, 20vw"
                                                 />
-                                                <div className="absolute inset-0 bg-transparent group-hover:bg-overlay transition-colors" />
+                                                <div className={`absolute inset-0 bg-transparent transition-colors ${clay ? 'group-hover:bg-[--bg-glass-hover]' : 'group-hover:bg-overlay'}`} />
                                             </div>
                                         ))}
                                     </div>

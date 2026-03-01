@@ -1,6 +1,7 @@
 'use client';
 
 import React, { Component, ReactNode } from 'react';
+import { glassCard } from './hooks/useClayStyles';
 
 interface Props {
     children: ReactNode
@@ -32,11 +33,23 @@ class AppErrorBoundary extends Component<Props, State> {
         this.setState({ hasError: false, error: null });
     };
 
+    private get isClay(): boolean {
+        if (typeof document === 'undefined') return false;
+        return document.documentElement.classList.contains('clay');
+    }
+
     render() {
         if (this.state.hasError) {
+            const clay = this.isClay;
             return (
-                <div className="flex flex-col items-center justify-center h-full bg-surface p-8">
-                    <div className="w-20 h-20 mb-6 bg-pastel-red/10 flex items-center justify-center">
+                <div className={`flex flex-col items-center justify-center h-full p-8 ${clay ? 'bg-[--bg-base]' : 'bg-surface'}`}>
+                    <div
+                        className={`w-20 h-20 mb-6 flex items-center justify-center ${clay ? 'rounded-[16px]' : ''}`}
+                        style={clay ? {
+                            background: 'var(--bg-glass-hover)',
+                            boxShadow: 'var(--shadow-sm)',
+                        } : undefined}
+                    >
                         <span className="text-4xl">💥</span>
                     </div>
 
@@ -48,7 +61,10 @@ class AppErrorBoundary extends Component<Props, State> {
                         The application encountered an unexpected error and had to stop.
                     </p>
 
-                    <div className="w-full max-w-sm p-3 bg-overlay mb-6 overflow-auto max-h-32">
+                    <div
+                        className={`w-full max-w-sm p-3 mb-6 overflow-auto max-h-32 ${clay ? 'rounded-[12px]' : 'bg-overlay'}`}
+                        style={clay ? glassCard : undefined}
+                    >
                         <code className="text-xs text-pastel-red break-all">
                             {this.state.error?.message || 'Unknown error'}
                         </code>
@@ -57,7 +73,11 @@ class AppErrorBoundary extends Component<Props, State> {
                     <div className="flex gap-3">
                         <button
                             onClick={this.handleRestart}
-                            className="px-4 py-2 bg-accent text-[--bg-base] text-[13px] font-medium hover:bg-accent/80 transition-colors"
+                            className={`px-5 py-2 text-[13px] font-medium text-white transition-all ${clay
+                                ? 'rounded-[12px] hover:opacity-90 active:scale-[0.97]'
+                                : 'bg-accent text-[--bg-base] hover:opacity-80'
+                            }`}
+                            style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                         >
                             Try Again
                         </button>

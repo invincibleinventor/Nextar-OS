@@ -1,12 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { JetBrains_Mono } from 'next/font/google';
 import './globals.css';
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
-  variable: '--font-mono',
-  display: 'swap',
-});
 import { WindowProvider } from '@/components/WindowContext';
 import { ThemeProvider } from '@/components/ThemeContext';
 import { DeviceProvider } from '@/components/DeviceContext';
@@ -102,15 +95,15 @@ import Script from 'next/script';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html className={`bg-black ${jetbrainsMono.variable}`} lang="en" suppressHydrationWarning>
+    <html className="bg-black" lang="en" suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('theme');if(t){document.documentElement.classList.add(t)}else{document.documentElement.classList.add('dark')}}catch(e){document.documentElement.classList.add('dark')}})()`,
+            __html: `(function(){try{var t=localStorage.getItem('theme');if(t){document.documentElement.classList.add(t)}else{document.documentElement.classList.add('dark')}var s=localStorage.getItem('nextaros-ui-style');if(s==='classic'){/* no clay */}else{document.documentElement.classList.add('clay')}}catch(e){document.documentElement.classList.add('dark');document.documentElement.classList.add('clay')}})()`,
           }}
         />
       </head>
-      <body className="font-mono w-screen h-screen overflow-hidden bg-black antialiased" suppressHydrationWarning>
+      <body className="w-screen h-screen overflow-hidden bg-black antialiased" suppressHydrationWarning>
         <ThemeProvider>
           <Script
             id="service-worker"
@@ -118,8 +111,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             dangerouslySetInnerHTML={{
               __html: `
                 if ('serviceWorker' in navigator) {
-                  // UNREGISTER coi-serviceworker (it breaks CheerpX BYOB streams)
-                  // Next.js headers in next.config.ts already handle COOP/COEP
                   navigator.serviceWorker.getRegistrations().then(function(registrations) {
                     for(let registration of registrations) {
                       if (registration.active && registration.active.scriptURL.includes('coi-serviceworker')) {
@@ -129,7 +120,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     }
                   });
 
-                  // Only register our custom caching SW in production
                   if ('${process.env.NODE_ENV}' !== 'development') {
                     navigator.serviceWorker.register('/sw.js').catch(function() {});
                   }

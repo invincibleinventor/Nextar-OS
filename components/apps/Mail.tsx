@@ -12,6 +12,8 @@ import { useWindows } from '../WindowContext';
 import { useProjects } from '../ProjectContext';
 import { useNotifications } from '../NotificationContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useIsClay } from '../hooks/useIsClay';
+import { glassSidebar, glassCard, glassButton, glassInput, clayClasses } from '../hooks/useClayStyles';
 
 interface GmailMessage {
     id: string;
@@ -97,6 +99,7 @@ function extractSenderName(from: string): string {
 export default function Mail({ windowId, ...props }: any) {
     const [selectedFolder, setSelectedFolder] = useState('inbox');
     const { ismobile } = useDevice();
+    const clay = useIsClay();
     const { activewindow } = useWindows();
     const { currentFiles } = useProjects();
     const { addToast } = useNotifications();
@@ -430,13 +433,14 @@ export default function Mail({ windowId, ...props }: any) {
 
     const SignInPrompt = () => (
         <div className="flex-1 flex flex-col items-center justify-center text-[--text-muted] gap-3 p-8">
-            <IoMailOpenOutline size={40} className="opacity-30" />
-            <p className="text-xs">Sign in with Google to access Gmail</p>
+            <IoMailOpenOutline size={48} className={clay ? 'text-[--text-muted] mb-2' : 'opacity-30'} />
+            <p className={`${clay ? 'text-[13px]' : 'text-xs'} text-[--text-muted]`}>Sign in with Google to access Gmail</p>
             <button
                 onClick={handleGoogleLogin}
-                className="flex items-center gap-2 bg-accent text-[--bg-base] px-4 py-2 text-xs font-medium hover:opacity-90"
+                className={`flex items-center gap-2 px-5 py-2.5 text-[13px] font-medium text-white hover:opacity-90 transition-all ${clay ? 'rounded-[12px] active:scale-[0.97]' : ''}`}
+                style={{ background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' }}
             >
-                <FaGoogle size={11} /> Sign in with Google
+                <FaGoogle size={12} /> Sign in with Google
             </button>
         </div>
     );
@@ -449,41 +453,55 @@ export default function Mail({ windowId, ...props }: any) {
                 </div>
             ) : messages.length === 0 ? (
                 <div className="flex-1 flex flex-col items-center justify-center text-[--text-muted] py-12">
-                    <IoMailOpenOutline size={32} className="opacity-30 mb-2" />
-                    <span className="text-xs">No messages</span>
+                    <IoMailOpenOutline size={48} className={clay ? 'text-[--text-muted] mb-4' : 'opacity-30 mb-2'} />
+                    <span className={`${clay ? 'text-[13px]' : 'text-xs'} text-[--text-muted]`}>No messages</span>
                 </div>
             ) : (
-                messages.map(msg => (
-                    <div
-                        key={msg.id}
-                        onClick={() => openMessage(msg)}
-                        className={`flex items-start gap-2.5 px-3 py-2.5 border-b border-[--border-color] cursor-pointer hover:bg-overlay transition-colors ${
-                            selectedMessage?.id === msg.id ? 'bg-overlay' : ''
-                        }`}
-                    >
-                        <button
-                            onClick={(e) => { e.stopPropagation(); toggleStar(msg.id); }}
-                            className="mt-0.5 shrink-0"
-                        >
-                            {msg.isStarred
-                                ? <IoStar size={13} className="text-pastel-yellow" />
-                                : <IoStarOutline size={13} className="text-[--text-muted] opacity-40 hover:opacity-100" />
-                            }
-                        </button>
-                        <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between gap-2">
-                                <span className={`text-[12px] truncate ${msg.isRead ? 'text-[--text-muted]' : 'text-[--text-color] font-semibold'}`}>
-                                    {extractSenderName(msg.from)}
-                                </span>
-                                <span className="text-[10px] text-[--text-muted] shrink-0">{formatDate(msg.date)}</span>
+                <div className={clay ? 'px-1 py-1' : ''}>
+                    {messages.map(msg => {
+                        const isSelected = selectedMessage?.id === msg.id;
+                        return (
+                            <div
+                                key={msg.id}
+                                onClick={() => openMessage(msg)}
+                                className={`flex items-start gap-2.5 px-3 py-2.5 cursor-pointer transition-all ${
+                                    clay
+                                        ? `rounded-[12px] mx-1 my-0.5 active:scale-[0.98] ${isSelected ? 'text-white' : 'hover:bg-[--bg-glass-hover] text-[--text-color]'}`
+                                        : `border-b border-[--border-color] hover:bg-overlay ${isSelected ? 'bg-overlay' : ''}`
+                                }`}
+                                style={clay && isSelected ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
+                            >
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); toggleStar(msg.id); }}
+                                    className="mt-0.5 shrink-0"
+                                >
+                                    {msg.isStarred
+                                        ? <IoStar size={13} className="text-pastel-yellow" />
+                                        : <IoStarOutline size={13} className={`${clay && isSelected ? 'text-white/50 hover:text-white' : 'text-[--text-muted] opacity-40 hover:opacity-100'}`} />
+                                    }
+                                </button>
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center justify-between gap-2">
+                                        <span className={`text-[12px] truncate ${
+                                            clay && isSelected ? 'font-semibold' :
+                                            msg.isRead ? 'text-[--text-muted]' : 'text-[--text-color] font-semibold'
+                                        }`}>
+                                            {extractSenderName(msg.from)}
+                                        </span>
+                                        <span className={`text-[10px] shrink-0 ${clay && isSelected ? 'text-white/70' : 'text-[--text-muted]'}`}>{formatDate(msg.date)}</span>
+                                    </div>
+                                    <div className={`text-[11px] truncate ${
+                                        clay && isSelected ? 'text-white/90 font-medium' :
+                                        msg.isRead ? 'text-[--text-muted]' : 'text-[--text-color] font-medium'
+                                    }`}>
+                                        {msg.subject}
+                                    </div>
+                                    <div className={`text-[10px] truncate mt-0.5 ${clay && isSelected ? 'text-white/60' : 'text-[--text-muted]'}`}>{msg.snippet}</div>
+                                </div>
                             </div>
-                            <div className={`text-[11px] truncate ${msg.isRead ? 'text-[--text-muted]' : 'text-[--text-color] font-medium'}`}>
-                                {msg.subject}
-                            </div>
-                            <div className="text-[10px] text-[--text-muted] truncate mt-0.5">{msg.snippet}</div>
-                        </div>
-                    </div>
-                ))
+                        );
+                    })}
+                </div>
             )}
         </div>
     );
@@ -491,28 +509,29 @@ export default function Mail({ windowId, ...props }: any) {
     const MessageDetail = () => {
         if (!selectedMessage) return null;
         return (
-            <div className="flex-1 flex flex-col overflow-hidden">
-                <div className="flex items-center gap-1 px-3 py-2 border-b border-[--border-color] bg-surface shrink-0">
+            <div className={`flex-1 flex flex-col overflow-hidden ${clay ? 'bg-[--bg-base]' : ''}`}>
+                <div className={`flex items-center gap-1 px-3 py-2 border-b shrink-0 ${clay ? 'border-[--glass-border] bg-transparent' : 'border-[--border-color] bg-surface'}`}>
                     {!ismobile && (
-                        <button onClick={() => setSelectedMessage(null)} className="p-1 hover:bg-overlay text-[--text-muted]">
+                        <button onClick={() => setSelectedMessage(null)} className={`p-1.5 text-[--text-muted] transition-colors ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'}`}>
                             <IoChevronBack size={14} />
                         </button>
                     )}
                     <div className="flex-1" />
-                    <button onClick={() => archiveMessage(selectedMessage.id)} className="p-1 hover:bg-overlay text-[--text-muted]" title="Archive">
+                    <button onClick={() => archiveMessage(selectedMessage.id)} className={`p-1.5 text-[--text-muted] transition-colors ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'}`} title="Archive">
                         <IoArchiveOutline size={14} />
                     </button>
-                    <button onClick={() => trashMessage(selectedMessage.id)} className="p-1 hover:bg-overlay text-pastel-red" title="Delete">
+                    <button onClick={() => trashMessage(selectedMessage.id)} className={`p-1.5 text-pastel-red transition-colors ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'}`} title="Delete">
                         <IoTrashOutline size={14} />
                     </button>
-                    <button onClick={() => startCompose(selectedMessage)} className="p-1 hover:bg-overlay text-[--text-muted]" title="Reply">
+                    <button onClick={() => startCompose(selectedMessage)} className={`p-1.5 text-[--text-muted] transition-colors ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'}`} title="Reply">
                         <IoReturnUpBackOutline size={14} />
                     </button>
                 </div>
                 <div className="flex-1 overflow-y-auto p-4">
                     <h2 className="text-lg font-semibold text-[--text-color] mb-3">{selectedMessage.subject}</h2>
                     <div className="flex items-center gap-2 mb-4">
-                        <div className="w-8 h-8 bg-overlay flex items-center justify-center text-xs font-bold text-[--text-muted]">
+                        <div className={`w-8 h-8 flex items-center justify-center text-xs font-bold text-white ${clay ? 'rounded-[8px]' : ''}`}
+                            style={clay ? { background: 'var(--accent-gradient)' } : { background: 'var(--bg-overlay)' }}>
                             {extractSenderName(selectedMessage.from).charAt(0).toUpperCase()}
                         </div>
                         <div>
@@ -531,15 +550,16 @@ export default function Mail({ windowId, ...props }: any) {
     };
 
     const ComposePanel = () => (
-        <div className={`${ismobile ? 'flex-1 flex flex-col' : 'absolute bottom-0 right-4 w-96 bg-surface border border-[--border-color] shadow-pastel-lg z-50 flex flex-col'}`} style={ismobile ? {} : { height: 400 }}>
-            <div className="flex items-center justify-between px-3 py-2 bg-overlay border-b border-[--border-color] shrink-0">
+        <div className={`${ismobile ? 'flex-1 flex flex-col' : `absolute bottom-0 right-4 w-96 z-50 flex flex-col ${clay ? 'rounded-t-[16px]' : 'bg-surface border border-[--border-color] shadow-pastel-lg'}`}`}
+            style={ismobile ? {} : clay ? { height: 400, ...glassCard, borderRadius: '16px 16px 0 0', boxShadow: 'var(--shadow-lg)' } : { height: 400 }}>
+            <div className={`flex items-center justify-between px-3 py-2 border-b shrink-0 ${clay ? 'border-[--glass-border] bg-transparent' : 'bg-overlay border-[--border-color]'}`}>
                 <span className="text-[12px] font-medium text-[--text-color]">New Message</span>
-                <button onClick={() => { setComposing(false); if (ismobile) setmobileview('list'); }} className="p-1 hover:bg-[--border-color]">
+                <button onClick={() => { setComposing(false); if (ismobile) setmobileview('list'); }} className={`p-1 transition-colors ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover]' : 'hover:bg-[--border-color]'}`}>
                     <IoCloseOutline size={14} className="text-[--text-muted]" />
                 </button>
             </div>
             <div className="flex-1 flex flex-col overflow-hidden">
-                <div className="px-3 py-1.5 border-b border-[--border-color]">
+                <div className={`px-3 py-1.5 border-b ${clay ? 'border-[--text-muted]/10' : 'border-[--border-color]'}`}>
                     <input
                         type="email"
                         value={compose.to}
@@ -548,7 +568,7 @@ export default function Mail({ windowId, ...props }: any) {
                         className="w-full bg-transparent text-[12px] text-[--text-color] outline-none placeholder:text-[--text-muted]"
                     />
                 </div>
-                <div className="px-3 py-1.5 border-b border-[--border-color]">
+                <div className={`px-3 py-1.5 border-b ${clay ? 'border-[--text-muted]/10' : 'border-[--border-color]'}`}>
                     <input
                         type="text"
                         value={compose.subject}
@@ -563,28 +583,35 @@ export default function Mail({ windowId, ...props }: any) {
                     placeholder="Compose your message..."
                     className="flex-1 px-3 py-2 bg-transparent text-[12px] text-[--text-color] outline-none resize-none placeholder:text-[--text-muted]"
                 />
-                <div className="flex items-center justify-between px-3 py-2 border-t border-[--border-color] shrink-0">
+                <div className={`flex items-center justify-between px-3 py-2 border-t shrink-0 ${clay ? 'border-[--glass-border]' : 'border-[--border-color]'}`}>
                     <div className="flex items-center gap-2">
                         <button
                             onClick={handleSend}
                             disabled={sending || !compose.to.trim()}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-accent text-[--bg-base] text-[11px] font-medium hover:opacity-90 disabled:opacity-50"
+                            className={`flex items-center gap-1.5 px-4 py-1.5 text-white text-[11px] font-medium hover:opacity-90 disabled:opacity-50 transition-all ${clay ? 'rounded-[12px] active:scale-[0.97]' : ''}`}
+                            style={{ background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' }}
                         >
                             {sending ? <FaSpinner className="animate-spin" size={10} /> : <IoSendOutline size={12} />}
                             Send
                         </button>
                         <button
                             onClick={() => setCompose(p => ({ ...p, attachProjectFiles: !p.attachProjectFiles }))}
-                            className={`flex items-center gap-1 px-2 py-1.5 text-[10px] border border-[--border-color] ${
-                                compose.attachProjectFiles ? 'bg-accent text-[--bg-base] border-accent' : 'text-[--text-muted] hover:bg-overlay'
+                            className={`flex items-center gap-1 px-2 py-1.5 text-[10px] transition-all ${clay ? 'rounded-[12px]' : ''} ${
+                                compose.attachProjectFiles
+                                    ? 'text-white'
+                                    : `text-[--text-muted] ${clay ? 'hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`
                             }`}
+                            style={compose.attachProjectFiles
+                                ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' }
+                                : clay ? glassButton : { border: '1px solid var(--border-color)' }
+                            }
                             title="Attach project files as zip"
                         >
                             <IoAttachOutline size={12} />
                             Project files
                         </button>
                     </div>
-                    <button onClick={() => { setComposing(false); if (ismobile) setmobileview('list'); }} className="text-[10px] text-[--text-muted] hover:text-pastel-red">
+                    <button onClick={() => { setComposing(false); if (ismobile) setmobileview('list'); }} className={`text-[10px] text-[--text-muted] hover:text-pastel-red transition-colors ${clay ? 'rounded-[8px] px-2 py-1 hover:bg-[--bg-glass-hover]' : ''}`}>
                         Discard
                     </button>
                 </div>
@@ -594,28 +621,33 @@ export default function Mail({ windowId, ...props }: any) {
 
     if (ismobile) {
         return (
-            <div className="flex flex-col h-full w-full bg-[--bg-base] text-[--text-color] font-mono overflow-hidden">
+            <div className={`flex flex-col h-full w-full ${clay ? 'bg-[--bg-base]' : 'bg-[--bg-base] font-mono'} text-[--text-color] overflow-hidden`}>
                 {!accessToken ? (
                     <SignInPrompt />
                 ) : (
                     <AnimatePresence mode="popLayout">
                         {mobileview === 'mailboxes' && (
                             <motion.div key="mailboxes" initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -20, opacity: 0 }} className="flex-1 flex flex-col">
-                                <div className="h-14 flex items-center px-4 border-b border-[--border-color]">
-                                    <span className="text-[20px] font-bold">Mailboxes</span>
+                                <div className={`h-14 flex items-center px-4 border-b ${clay ? 'border-[--glass-border]' : 'border-[--border-color]'}`}>
+                                    <span className="text-[20px] font-bold text-[--text-color]">Mailboxes</span>
                                 </div>
                                 <div className="flex-1 overflow-y-auto">
                                     {mailboxItems.map(item => (
                                         <button key={item.id} onClick={() => { setSelectedFolder(item.id); setmobileview('list'); }}
-                                            className="w-full flex items-center gap-3 px-4 py-3 border-b border-[--border-color] active:bg-overlay">
+                                            className={`w-full flex items-center gap-3 px-4 py-3 border-b ${clay ? 'border-[--glass-border] active:bg-[--bg-glass-hover]' : 'border-[--border-color] active:bg-overlay'}`}>
                                             <item.icon size={18} className="text-accent" />
-                                            <span className="flex-1 text-left text-[14px]">{item.label}</span>
-                                            {item.count > 0 && <span className="text-[12px] bg-accent text-[--bg-base] px-1.5 min-w-[18px] text-center">{item.count}</span>}
+                                            <span className="flex-1 text-left text-[14px] text-[--text-color]">{item.label}</span>
+                                            {item.count > 0 && (
+                                                <span className={`text-[12px] text-white px-1.5 min-w-[18px] text-center ${clay ? 'rounded-full' : ''}`}
+                                                    style={{ background: 'var(--accent-gradient)' }}>{item.count}</span>
+                                            )}
                                         </button>
                                     ))}
                                 </div>
-                                <div className="p-3 border-t border-[--border-color]">
-                                    <button onClick={() => startCompose()} className="w-full flex items-center justify-center gap-2 py-2.5 bg-accent text-[--bg-base] text-[14px] font-medium">
+                                <div className={`p-3 border-t ${clay ? 'border-[--glass-border]' : 'border-[--border-color]'}`}>
+                                    <button onClick={() => startCompose()}
+                                        className={`w-full flex items-center justify-center gap-2 py-2.5 text-white text-[14px] font-medium ${clay ? 'rounded-[12px] active:scale-[0.97]' : ''}`}
+                                        style={{ background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' }}>
                                         <IoPencilOutline size={16} /> Compose
                                     </button>
                                 </div>
@@ -623,11 +655,11 @@ export default function Mail({ windowId, ...props }: any) {
                         )}
                         {mobileview === 'list' && (
                             <motion.div key="list" initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 20, opacity: 0 }} className="flex-1 flex flex-col">
-                                <div className="h-14 flex items-center px-4 border-b border-[--border-color]">
+                                <div className={`h-14 flex items-center px-4 border-b ${clay ? 'border-[--glass-border]' : 'border-[--border-color]'}`}>
                                     <button onClick={() => setmobileview('mailboxes')} className="text-accent flex items-center gap-1 mr-4">
                                         <IoChevronBack size={20} />
                                     </button>
-                                    <span className="font-semibold capitalize flex-1">{selectedFolder}</span>
+                                    <span className="font-semibold capitalize flex-1 text-[--text-color]">{selectedFolder}</span>
                                     <button onClick={() => fetchMessages(selectedFolder)} className="p-1 text-[--text-muted]">
                                         <IoRefreshOutline size={18} />
                                     </button>
@@ -637,11 +669,11 @@ export default function Mail({ windowId, ...props }: any) {
                         )}
                         {mobileview === 'detail' && (
                             <motion.div key="detail" initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 20, opacity: 0 }} className="flex-1 flex flex-col">
-                                <div className="h-14 flex items-center px-4 border-b border-[--border-color]">
+                                <div className={`h-14 flex items-center px-4 border-b ${clay ? 'border-[--glass-border]' : 'border-[--border-color]'}`}>
                                     <button onClick={() => { setmobileview('list'); setSelectedMessage(null); }} className="text-accent flex items-center gap-1 mr-4">
                                         <IoChevronBack size={20} />
                                     </button>
-                                    <span className="font-semibold truncate flex-1">{selectedMessage?.subject}</span>
+                                    <span className="font-semibold truncate flex-1 text-[--text-color]">{selectedMessage?.subject}</span>
                                 </div>
                                 <MessageDetail />
                             </motion.div>
@@ -658,36 +690,51 @@ export default function Mail({ windowId, ...props }: any) {
     }
 
     return (
-        <div className="flex h-full w-full bg-[--bg-base] font-mono text-[--text-color] overflow-hidden relative">
-            <div className="w-48 flex flex-col border-r border-[--border-color] bg-surface shrink-0 anime-gradient-top">
+        <div className={`flex h-full w-full ${clay ? 'bg-[--bg-base]' : 'bg-[--bg-base] font-mono'} text-[--text-color] overflow-hidden relative`}>
+            <div className={`${clay ? 'w-[230px]' : 'w-48'} flex flex-col shrink-0 ${clay ? '' : 'border-r border-[--border-color] bg-surface anime-gradient-top'}`}
+                style={clay ? glassSidebar : undefined}>
                 <div className="px-3 pt-3 pb-2">
-                    <span className="text-[11px] font-semibold text-[--text-muted] uppercase tracking-wide">Mailboxes</span>
+                    <span className="text-[11px] font-bold text-[--text-muted] uppercase tracking-wide">Mailboxes</span>
                 </div>
-                <div className="px-2 space-y-0.5 flex-1">
-                    {mailboxItems.map(item => (
-                        <button
-                            key={item.id}
-                            onClick={() => { setSelectedFolder(item.id); setSelectedMessage(null); }}
-                            className={`w-full flex items-center gap-2 px-2 py-1.5 text-left transition-colors ${
-                                selectedFolder === item.id ? 'bg-accent text-[--bg-base]' : 'hover:bg-overlay text-[--text-color]'
-                            }`}
-                        >
-                            <item.icon size={14} />
-                            <span className="flex-1 text-[12px] font-medium">{item.label}</span>
-                            {item.count > 0 && (
-                                <span className={`text-[10px] px-1 min-w-[16px] text-center ${
-                                    selectedFolder === item.id ? 'text-[--bg-base] opacity-70' : 'bg-accent text-[--bg-base]'
-                                }`}>{item.count}</span>
-                            )}
-                        </button>
-                    ))}
+                <div className={`px-2 flex-1 ${clay ? 'space-y-1' : 'space-y-0.5'}`}>
+                    {mailboxItems.map(item => {
+                        const active = selectedFolder === item.id;
+                        return (
+                            <button
+                                key={item.id}
+                                onClick={() => { setSelectedFolder(item.id); setSelectedMessage(null); }}
+                                className={`w-full flex items-center text-left transition-all ${
+                                    clay
+                                        ? `gap-3 px-3 py-2.5 rounded-[12px] active:scale-[0.98] ${active ? 'text-white' : 'text-[--text-color] hover:bg-[--bg-glass-hover]'}`
+                                        : `gap-2 px-2 py-1.5 ${active ? 'bg-accent text-[--bg-base]' : 'hover:bg-overlay text-[--text-color]'}`
+                                }`}
+                                style={clay && active ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
+                            >
+                                <div className={`flex items-center justify-center shrink-0 ${clay ? 'w-6 h-6 rounded-[7px]' : ''}`}
+                                    style={clay ? { backgroundColor: active ? 'rgba(255,255,255,0.25)' : 'var(--pastel-blue)' } : undefined}>
+                                    <item.icon size={clay ? 14 : 14} className={clay ? 'text-white' : ''} />
+                                </div>
+                                <span className={`flex-1 font-medium ${clay ? 'text-[14px]' : 'text-[12px]'}`}>{item.label}</span>
+                                {item.count > 0 && (
+                                    <span className={`text-[10px] px-1.5 min-w-[18px] text-center font-medium ${
+                                        active
+                                            ? 'text-white/70'
+                                            : clay ? 'text-white rounded-full' : 'text-[--bg-base]'
+                                    }`}
+                                        style={!active ? { background: 'var(--accent-gradient)' } : undefined}
+                                    >{item.count}</span>
+                                )}
+                            </button>
+                        );
+                    })}
                 </div>
-                <div className="p-2 border-t border-[--border-color]">
+                <div className={`p-2 border-t ${clay ? 'border-[--glass-border]' : 'border-[--border-color]'}`}>
                     <button
                         onClick={() => startCompose()}
-                        className="w-full flex items-center justify-center gap-1.5 py-1.5 bg-accent text-[--bg-base] text-[11px] font-medium hover:opacity-90"
+                        className={`flex items-center justify-center gap-1.5 py-2 text-white text-[13px] font-medium hover:opacity-90 transition-all ${clay ? 'w-full rounded-[12px] active:scale-[0.97]' : 'w-full'}`}
+                        style={{ background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' }}
                     >
-                        <IoPencilOutline size={12} /> Compose
+                        <IoPencilOutline size={14} /> Compose
                     </button>
                 </div>
             </div>
@@ -696,23 +743,24 @@ export default function Mail({ windowId, ...props }: any) {
                 <SignInPrompt />
             ) : (
                 <>
-                    <div className="w-72 flex flex-col border-r border-[--border-color] shrink-0">
-                        <div className="h-10 flex items-center justify-between px-3 border-b border-[--border-color] bg-surface shrink-0">
-                            <span className="font-semibold text-[12px] capitalize">{selectedFolder}</span>
-                            <button onClick={() => fetchMessages(selectedFolder)} className="p-1 hover:bg-overlay text-[--text-muted]">
+                    <div className={`w-72 flex flex-col shrink-0 ${clay ? '' : 'border-r border-[--border-color]'}`}
+                        style={clay ? { borderRight: '1px solid var(--glass-border)' } : undefined}>
+                        <div className={`h-10 flex items-center justify-between px-3 border-b shrink-0 ${clay ? 'border-[--glass-border] bg-transparent' : 'border-[--border-color] bg-surface'}`}>
+                            <span className={`font-semibold capitalize ${clay ? 'text-[13px] text-[--text-color]' : 'text-[12px]'}`}>{selectedFolder}</span>
+                            <button onClick={() => fetchMessages(selectedFolder)} className={`p-1.5 text-[--text-muted] transition-colors ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'}`}>
                                 {loading ? <FaSpinner className="animate-spin" size={11} /> : <IoRefreshOutline size={13} />}
                             </button>
                         </div>
                         <MessageList />
                     </div>
 
-                    <div className="flex-1 flex flex-col min-w-0">
+                    <div className={`flex-1 flex flex-col min-w-0 ${clay ? 'bg-[--bg-base]' : ''}`}>
                         {selectedMessage ? (
                             <MessageDetail />
                         ) : (
                             <div className="flex-1 flex flex-col items-center justify-center text-[--text-muted]">
-                                <IoMailOpenOutline size={32} className="opacity-20 mb-2" />
-                                <span className="text-xs opacity-50">Select a message to read</span>
+                                <IoMailOpenOutline size={48} className={clay ? 'text-[--text-muted] mb-4' : 'opacity-20 mb-2'} />
+                                <span className={`${clay ? 'text-[13px]' : 'text-xs'} text-[--text-muted]`}>Select a message to read</span>
                             </div>
                         )}
                     </div>

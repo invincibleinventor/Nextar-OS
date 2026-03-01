@@ -3,6 +3,8 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { IoCodeSlash, IoBook, IoRocket, IoSearch, IoChevronForward, IoChevronDown, IoClipboard, IoCheckmarkCircle, IoWarning, IoClose, IoDesktop, IoFileTrayFull, IoNotifications, IoSettings, IoPerson, IoColorPalette, IoPhonePortrait, IoApps } from 'react-icons/io5';
 import { useDevice } from '../DeviceContext';
 import { useWindows } from '../WindowContext';
+import { useIsClay } from '../hooks/useIsClay';
+import { glassSidebar, glassCard, glassInput } from '../hooks/useClayStyles';
 
 interface ApiItem {
     name: string;
@@ -168,26 +170,45 @@ const apicategories: ApiCategory[] = [
 
 const totalapis = apicategories.reduce((sum, cat) => sum + cat.apis.length, 0);
 
-function MethodBadge({ name }: { name: string }) {
+function MethodBadge({ name, clay }: { name: string; clay: boolean }) {
     const isAsync = name.includes('await') || name.includes('Promise');
     const isProperty = !name.includes('(');
     const label = isProperty ? 'PROP' : isAsync ? 'ASYNC' : 'METHOD';
-    const color = isProperty ? 'bg-accent/15 text-accent' : isAsync ? 'bg-pastel-yellow/15 text-pastel-yellow' : 'bg-pastel-green/15 text-pastel-green';
-    return <span className={`text-[9px] font-bold px-1.5 py-0.5 uppercase tracking-wider ${color}`}>{label}</span>;
+
+    if (clay) {
+        const colorStyle = isProperty
+            ? { background: 'color-mix(in srgb, var(--accent-color) 15%, transparent)', color: 'var(--accent-color)' }
+            : isAsync
+            ? { background: 'color-mix(in srgb, var(--pastel-yellow) 15%, transparent)', color: 'var(--pastel-yellow)' }
+            : { background: 'color-mix(in srgb, var(--pastel-green) 15%, transparent)', color: 'var(--pastel-green)' };
+        return <span className="text-[9px] font-bold px-1.5 py-0.5 uppercase tracking-wider rounded-[6px]" style={colorStyle}>{label}</span>;
+    }
+
+    const colorStyle = isProperty
+        ? { background: 'color-mix(in srgb, var(--accent-color) 15%, transparent)', color: 'var(--accent-color)' }
+        : isAsync
+        ? { background: 'color-mix(in srgb, var(--pastel-yellow) 15%, transparent)', color: 'var(--pastel-yellow)' }
+        : { background: 'color-mix(in srgb, var(--pastel-green) 15%, transparent)', color: 'var(--pastel-green)' };
+    return <span className="text-[9px] font-bold px-1.5 py-0.5 uppercase tracking-wider" style={colorStyle}>{label}</span>;
 }
 
-function CodeTabs({ examples, usage, copiedtext, onCopy }: { examples?: { lang: string; code: string }[]; usage: string; copiedtext: string | null; onCopy: (text: string) => void }) {
+function CodeTabs({ examples, usage, copiedtext, onCopy, clay }: { examples?: { lang: string; code: string }[]; usage: string; copiedtext: string | null; onCopy: (text: string) => void; clay: boolean }) {
     const tabs = examples && examples.length > 0 ? examples : [{ lang: 'JavaScript', code: usage }];
     const [activeTab, setActiveTab] = useState(0);
 
     return (
-        <div className="border border-[--border-color] overflow-hidden">
-            <div className="flex items-center bg-overlay border-b border-[--border-color]">
+        <div className={`overflow-hidden ${clay ? 'rounded-[12px]' : 'border border-[--border-color]'}`}
+            style={clay ? { border: '1px solid var(--glass-border)' } : undefined}>
+            <div className={`flex items-center ${clay ? 'border-b border-[--text-muted]/10' : 'bg-overlay border-b border-[--border-color]'}`}
+                style={clay ? { background: 'var(--bg-glass-active)' } : undefined}>
                 {tabs.map((tab, i) => (
                     <button
                         key={tab.lang}
                         onClick={() => setActiveTab(i)}
-                        className={`px-3 py-1.5 text-xs font-medium transition-colors ${activeTab === i ? 'text-[--text-color] border-b-2 border-accent bg-[--bg-base]' : 'text-[--text-muted] hover:text-[--text-color]'}`}
+                        className={`px-3 py-1.5 text-xs font-medium transition-colors ${clay ? 'rounded-t-[8px]' : ''} ${activeTab === i
+                            ? (clay ? 'text-[--text-color] border-b-2' : 'text-[--text-color] border-b-2 border-accent bg-[--bg-base]')
+                            : 'text-[--text-muted] hover:text-[--text-color]'}`}
+                        style={activeTab === i && clay ? { borderBottomColor: 'var(--accent-color)' } : undefined}
                     >
                         {tab.lang}
                     </button>
@@ -195,12 +216,15 @@ function CodeTabs({ examples, usage, copiedtext, onCopy }: { examples?: { lang: 
                 <div className="flex-1" />
                 <button
                     onClick={() => onCopy(tabs[activeTab].code)}
-                    className="px-2 py-1 mr-1 text-[--text-muted] hover:text-[--text-color] hover:bg-overlay transition-colors"
+                    className={`px-2 py-1 mr-1 text-[--text-muted] hover:text-[--text-color] transition-colors ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'}`}
                 >
                     {copiedtext === tabs[activeTab].code ? <IoCheckmarkCircle size={14} className="text-pastel-green" /> : <IoClipboard size={14} />}
                 </button>
             </div>
-            <pre className="p-4 text-[13px] overflow-x-auto select-text whitespace-pre-wrap font-mono bg-[--bg-base] text-[--text-color]">{tabs[activeTab].code}</pre>
+            <pre className={`p-4 text-[13px] overflow-x-auto select-text whitespace-pre-wrap font-mono text-[--text-color] ${clay ? '' : 'bg-[--bg-base]'}`}
+                style={clay ? { background: 'var(--bg-glass)' } : undefined}>
+                {tabs[activeTab].code}
+            </pre>
         </div>
     );
 }
@@ -208,6 +232,7 @@ function CodeTabs({ examples, usage, copiedtext, onCopy }: { examples?: { lang: 
 export default function ApiDocs({ windowId }: { windowId?: string }) {
     const { ismobile } = useDevice();
     const { activewindow } = useWindows();
+    const clay = useIsClay();
     const [search, setsearch] = useState('');
     const [showSearchDropdown, setShowSearchDropdown] = useState(false);
     const [expandedcat, setexpandedcat] = useState<string | null>('Window APIs');
@@ -325,9 +350,14 @@ export default function ApiDocs({ windowId }: { windowId?: string }) {
     }, [activeCats]);
 
     const sidebarContent = (
-        <div className={`${ismobile ? 'w-full' : 'w-56'} border-r border-[--border-color] bg-surface overflow-y-auto shrink-0 flex flex-col`}>
+        <div
+            className={`${ismobile ? 'w-full' : 'w-56'} overflow-y-auto shrink-0 flex flex-col ${clay ? '' : 'border-r border-[--border-color] bg-surface'}`}
+            style={clay ? glassSidebar : undefined}
+        >
             <div className="p-3">
-                <div className="relative mb-3">
+                {/* Search */}
+                <div className={`relative mb-3 ${clay ? 'rounded-full' : ''}`}
+                    style={clay ? glassInput : undefined}>
                     <IoSearch className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[--text-muted]" size={13} />
                     <input
                         ref={searchInputRef}
@@ -337,20 +367,22 @@ export default function ApiDocs({ windowId }: { windowId?: string }) {
                         onFocus={() => { if (search) setShowSearchDropdown(true); }}
                         onBlur={() => setTimeout(() => setShowSearchDropdown(false), 200)}
                         placeholder={ismobile ? 'Search APIs...' : '\u2318K to search...'}
-                        className="w-full bg-overlay pl-8 pr-3 py-1.5 text-xs outline-none text-[--text-color] placeholder-[--text-muted]"
+                        className={`w-full pl-8 pr-3 py-1.5 text-xs outline-none text-[--text-color] placeholder-[--text-muted] ${clay ? 'bg-transparent' : 'bg-overlay'}`}
                     />
                     {search && (
-                        <button onClick={() => { setsearch(''); setShowSearchDropdown(false); }} className="absolute right-2 top-1/2 -translate-y-1/2 text-[--text-muted] hover:text-[--text-color]">
+                        <button onClick={() => { setsearch(''); setShowSearchDropdown(false); }}
+                            className={`absolute right-2 top-1/2 -translate-y-1/2 text-[--text-muted] hover:text-[--text-color] ${clay ? 'active:scale-[0.97]' : ''}`}>
                             <IoClose size={12} />
                         </button>
                     )}
 
                     {showSearchDropdown && searchResults.length > 0 && (
-                        <div className="absolute top-full left-0 right-0 mt-1 bg-surface border border-[--border-color] shadow-lg z-20 max-h-64 overflow-auto">
+                        <div className={`absolute top-full left-0 right-0 mt-1 z-20 max-h-64 overflow-auto ${clay ? 'rounded-[12px]' : 'bg-surface border border-[--border-color] shadow-lg'}`}
+                            style={clay ? { ...glassCard, boxShadow: 'var(--shadow-lg)' } : undefined}>
                             {searchResults.map((r, i) => (
                                 <button
                                     key={i}
-                                    className="w-full text-left px-3 py-2 hover:bg-overlay border-b border-[--border-color] last:border-0"
+                                    className={`w-full text-left px-3 py-2 transition-colors ${clay ? 'hover:bg-[--bg-glass-hover] border-b border-[--text-muted]/10 last:border-0' : 'hover:bg-overlay border-b border-[--border-color] last:border-0'}`}
                                     onMouseDown={() => {
                                         setselectedapi(r.api);
                                         setSelectedCat(r.cat);
@@ -359,7 +391,7 @@ export default function ApiDocs({ windowId }: { windowId?: string }) {
                                     }}
                                 >
                                     <div className="flex items-center gap-2">
-                                        <MethodBadge name={r.api.returns || ''} />
+                                        <MethodBadge name={r.api.returns || ''} clay={clay} />
                                         <code className="text-xs font-medium text-[--text-color]">{r.api.name}</code>
                                     </div>
                                     <div className="text-[10px] text-[--text-muted] mt-0.5 truncate">{r.cat} &middot; {r.api.desc}</div>
@@ -369,56 +401,88 @@ export default function ApiDocs({ windowId }: { windowId?: string }) {
                     )}
                 </div>
 
+                {/* All APIs button */}
                 <button
                     onClick={() => { setSelectedCat(null); setselectedapi(null); }}
-                    className={`w-full text-left px-3 py-2 text-xs font-medium mb-2 transition-colors ${!selectedCat ? 'bg-accent/10 text-accent' : 'text-[--text-muted] hover:bg-overlay'}`}
+                    className={`w-full text-left px-3 mb-2 transition-all ${clay ? 'py-2.5 rounded-[12px] active:scale-[0.98]' : 'py-2 text-xs font-medium'} ${
+                        !selectedCat
+                            ? (clay ? 'text-white' : 'text-accent')
+                            : (clay ? 'text-[--text-color] hover:bg-[--bg-glass-hover]' : 'text-[--text-muted] hover:bg-overlay')
+                    }`}
+                    style={!selectedCat && clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' }
+                        : !selectedCat && !clay ? { background: 'color-mix(in srgb, var(--accent-color) 10%, transparent)' }
+                        : undefined}
                 >
-                    All APIs
-                    <span className="float-right text-[--text-muted]">{totalapis}</span>
+                    <span className={clay ? 'text-[14px] font-medium' : 'text-xs font-medium'}>All APIs</span>
+                    <span className={`float-right text-[11px] ${!selectedCat && clay ? 'text-white/70' : 'text-[--text-muted]'}`}>{totalapis}</span>
                 </button>
 
-                {apicategories.map(cat => (
-                    <div key={cat.name} className="mb-1">
-                        <button
-                            onClick={() => { setexpandedcat(expandedcat === cat.name ? null : cat.name); setSelectedCat(cat.name); setselectedapi(null); }}
-                            className={`w-full flex items-center gap-2 px-3 py-1.5 hover:bg-overlay transition-colors text-xs ${selectedCat === cat.name ? 'bg-accent/10 text-accent' : 'text-[--text-color]'}`}
-                        >
-                            <span className="text-[--text-muted]">{cat.icon}</span>
-                            <span className="font-medium flex-1 text-left">{cat.name}</span>
-                            <span className="text-[10px] text-[--text-muted]">{cat.apis.length}</span>
-                            {expandedcat === cat.name ? <IoChevronDown size={12} /> : <IoChevronForward size={12} />}
-                        </button>
-                        {expandedcat === cat.name && (
-                            <div className="ml-6 mt-0.5 space-y-0.5">
-                                {cat.apis.map(api => (
-                                    <button
-                                        key={api.name}
-                                        onClick={() => setselectedapi(api)}
-                                        className={`w-full text-left px-2 py-1 text-[11px] transition-colors ${selectedapi?.name === api.name ? 'bg-accent/10 text-accent' : 'text-[--text-muted] hover:bg-overlay'}`}
-                                    >
-                                        <code>{api.name}</code>
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                ))}
+                {/* Category list */}
+                {apicategories.map(cat => {
+                    const active = selectedCat === cat.name;
+                    return (
+                        <div key={cat.name} className="mb-1">
+                            <button
+                                onClick={() => { setexpandedcat(expandedcat === cat.name ? null : cat.name); setSelectedCat(cat.name); setselectedapi(null); }}
+                                className={`w-full flex items-center gap-3 px-3 transition-all text-xs ${clay ? 'py-2.5 rounded-[12px] active:scale-[0.98]' : 'py-1.5 gap-2'} ${
+                                    active
+                                        ? (clay ? 'text-white' : 'text-accent')
+                                        : (clay ? 'text-[--text-color] hover:bg-[--bg-glass-hover]' : 'text-[--text-color] hover:bg-overlay')
+                                }`}
+                                style={active && clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' }
+                                    : active && !clay ? { background: 'color-mix(in srgb, var(--accent-color) 10%, transparent)' }
+                                    : undefined}
+                            >
+                                <div className={`flex items-center justify-center shrink-0 ${clay ? 'w-6 h-6 rounded-[7px]' : ''}`}
+                                    style={clay ? { backgroundColor: active ? 'rgba(255,255,255,0.25)' : 'var(--bg-glass-active)' } : undefined}>
+                                    <span className={active && clay ? 'text-white' : 'text-[--text-muted]'}>{cat.icon}</span>
+                                </div>
+                                <span className={`flex-1 text-left ${clay ? 'text-[14px] font-medium' : 'font-medium'}`}>{cat.name}</span>
+                                <span className={`text-[10px] ${active && clay ? 'text-white/70' : 'text-[--text-muted]'}`}>{cat.apis.length}</span>
+                                {expandedcat === cat.name ? <IoChevronDown size={12} /> : <IoChevronForward size={12} />}
+                            </button>
+                            {expandedcat === cat.name && (
+                                <div className={`mt-0.5 space-y-0.5 ${clay ? 'ml-4 pl-2' : 'ml-6'}`}>
+                                    {cat.apis.map(api => {
+                                        const apiActive = selectedapi?.name === api.name;
+                                        return (
+                                            <button
+                                                key={api.name}
+                                                onClick={() => setselectedapi(api)}
+                                                className={`w-full text-left px-2 py-1.5 text-[11px] transition-all ${clay ? 'rounded-[12px] active:scale-[0.98]' : ''} ${
+                                                    apiActive
+                                                        ? (clay ? 'bg-[--bg-glass-active] text-[--text-color] font-medium' : 'text-accent')
+                                                        : (clay ? 'text-[--text-muted] hover:bg-[--bg-glass-hover]' : 'text-[--text-muted] hover:bg-overlay')
+                                                }`}
+                                                style={apiActive && clay ? { background: 'var(--bg-glass-active)', border: '1px solid var(--glass-border-subtle)' } : undefined}
+                                            >
+                                                <code>{api.name}</code>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                    );
+                })}
             </div>
         </div>
     );
 
     const mainContent = (
-        <div ref={contentRef} className="flex-1 overflow-y-auto p-4 md:p-6">
+        <div ref={contentRef} className={`flex-1 overflow-y-auto p-4 md:p-6 ${clay ? 'bg-[--bg-base]' : ''}`}>
             <div className="max-w-3xl mx-auto space-y-6">
                 {selectedapi ? (
                     <div className="space-y-5">
-                        <button onClick={() => setselectedapi(null)} className="text-accent text-xs hover:underline flex items-center gap-1">
+                        <button onClick={() => setselectedapi(null)}
+                            className={`text-xs flex items-center gap-1 transition-colors ${clay ? 'rounded-[12px] px-3 py-1.5 hover:bg-[--bg-glass-hover] active:scale-[0.97] text-[--text-color]' : 'text-accent hover:underline'}`}
+                            style={clay ? { color: 'var(--accent-color)' } : undefined}>
                             <IoChevronForward size={10} className="rotate-180" /> Back to overview
                         </button>
 
                         <div>
                             <div className="flex items-center gap-2 mb-2">
-                                <MethodBadge name={selectedapi.returns || ''} />
+                                <MethodBadge name={selectedapi.returns || ''} clay={clay} />
                                 {selectedCat && <span className="text-[10px] text-[--text-muted]">{selectedCat}</span>}
                             </div>
                             <h2 className="text-xl font-bold font-mono select-text text-[--text-color]">{selectedapi.name}</h2>
@@ -428,11 +492,13 @@ export default function ApiDocs({ windowId }: { windowId?: string }) {
                         {selectedapi.params && selectedapi.params.length > 0 && (
                             <div>
                                 <h3 className="text-xs font-semibold uppercase text-[--text-muted] tracking-wider mb-2">Parameters</h3>
-                                <div className="border border-[--border-color] divide-y divide-[--border-color]">
-                                    {selectedapi.params.map(p => (
-                                        <div key={p.name} className="flex items-start gap-3 px-4 py-2.5">
-                                            <code className="text-xs font-medium text-accent shrink-0">{p.name}</code>
-                                            <code className="text-[10px] text-[--text-muted] bg-overlay px-1.5 py-0.5 shrink-0">{p.type}</code>
+                                <div className={`${clay ? 'rounded-[16px] overflow-hidden' : 'border border-[--border-color] divide-y divide-[--border-color]'}`}
+                                    style={clay ? glassCard : undefined}>
+                                    {selectedapi.params.map((p, i) => (
+                                        <div key={p.name} className={`flex items-start gap-3 px-4 py-2.5 ${clay ? (i < (selectedapi.params?.length || 0) - 1 ? 'border-b border-[--text-muted]/10' : '') : ''}`}>
+                                            <code className="text-xs font-medium shrink-0" style={{ color: 'var(--accent-color)' }}>{p.name}</code>
+                                            <code className={`text-[10px] text-[--text-muted] px-1.5 py-0.5 shrink-0 ${clay ? 'rounded-[6px]' : ''}`}
+                                                style={clay ? { background: 'var(--bg-glass-active)' } : { background: 'var(--bg-overlay)' }}>{p.type}</code>
                                             <span className="text-xs text-[--text-muted]">{p.desc}</span>
                                         </div>
                                     ))}
@@ -443,21 +509,28 @@ export default function ApiDocs({ windowId }: { windowId?: string }) {
                         {selectedapi.returns && (
                             <div>
                                 <h3 className="text-xs font-semibold uppercase text-[--text-muted] tracking-wider mb-2">Returns</h3>
-                                <code className="text-[13px] bg-overlay px-2 py-1 select-text text-[--text-color]">{selectedapi.returns}</code>
+                                <code className={`text-[13px] px-2 py-1 select-text text-[--text-color] ${clay ? 'rounded-[8px]' : ''}`}
+                                    style={clay ? { background: 'var(--bg-glass-active)' } : { background: 'var(--bg-overlay)' }}>{selectedapi.returns}</code>
                             </div>
                         )}
 
                         <div>
                             <h3 className="text-xs font-semibold uppercase text-[--text-muted] tracking-wider mb-2">Example</h3>
-                            <CodeTabs examples={selectedapi.examples} usage={selectedapi.usage} copiedtext={copiedtext} onCopy={copytoClipboard} />
+                            <CodeTabs examples={selectedapi.examples} usage={selectedapi.usage} copiedtext={copiedtext} onCopy={copytoClipboard} clay={clay} />
                         </div>
                     </div>
                 ) : (
                     <>
-                        <div data-section-id="quickstart" className="bg-surface p-6 border border-[--border-color]">
+                        {/* Quick Start Card */}
+                        <div
+                            data-section-id="quickstart"
+                            className={`p-6 ${clay ? 'rounded-[16px]' : 'bg-surface border border-[--border-color]'}`}
+                            style={clay ? glassCard : undefined}
+                        >
                             <div className="flex items-center gap-3 mb-5">
-                                <div className="w-10 h-10 bg-accent flex items-center justify-center shrink-0">
-                                    <IoRocket className="text-[--bg-base]" size={20} />
+                                <div className={`w-10 h-10 flex items-center justify-center shrink-0 ${clay ? 'rounded-[12px]' : ''}`}
+                                    style={{ background: 'var(--accent-gradient)' }}>
+                                    <IoRocket className="text-white" size={20} />
                                 </div>
                                 <div>
                                     <h2 className="text-lg font-bold text-[--text-color]">Quick Start</h2>
@@ -472,7 +545,8 @@ export default function ApiDocs({ windowId }: { windowId?: string }) {
                                     { step: 3, title: 'Run your code', desc: 'Click the Run button to execute. Output appears in the terminal panel below.' },
                                 ].map(s => (
                                     <div key={s.step} className="flex items-start gap-3">
-                                        <div className="w-6 h-6 bg-accent flex items-center justify-center text-xs font-bold text-[--bg-base] shrink-0">{s.step}</div>
+                                        <div className={`w-6 h-6 flex items-center justify-center text-xs font-bold text-white shrink-0 ${clay ? 'rounded-[8px]' : ''}`}
+                                            style={{ background: 'var(--accent-gradient)' }}>{s.step}</div>
                                         <div>
                                             <div className="text-[13px] font-medium text-[--text-color]">{s.title}</div>
                                             <div className="text-xs text-[--text-muted]">{s.desc}</div>
@@ -491,13 +565,16 @@ export default function ApiDocs({ windowId }: { windowId?: string }) {
                                     usage=""
                                     copiedtext={copiedtext}
                                     onCopy={copytoClipboard}
+                                    clay={clay}
                                 />
                             </div>
                         </div>
 
-                        <div className="bg-pastel-yellow/10 border border-pastel-yellow/20 p-4">
+                        {/* Warning Banner */}
+                        <div className={`p-4 ${clay ? 'rounded-[12px]' : ''}`}
+                            style={clay ? glassCard : { background: 'color-mix(in srgb, var(--pastel-yellow) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--pastel-yellow) 20%, transparent)' }}>
                             <div className="flex items-start gap-3">
-                                <IoWarning className="text-pastel-yellow shrink-0 mt-0.5" size={18} />
+                                <IoWarning className={`shrink-0 mt-0.5 ${clay ? 'text-[--text-muted]' : 'text-pastel-yellow'}`} size={18} />
                                 <div>
                                     <h3 className="font-bold text-xs mb-1 text-[--text-color]">Bundling Required for Imports</h3>
                                     <p className="text-[11px] text-[--text-muted] leading-relaxed">
@@ -507,31 +584,37 @@ export default function ApiDocs({ windowId }: { windowId?: string }) {
                             </div>
                         </div>
 
+                        {/* API Categories */}
                         {activeCats.map(cat => (
                             <div key={cat.name} data-section-id={cat.name} className="space-y-3">
-                                <div className="flex items-center gap-3 sticky top-0 bg-[--bg-base] py-2 z-10">
-                                    <span className="text-accent">{cat.icon}</span>
+                                <div className={`flex items-center gap-3 sticky top-0 py-2 z-10 ${clay ? 'bg-[--bg-base]' : 'bg-[--bg-base]'}`}>
+                                    <span style={{ color: 'var(--accent-color)' }}>{cat.icon}</span>
                                     <h2 className="text-base font-bold text-[--text-color]">{cat.name}</h2>
-                                    <code className="text-[10px] text-[--text-muted] bg-overlay px-2 py-0.5">{cat.hook}</code>
+                                    <code className={`text-[10px] text-[--text-muted] px-2 py-0.5 ${clay ? 'rounded-[6px]' : ''}`}
+                                        style={clay ? { background: 'var(--bg-glass-active)' } : { background: 'var(--bg-overlay)' }}>{cat.hook}</code>
                                 </div>
 
                                 <div className="space-y-2">
                                     {cat.apis.map(api => {
                                         const isExpanded = expandedApis.has(api.name);
                                         return (
-                                            <div key={api.name} className="border border-[--border-color] bg-surface overflow-hidden">
+                                            <div
+                                                key={api.name}
+                                                className={`overflow-hidden ${clay ? 'rounded-[16px]' : 'border border-[--border-color] bg-surface'}`}
+                                                style={clay ? glassCard : undefined}
+                                            >
                                                 <button
                                                     onClick={() => toggleApiExpand(api.name)}
-                                                    className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-overlay transition-colors"
+                                                    className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${clay ? 'hover:bg-[--bg-glass-hover] rounded-[16px] active:scale-[0.98]' : 'hover:bg-overlay'}`}
                                                 >
-                                                    <MethodBadge name={api.returns || ''} />
+                                                    <MethodBadge name={api.returns || ''} clay={clay} />
                                                     <code className="text-[13px] font-medium text-[--text-color] flex-1">{api.name}</code>
                                                     {api.returns && <code className="text-[10px] text-[--text-muted] hidden sm:block">{api.returns}</code>}
                                                     {isExpanded ? <IoChevronDown size={14} className="text-[--text-muted]" /> : <IoChevronForward size={14} className="text-[--text-muted]" />}
                                                 </button>
 
                                                 {isExpanded && (
-                                                    <div className="px-4 pb-4 pt-1 space-y-3 border-t border-[--border-color]">
+                                                    <div className={`px-4 pb-4 pt-1 space-y-3 ${clay ? 'border-t border-[--text-muted]/10' : 'border-t border-[--border-color]'}`}>
                                                         <p className="text-xs text-[--text-muted] leading-relaxed">{api.desc}</p>
 
                                                         {api.params && api.params.length > 0 && (
@@ -539,15 +622,16 @@ export default function ApiDocs({ windowId }: { windowId?: string }) {
                                                                 <span className="text-[10px] font-semibold uppercase text-[--text-muted] tracking-wider">Parameters</span>
                                                                 {api.params.map(p => (
                                                                     <div key={p.name} className="flex items-center gap-2 text-xs pl-2">
-                                                                        <code className="text-accent">{p.name}</code>
-                                                                        <code className="text-[10px] text-[--text-muted] bg-overlay px-1">{p.type}</code>
+                                                                        <code style={{ color: 'var(--accent-color)' }}>{p.name}</code>
+                                                                        <code className={`text-[10px] text-[--text-muted] px-1 ${clay ? 'rounded-[4px]' : ''}`}
+                                                                            style={clay ? { background: 'var(--bg-glass-active)' } : { background: 'var(--bg-overlay)' }}>{p.type}</code>
                                                                         <span className="text-[--text-muted]">&mdash; {p.desc}</span>
                                                                     </div>
                                                                 ))}
                                                             </div>
                                                         )}
 
-                                                        <CodeTabs examples={api.examples} usage={api.usage} copiedtext={copiedtext} onCopy={copytoClipboard} />
+                                                        <CodeTabs examples={api.examples} usage={api.usage} copiedtext={copiedtext} onCopy={copytoClipboard} clay={clay} />
                                                     </div>
                                                 )}
                                             </div>
@@ -557,9 +641,14 @@ export default function ApiDocs({ windowId }: { windowId?: string }) {
                             </div>
                         ))}
 
-                        <div data-section-id="schema" className="bg-surface p-6 border border-[--border-color]">
+                        {/* Schema Card */}
+                        <div
+                            data-section-id="schema"
+                            className={`p-6 ${clay ? 'rounded-[16px]' : 'bg-surface border border-[--border-color]'}`}
+                            style={clay ? glassCard : undefined}
+                        >
                             <div className="flex items-center gap-3 mb-4">
-                                <IoCodeSlash className="text-accent" size={20} />
+                                <IoCodeSlash size={20} style={{ color: 'var(--accent-color)' }} />
                                 <h2 className="text-base font-bold text-[--text-color]">apps.json Schema</h2>
                             </div>
                             <p className="text-xs text-[--text-muted] mb-3">
@@ -570,11 +659,15 @@ export default function ApiDocs({ windowId }: { windowId?: string }) {
                                 usage=""
                                 copiedtext={copiedtext}
                                 onCopy={copytoClipboard}
+                                clay={clay}
                             />
-                            <div className="mt-4 border-t border-[--border-color] pt-4">
+                            <div className={`mt-4 pt-4 ${clay ? 'border-t border-[--text-muted]/10' : 'border-t border-[--border-color]'}`}>
                                 <h3 className="text-xs font-bold text-[--text-color] mb-2">hidePreview</h3>
                                 <p className="text-xs text-[--text-muted]">
-                                    <code className="bg-overlay px-1.5 py-0.5 text-accent text-[11px]">boolean</code> — When set to <code className="bg-overlay px-1.5 py-0.5 text-accent text-[11px]">true</code>, the app&apos;s live preview will be hidden in the Recent Apps view. Instead, the app icon and title are shown as a placeholder. Use this for apps with heavy animations or content that doesn&apos;t render well as a frozen preview. Defaults to <code className="bg-overlay px-1.5 py-0.5 text-accent text-[11px]">false</code>.
+                                    <code className={`px-1.5 py-0.5 text-[11px] ${clay ? 'rounded-[4px]' : ''}`}
+                                        style={clay ? { background: 'var(--bg-glass-active)', color: 'var(--accent-color)' } : { background: 'var(--bg-overlay)', color: 'var(--accent-color)' }}>boolean</code> — When set to <code className={`px-1.5 py-0.5 text-[11px] ${clay ? 'rounded-[4px]' : ''}`}
+                                        style={clay ? { background: 'var(--bg-glass-active)', color: 'var(--accent-color)' } : { background: 'var(--bg-overlay)', color: 'var(--accent-color)' }}>true</code>, the app&apos;s live preview will be hidden in the Recent Apps view. Instead, the app icon and title are shown as a placeholder. Use this for apps with heavy animations or content that doesn&apos;t render well as a frozen preview. Defaults to <code className={`px-1.5 py-0.5 text-[11px] ${clay ? 'rounded-[4px]' : ''}`}
+                                        style={clay ? { background: 'var(--bg-glass-active)', color: 'var(--accent-color)' } : { background: 'var(--bg-overlay)', color: 'var(--accent-color)' }}>false</code>.
                                 </p>
                             </div>
                         </div>
@@ -584,22 +677,39 @@ export default function ApiDocs({ windowId }: { windowId?: string }) {
         </div>
     );
 
+    /* Right anchor nav for "On this page" */
     const anchorNav = !ismobile && !selectedapi && (
-        <div className="w-40 border-l border-[--border-color] bg-surface overflow-y-auto shrink-0 hidden lg:block">
+        <div
+            className={`w-40 overflow-y-auto shrink-0 hidden lg:block ${clay ? '' : 'border-l border-[--border-color] bg-surface'}`}
+            style={clay ? { background: 'var(--bg-glass)', borderLeft: '1px solid var(--glass-border)' } : undefined}
+        >
             <div className="p-3 sticky top-0">
-                <div className="text-[10px] font-semibold uppercase tracking-wider text-[--text-muted] mb-2">On this page</div>
-                {sectionIds.map(s => (
-                    <button
-                        key={s.id}
-                        onClick={() => scrollToSection(s.id)}
-                        className={`block w-full text-left text-[11px] px-2 py-1 transition-colors ${activeSection === s.id ? 'text-accent border-l-2 border-accent -ml-px' : 'text-[--text-muted] hover:text-[--text-color]'}`}
-                    >
-                        {s.label}
-                    </button>
-                ))}
+                <div className={`text-[10px] font-semibold uppercase tracking-wider text-[--text-muted] mb-2 ${clay ? 'font-bold' : ''}`}>On this page</div>
+                {sectionIds.map(s => {
+                    const isActive = activeSection === s.id;
+                    return (
+                        <button
+                            key={s.id}
+                            onClick={() => scrollToSection(s.id)}
+                            className={`block w-full text-left text-[11px] px-2 py-1.5 transition-colors ${clay ? 'rounded-[8px]' : ''} ${
+                                isActive
+                                    ? (clay ? 'bg-[--bg-glass-active] font-medium' : 'border-l-2 border-accent -ml-px')
+                                    : (clay ? 'hover:bg-[--bg-glass-hover]' : 'hover:text-[--text-color]')
+                            }`}
+                            style={isActive ? { color: 'var(--accent-color)' } : { color: 'var(--text-muted)' }}
+                        >
+                            {s.label}
+                        </button>
+                    );
+                })}
                 <button
                     onClick={() => scrollToSection('schema')}
-                    className={`block w-full text-left text-[11px] px-2 py-1 transition-colors ${activeSection === 'schema' ? 'text-accent border-l-2 border-accent -ml-px' : 'text-[--text-muted] hover:text-[--text-color]'}`}
+                    className={`block w-full text-left text-[11px] px-2 py-1.5 transition-colors ${clay ? 'rounded-[8px]' : ''} ${
+                        activeSection === 'schema'
+                            ? (clay ? 'bg-[--bg-glass-active] font-medium' : 'border-l-2 border-accent -ml-px')
+                            : (clay ? 'hover:bg-[--bg-glass-hover]' : 'hover:text-[--text-color]')
+                    }`}
+                    style={activeSection === 'schema' ? { color: 'var(--accent-color)' } : { color: 'var(--text-muted)' }}
                 >
                     apps.json Schema
                 </button>
@@ -609,10 +719,11 @@ export default function ApiDocs({ windowId }: { windowId?: string }) {
 
     if (ismobile) {
         return (
-            <div className="h-full flex flex-col bg-[--bg-base] text-[--text-color]">
-                <div className="flex items-center gap-3 px-4 py-3 bg-surface border-b border-[--border-color]">
-                    <div className="w-8 h-8 bg-accent flex items-center justify-center">
-                        <IoBook className="text-[--bg-base]" size={16} />
+            <div className={`h-full flex flex-col text-[--text-color] ${clay ? 'bg-[--bg-base]' : 'bg-[--bg-base]'}`}>
+                <div className={`flex items-center gap-3 px-4 py-3 ${clay ? 'border-b border-[--text-muted]/10' : 'bg-surface border-b border-[--border-color]'}`}>
+                    <div className={`w-8 h-8 flex items-center justify-center ${clay ? 'rounded-[10px]' : ''}`}
+                        style={{ background: 'var(--accent-gradient)' }}>
+                        <IoBook className="text-white" size={16} />
                     </div>
                     <div className="flex-1 min-w-0">
                         <h1 className="font-bold text-[13px] text-[--text-color]">API Docs</h1>
@@ -627,11 +738,12 @@ export default function ApiDocs({ windowId }: { windowId?: string }) {
     }
 
     return (
-        <div className="h-full flex flex-col bg-[--bg-base] text-[--text-color]">
-            <div className="flex items-center justify-between px-4 py-3 bg-surface border-b border-[--border-color]">
+        <div className={`h-full flex flex-col text-[--text-color] ${clay ? 'bg-[--bg-base]' : 'bg-[--bg-base]'}`}>
+            <div className={`flex items-center justify-between px-4 py-3 ${clay ? 'border-b border-[--text-muted]/10' : 'bg-surface border-b border-[--border-color]'}`}>
                 <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-accent flex items-center justify-center">
-                        <IoBook className="text-[--bg-base]" size={16} />
+                    <div className={`w-8 h-8 flex items-center justify-center ${clay ? 'rounded-[10px]' : ''}`}
+                        style={{ background: 'var(--accent-gradient)' }}>
+                        <IoBook className="text-white" size={16} />
                     </div>
                     <div>
                         <h1 className="font-bold text-[13px] text-[--text-color]">API Documentation</h1>

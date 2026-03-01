@@ -15,6 +15,8 @@ import { listCapsules, importCapsule, exportCapsule, deleteCapsule } from '../..
 import { useProjects } from '../ProjectContext';
 import { useWindows } from '../WindowContext';
 import { useNotifications } from '../NotificationContext';
+import { useIsClay } from '../hooks/useIsClay';
+import { glassPanel, glassCard, glassInput, glassSidebar } from '../hooks/useClayStyles';
 
 const LAB_TEMPLATES: LabTemplate[] = [
     {
@@ -126,6 +128,7 @@ const CATEGORY_ICONS: Record<string, React.ElementType> = {
 type SidebarView = 'labs' | 'hackathons' | 'capsules' | 'create';
 
 export default function TemplatesManager() {
+    const clay = useIsClay();
     const [activeView, setActiveView] = useState<SidebarView>('hackathons');
     const [search, setSearch] = useState('');
     const [capsules, setCapsules] = useState<CapsuleManifest[]>([]);
@@ -263,52 +266,56 @@ export default function TemplatesManager() {
     ];
 
     return (
-        <div className="flex h-full bg-[--bg-base] text-[--text-color]">
-            <div className="w-52 border-r border-[--border-color] bg-surface flex flex-col anime-gradient-top">
-                <div className="p-3 border-b border-[--border-color]">
+        <div className={`flex h-full text-[--text-color] ${clay ? 'bg-[--bg-base]' : 'bg-[--bg-base]'}`}>
+            <div className={`w-52 border-r ${clay ? 'border-[--glass-border]' : 'border-[--border-color]'} ${clay ? '' : 'bg-surface'} flex flex-col ${clay ? '' : 'anime-gradient-top'}`} style={clay ? glassSidebar : undefined}>
+                <div className={`p-3 border-b ${clay ? 'border-[--glass-border]' : 'border-[--border-color]'}`}>
                     <div className="flex items-center gap-2 mb-3">
                         <div className="w-7 h-7 flex items-center justify-center icon-bg-peach">
                             <IoRocketOutline className="w-4 h-4 text-white" />
                         </div>
                         <span className="font-semibold text-[13px]">Templates</span>
                     </div>
-                    <div className="relative">
+                    <div className={`relative ${clay ? 'rounded-full' : ''}`}
+                        style={clay ? glassInput : undefined}>
                         <IoSearchOutline className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[--text-muted]" />
                         <input
                             value={search}
                             onChange={e => setSearch(e.target.value)}
                             placeholder="Search..."
-                            className="w-full bg-overlay border border-[--border-color] pl-7 pr-2 py-1 text-xs outline-none focus:border-accent transition-colors placeholder-[--text-muted] text-[--text-color]"
+                            className={`w-full ${clay ? 'bg-transparent' : 'bg-overlay border border-[--border-color]'} pl-7 pr-2 py-1 text-xs outline-none focus:border-accent transition-colors placeholder-[--text-muted] text-[--text-color]`}
                         />
                     </div>
                 </div>
                 <div className="flex-1 py-2">
                     <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Categories</div>
-                    {sidebarItems.map(item => (
+                    {sidebarItems.map(item => {
+                        const isActive = activeView === item.id;
+                        return (
                         <button
                             key={item.id}
                             onClick={() => setActiveView(item.id)}
-                            className={`flex items-center gap-2 w-full px-3 py-2 text-[13px] text-left transition-colors ${
-                                activeView === item.id
-                                    ? 'bg-accent text-[--bg-base]'
-                                    : 'text-[--text-color] hover:bg-overlay'
+                            className={`flex items-center gap-2 w-full px-3 py-2.5 text-[13px] text-left transition-all ${clay
+                                ? `rounded-[12px] mx-1 ${isActive ? 'text-white' : 'hover:bg-[--bg-glass-hover] active:scale-[0.98]'}`
+                                : `${isActive ? 'bg-accent text-[--bg-base]' : 'text-[--text-color] hover:bg-overlay'}`
                             }`}
+                            style={isActive && clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                         >
                             <item.icon className="w-4 h-4" />
                             <span className="flex-1 font-medium">{item.label}</span>
                             {item.count !== undefined && (
                                 <span className={`text-[10px] px-1 min-w-[16px] text-center ${
-                                    activeView === item.id ? 'opacity-70' : 'text-[--text-muted]'
+                                    isActive ? 'opacity-70' : 'text-[--text-muted]'
                                 }`}>
                                     {item.count}
                                 </span>
                             )}
                         </button>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
 
-            <div className="flex-1 overflow-auto p-4">
+            <div className={`flex-1 overflow-auto p-4 ${clay ? 'bg-[--bg-base]' : ''}`}>
                 {activeView === 'hackathons' && (
                     <div>
                         <div className="mb-4">
@@ -319,10 +326,10 @@ export default function TemplatesManager() {
                             {filteredHackathons.map(t => {
                                 const CatIcon = CATEGORY_ICONS[t.category] || IoDocumentTextOutline;
                                 return (
-                                    <div key={t.id} className="anime-card border border-[--border-color] p-4 bg-surface hover:border-accent transition-colors">
+                                    <div key={t.id} className={`${clay ? '' : 'anime-card'} border ${clay ? 'border-[--glass-border] rounded-[16px]' : 'border-[--border-color]'} p-4 ${clay ? 'hover:bg-[--bg-glass-hover]' : 'bg-surface hover:border-accent'} transition-colors`} style={clay ? glassCard : undefined}>
                                         <div className="flex items-start justify-between mb-2">
                                             <div className="flex items-center gap-2">
-                                                <div className="w-7 h-7 flex items-center justify-center bg-accent/10">
+                                                <div className={`w-7 h-7 flex items-center justify-center ${clay ? 'rounded-[8px] bg-[--bg-glass-hover]' : 'bg-[--bg-overlay]'}`}>
                                                     <CatIcon className="w-4 h-4 text-accent" />
                                                 </div>
                                                 <h3 className="font-medium text-[13px]">{t.name}</h3>
@@ -331,14 +338,15 @@ export default function TemplatesManager() {
                                         <p className="text-xs text-[--text-muted] mb-3 leading-relaxed">{t.description}</p>
                                         <div className="flex flex-wrap gap-1 mb-3">
                                             {t.stack.map(s => (
-                                                <span key={s} className="text-[10px] bg-overlay text-[--text-muted] px-1.5 py-0.5">{s}</span>
+                                                <span key={s} className={`text-[10px] ${clay ? '' : 'bg-overlay'} text-[--text-muted] px-1.5 py-0.5 ${clay ? 'rounded-[6px] bg-[--bg-glass-active]' : ''}`}>{s}</span>
                                             ))}
                                         </div>
                                         <div className="flex gap-2">
                                             <button
                                                 onClick={() => launchHackathon(t.id)}
                                                 disabled={launching === t.id}
-                                                className="flex items-center gap-1 px-3 py-1.5 bg-accent text-[--bg-base] text-xs font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
+                                                className={`flex items-center gap-1 px-3 py-1.5 text-xs font-medium hover:opacity-90 disabled:opacity-50 transition-opacity ${clay ? 'rounded-[10px] active:scale-[0.97] text-white' : 'bg-accent text-[--bg-base]'}`}
+                                                style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                                             >
                                                 <IoPlayOutline className="w-3 h-3" /> {launching === t.id ? 'Launching...' : 'Launch'}
                                             </button>
@@ -358,31 +366,32 @@ export default function TemplatesManager() {
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             {filteredLabs.map(t => (
-                                <div key={t.id} className="anime-card border border-[--border-color] p-4 bg-surface hover:border-accent transition-colors">
+                                <div key={t.id} className={`${clay ? '' : 'anime-card'} border ${clay ? 'border-[--glass-border] rounded-[16px]' : 'border-[--border-color]'} p-4 ${clay ? 'hover:bg-[--bg-glass-hover]' : 'bg-surface hover:border-accent'} transition-colors`} style={clay ? glassCard : undefined}>
                                     <div className="flex items-start justify-between mb-2">
                                         <h3 className="font-medium text-[13px]">{t.name}</h3>
-                                        <span className={`text-[10px] px-2 py-0.5 font-medium ${DIFFICULTY_COLORS[t.difficulty]}`}>
+                                        <span className={`text-[10px] px-2 py-0.5 font-medium ${clay ? 'rounded-[6px]' : ''} ${DIFFICULTY_COLORS[t.difficulty]}`}>
                                             {t.difficulty}
                                         </span>
                                     </div>
                                     <p className="text-xs text-[--text-muted] mb-3">{t.description}</p>
                                     <div className="flex items-center gap-3 text-xs text-[--text-muted] mb-3">
                                         <span className="flex items-center gap-1"><IoTimeOutline className="w-3 h-3" /> {t.estimatedMinutes}min</span>
-                                        <span className="uppercase font-mono text-[10px] bg-overlay px-1.5 py-0.5">{t.language}</span>
+                                        <span className={`uppercase font-mono text-[10px] ${clay ? 'bg-[--bg-glass-active] rounded-[6px]' : 'bg-overlay'} px-1.5 py-0.5`}>{t.language}</span>
                                         {t.rubric && (
                                             <span className="text-[10px] text-pastel-green">{t.rubric.reduce((s, r) => s + r.points, 0)} pts</span>
                                         )}
                                     </div>
                                     <div className="flex flex-wrap gap-1 mb-3">
                                         {t.tags.map(tag => (
-                                            <span key={tag} className="text-[10px] bg-overlay text-[--text-muted] px-1.5 py-0.5">{tag}</span>
+                                            <span key={tag} className={`text-[10px] ${clay ? 'bg-[--bg-glass-active] rounded-[6px]' : 'bg-overlay'} text-[--text-muted] px-1.5 py-0.5`}>{tag}</span>
                                         ))}
                                     </div>
                                     <div className="flex gap-2">
                                         <button
                                             onClick={() => launchLab(t)}
                                             disabled={launching === t.id}
-                                            className="flex items-center gap-1 px-3 py-1.5 bg-pastel-green text-[--bg-base] text-xs font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
+                                            className={`flex items-center gap-1 px-3 py-1.5 text-xs font-medium hover:opacity-90 disabled:opacity-50 transition-opacity ${clay ? 'rounded-[10px] active:scale-[0.97] text-white' : 'bg-pastel-green text-[--bg-base]'}`}
+                                            style={clay ? { background: 'var(--pastel-green)', boxShadow: 'var(--shadow-xs)' } : undefined}
                                         >
                                             <IoPlayOutline className="w-3 h-3" /> {launching === t.id ? 'Launching...' : 'Launch'}
                                         </button>
@@ -396,7 +405,7 @@ export default function TemplatesManager() {
                                                 setNewMinutes(t.estimatedMinutes);
                                                 setNewInstructions(t.instructions);
                                             }}
-                                            className="flex items-center gap-1 px-3 py-1.5 border border-[--border-color] text-xs hover:bg-overlay transition-colors"
+                                            className={`flex items-center gap-1 px-3 py-1.5 border ${clay ? 'border-[--glass-border] rounded-[10px]' : 'border-[--border-color]'} text-xs hover:bg-overlay transition-colors`}
                                         >
                                             <IoCreateOutline className="w-3 h-3" /> Customize
                                         </button>
@@ -416,7 +425,8 @@ export default function TemplatesManager() {
                             </div>
                             <button
                                 onClick={handleImport}
-                                className="flex items-center gap-1 px-3 py-1.5 bg-accent text-[--bg-base] text-xs font-medium hover:opacity-90 transition-opacity"
+                                className={`flex items-center gap-1 px-3 py-1.5 text-xs font-medium hover:opacity-90 transition-opacity ${clay ? 'rounded-[10px] active:scale-[0.97] text-white' : 'bg-accent text-[--bg-base]'}`}
+                                style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                             >
                                 <IoCloudUploadOutline className="w-3 h-3" /> Import
                             </button>
@@ -428,12 +438,12 @@ export default function TemplatesManager() {
                                 <p className="text-xs opacity-60">Create one from a template or import from file</p>
                             </div>
                         ) : (
-                            <div className="bg-overlay border border-[--border-color]">
+                            <div className={`${clay ? '' : 'bg-overlay'} border ${clay ? 'border-[--glass-border] rounded-[12px] overflow-hidden' : 'border-[--border-color]'}`} style={clay ? glassCard : undefined}>
                                 {capsules.map((c, i) => (
                                     <div
                                         key={c.id}
-                                        className={`flex items-center justify-between p-3 hover:bg-surface transition-colors ${
-                                            i < capsules.length - 1 ? 'border-b border-[--border-color]' : ''
+                                        className={`flex items-center justify-between p-3 transition-colors ${clay ? 'hover:bg-[--bg-glass-hover]' : 'hover:bg-surface'} ${
+                                            i < capsules.length - 1 ? `border-b ${clay ? 'border-[--glass-border]' : 'border-[--border-color]'}` : ''
                                         }`}
                                     >
                                         <div className="min-w-0 flex-1">
@@ -444,13 +454,13 @@ export default function TemplatesManager() {
                                         <div className="flex gap-1 shrink-0 ml-2">
                                             <button
                                                 onClick={() => handleExport(c.id)}
-                                                className="p-1.5 hover:bg-overlay text-[--text-muted] hover:text-[--text-color] transition-colors"
+                                                className={`p-1.5 text-[--text-muted] hover:text-[--text-color] transition-colors ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'}`}
                                             >
                                                 <IoCloudDownloadOutline className="w-4 h-4" />
                                             </button>
                                             <button
                                                 onClick={() => handleDelete(c.id)}
-                                                className="p-1.5 hover:bg-overlay text-pastel-red transition-colors"
+                                                className={`p-1.5 text-pastel-red transition-colors ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'}`}
                                             >
                                                 <IoTrashOutline className="w-4 h-4" />
                                             </button>
@@ -471,13 +481,14 @@ export default function TemplatesManager() {
                         <div className="space-y-4">
                             <div>
                                 <div className="text-[11px] uppercase font-semibold text-[--text-muted] mb-2">Details</div>
-                                <div className="bg-overlay border border-[--border-color]">
-                                    <div className="p-3 border-b border-[--border-color]">
+                                <div className={`${clay ? '' : 'bg-overlay'} border ${clay ? 'border-[--glass-border] rounded-[12px] overflow-hidden' : 'border-[--border-color]'}`} style={clay ? glassCard : undefined}>
+                                    <div className={`p-3 border-b ${clay ? 'border-[--glass-border]' : 'border-[--border-color]'}`}>
                                         <label className="text-xs font-medium block mb-1">Lab Name</label>
                                         <input
                                             value={newName}
                                             onChange={e => setNewName(e.target.value)}
-                                            className="w-full bg-[--bg-base] border border-[--border-color] px-3 py-1.5 text-[13px] focus:border-accent outline-none transition-colors placeholder-[--text-muted] text-[--text-color]"
+                                            className={`w-full ${clay ? 'rounded-[10px]' : 'bg-[--bg-base] border border-[--border-color]'} px-3 py-1.5 text-[13px] focus:border-accent outline-none transition-colors placeholder-[--text-muted] text-[--text-color]`}
+                                            style={clay ? glassInput : undefined}
                                             placeholder="e.g., Sorting Algorithms"
                                         />
                                     </div>
@@ -486,7 +497,8 @@ export default function TemplatesManager() {
                                         <textarea
                                             value={newDesc}
                                             onChange={e => setNewDesc(e.target.value)}
-                                            className="w-full bg-[--bg-base] border border-[--border-color] px-3 py-1.5 text-[13px] h-20 resize-none focus:border-accent outline-none transition-colors placeholder-[--text-muted] text-[--text-color]"
+                                            className={`w-full ${clay ? 'rounded-[10px]' : 'bg-[--bg-base] border border-[--border-color]'} px-3 py-1.5 text-[13px] h-20 resize-none focus:border-accent outline-none transition-colors placeholder-[--text-muted] text-[--text-color]`}
+                                            style={clay ? glassInput : undefined}
                                             placeholder="What will students learn?"
                                         />
                                     </div>
@@ -494,14 +506,15 @@ export default function TemplatesManager() {
                             </div>
                             <div>
                                 <div className="text-[11px] uppercase font-semibold text-[--text-muted] mb-2">Configuration</div>
-                                <div className="bg-overlay border border-[--border-color]">
-                                    <div className="grid grid-cols-2 border-b border-[--border-color]">
-                                        <div className="p-3 border-r border-[--border-color]">
+                                <div className={`${clay ? '' : 'bg-overlay'} border ${clay ? 'border-[--glass-border] rounded-[12px] overflow-hidden' : 'border-[--border-color]'}`} style={clay ? glassCard : undefined}>
+                                    <div className={`grid grid-cols-2 border-b ${clay ? 'border-[--glass-border]' : 'border-[--border-color]'}`}>
+                                        <div className={`p-3 border-r ${clay ? 'border-[--glass-border]' : 'border-[--border-color]'}`}>
                                             <label className="text-xs font-medium block mb-1">Category</label>
                                             <select
                                                 value={newCategory}
                                                 onChange={e => setNewCategory(e.target.value)}
-                                                className="w-full bg-[--bg-base] border border-[--border-color] px-2 py-1.5 text-[13px] outline-none text-[--text-color]"
+                                                className={`w-full ${clay ? 'rounded-[10px]' : 'bg-[--bg-base] border border-[--border-color]'} px-2 py-1.5 text-[13px] outline-none text-[--text-color]`}
+                                                style={clay ? glassInput : undefined}
                                             >
                                                 <option value="programming">Programming</option>
                                                 <option value="web">Web</option>
@@ -515,7 +528,8 @@ export default function TemplatesManager() {
                                             <select
                                                 value={newDifficulty}
                                                 onChange={e => setNewDifficulty(e.target.value)}
-                                                className="w-full bg-[--bg-base] border border-[--border-color] px-2 py-1.5 text-[13px] outline-none text-[--text-color]"
+                                                className={`w-full ${clay ? 'rounded-[10px]' : 'bg-[--bg-base] border border-[--border-color]'} px-2 py-1.5 text-[13px] outline-none text-[--text-color]`}
+                                                style={clay ? glassInput : undefined}
                                             >
                                                 <option value="beginner">Beginner</option>
                                                 <option value="intermediate">Intermediate</option>
@@ -530,18 +544,20 @@ export default function TemplatesManager() {
                                             type="number"
                                             value={newMinutes}
                                             onChange={e => setNewMinutes(+e.target.value)}
-                                            className="w-full bg-[--bg-base] border border-[--border-color] px-3 py-1.5 text-[13px] focus:border-accent outline-none transition-colors text-[--text-color]"
+                                            className={`w-full ${clay ? 'rounded-[10px]' : 'bg-[--bg-base] border border-[--border-color]'} px-3 py-1.5 text-[13px] focus:border-accent outline-none transition-colors text-[--text-color]`}
+                                            style={clay ? glassInput : undefined}
                                         />
                                     </div>
                                 </div>
                             </div>
                             <div>
                                 <div className="text-[11px] uppercase font-semibold text-[--text-muted] mb-2">Instructions</div>
-                                <div className="bg-overlay border border-[--border-color] p-3">
+                                <div className={`${clay ? '' : 'bg-overlay'} border ${clay ? 'border-[--glass-border] rounded-[12px]' : 'border-[--border-color]'} p-3`} style={clay ? glassCard : undefined}>
                                     <textarea
                                         value={newInstructions}
                                         onChange={e => setNewInstructions(e.target.value)}
-                                        className="w-full bg-[--bg-base] border border-[--border-color] px-3 py-1.5 text-[13px] h-32 resize-none font-mono focus:border-accent outline-none transition-colors placeholder-[--text-muted] text-[--text-color]"
+                                        className={`w-full ${clay ? 'rounded-[10px]' : 'bg-[--bg-base] border border-[--border-color]'} px-3 py-1.5 text-[13px] h-32 resize-none font-mono focus:border-accent outline-none transition-colors placeholder-[--text-muted] text-[--text-color]`}
+                                        style={clay ? glassInput : undefined}
                                         placeholder="# Lab Title&#10;&#10;Instructions in markdown..."
                                     />
                                 </div>
@@ -549,7 +565,8 @@ export default function TemplatesManager() {
                             <button
                                 onClick={handleCreate}
                                 disabled={!newName.trim()}
-                                className="flex items-center gap-2 px-4 py-2 bg-accent text-[--bg-base] text-[13px] font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
+                                className={`flex items-center gap-2 px-4 py-2 text-[13px] font-medium hover:opacity-90 disabled:opacity-50 transition-opacity ${clay ? 'rounded-[12px] active:scale-[0.97] text-white' : 'bg-accent text-[--bg-base]'}`}
+                                style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                             >
                                 <IoCheckmarkCircleOutline className="w-4 h-4" /> Create & Launch
                             </button>

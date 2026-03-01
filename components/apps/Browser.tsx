@@ -7,6 +7,8 @@ import { useWindows } from '../WindowContext';
 import { useMenuRegistration } from '../AppMenuContext';
 import { useMenuAction } from '../hooks/useMenuAction';
 import { useMemo, useCallback } from 'react';
+import { useIsClay } from '../hooks/useIsClay';
+import { glassButton, glassInput, glassCard, clayClasses } from '../hooks/useClayStyles';
 
 interface browserprops {
     initialurl?: string;
@@ -24,6 +26,7 @@ export default function Browser({ initialurl = 'https://duckduckgo.com', appId =
     const [zoom, setZoom] = useState(1);
     const { activewindow } = useWindows();
     const isActiveWindow = activewindow === id;
+    const clay = useIsClay();
 
 
 
@@ -163,15 +166,17 @@ export default function Browser({ initialurl = 'https://duckduckgo.com', appId =
 
     if (ismobile) {
         return (
-            <div className="flex flex-col bg-[--bg-base] h-full w-full text-[--text-color] font-mono">
+            <div className={`flex flex-col h-full w-full text-[--text-color] ${clay ? 'bg-[--bg-base]' : 'bg-[--bg-base] font-mono'}`}>
                 <div className="flex-1 w-full h-full relative">
                     {url ? (
                         url.includes('github.com') ? (
-                            <div className="flex flex-col items-center justify-center h-full text-center p-8 bg-surface">
-                                <div className="w-16 h-16 bg-overlay flex items-center justify-center mb-4">
+                            <div className={`flex flex-col items-center justify-center h-full text-center p-8 ${clay ? 'bg-[--bg-base]' : 'bg-surface'}`}>
+                                <div className={`w-16 h-16 flex items-center justify-center mb-4 ${clay ? 'rounded-[16px]' : 'bg-overlay'}`}
+                                    style={clay ? glassCard : undefined}
+                                >
                                     <IoLockClosedOutline size={32} className="text-[--text-muted]" />
                                 </div>
-                                <h2 className="text-xl font-bold mb-2">GitHub Security</h2>
+                                <h2 className="text-xl font-bold mb-2 text-[--text-color]">GitHub Security</h2>
                                 <p className="text-[--text-muted] max-w-sm mb-6 text-[13px]">
                                     Browsing GitHub recursively is restricted.
                                 </p>
@@ -179,7 +184,8 @@ export default function Browser({ initialurl = 'https://duckduckgo.com', appId =
                                     href={url}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="px-6 py-3 bg-accent text-[--bg-base] font-semibold text-[15px]"
+                                    className={`px-6 py-3 text-white font-semibold text-[15px] ${clay ? `rounded-[12px] ${clayClasses.interactivePress}` : ''}`}
+                                    style={{ background: 'var(--accent-color)' }}
                                 >
                                     Open in New Tab
                                 </a>
@@ -200,8 +206,11 @@ export default function Browser({ initialurl = 'https://duckduckgo.com', appId =
                             <div className="grid grid-cols-4 gap-6">
                                 {['Google', 'GitHub', 'LinkedIn', 'YouTube'].map(site => (
                                     <div key={site} className="flex flex-col items-center gap-2 cursor-pointer">
-                                        <div className="w-14 h-14 bg-overlay flex items-center justify-center">
-                                            <span className="text-xl font-bold text-[--text-muted]">{site[0]}</span>
+                                        <div
+                                            className={`w-14 h-14 flex items-center justify-center ${clay ? 'rounded-[14px]' : 'bg-overlay'}`}
+                                            style={clay ? glassCard : undefined}
+                                        >
+                                            <span className={`text-xl font-bold ${clay ? 'text-[--text-color]' : 'text-[--text-muted]'}`}>{site[0]}</span>
                                         </div>
                                         <span className="text-xs text-[--text-muted]">{site}</span>
                                     </div>
@@ -211,13 +220,18 @@ export default function Browser({ initialurl = 'https://duckduckgo.com', appId =
                     )}
 
                     {isloading && (
-                        <div className="absolute top-0 left-0 right-0 h-0.5 bg-accent animate-pulse" />
+                        <div className="absolute top-0 left-0 right-0 h-0.5 animate-pulse"
+                            style={{ background: 'var(--accent-color)' }}
+                        />
                     )}
                 </div>
 
-                <div className="border-t border-[--border-color] bg-surface">
+                <div className={`${clay ? 'border-t border-[--glass-border] bg-transparent' : 'border-t border-[--border-color] bg-surface'}`}>
                     <form onSubmit={handlenavigate} className="mx-3 my-2">
-                        <div className="flex items-center bg-overlay border border-[--border-color] px-3 h-[44px] gap-2">
+                        <div
+                            className={`flex items-center px-3 h-[44px] gap-2 ${clay ? 'rounded-full' : 'bg-overlay border border-[--border-color]'}`}
+                            style={clay ? glassInput : undefined}
+                        >
                             <IoLockClosedOutline className="text-pastel-green text-[13px]" />
                             <input
                                 type="text"
@@ -227,39 +241,55 @@ export default function Browser({ initialurl = 'https://duckduckgo.com', appId =
                                 placeholder="Search or enter website"
                             />
                             {inputvalue !== url && (
-                                <button type="submit" className="text-accent font-medium text-[13px]">Go</button>
+                                <button type="submit" className="font-medium text-[13px] text-[--text-color]"
+                                    style={{ color: 'var(--accent-color)' }}
+                                >Go</button>
                             )}
                         </div>
                     </form>
 
                     <div className="flex items-center justify-around py-2 pb-4">
-                        <button className="p-3 text-accent">
-                            <IoArrowBack size={22} />
-                        </button>
-                        <button className="p-3 text-accent">
-                            <IoArrowForward size={22} />
-                        </button>
-                        <button className="p-3 text-accent">
-                            <IoShareOutline size={22} />
-                        </button>
-                        <button className="p-3 text-accent">
-                            <IoBookOutline size={22} />
-                        </button>
-                        <button className="p-3 text-accent">
-                            <IoCopyOutline size={22} />
-                        </button>
+                        {[
+                            { icon: <IoArrowBack size={22} />, action: goBack },
+                            { icon: <IoArrowForward size={22} />, action: goForward },
+                            { icon: <IoShareOutline size={22} />, action: () => {} },
+                            { icon: <IoBookOutline size={22} />, action: () => {} },
+                            { icon: <IoCopyOutline size={22} />, action: () => {} },
+                        ].map((btn, i) => (
+                            <button
+                                key={i}
+                                className={`p-3 ${clay ? `rounded-[12px] hover:bg-[--bg-glass-hover] ${clayClasses.interactivePress}` : ''}`}
+                                style={{ color: 'var(--accent-color)' }}
+                                onClick={btn.action}
+                            >
+                                {btn.icon}
+                            </button>
+                        ))}
                     </div>
                 </div>
             </div>
         );
     }
 
+    const neoNavBtn = clay
+        ? `w-[30px] h-[30px] rounded-[10px] flex items-center justify-center transition-all ${clayClasses.interactivePress} hover:scale-105 text-[--text-muted] hover:text-[--text-color]`
+        : 'hover:text-[--text-color] transition text-[--text-muted]';
+    const neoNavStyle: React.CSSProperties | undefined = clay
+        ? glassButton
+        : undefined;
+
     return (
-        <div className="flex flex-col h-full w-full bg-[--bg-base] font-mono text-[--text-color] overflow-hidden shadow-pastel relative">
-            <div className={`h-12 bg-surface border-b border-[--border-color] flex items-center px-4 gap-4 shrink-0 z-20 draggable-area`}>
-                <div className="flex gap-4 text-[--text-muted]">
-                    <button onClick={goBack} className="hover:text-[--text-color] transition"><IoChevronBack size={18} /></button>
-                    <button onClick={goForward} className="hover:text-[--text-color] transition"><IoChevronForward size={18} /></button>
+        <div className={`flex flex-col h-full w-full text-[--text-color] overflow-hidden relative ${clay ? 'bg-[--bg-base]' : 'bg-[--bg-base] font-mono shadow-pastel'}`}>
+            {/* Toolbar */}
+            <div
+                className={`flex items-center shrink-0 z-20 draggable-area ${clay
+                    ? 'h-[52px] px-5 gap-3 border-b border-[--glass-border]'
+                    : 'h-12 bg-surface border-b border-[--border-color] px-4 gap-4'
+                }`}
+            >
+                <div className={`flex ${clay ? 'gap-2' : 'gap-4'}`}>
+                    <button onClick={goBack} className={neoNavBtn} style={neoNavStyle}><IoChevronBack size={16} /></button>
+                    <button onClick={goForward} className={neoNavBtn} style={neoNavStyle}><IoChevronForward size={16} /></button>
                 </div>
                 <button
                     onClick={() => {
@@ -271,39 +301,49 @@ export default function Browser({ initialurl = 'https://duckduckgo.com', appId =
                             setisloading(false);
                         }, 100);
                     }}
-                    className="hover:text-[--text-color] transition text-[--text-muted] p-1"
+                    className={neoNavBtn}
+                    style={neoNavStyle}
                 >
-                    <IoReloadOutline size={16} />
+                    <IoReloadOutline size={14} />
                 </button>
 
-                <div className="flex-1 max-w-2xl mx-auto h-8 bg-overlay border border-[--border-color] flex items-center px-3 gap-2 relative group focus-within:bg-surface transition-colors anime-focus">
+                {/* URL bar */}
+                <div
+                    className={`flex-1 max-w-2xl mx-auto flex items-center gap-2 relative group transition-colors ${clay
+                        ? `h-[34px] px-3.5 rounded-full`
+                        : 'h-8 bg-overlay border border-[--border-color] px-3 anime-focus focus-within:bg-surface'
+                    }`}
+                    style={clay ? glassInput : undefined}
+                >
                     <IoLockClosed size={12} className="text-pastel-green" />
                     <form onSubmit={handleSearch} className="flex-1 h-full">
                         <input
                             ref={inputref}
-                            className="bg-transparent w-full h-full text-xs outline-none text-center text-[--text-color] group-focus-within:text-left focus:text-left placeholder-[--text-muted]"
+                            className={`bg-transparent w-full h-full outline-none text-center text-[--text-color] group-focus-within:text-left focus:text-left placeholder-[--text-muted] ${clay ? 'text-[13px]' : 'text-xs'}`}
                             placeholder="Search or enter website name"
                             defaultValue={url || ''}
                             onFocus={(e) => e.target.select()}
                         />
                     </form>
-                    {isloading && <div className="absolute right-3 w-3 h-3 border-2 border-accent border-t-transparent  animate-spin" />}
+                    {isloading && <div className={`absolute right-3 w-3 h-3 border-2 border-t-transparent rounded-full animate-spin`} style={{ borderColor: 'var(--accent-color)', borderTopColor: 'transparent' }} />}
                 </div>
 
-                <div className="flex gap-4 text-[--text-muted] ml-auto">
-                    <button className="hover:text-[--text-color] transition"><IoShareOutline size={18} /></button>
-                    <button onClick={() => setShowSidebar(!showsidebar)} className="hover:text-[--text-color] transition"><IoAddOutline size={18} /></button>
-                    <button className="hover:text-[--text-color] transition"><IoCopyOutline size={18} /></button>
+                <div className={`flex ml-auto ${clay ? 'gap-2' : 'gap-4'}`}>
+                    <button className={neoNavBtn} style={neoNavStyle}><IoShareOutline size={16} /></button>
+                    <button onClick={() => setShowSidebar(!showsidebar)} className={neoNavBtn} style={neoNavStyle}><IoAddOutline size={16} /></button>
+                    <button className={neoNavBtn} style={neoNavStyle}><IoCopyOutline size={16} /></button>
                 </div>
             </div>
 
+            {/* Content area */}
             <div className="flex-1 relative flex">
-
-                <div className="flex-1 bg-[--bg-base] relative">
+                <div className={`flex-1 relative ${clay ? 'bg-[--bg-base]' : 'bg-[--bg-base]'}`}>
                     {url ? (
                         isloading ? (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-[--bg-base]">
-                                <div className="w-8 h-8 border-4 border-accent border-t-transparent  animate-spin mb-4"></div>
+                            <div className={`absolute inset-0 flex flex-col items-center justify-center ${clay ? 'bg-[--bg-base]' : 'bg-[--bg-base]'}`}>
+                                <div className="w-8 h-8 border-4 border-t-transparent rounded-full animate-spin mb-4"
+                                    style={{ borderColor: 'var(--accent-color)', borderTopColor: 'transparent' }}
+                                />
                                 <span className="text-[--text-muted] text-[13px]">Loading...</span>
                             </div>
                         ) : (
@@ -317,15 +357,18 @@ export default function Browser({ initialurl = 'https://duckduckgo.com', appId =
                         )
                     ) : (
                         <div className="flex flex-col items-center justify-center h-full text-[--text-muted]">
-                            <Image src="/icons/browser.png" width={96} height={96} className="w-24 h-24 mb-8 opacity-20 filter grayscale" alt="Browser" />
-                            <h1 className="text-2xl font-bold text-[--text-muted] mb-8">Favorites</h1>
+                            <Image src="/icons/browser.png" width={96} height={96} className={`w-24 h-24 mb-8 opacity-20 filter grayscale ${clay ? 'rounded-[20px]' : ''}`} alt="Browser" />
+                            <h1 className={`text-2xl font-bold text-[--text-muted] mb-8 ${clay ? 'tracking-wide' : ''}`}>Favorites</h1>
                             <div className="grid grid-cols-4 gap-8">
                                 {['Google', 'GitHub', 'LinkedIn', 'YouTube'].map(site => (
-                                    <div key={site} className="flex flex-col items-center gap-2 group cursor-pointer" onClick={() => handleSearch({ preventDefault: () => { }, currentTarget: { querySelector: () => ({ value: `https://${site.toLowerCase()}.com` }) } } as any)}>
-                                        <div className="w-14 h-14 bg-overlay flex items-center justify-center group-hover:scale-105 transition-transform">
-                                            <span className="text-xl font-bold text-[--text-muted]">{site[0]}</span>
+                                    <div key={site} className={`flex flex-col items-center gap-3 group cursor-pointer ${clay ? clayClasses.interactivePress : ''}`} onClick={() => handleSearch({ preventDefault: () => { }, currentTarget: { querySelector: () => ({ value: `https://${site.toLowerCase()}.com` }) } } as any)}>
+                                        <div
+                                            className={`w-14 h-14 flex items-center justify-center group-hover:scale-105 transition-transform ${clay ? 'rounded-[14px]' : 'bg-overlay'}`}
+                                            style={clay ? glassCard : undefined}
+                                        >
+                                            <span className={`text-xl font-bold ${clay ? 'text-[--text-color]' : 'text-[--text-muted]'}`}>{site[0]}</span>
                                         </div>
-                                        <span className="text-xs text-[--text-muted]">{site}</span>
+                                        <span className={`text-xs text-[--text-muted] ${clay ? 'font-medium' : ''}`}>{site}</span>
                                     </div>
                                 ))}
                             </div>

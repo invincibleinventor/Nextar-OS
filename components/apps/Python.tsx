@@ -10,6 +10,8 @@ import { useDevice } from '../DeviceContext';
 import { useAuth } from '../AuthContext';
 import { useMenuAction } from '../hooks/useMenuAction';
 import { useTheme } from '../ThemeContext';
+import { useIsClay } from '../hooks/useIsClay';
+import { glassPanel, glassCard, glassSidebar, glassInput } from '../hooks/useClayStyles';
 import { useFileSystem } from '../FileSystemContext';
 import { useWindows } from '../WindowContext';
 import { filesystemitem } from '../data';
@@ -94,6 +96,7 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
     const { ismobile } = useDevice();
     const { user } = useAuth();
     const { theme } = useTheme();
+    const clay = useIsClay();
     const { files, createFile, createFolder, updateFileContent, renameItem, deleteItem, currentUserDocsId } = useFileSystem();
     const { addwindow, activewindow } = useWindows();
     const { addToast } = useNotifications();
@@ -594,7 +597,7 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
                     <div
                         onClick={() => openFile(file)}
                         onContextMenu={(e) => handleContextMenu(e, file)}
-                        className={`flex items-center gap-1.5 py-[3px] px-2 cursor-pointer text-[13px] hover:bg-overlay group ${isActive ? 'bg-overlay' : ''}`}
+                        className={`flex items-center gap-1.5 py-[3px] px-2 cursor-pointer text-[13px] group ${clay ? (isActive ? 'bg-[--bg-glass-active]' : 'hover:bg-[--bg-glass-hover]') : (isActive ? 'bg-overlay' : 'hover:bg-overlay')} ${clay ? 'rounded-[6px] mx-1' : ''}`}
                         style={{ paddingLeft: `${depth * 12 + 10}px` }}
                     >
                         {isFolder ? (
@@ -622,44 +625,50 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
     };
 
     return (
-        <div className="flex flex-col h-full w-full bg-[--bg-base] text-[--text-color] font-mono text-[13px] select-none">
-            <div className='w-full h-[50px] flex flex-row items-center content-center relative'><h1 className="w-max mx-auto top-0 bottom-0 left-0 right-0 text-center">Code Editor</h1></div>
+        <div className={`flex flex-col h-full w-full text-[--text-color] font-mono text-[13px] select-none ${clay ? '' : 'bg-[--bg-base]'}`}>
+            <div className={`w-full h-[40px] flex flex-row items-center content-center relative shrink-0 ${clay ? 'border-b border-[--glass-border]' : ''}`}><h1 className={`w-max mx-auto top-0 bottom-0 left-0 right-0 text-center text-[13px] font-semibold ${clay ? 'font-sans' : ''}`}>Code Editor</h1></div>
             <div className="flex flex-1 min-h-0">
                 {!ismobile && (
-                    <div className="w-12 bg-surface flex flex-col items-center py-1 shrink-0 border-r border-[--border-color]">
-                        <button onClick={() => setactivepanel(activepanel === 'files' ? null : 'files')} className={`p-2.5 mb-0.5 ${activepanel === 'files' ? 'text-[--text-color] border-l-2 border-[--text-color] bg-overlay' : 'text-[--text-muted] hover:text-[--text-color]'}`} title="Explorer">
+                    <div
+                        className={`w-12 flex flex-col items-center py-1 shrink-0 ${clay ? '' : 'bg-surface border-r border-[--border-color]'}`}
+                        style={clay ? { ...glassSidebar, borderRadius: 0 } : undefined}
+                    >
+                        <button onClick={() => setactivepanel(activepanel === 'files' ? null : 'files')} className={`p-2.5 mb-0.5 transition-colors ${clay ? 'rounded-[8px]' : ''} ${activepanel === 'files' ? (clay ? 'text-[--text-color] bg-[--bg-glass-active]' : 'text-[--text-color] border-l-2 border-[--text-color] bg-overlay') : 'text-[--text-muted] hover:text-[--text-color]'}`} title="Explorer">
                             <VscFiles size={22} />
                         </button>
-                        <button onClick={() => setactivepanel(activepanel === 'search' ? null : 'search')} className={`p-2.5 mb-0.5 ${activepanel === 'search' ? 'text-[--text-color] border-l-2 border-[--text-color] bg-overlay' : 'text-[--text-muted] hover:text-[--text-color]'}`} title="Search">
+                        <button onClick={() => setactivepanel(activepanel === 'search' ? null : 'search')} className={`p-2.5 mb-0.5 transition-colors ${clay ? 'rounded-[8px]' : ''} ${activepanel === 'search' ? (clay ? 'text-[--text-color] bg-[--bg-glass-active]' : 'text-[--text-color] border-l-2 border-[--text-color] bg-overlay') : 'text-[--text-muted] hover:text-[--text-color]'}`} title="Search">
                             <VscSearch size={22} />
                         </button>
                         <div className="flex-1" />
-                        <button className="p-2.5 text-[--text-muted] hover:text-[--text-color]" title="Settings">
+                        <button className={`p-2.5 text-[--text-muted] hover:text-[--text-color] ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover]' : ''}`} title="Settings">
                             <VscSettingsGear size={20} />
                         </button>
                     </div>
                 )}
 
                 {activepanel && !ismobile && (
-                    <div className="w-60 bg-surface flex flex-col shrink-0 border-r border-[--border-color]">
+                    <div
+                        className={`w-60 flex flex-col shrink-0 ${clay ? '' : 'bg-surface border-r border-[--border-color]'}`}
+                        style={clay ? { ...glassSidebar, borderRadius: 0 } : undefined}
+                    >
                         {activepanel === 'files' && (
                             <>
-                                <div className="h-9 flex items-center justify-between px-4 text-[11px] uppercase tracking-wide text-[--text-muted] font-medium">
+                                <div className={`h-9 flex items-center justify-between px-4 text-[11px] uppercase tracking-wide text-[--text-muted] font-medium ${clay ? 'font-sans' : ''}`}>
                                     <span>Explorer</span>
                                     <div className="flex items-center gap-0.5">
-                                        <button onClick={() => { setshownewfiledialog(true); setnewfileisfolder(false); setcurrentparentid(projectsId); }} className="p-1 hover:bg-overlay" title="New File">
+                                        <button onClick={() => { setshownewfiledialog(true); setnewfileisfolder(false); setcurrentparentid(projectsId); }} className={`p-1 ${clay ? 'rounded-[6px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`} title="New File">
                                             <VscNewFile size={14} />
                                         </button>
-                                        <button onClick={() => { setshownewfiledialog(true); setnewfileisfolder(true); setcurrentparentid(projectsId); }} className="p-1 hover:bg-overlay" title="New Folder">
+                                        <button onClick={() => { setshownewfiledialog(true); setnewfileisfolder(true); setcurrentparentid(projectsId); }} className={`p-1 ${clay ? 'rounded-[6px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`} title="New Folder">
                                             <VscNewFolder size={14} />
                                         </button>
-                                        <button className="p-1 hover:bg-overlay" title="Refresh">
+                                        <button className={`p-1 ${clay ? 'rounded-[6px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`} title="Refresh">
                                             <VscRefresh size={14} />
                                         </button>
                                     </div>
                                 </div>
                                 <div className="flex-1 overflow-auto text-[13px]">
-                                    <div className="flex items-center gap-1 px-2 py-1.5 text-[--text-muted] text-[11px] font-semibold uppercase tracking-wider cursor-pointer hover:bg-overlay">
+                                    <div className={`flex items-center gap-1 px-2 py-1.5 text-[--text-muted] text-[11px] font-semibold uppercase tracking-wider cursor-pointer ${clay ? 'hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`}>
                                         <VscChevronDown size={14} />
                                         <span>Projects</span>
                                     </div>
@@ -669,14 +678,15 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
                         )}
                         {activepanel === 'search' && (
                             <>
-                                <div className="h-9 flex items-center px-4 text-[11px] uppercase tracking-wide text-[--text-muted] font-medium">Search</div>
+                                <div className={`h-9 flex items-center px-4 text-[11px] uppercase tracking-wide text-[--text-muted] font-medium ${clay ? 'font-sans' : ''}`}>Search</div>
                                 <div className="px-3 mb-2">
                                     <input
                                         type="text"
                                         value={searchquery}
                                         onChange={e => setsearchquery(e.target.value)}
                                         placeholder="Search files"
-                                        className="w-full bg-overlay border border-transparent focus:border-accent px-2 py-1.5 text-[13px] outline-none text-[--text-color] placeholder-[--text-muted]"
+                                        className={`w-full bg-overlay border border-transparent focus:border-accent px-2 py-1.5 text-[13px] outline-none text-[--text-color] placeholder-[--text-muted] ${clay ? 'rounded-[10px]' : ''}`}
+                                        style={clay ? glassInput : undefined}
                                     />
                                 </div>
                                 <div className="flex-1 overflow-auto px-2">
@@ -690,7 +700,7 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
                                                 const file = files.find(f => f.id === result.fileId);
                                                 if (file) openFile(file);
                                             }}
-                                            className="px-2 py-1.5 hover:bg-overlay cursor-pointer text-xs"
+                                            className={`px-2 py-1.5 cursor-pointer text-xs ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`}
                                         >
                                             <div className="flex items-center gap-1 text-[--text-color]">
                                                 {getFileIcon(result.fileName)}
@@ -707,12 +717,14 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
                 )}
 
                 <div className="flex-1 flex flex-col min-w-0">
-                    <div className={`h-9 bg-surface flex items-center overflow-x-auto shrink-0`}>
+                    <div className={`h-9 flex items-center overflow-x-auto shrink-0 ${clay ? 'border-b border-[--glass-border]' : 'bg-surface'}`}
+                        style={clay ? { background: 'var(--bg-glass)' } : undefined}
+                    >
                         {openfiles.map(file => (
                             <div
                                 key={file.id}
                                 onClick={() => setactivefile(file.id)}
-                                className={`flex items-center gap-2 px-3 h-full border-r border-[--border-color] cursor-pointer shrink-0 min-w-0 group ${activefile === file.id ? 'bg-[--bg-base]' : 'bg-surface hover:bg-overlay'}`}
+                                className={`flex items-center gap-2 px-3 h-full cursor-pointer shrink-0 min-w-0 group ${clay ? 'border-r border-[--glass-border]' : 'border-r border-[--border-color]'} ${activefile === file.id ? (clay ? 'bg-[--bg-glass-active]' : 'bg-[--bg-base]') : (clay ? 'hover:bg-[--bg-glass-hover]' : 'bg-surface hover:bg-overlay')}`}
                             >
                                 <div className="shrink-0">{getFileIcon(file.name)}</div>
                                 <span className="text-[13px] text-[--text-muted] truncate max-w-[100px]">
@@ -722,57 +734,60 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
                                 {file.id !== 'welcome' && (
                                     <VscClose
                                         size={16}
-                                        className="text-[--text-muted] hover:text-[--text-color] shrink-0 hover:bg-overlay"
+                                        className={`text-[--text-muted] hover:text-[--text-color] shrink-0 ${clay ? 'rounded-[4px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`}
                                         onClick={(e) => { e.stopPropagation(); closeFile(file.id); }}
                                     />
                                 )}
                             </div>
                         ))}
                         <div className="flex-1" />
-                        <div className="flex items-center gap-1 px-2 shrink-0">
-                            <button onClick={() => setshowfindreplace(!showfindreplace)} className={`p-1.5 ${showfindreplace ? 'text-[--text-color] bg-overlay' : 'text-[--text-muted] hover:text-[--text-color] hover:bg-overlay'}`} title="Find & Replace (Cmd+F)">
+                        <div className={`flex items-center gap-1 px-2 shrink-0 ${clay ? 'font-sans' : ''}`}>
+                            <button onClick={() => setshowfindreplace(!showfindreplace)} className={`p-1.5 ${clay ? 'rounded-[6px]' : ''} ${showfindreplace ? (clay ? 'text-[--text-color] bg-[--bg-glass-active]' : 'text-[--text-color] bg-overlay') : (clay ? 'text-[--text-muted] hover:text-[--text-color] hover:bg-[--bg-glass-hover]' : 'text-[--text-muted] hover:text-[--text-color] hover:bg-overlay')}`} title="Find & Replace (Cmd+F)">
                                 <VscReplace size={14} />
                             </button>
-                            <button onClick={formatCode} className="p-1.5 text-[--text-muted] hover:text-[--text-color] hover:bg-overlay" title="Format Document (Shift+Alt+F)">
+                            <button onClick={formatCode} className={`p-1.5 text-[--text-muted] hover:text-[--text-color] ${clay ? 'rounded-[6px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`} title="Format Document (Shift+Alt+F)">
                                 <VscSettingsGear size={14} />
                             </button>
-                            <button onClick={saveFile} disabled={!currentFile?.modified} className={`flex items-center gap-1 px-2 py-1 text-xs ${currentFile?.modified ? 'text-[--text-color] hover:bg-overlay' : 'text-[--text-muted]'}`} title="Save (Cmd+S)">
+                            <button onClick={saveFile} disabled={!currentFile?.modified} className={`flex items-center gap-1 px-2 py-1 text-xs ${clay ? 'rounded-[6px]' : ''} ${currentFile?.modified ? (clay ? 'text-[--text-color] hover:bg-[--bg-glass-hover]' : 'text-[--text-color] hover:bg-overlay') : 'text-[--text-muted]'}`} title="Save (Cmd+S)">
                                 <VscSave size={14} />
                             </button>
-                            <button onClick={runcode} disabled={isrunning || !currentFile || !runnableLanguages.has(currentFile.language)} className={`flex items-center gap-1 px-2 py-1 text-xs ${isrunning || !currentFile || !runnableLanguages.has(currentFile.language) ? 'text-[--text-muted]' : 'text-pastel-green hover:bg-overlay'}`} title="Run Code">
+                            <button onClick={runcode} disabled={isrunning || !currentFile || !runnableLanguages.has(currentFile.language)} className={`flex items-center gap-1 px-2 py-1 text-xs ${clay ? 'rounded-[6px]' : ''} ${isrunning || !currentFile || !runnableLanguages.has(currentFile.language) ? 'text-[--text-muted]' : (clay ? 'text-pastel-green hover:bg-[--bg-glass-hover]' : 'text-pastel-green hover:bg-overlay')}`} title="Run Code">
                                 <VscRunAll size={16} />
                                 Run
                             </button>
                             {(currentFile?.language === 'javascriptreact' || currentFile?.language === 'typescriptreact' || currentFile?.name.endsWith('.jsx') || currentFile?.name.endsWith('.tsx') || currentFile?.name.endsWith('.js')) && (
-                                <button onClick={runAsApp} className="flex items-center gap-1 px-2 py-1 text-xs text-[#c6a0f6] hover:bg-overlay" title="Run as App (opens new window)">
+                                <button onClick={runAsApp} className={`flex items-center gap-1 px-2 py-1 text-xs text-[#c6a0f6] ${clay ? 'rounded-[6px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`} title="Run as App (opens new window)">
                                     <IoRocketOutline size={14} />
                                     App
                                 </button>
                             )}
-                            <button onClick={() => setshowpanel(!showpanel)} className={`p-1.5 ${showpanel ? 'text-[--text-color] bg-overlay' : 'text-[--text-muted] hover:text-[--text-color] hover:bg-overlay'}`} title="Terminal">
+                            <button onClick={() => setshowpanel(!showpanel)} className={`p-1.5 ${clay ? 'rounded-[6px]' : ''} ${showpanel ? (clay ? 'text-[--text-color] bg-[--bg-glass-active]' : 'text-[--text-color] bg-overlay') : (clay ? 'text-[--text-muted] hover:text-[--text-color] hover:bg-[--bg-glass-hover]' : 'text-[--text-muted] hover:text-[--text-color] hover:bg-overlay')}`} title="Terminal">
                                 <VscTerminal size={16} />
                             </button>
                         </div>
                     </div>
 
                     {showfindreplace && (
-                        <div className="bg-surface px-3 py-2 flex items-center gap-2 border-b border-[--border-color] flex-wrap">
+                        <div className={`px-3 py-2 flex items-center gap-2 flex-wrap ${clay ? 'border-b border-[--glass-border]' : 'bg-surface border-b border-[--border-color]'}`}
+                            style={clay ? glassPanel : undefined}
+                        >
                             <div className="flex items-center gap-1 flex-1 min-w-[200px]">
                                 <input
                                     type="text"
                                     value={findquery}
                                     onChange={e => setfindquery(e.target.value)}
                                     placeholder="Find"
-                                    className="flex-1 bg-overlay border border-transparent focus:border-accent px-2 py-1 text-[13px] outline-none text-[--text-color]"
+                                    className={`flex-1 bg-overlay border border-transparent focus:border-accent px-2 py-1 text-[13px] outline-none text-[--text-color] ${clay ? 'rounded-[10px]' : ''}`}
+                                    style={clay ? glassInput : undefined}
                                     autoFocus
                                 />
-                                <button onClick={() => setcasesensitive(!casesensitive)} className={`p-1 ${casesensitive ? 'bg-accent text-[--text-color]' : 'text-[--text-muted] hover:text-[--text-color]'}`} title="Case Sensitive">
+                                <button onClick={() => setcasesensitive(!casesensitive)} className={`p-1 ${clay ? 'rounded-[6px]' : ''} ${casesensitive ? 'text-white' : 'text-[--text-muted] hover:text-[--text-color]'}`} style={casesensitive ? { background: 'var(--accent-color)' } : undefined} title="Case Sensitive">
                                     <VscCaseSensitive size={16} />
                                 </button>
-                                <button onClick={() => setwholeword(!wholeword)} className={`p-1 ${wholeword ? 'bg-accent text-[--text-color]' : 'text-[--text-muted] hover:text-[--text-color]'}`} title="Whole Word">
+                                <button onClick={() => setwholeword(!wholeword)} className={`p-1 ${clay ? 'rounded-[6px]' : ''} ${wholeword ? 'text-white' : 'text-[--text-muted] hover:text-[--text-color]'}`} style={wholeword ? { background: 'var(--accent-color)' } : undefined} title="Whole Word">
                                     <VscWholeWord size={16} />
                                 </button>
-                                <button onClick={() => setuseregex(!useregex)} className={`p-1 ${useregex ? 'bg-accent text-[--text-color]' : 'text-[--text-muted] hover:text-[--text-color]'}`} title="Regex">
+                                <button onClick={() => setuseregex(!useregex)} className={`p-1 ${clay ? 'rounded-[6px]' : ''} ${useregex ? 'text-white' : 'text-[--text-muted] hover:text-[--text-color]'}`} style={useregex ? { background: 'var(--accent-color)' } : undefined} title="Regex">
                                     <VscRegex size={16} />
                                 </button>
                             </div>
@@ -782,11 +797,12 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
                                     value={replacevalue}
                                     onChange={e => setreplacevalue(e.target.value)}
                                     placeholder="Replace"
-                                    className="flex-1 bg-overlay border border-transparent focus:border-accent px-2 py-1 text-[13px] outline-none text-[--text-color]"
+                                    className={`flex-1 bg-overlay border border-transparent focus:border-accent px-2 py-1 text-[13px] outline-none text-[--text-color] ${clay ? 'rounded-[10px]' : ''}`}
+                                    style={clay ? glassInput : undefined}
                                 />
-                                <button onClick={replaceInEditor} className="px-2 py-1 text-xs bg-overlay hover:bg-accent text-[--text-color]">Replace All</button>
+                                <button onClick={replaceInEditor} className={`px-2 py-1 text-xs text-[--text-color] ${clay ? 'rounded-[10px] hover:bg-[--bg-glass-hover]' : 'bg-overlay hover:bg-overlay'}`} style={clay ? glassCard : undefined}>Replace All</button>
                             </div>
-                            <button onClick={() => setshowfindreplace(false)} className="p-1 text-[--text-muted] hover:text-[--text-color] hover:bg-overlay">
+                            <button onClick={() => setshowfindreplace(false)} className={`p-1 text-[--text-muted] hover:text-[--text-color] ${clay ? 'rounded-[6px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`}>
                                 <VscClose size={14} />
                             </button>
                         </div>
@@ -794,7 +810,7 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
 
                     <div className="flex-1 flex flex-col min-h-0">
                         {!ismobile && currentFile && (
-                            <div className="h-6 flex items-center px-3 bg-[--bg-base] border-b border-[--border-color] text-[11px] text-[--text-muted] gap-1 shrink-0 overflow-hidden">
+                            <div className={`h-6 flex items-center px-3 text-[11px] text-[--text-muted] gap-1 shrink-0 overflow-hidden ${clay ? 'border-b border-[--glass-border] bg-transparent' : 'bg-[--bg-base] border-b border-[--border-color]'}`}>
                                 {breadcrumb.map((seg, i) => (
                                     <React.Fragment key={i}>
                                         {i > 0 && <VscChevronRight size={10} className="shrink-0 opacity-50" />}
@@ -838,22 +854,25 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
                         {showpanel && (
                             <div className="flex flex-col shrink-0" style={{ height: panelHeight }}>
                                 <div
-                                    className="h-1 cursor-row-resize bg-[--border-color] hover:bg-accent transition-colors shrink-0"
+                                    className={`h-1 cursor-row-resize transition-colors shrink-0 ${clay ? 'bg-[--glass-border] hover:bg-[--bg-glass-active]' : 'bg-[--border-color] hover:bg-accent'}`}
                                     onMouseDown={handlePanelDragStart}
+                                    style={clay ? undefined : undefined}
                                 />
-                                <div className="h-8 flex items-center px-4 bg-[#1a1a2e] border-b border-[#2a2a3e] gap-4 shrink-0">
-                                    <button className="text-xs text-[#cad3f5] font-medium border-b-2 border-accent py-1">Output</button>
+                                <div className={`h-8 flex items-center px-4 gap-4 shrink-0 ${clay ? 'border-b border-[--glass-border]' : 'bg-[#1a1a2e] border-b border-[#2a2a3e]'}`}
+                                    style={clay ? { background: 'var(--bg-glass)' } : undefined}
+                                >
+                                    <button className={`text-xs font-medium py-1 ${clay ? 'text-[--text-color] font-sans' : 'text-[#cad3f5]'}`} style={{ borderBottom: '2px solid var(--accent-color)' }}>Output</button>
                                     <div className="flex-1" />
-                                    <button onClick={() => setoutputlines([])} className="text-[#6e738d] hover:text-[#cad3f5] p-1 hover:bg-[#2a2a3e]">
+                                    <button onClick={() => setoutputlines([])} className={`p-1 ${clay ? 'text-[--text-muted] hover:text-[--text-color] rounded-[6px] hover:bg-[--bg-glass-hover]' : 'text-[#6e738d] hover:text-[#cad3f5] hover:bg-[#2a2a3e]'}`}>
                                         <IoTrashOutline size={14} />
                                     </button>
-                                    <button onClick={() => setshowpanel(false)} className="text-[#6e738d] hover:text-[#cad3f5] p-1 hover:bg-[#2a2a3e]">
+                                    <button onClick={() => setshowpanel(false)} className={`p-1 ${clay ? 'text-[--text-muted] hover:text-[--text-color] rounded-[6px] hover:bg-[--bg-glass-hover]' : 'text-[#6e738d] hover:text-[#cad3f5] hover:bg-[#2a2a3e]'}`}>
                                         <VscClose size={14} />
                                     </button>
                                 </div>
-                                <pre ref={outputRef} className="flex-1 p-3 text-xs font-mono overflow-auto whitespace-pre-wrap bg-[#1a1a2e]">
+                                <pre ref={outputRef} className={`flex-1 p-3 text-xs font-mono overflow-auto whitespace-pre-wrap ${clay ? '' : 'bg-[#1a1a2e]'}`} style={clay ? { background: 'rgba(30, 32, 48, 0.85)' } : undefined}>
                                     {outputlines.length === 0 ? (
-                                        <span className="text-[#6e738d]">Run your code to see output here...</span>
+                                        <span className={clay ? 'text-[--text-muted]' : 'text-[#6e738d]'}>Run your code to see output here...</span>
                                     ) : (
                                         outputlines.map((line, i) => (
                                             <div key={i} className={
@@ -870,16 +889,16 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
                 </div>
             </div>
 
-            <div className={`${ismobile ? 'h-16 pb-4 relative' : 'h-[22px]'} bg-accent flex items-center px-3 text-[11px] text-[--text-color] justify-between shrink-0`}>
+            <div className={`${ismobile ? 'h-16 pb-4 relative' : 'h-[22px]'} flex items-center px-3 text-[11px] justify-between shrink-0 ${clay ? 'font-sans text-[--text-muted] border-t border-[--glass-border]' : 'text-[--text-color]'}`} style={clay ? { background: 'var(--bg-glass)' } : { background: 'var(--accent-color)', color: 'white' }}>
                 {ismobile ? (
                     <>
-                        <button onClick={() => setmobilefilepanel(!mobilefilepanel)} className="flex items-center gap-2 px-3 py-1.5 bg-overlay">
+                        <button onClick={() => setmobilefilepanel(!mobilefilepanel)} className={`flex items-center gap-2 px-3 py-1.5 ${clay ? 'rounded-[8px] bg-[--bg-glass-hover]' : 'bg-overlay'}`}>
                             <VscFiles size={16} />
                             <span className="text-[13px]">Files</span>
                         </button>
-                        <span className={`text-xs opacity-80 ${ismobile ? 'absolute left-1/2 -translate-x-1/2' : ''}`}>{currentFile?.name || 'No file'}</span>
+                        <span className={`text-xs ${clay ? 'text-[--text-muted]' : 'opacity-80'} ${ismobile ? 'absolute left-1/2 -translate-x-1/2' : ''}`}>{currentFile?.name || 'No file'}</span>
                         <div className="flex items-center gap-2">
-                            <button onClick={runcode} disabled={isrunning} className="px-3 py-1.5 bg-overlay text-[13px]">
+                            <button onClick={runcode} disabled={isrunning} className={`px-3 py-1.5 text-[13px] ${clay ? 'rounded-[8px] bg-[--bg-glass-hover]' : 'bg-overlay'}`}>
                                 Run
                             </button>
                         </div>
@@ -904,19 +923,20 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
             {ismobile && mobilefilepanel && (
                 <div className="fixed inset-0 z-50 bg-black/50" onClick={() => setmobilefilepanel(false)}>
                     <div
-                        className="absolute bottom-0 left-0 right-0 bg-surface max-h-[70vh] overflow-hidden flex flex-col"
+                        className={`absolute bottom-0 left-0 right-0 max-h-[70vh] overflow-hidden flex flex-col ${clay ? 'rounded-t-[16px]' : 'bg-surface'}`}
+                        style={clay ? glassPanel : undefined}
                         onClick={e => e.stopPropagation()}
                     >
-                        <div className="flex items-center justify-between p-4 border-b border-[--border-color]">
+                        <div className={`flex items-center justify-between p-4 ${clay ? 'border-b border-[--glass-border]' : 'border-b border-[--border-color]'}`}>
                             <span className="text-[--text-color] font-medium">Project Files</span>
                             <div className="flex items-center gap-2">
-                                <button onClick={() => { setshownewfiledialog(true); setnewfileisfolder(false); setcurrentparentid(projectsId); setmobilefilepanel(false); }} className="p-2 bg-overlay text-[--text-color]">
+                                <button onClick={() => { setshownewfiledialog(true); setnewfileisfolder(false); setcurrentparentid(projectsId); setmobilefilepanel(false); }} className={`p-2 text-[--text-color] ${clay ? 'rounded-[8px] bg-[--bg-glass-hover]' : 'bg-overlay'}`}>
                                     <VscNewFile size={16} />
                                 </button>
-                                <button onClick={() => { setshownewfiledialog(true); setnewfileisfolder(true); setcurrentparentid(projectsId); setmobilefilepanel(false); }} className="p-2 bg-overlay text-[--text-color]">
+                                <button onClick={() => { setshownewfiledialog(true); setnewfileisfolder(true); setcurrentparentid(projectsId); setmobilefilepanel(false); }} className={`p-2 text-[--text-color] ${clay ? 'rounded-[8px] bg-[--bg-glass-hover]' : 'bg-overlay'}`}>
                                     <VscNewFolder size={16} />
                                 </button>
-                                <button onClick={() => setmobilefilepanel(false)} className="p-2 bg-overlay text-[--text-color]">
+                                <button onClick={() => setmobilefilepanel(false)} className={`p-2 text-[--text-color] ${clay ? 'rounded-[8px] bg-[--bg-glass-hover]' : 'bg-overlay'}`}>
                                     <VscClose size={16} />
                                 </button>
                             </div>
@@ -930,25 +950,25 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
 
             {contextmenupos && selectedfileforcontext && (
                 <div
-                    className="fixed bg-surface border border-[--border-color] py-1 min-w-[180px] z-50"
-                    style={{ left: contextmenupos.x, top: contextmenupos.y }}
+                    className={`fixed py-1 min-w-[180px] z-50 ${clay ? 'rounded-[12px] border border-[--glass-border]' : 'bg-surface border border-[--border-color]'}`}
+                    style={clay ? { ...glassPanel, left: contextmenupos.x, top: contextmenupos.y } : { left: contextmenupos.x, top: contextmenupos.y }}
                 >
                     <button
                         onClick={() => { setshowrenamedialog(true); setnewfilename(selectedfileforcontext.name); setcontextmenupos(null); }}
-                        className="w-full flex items-center gap-2 px-3 py-1.5 text-[13px] text-[--text-color] hover:bg-overlay text-left"
+                        className={`w-full flex items-center gap-2 px-3 py-1.5 text-[13px] text-[--text-color] text-left ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] font-sans' : 'hover:bg-overlay'}`}
                     >
                         <VscEdit size={14} /> Rename
                     </button>
                     <button
                         onClick={() => { handleDeleteFile(selectedfileforcontext); setcontextmenupos(null); }}
-                        className="w-full flex items-center gap-2 px-3 py-1.5 text-[13px] text-[--text-color] hover:bg-overlay text-left"
+                        className={`w-full flex items-center gap-2 px-3 py-1.5 text-[13px] text-[--text-color] text-left ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] font-sans' : 'hover:bg-overlay'}`}
                     >
                         <VscTrash size={14} /> Delete
                     </button>
-                    <div className="h-px bg-[--border-color] my-1" />
+                    <div className={`h-px my-1 ${clay ? 'bg-[--glass-border]' : 'bg-[--border-color]'}`} />
                     <button
                         onClick={() => { showInExplorer(selectedfileforcontext); setcontextmenupos(null); }}
-                        className="w-full flex items-center gap-2 px-3 py-1.5 text-[13px] text-[--text-color] hover:bg-overlay text-left"
+                        className={`w-full flex items-center gap-2 px-3 py-1.5 text-[13px] text-[--text-color] text-left ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] font-sans' : 'hover:bg-overlay'}`}
                     >
                         <VscGoToFile size={14} /> Show in Explorer
                     </button>
@@ -957,8 +977,10 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
 
             {shownewfiledialog && (
                 <div className="absolute inset-0 bg-black/50 flex items-start justify-center pt-20 z-50">
-                    <div className="bg-surface w-80 overflow-hidden border border-[--border-color]">
-                        <div className="flex items-center gap-2 p-3 bg-overlay">
+                    <div className={`w-80 overflow-hidden ${clay ? 'rounded-[16px] border border-[--glass-border]' : 'bg-surface border border-[--border-color]'}`}
+                        style={clay ? glassPanel : undefined}
+                    >
+                        <div className={`flex items-center gap-2 p-3 ${clay ? 'border-b border-[--glass-border] font-sans' : 'bg-overlay'}`}>
                             {newfileisfolder ? <VscNewFolder size={16} /> : <VscNewFile size={16} />}
                             <span className="text-[13px] font-medium">New {newfileisfolder ? 'Folder' : 'File'}</span>
                         </div>
@@ -972,13 +994,14 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
                                     if (e.key === 'Escape') setshownewfiledialog(false);
                                 }}
                                 placeholder={newfileisfolder ? 'Folder name' : 'filename.js'}
-                                className="w-full bg-overlay border border-transparent focus:border-accent px-3 py-2 text-[13px] outline-none text-[--text-color]"
+                                className={`w-full px-3 py-2 text-[13px] outline-none text-[--text-color] ${clay ? 'rounded-[12px] border border-[--glass-border]' : 'bg-overlay border border-transparent focus:border-accent'}`}
+                                style={clay ? glassInput : undefined}
                                 autoFocus
                             />
                         </div>
-                        <div className="flex justify-end gap-2 p-3 bg-[--bg-base]">
-                            <button onClick={() => setshownewfiledialog(false)} className="px-4 py-1.5 text-[13px] hover:bg-overlay">Cancel</button>
-                            <button onClick={createNewFile} className="px-4 py-1.5 text-[13px] bg-accent hover:opacity-90">Create</button>
+                        <div className={`flex justify-end gap-2 p-3 ${clay ? 'border-t border-[--glass-border] font-sans' : 'bg-[--bg-base]'}`}>
+                            <button onClick={() => setshownewfiledialog(false)} className={`px-4 py-1.5 text-[13px] ${clay ? 'rounded-[12px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'}`}>Cancel</button>
+                            <button onClick={createNewFile} className={`px-4 py-1.5 text-[13px] text-white ${clay ? 'rounded-[12px] active:scale-[0.97]' : ''} hover:opacity-90`} style={{ background: 'var(--accent-color)' }}>Create</button>
                         </div>
                     </div>
                 </div>
@@ -986,8 +1009,10 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
 
             {showrenamedialog && (
                 <div className="absolute inset-0 bg-black/50 flex items-start justify-center pt-20 z-50">
-                    <div className="bg-surface w-80 overflow-hidden border border-[--border-color]">
-                        <div className="flex items-center gap-2 p-3 bg-overlay">
+                    <div className={`w-80 overflow-hidden ${clay ? 'rounded-[16px] border border-[--glass-border]' : 'bg-surface border border-[--border-color]'}`}
+                        style={clay ? glassPanel : undefined}
+                    >
+                        <div className={`flex items-center gap-2 p-3 ${clay ? 'border-b border-[--glass-border] font-sans' : 'bg-overlay'}`}>
                             <VscEdit size={16} />
                             <span className="text-[13px] font-medium">Rename</span>
                         </div>
@@ -1000,13 +1025,14 @@ export default function CodeEditor({ isFocused = true, appId = 'python', id }: {
                                     if (e.key === 'Enter') handleRenameFile();
                                     if (e.key === 'Escape') { setshowrenamedialog(false); setselectedfileforcontext(null); }
                                 }}
-                                className="w-full bg-overlay border border-transparent focus:border-accent px-3 py-2 text-[13px] outline-none text-[--text-color]"
+                                className={`w-full px-3 py-2 text-[13px] outline-none text-[--text-color] ${clay ? 'rounded-[12px] border border-[--glass-border]' : 'bg-overlay border border-transparent focus:border-accent'}`}
+                                style={clay ? glassInput : undefined}
                                 autoFocus
                             />
                         </div>
-                        <div className="flex justify-end gap-2 p-3 bg-[--bg-base]">
-                            <button onClick={() => { setshowrenamedialog(false); setselectedfileforcontext(null); }} className="px-4 py-1.5 text-[13px] hover:bg-overlay">Cancel</button>
-                            <button onClick={handleRenameFile} className="px-4 py-1.5 text-[13px] bg-accent hover:opacity-90">Rename</button>
+                        <div className={`flex justify-end gap-2 p-3 ${clay ? 'border-t border-[--glass-border] font-sans' : 'bg-[--bg-base]'}`}>
+                            <button onClick={() => { setshowrenamedialog(false); setselectedfileforcontext(null); }} className={`px-4 py-1.5 text-[13px] ${clay ? 'rounded-[12px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'}`}>Cancel</button>
+                            <button onClick={handleRenameFile} className={`px-4 py-1.5 text-[13px] text-white ${clay ? 'rounded-[12px] active:scale-[0.97]' : ''} hover:opacity-90`} style={{ background: 'var(--accent-color)' }}>Rename</button>
                         </div>
                     </div>
                 </div>

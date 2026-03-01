@@ -9,6 +9,8 @@ import {
 import { useWindows } from '../WindowContext';
 import { useMenuAction } from '../hooks/useMenuAction';
 import { useMenuRegistration } from '../AppMenuContext';
+import { useIsClay } from '../hooks/useIsClay';
+import { glassSidebar, glassCard, glassInput, glassButton } from '../hooks/useClayStyles';
 
 interface Reminder {
     id: string;
@@ -59,6 +61,7 @@ function isOverdue(dateStr: string) {
 export default function Reminders({ appId = 'reminders', id }: { appId?: string; id?: string }) {
     const { activewindow } = useWindows();
     const isActiveWindow = activewindow === id;
+    const clay = useIsClay();
 
     const [reminders, setReminders] = useState<Reminder[]>([]);
     const [lists, setLists] = useState<ReminderList[]>([]);
@@ -181,30 +184,37 @@ export default function Reminders({ appId = 'reminders', id }: { appId?: string;
     const viewTitle = smartLists.find(s => s.id === selectedView)?.name || lists.find(l => l.id === selectedView)?.name || 'Reminders';
 
     return (
-        <div className="flex h-full bg-[--bg-base] text-[--text-color] font-mono text-xs overflow-hidden" tabIndex={0} onKeyDown={handleKeyDown}>
-            <div className="w-[200px] shrink-0 border-r border-[--border-color] bg-surface flex flex-col overflow-hidden anime-gradient-top">
+        <div className={`flex h-full ${clay ? 'bg-[--bg-base]' : 'bg-[--bg-base] font-mono'} text-[--text-color] text-xs overflow-hidden`} tabIndex={0} onKeyDown={handleKeyDown}>
+            {/* Sidebar */}
+            <div className={`${clay ? 'w-[230px]' : 'w-[200px]'} shrink-0 flex flex-col overflow-hidden ${clay ? '' : 'border-r border-[--border-color] bg-surface anime-gradient-top'}`}
+                style={clay ? glassSidebar : undefined}>
                 <div className="p-3 space-y-0.5 flex-1 overflow-y-auto">
-                    <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Smart Lists</div>
+                    <div className={`uppercase font-bold text-[--text-muted] pl-3 mb-2 ${clay ? 'text-[11px] tracking-wide' : 'text-[11px] font-semibold'}`}>Smart Lists</div>
                     {smartLists.map(sl => {
                         const active = selectedView === sl.id;
                         const Icon = sl.icon;
                         return (
                             <div key={sl.id} onClick={() => setSelectedView(sl.id)}
-                                className={`flex items-center gap-2.5 px-3 py-1.5 cursor-pointer mx-1 transition-colors ${
-                                    active ? 'bg-accent text-[--bg-base]' : 'text-[--text-color] hover:bg-overlay'
-                                }`}>
-                                <div className="w-5 h-5 flex items-center justify-center text-[--bg-base] shrink-0" style={{ backgroundColor: active ? 'transparent' : sl.color }}>
-                                    <Icon size={12} className={active ? 'text-[--bg-base]' : ''} />
+                                className={`flex items-center gap-3 px-3 cursor-pointer mx-1 transition-all ${clay ? 'py-2.5 rounded-[12px] active:scale-[0.98]' : 'py-1.5 gap-2.5'} ${
+                                    active
+                                        ? (clay ? 'text-white' : 'bg-accent text-[--bg-base]')
+                                        : (clay ? 'text-[--text-color] hover:bg-[--bg-glass-hover]' : 'text-[--text-color] hover:bg-overlay')
+                                }`}
+                                style={active && clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
+                            >
+                                <div className={`flex items-center justify-center shrink-0 ${clay ? 'w-6 h-6 rounded-[7px]' : 'w-5 h-5'}`}
+                                    style={{ backgroundColor: active && clay ? 'rgba(255,255,255,0.25)' : active ? 'transparent' : sl.color }}>
+                                    <Icon size={clay ? 14 : 12} className={active ? (clay ? 'text-white' : 'text-[--bg-base]') : 'text-white'} />
                                 </div>
-                                <span className="text-[13px] leading-none">{sl.name}</span>
-                                {counts[sl.id] > 0 && <span className="ml-auto text-[11px] opacity-70">{counts[sl.id]}</span>}
+                                <span className={`leading-none ${clay ? 'text-[14px] font-medium' : 'text-[13px]'}`}>{sl.name}</span>
+                                {counts[sl.id] > 0 && <span className={`ml-auto text-[11px] ${active && clay ? 'text-white/70' : 'text-[--text-muted]'}`}>{counts[sl.id]}</span>}
                             </div>
                         );
                     })}
                     {lists.length > 0 && (
                         <>
-                            <div className="border-t border-[--border-color] my-2" />
-                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">My Lists</div>
+                            <div className={`my-2 ${clay ? 'border-t border-[--text-muted]/10' : 'border-t border-[--border-color]'}`} />
+                            <div className={`uppercase font-bold text-[--text-muted] pl-3 mb-2 ${clay ? 'text-[11px] tracking-wide' : 'text-[11px] font-semibold'}`}>My Lists</div>
                         </>
                     )}
                     {lists.map(l => {
@@ -212,72 +222,97 @@ export default function Reminders({ appId = 'reminders', id }: { appId?: string;
                         return (
                             <div key={l.id} className="group flex items-center">
                                 <div onClick={() => setSelectedView(l.id)}
-                                    className={`flex-1 flex items-center gap-2.5 px-3 py-1.5 cursor-pointer mx-1 transition-colors ${
-                                        active ? 'bg-accent text-[--bg-base]' : 'text-[--text-color] hover:bg-overlay'
-                                    }`}>
-                                    <div className="w-5 h-5 flex items-center justify-center text-[--bg-base] shrink-0" style={{ backgroundColor: active ? 'transparent' : l.color }}>
-                                        <IoListOutline size={12} className={active ? 'text-[--bg-base]' : ''} />
+                                    className={`flex-1 flex items-center gap-3 px-3 cursor-pointer mx-1 transition-all ${clay ? 'py-2.5 rounded-[12px] active:scale-[0.98]' : 'py-1.5 gap-2.5'} ${
+                                        active
+                                            ? (clay ? 'text-white' : 'bg-accent text-[--bg-base]')
+                                            : (clay ? 'text-[--text-color] hover:bg-[--bg-glass-hover]' : 'text-[--text-color] hover:bg-overlay')
+                                    }`}
+                                    style={active && clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
+                                >
+                                    <div className={`flex items-center justify-center shrink-0 ${clay ? 'w-6 h-6 rounded-[7px]' : 'w-5 h-5'}`}
+                                        style={{ backgroundColor: active && clay ? 'rgba(255,255,255,0.25)' : active ? 'transparent' : l.color }}>
+                                        <IoListOutline size={clay ? 14 : 12} className={active ? (clay ? 'text-white' : 'text-[--bg-base]') : 'text-white'} />
                                     </div>
-                                    <span className="text-[13px] leading-none flex-1 truncate">{l.name}</span>
-                                    {counts[l.id] > 0 && <span className="ml-auto text-[11px] opacity-70">{counts[l.id]}</span>}
+                                    <span className={`flex-1 truncate leading-none ${clay ? 'text-[14px] font-medium' : 'text-[13px]'}`}>{l.name}</span>
+                                    {counts[l.id] > 0 && <span className={`ml-auto text-[11px] ${active && clay ? 'text-white/70' : 'text-[--text-muted]'}`}>{counts[l.id]}</span>}
                                 </div>
-                                <button onClick={() => deleteList(l.id)} className="opacity-0 group-hover:opacity-100 p-1 text-[--text-muted] hover:text-pastel-red transition-opacity"><IoClose size={12} /></button>
+                                <button onClick={() => deleteList(l.id)} className={`opacity-0 group-hover:opacity-100 p-1 text-[--text-muted] hover:text-pastel-red transition-opacity ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover]' : ''}`}><IoClose size={12} /></button>
                             </div>
                         );
                     })}
                 </div>
-                <div className="p-2 border-t border-[--border-color]">
+                <div className={`p-2 ${clay ? 'border-t border-[--text-muted]/10' : 'border-t border-[--border-color]'}`}>
                     {showNewList ? (
-                        <div className="space-y-1.5">
+                        <div className="space-y-1.5 p-1">
                             <input value={newListName} onChange={e => setNewListName(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') addList(); if (e.key === 'Escape') setShowNewList(false); }}
-                                placeholder="List name" autoFocus className="w-full bg-overlay border border-[--border-color] px-2 py-1 text-xs outline-none" />
+                                placeholder="List name" autoFocus
+                                className={`w-full px-2.5 py-1.5 text-xs outline-none text-[--text-color] placeholder:text-[--text-muted] ${clay ? 'rounded-[12px]' : 'bg-overlay border border-[--border-color]'}`}
+                                style={clay ? glassInput : undefined} />
                             <div className="flex gap-1 flex-wrap">
                                 {COLORS.map(c => (
                                     <button key={c} onClick={() => setNewListColor(c)}
-                                        className={`w-4 h-4 rounded-full border-2 transition-transform ${newListColor === c ? 'border-white scale-125' : 'border-transparent'}`} style={{ background: c }} />
+                                        className={`w-4 h-4 rounded-full border-2 transition-transform ${newListColor === c ? 'scale-125' : ''}`}
+                                        style={{ background: c, borderColor: newListColor === c ? 'var(--text-color)' : 'transparent' }} />
                                 ))}
                             </div>
-                            <div className="flex gap-1">
-                                <button onClick={addList} className="flex-1 bg-pastel-blue/20 text-pastel-blue px-2 py-0.5 text-[10px] hover:bg-pastel-blue/30">Add</button>
-                                <button onClick={() => setShowNewList(false)} className="flex-1 bg-overlay px-2 py-0.5 text-[10px] hover:bg-overlay/80 text-[--text-muted]">Cancel</button>
+                            <div className="flex gap-2">
+                                <button onClick={addList}
+                                    className={`px-4 py-1.5 text-[11px] font-medium text-white transition-all ${clay ? 'rounded-[12px] active:scale-[0.97] hover:opacity-90' : ''}`}
+                                    style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : { background: 'var(--accent-color)' }}>
+                                    Add
+                                </button>
+                                <button onClick={() => setShowNewList(false)}
+                                    className={`px-4 py-1.5 text-[11px] text-[--text-muted] transition-colors ${clay ? 'rounded-[12px] active:scale-[0.97] hover:bg-[--bg-glass-hover]' : 'bg-overlay hover:opacity-80'}`}
+                                    style={clay ? glassButton : undefined}>
+                                    Cancel
+                                </button>
                             </div>
                         </div>
                     ) : (
-                        <button onClick={() => setShowNewList(true)} className="w-full flex items-center gap-1.5 px-2 py-1 text-[--text-muted] hover:text-[--text-color] hover:bg-overlay transition-colors">
-                            <IoAddOutline size={14} /> <span>Add List</span>
+                        <button onClick={() => setShowNewList(true)}
+                            className={`w-full flex items-center gap-1.5 px-2 py-1.5 text-[--text-muted] hover:text-[--text-color] transition-colors ${clay ? 'rounded-[12px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'}`}>
+                            <IoAddOutline size={14} /> <span className={clay ? 'text-[13px]' : ''}>Add List</span>
                         </button>
                     )}
                 </div>
             </div>
 
-            <div className="flex-1 flex flex-col overflow-hidden">
-                <div className="h-[50px] flex items-center justify-between px-4 border-b border-[--border-color] bg-surface shrink-0">
+            {/* Content Area */}
+            <div className={`flex-1 flex flex-col overflow-hidden ${clay ? 'bg-[--bg-base]' : ''}`}>
+                <div className={`h-[50px] flex items-center justify-between px-4 shrink-0 ${clay ? 'border-b border-[--text-muted]/10' : 'border-b border-[--border-color] bg-surface'}`}>
                     <div>
-                        <span className="text-[13px] font-semibold">{viewTitle}</span>
+                        <span className="text-[13px] font-semibold text-[--text-color]">{viewTitle}</span>
                         <span className="text-[11px] text-[--text-muted] ml-2">{filtered.length} reminder{filtered.length !== 1 ? 's' : ''}</span>
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto px-2 py-1">
+                <div className={`flex-1 overflow-y-auto px-2 py-1 ${clay ? 'px-3 py-2' : ''}`}>
                     {filtered.length === 0 && (
                         <div className="flex flex-col items-center justify-center h-full text-[--text-muted] gap-2">
-                            <IoListOutline size={28} className="opacity-30" />
-                            <span className="text-[11px]">No reminders</span>
+                            <IoListOutline size={48} className={clay ? 'text-[--text-muted]' : ''} style={clay ? undefined : { opacity: 0.3 }} />
+                            <span className="text-[13px] font-medium text-[--text-color]">No Reminders</span>
+                            <span className="text-[12px] text-[--text-muted]">Add a reminder below to get started.</span>
                         </div>
                     )}
                     {filtered.map(r => {
                         const expanded = selectedId === r.id;
                         const overdue = isOverdue(r.dueDate) && !r.completed;
                         return (
-                            <div key={r.id} className={`mx-1 my-0.5 border transition-colors cursor-pointer ${expanded ? 'border-[--border-color] bg-overlay' : 'border-transparent hover:bg-overlay/40'}`}
+                            <div key={r.id}
+                                className={`mx-1 my-0.5 transition-all cursor-pointer ${clay ? 'rounded-[12px]' : ''} ${
+                                    expanded
+                                        ? (clay ? 'rounded-[16px] mb-1' : 'border border-[--border-color] bg-overlay')
+                                        : (clay ? 'hover:bg-[--bg-glass-hover]' : 'border border-transparent hover:bg-overlay/40')
+                                }`}
+                                style={expanded && clay ? { ...glassCard, borderRadius: '16px' } : undefined}
                                 onClick={() => setSelectedId(expanded ? null : r.id)}>
-                                <div className="flex items-center gap-2 px-3 py-2">
+                                <div className={`flex items-center gap-2 px-3 ${clay ? 'py-2.5' : 'py-2'}`}>
                                     <button onClick={e => { e.stopPropagation(); updateReminder(r.id, { completed: !r.completed }); }}
-                                        className={`shrink-0 transition-colors ${r.completed ? 'text-pastel-green' : 'text-[--text-muted] hover:text-pastel-green'}`}>
+                                        className={`shrink-0 transition-colors ${clay ? 'active:scale-[0.97]' : ''} ${r.completed ? 'text-pastel-green' : 'text-[--text-muted] hover:text-pastel-green'}`}>
                                         {r.completed ? <IoCheckmarkCircle size={18} /> : <IoEllipseOutline size={18} />}
                                     </button>
                                     <div className="flex-1 min-w-0">
-                                        <span className={`block truncate ${r.completed ? 'line-through text-[--text-muted]' : ''}`}>{r.title}</span>
+                                        <span className={`block truncate text-[13px] ${r.completed ? 'line-through text-[--text-muted]' : 'text-[--text-color]'}`}>{r.title}</span>
                                         {r.dueDate && <span className={`text-[10px] ${overdue ? 'text-pastel-red' : 'text-[--text-muted]'}`}>
                                             <IoCalendarOutline size={10} className="inline mr-0.5 -mt-px" />{new Date(r.dueDate).toLocaleDateString()}
                                         </span>}
@@ -289,21 +324,24 @@ export default function Reminders({ appId = 'reminders', id }: { appId?: string;
                                     </button>
                                 </div>
                                 {expanded && (
-                                    <div className="px-3 pb-3 pt-1 space-y-2 border-t border-[--border-color]" onClick={e => e.stopPropagation()}>
+                                    <div className={`px-3 pb-3 pt-1 space-y-2 ${clay ? 'border-t border-[--text-muted]/10' : 'border-t border-[--border-color]'}`} onClick={e => e.stopPropagation()}>
                                         <input value={r.title} onChange={e => updateReminder(r.id, { title: e.target.value })}
-                                            className="w-full bg-transparent border-b border-[--border-color] pb-1 text-xs outline-none font-medium" />
+                                            className={`w-full bg-transparent pb-1 text-xs outline-none font-medium text-[--text-color] ${clay ? 'border-b border-[--text-muted]/10' : 'border-b border-[--border-color]'}`} />
                                         <textarea value={r.notes} onChange={e => updateReminder(r.id, { notes: e.target.value })} placeholder="Add notes..."
-                                            className="w-full bg-overlay border border-[--border-color] px-2 py-1 text-[11px] outline-none resize-none h-14" />
+                                            className={`w-full px-2.5 py-1.5 text-[11px] outline-none resize-none h-14 text-[--text-color] placeholder:text-[--text-muted] ${clay ? 'rounded-[12px]' : 'bg-overlay border border-[--border-color]'}`}
+                                            style={clay ? glassInput : undefined} />
                                         <div className="flex items-center gap-3 flex-wrap">
                                             <label className="flex items-center gap-1 text-[10px] text-[--text-muted]">
                                                 <IoCalendarOutline size={12} />
                                                 <input type="date" value={r.dueDate} onChange={e => updateReminder(r.id, { dueDate: e.target.value })}
-                                                    className="bg-overlay border border-[--border-color] px-1.5 py-0.5 text-[10px] outline-none text-[--text-color]" />
+                                                    className={`px-1.5 py-0.5 text-[10px] outline-none text-[--text-color] ${clay ? 'rounded-[8px]' : 'bg-overlay border border-[--border-color]'}`}
+                                                    style={clay ? glassInput : undefined} />
                                             </label>
                                             <label className="flex items-center gap-1 text-[10px] text-[--text-muted]">
                                                 Priority
                                                 <select value={r.priority} onChange={e => updateReminder(r.id, { priority: e.target.value as Reminder['priority'] })}
-                                                    className="bg-overlay border border-[--border-color] px-1.5 py-0.5 text-[10px] outline-none text-[--text-color]">
+                                                    className={`px-1.5 py-0.5 text-[10px] outline-none text-[--text-color] ${clay ? 'rounded-[8px]' : 'bg-overlay border border-[--border-color]'}`}
+                                                    style={clay ? glassInput : undefined}>
                                                     <option value="none">None</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option>
                                                 </select>
                                             </label>
@@ -311,7 +349,8 @@ export default function Reminders({ appId = 'reminders', id }: { appId?: string;
                                                 <label className="flex items-center gap-1 text-[10px] text-[--text-muted]">
                                                     List
                                                     <select value={r.listId} onChange={e => updateReminder(r.id, { listId: e.target.value })}
-                                                        className="bg-overlay border border-[--border-color] px-1.5 py-0.5 text-[10px] outline-none text-[--text-color]">
+                                                        className={`px-1.5 py-0.5 text-[10px] outline-none text-[--text-color] ${clay ? 'rounded-[8px]' : 'bg-overlay border border-[--border-color]'}`}
+                                                        style={clay ? glassInput : undefined}>
                                                         <option value="">None</option>
                                                         {lists.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
                                                     </select>
@@ -319,7 +358,8 @@ export default function Reminders({ appId = 'reminders', id }: { appId?: string;
                                             )}
                                         </div>
                                         <div className="flex justify-end">
-                                            <button onClick={() => deleteReminder(r.id)} className="flex items-center gap-1 text-[10px] text-pastel-red hover:text-pastel-red/80 transition-colors">
+                                            <button onClick={() => deleteReminder(r.id)}
+                                                className={`flex items-center gap-1 text-[10px] text-pastel-red hover:opacity-80 transition-colors ${clay ? 'rounded-[8px] px-2 py-1 active:scale-[0.97] hover:bg-[--bg-glass-hover]' : ''}`}>
                                                 <IoTrashOutline size={12} /> Delete
                                             </button>
                                         </div>
@@ -331,14 +371,19 @@ export default function Reminders({ appId = 'reminders', id }: { appId?: string;
                 </div>
 
                 {selectedView !== 'completed' && (
-                    <div className="px-3 py-2 border-t border-[--border-color] shrink-0">
-                        <div className="flex items-center gap-2">
-                            <IoAddOutline size={16} className="text-pastel-blue shrink-0" />
+                    <div className={`px-3 py-2 shrink-0 ${clay ? 'border-t border-[--text-muted]/10' : 'border-t border-[--border-color]'}`}>
+                        <div className={`flex items-center gap-2 ${clay ? 'px-2 py-1.5 rounded-[12px]' : ''}`}
+                            style={clay ? glassInput : undefined}>
+                            <IoAddOutline size={16} className="shrink-0" style={{ color: 'var(--accent-color)' }} />
                             <input id="reminder-input" value={newTitle} onChange={e => setNewTitle(e.target.value)}
                                 onKeyDown={e => { if (e.key === 'Enter' && newTitle.trim()) { e.preventDefault(); e.stopPropagation(); addReminder(); } }}
-                                placeholder="Add a reminder..." className="flex-1 bg-transparent text-xs outline-none placeholder:text-[--text-muted]" />
+                                placeholder="Add a reminder..." className="flex-1 bg-transparent text-xs outline-none placeholder:text-[--text-muted] text-[--text-color]" />
                             {newTitle.trim() && (
-                                <button onClick={addReminder} className="bg-pastel-blue/20 text-pastel-blue px-2 py-0.5 text-[10px] hover:bg-pastel-blue/30 transition-colors">Add</button>
+                                <button onClick={addReminder}
+                                    className={`px-3 py-1 text-[11px] font-medium text-white transition-all ${clay ? 'rounded-[12px] active:scale-[0.97] hover:opacity-90' : ''}`}
+                                    style={{ background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' }}>
+                                    Add
+                                </button>
                             )}
                         </div>
                     </div>

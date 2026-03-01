@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useIsClay } from '../hooks/useIsClay';
 
 interface SelectionAreaProps {
     onSelectionChange?: (rect: DOMRect | null) => void;
@@ -9,6 +10,7 @@ interface SelectionAreaProps {
 }
 
 export const SelectionArea: React.FC<SelectionAreaProps> = ({ onSelectionChange, onSelectionEnd, containerRef, enabled = true, zIndex = 50 }) => {
+    const clay = useIsClay();
     const [startPoint, setStartPoint] = useState<{ x: number, y: number } | null>(null);
     const [currentPoint, setCurrentPoint] = useState<{ x: number, y: number } | null>(null);
     const isSelectingRef = useRef(false);
@@ -124,13 +126,20 @@ export const SelectionArea: React.FC<SelectionAreaProps> = ({ onSelectionChange,
 
     return (
         <div
-            className="absolute bg-accent/20 border border-accent/50 pointer-events-none"
+            className={`absolute pointer-events-none ${clay ? 'rounded-[4px]' : ''}`}
             style={{
                 top: rect.y,
                 left: rect.x,
                 width: rect.width,
                 height: rect.height,
                 zIndex: zIndex,
+                background: clay
+                    ? 'color-mix(in srgb, var(--accent-color) 15%, transparent)'
+                    : undefined,
+                border: clay
+                    ? '1px solid color-mix(in srgb, var(--accent-color) 40%, transparent)'
+                    : '1px solid var(--accent-color)',
+                ...(clay ? {} : { backgroundColor: 'color-mix(in srgb, var(--accent-color) 20%, transparent)' }),
             }}
         />
     );

@@ -8,6 +8,8 @@ import { useMenuAction } from '../hooks/useMenuAction';
 import { useMenuRegistration } from '../AppMenuContext';
 import { useAuth } from '../AuthContext';
 import { iselectron, terminal as nativeterminal, getsysteminfo } from '@/utils/platform';
+import { useIsClay } from '../hooks/useIsClay';
+import { glassPanel, glassInput } from '../hooks/useClayStyles';
 
 const XTermShell = dynamic(() => import('../ui/XTermShell'), { ssr: false });
 
@@ -107,6 +109,7 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
     const { ismobile } = useDevice();
     const { files, createFile, updateFileContent } = useFileSystem();
     const { user, isGuest } = useAuth();
+    const clay = useIsClay();
 
     const username = user?.username || 'guest';
     const userhomeid = isGuest ? 'user-guest' : `user-${username}`;
@@ -634,7 +637,8 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
     return (
         <div
             ref={containerref}
-            className="h-full w-full bg-[#1e2030] p-4 overflow-y-auto cursor-text"
+            className={`h-full w-full p-4 overflow-y-auto cursor-text`}
+            style={clay ? { background: 'rgba(30, 32, 48, 0.85)' } : { background: '#1e2030' }}
             onClick={() => {
                 if (ismobile) setcanedit(true);
                 inputref.current?.focus();
@@ -651,8 +655,8 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
                     {zshconfig.promptStyle !== 'powerline' ? null : <span className="w-1" />}
                     <input
                         ref={inputref}
-                        className="flex-1 bg-transparent outline-none text-[#cad3f5] font-mono ml-1 min-w-[100px]"
-                        style={{ fontSize: `${fontSize}px` }}
+                        className={`flex-1 bg-transparent outline-none text-[#cad3f5] font-mono ml-1 min-w-[100px] ${clay ? 'rounded-[10px] px-2 py-0.5' : ''}`}
+                        style={clay ? { fontSize: `${fontSize}px`, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border-subtle, rgba(100,120,180,0.08))', boxShadow: 'var(--shadow-inset)' } : { fontSize: `${fontSize}px` }}
                         value={currline}
                         onChange={(e) => setcurrline(e.target.value)}
                         onKeyDown={handlekey}
