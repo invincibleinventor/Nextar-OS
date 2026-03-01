@@ -4,9 +4,12 @@ import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { FaWifi, FaMoon, FaSun, FaBluetoothB } from 'react-icons/fa'
 import { BsFillVolumeUpFill, BsSunFill, BsVolumeMuteFill } from 'react-icons/bs'
 import { FiBatteryCharging, FiBattery } from 'react-icons/fi'
-import { IoPlay, IoPause, IoPlaySkipForward, IoPlaySkipBack, IoContract, IoPower, IoSettingsSharp, IoExpand } from 'react-icons/io5'
+import { IoPlay, IoPause, IoPlaySkipForward, IoPlaySkipBack, IoContract, IoPower, IoSettingsSharp, IoExpand, IoFlashlight, IoCamera, IoCalculator, IoStopwatch } from 'react-icons/io5'
 import { MdAirplanemodeActive } from 'react-icons/md'
 import { HiSparkles } from 'react-icons/hi2'
+import { FaPlane } from 'react-icons/fa'
+import { BsFillGridFill } from 'react-icons/bs'
+import { BiSignal5 } from 'react-icons/bi'
 import { useSettings } from './SettingsContext'
 import { useCheerpXSafe } from './CheerpXContext'
 import { useTheme } from './ThemeContext'
@@ -44,6 +47,8 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
   const [batterystatus, setbatterystatus] = useState({ percentage: 100, charging: false, available: false })
   const [brightnessavailable, setbrightnessavailable] = useState(false)
   const [airplanemode, setairplanemode] = useState(false)
+  const [focusmode, setfocusmode] = useState(false)
+  const [flashlight, setflashlight] = useState(false)
 
   const fetchsystemstatus = useCallback(async () => {
     if (!iselectron) return;
@@ -168,7 +173,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
        CLAY MODE — Redesigned Neo-Glass Control Center
        ═══════════════════════════════════════════ */
     <div
-      className={`${ismobile ? 'w-full max-w-[380px] pointer-events-auto' : 'w-full'} p-4 flex flex-col gap-3`}
+      className={`${ismobile ? 'w-full sm:max-w-[380px] sm:mx-auto pointer-events-auto' : 'w-full'} p-4 flex flex-col gap-3`}
       onClick={(e) => e.stopPropagation()}
     >
 
@@ -487,146 +492,175 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
     </div>
   ) : (
     /* ═══════════════════════════════════════════
-       CLASSIC MODE — kept minimal
+       CLASSIC MODE — Original layout
        ═══════════════════════════════════════════ */
-    <div
-      className={`${ismobile ? 'w-full max-w-[360px] pointer-events-auto' : 'w-full'} p-4 flex flex-col gap-3`}
-      onClick={(e) => e.stopPropagation()}
-    >
-      {/* User row */}
-      <div className="flex items-center gap-3 p-3 rounded-[14px]" style={{ background: 'var(--bg-overlay)', border: '1px solid var(--border-color)' }}>
-        <div className="w-[36px] h-[36px] rounded-full overflow-hidden shrink-0" style={{ border: '1px solid var(--border-color)' }}>
-          <Image src={user?.avatar || '/pfp.png'} alt="User" width={36} height={36} className="object-cover w-full h-full" />
+    ismobile ? (
+      <div className="w-full max-w-[340px] mx-auto pointer-events-auto px-4 space-y-4" onClick={(e) => e.stopPropagation()}>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-overlay border border-[--border-color] p-3 grid grid-cols-2 grid-rows-2 gap-2 aspect-square">
+            <div className="flex items-center justify-center bg-accent aspect-square">
+              <FaPlane className="text-[--bg-base]" size={18} />
+            </div>
+            <div className="flex items-center justify-center bg-pastel-green aspect-square">
+              <BiSignal5 className="text-[--bg-base]" size={18} />
+            </div>
+            <div onClick={togglewifi} className={`flex items-center justify-center aspect-square cursor-pointer active:scale-95 transition-all ${wifienabled ? 'bg-pastel-blue' : wificonnecting ? 'bg-pastel-yellow' : 'bg-[--border-color]'}`}>
+              <FaWifi className={wifienabled ? 'text-[--bg-base]' : wificonnecting ? 'text-[--bg-base]' : 'text-[--text-color]'} size={18} />
+            </div>
+            <div onClick={togglebluetooth} className={`flex items-center justify-center aspect-square cursor-pointer active:scale-95 transition-all ${bluetoothstatus.enabled ? 'bg-pastel-blue' : 'bg-[--border-color]'}`}>
+              <FaBluetoothB className={bluetoothstatus.enabled ? 'text-[--bg-base]' : 'text-[--text-color]'} size={18} />
+            </div>
+          </div>
+          <div className="bg-overlay border border-[--border-color] p-3 flex flex-col justify-between aspect-square">
+            <div className='flex items-center justify-center flex-1'>
+              <div className='text-center w-full px-2 overflow-hidden'>
+                <p className="text-[--text-color] text-[13px] font-medium truncate">{isplaying ? currenttrack.title : 'Not Playing'}</p>
+                <p className="text-[--text-muted] text-[10px] truncate">{isplaying ? currenttrack.artist : 'Music'}</p>
+              </div>
+            </div>
+            <div className="flex justify-center items-center gap-4 text-[--text-color] pb-1">
+              <button onClick={prev} className="opacity-60 active:opacity-100"><IoPlaySkipBack size={18} /></button>
+              <button onClick={toggle} className="opacity-80 active:opacity-100">{isplaying ? <IoPause size={24} /> : <IoPlay size={24} />}</button>
+              <button onClick={next} className="opacity-60 active:opacity-100"><IoPlaySkipForward size={18} /></button>
+            </div>
+          </div>
         </div>
-        <div className="flex-1 min-w-0">
-          <div className="text-[13px] font-semibold text-[--text-color] truncate">{user?.name || 'Guest'}</div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-overlay border border-[--border-color] p-3 flex items-center justify-center">
+              <div className="bg-[--border-color] p-3"><BsFillGridFill className="text-[--text-color]" size={18} /></div>
+            </div>
+            <div onClick={() => setfocusmode(!focusmode)} className={`bg-overlay border border-[--border-color] p-3 flex items-center justify-center cursor-pointer active:scale-95 transition-all ${focusmode ? 'border-pastel-mauve' : ''}`}>
+              <div className={`p-3 ${focusmode ? 'bg-pastel-mauve' : 'bg-[--border-color]'}`}><FaMoon className={focusmode ? 'text-[--bg-base]' : 'text-[--text-color]'} size={18} /></div>
+            </div>
+          </div>
+          <div onClick={togglefullscreen} className={`bg-overlay border border-[--border-color] p-3 h-full flex items-center justify-center cursor-pointer active:scale-95 transition-all ${isfullscreen ? 'border-pastel-green' : ''}`}>
+            <div className='flex flex-col items-center gap-1 text-[--text-color]'>
+              {isfullscreen ? <IoContract size={20} /> : <IoExpand size={20} />}
+              <span className='text-[10px]'>{isfullscreen ? 'Exit' : 'Full Screen'}</span>
+            </div>
+          </div>
         </div>
-        <button onClick={(e) => { e.stopPropagation(); handlelockscreen(); }} className="text-[11px] font-medium text-[--text-muted] hover:text-[--text-color] px-3 py-1.5 rounded-[8px] transition-all active:scale-[0.97]" style={{ background: 'var(--bg-overlay)', border: '1px solid var(--border-color)' }}>
-          Logout
-        </button>
-        <button onClick={(e) => { e.stopPropagation(); handlelockscreen(); }} className="w-[32px] h-[32px] flex items-center justify-center rounded-[8px] text-[--text-muted] hover:text-[--text-color] transition-all active:scale-[0.97]" style={{ background: 'var(--bg-overlay)', border: '1px solid var(--border-color)' }}>
-          <IoPower size={13} />
-        </button>
-      </div>
-
-      {/* Connectivity grid */}
-      <div className="grid grid-cols-2 gap-3">
-        <button onClick={togglewifi} className="w-full text-left rounded-[14px] p-3 transition-all active:scale-[0.97] cursor-pointer select-none" style={wifienabled ? { background: 'var(--pastel-blue)', border: '1px solid transparent' } : { background: 'var(--bg-overlay)', border: '1px solid var(--border-color)' }}>
-          <div className="flex items-center gap-2.5">
-            <div className="w-[30px] h-[30px] rounded-full flex items-center justify-center shrink-0" style={wifienabled ? { background: 'rgba(255,255,255,0.25)' } : { background: 'var(--bg-overlay)' }}>
-              <FaWifi size={13} className={wifienabled ? 'text-white' : 'text-[--text-color]'} />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className={`text-[12px] font-semibold leading-tight ${wifienabled ? 'text-white' : 'text-[--text-color]'}`}>Internet</p>
-              <p className={`text-[10px] truncate leading-tight mt-0.5 ${wifienabled ? 'text-white/70' : 'text-[--text-muted]'}`}>{wifilabel}</p>
-            </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3 h-36" onPointerDown={(e) => e.stopPropagation()}>
+            <CCSlider value={brightnessval} onchange={handlebrightness} icon={BsSunFill} />
+            <CCSlider value={volumeval} onchange={handlevolume} icon={ismuted ? BsVolumeMuteFill : BsFillVolumeUpFill} onIconClick={togglemute} />
           </div>
-        </button>
-        <button onClick={togglebluetooth} className="w-full text-left rounded-[14px] p-3 transition-all active:scale-[0.97] cursor-pointer select-none" style={bluetoothstatus.enabled ? { background: 'var(--pastel-blue)', border: '1px solid transparent' } : { background: 'var(--bg-overlay)', border: '1px solid var(--border-color)' }}>
-          <div className="flex items-center gap-2.5">
-            <div className="w-[30px] h-[30px] rounded-full flex items-center justify-center shrink-0" style={bluetoothstatus.enabled ? { background: 'rgba(255,255,255,0.25)' } : { background: 'var(--bg-overlay)' }}>
-              <FaBluetoothB size={13} className={bluetoothstatus.enabled ? 'text-white' : 'text-[--text-color]'} />
+          <div className="grid grid-cols-2 grid-rows-2 gap-3 h-36">
+            <div onClick={() => setflashlight(!flashlight)} className={`bg-overlay border border-[--border-color] flex items-center justify-center active:scale-95 transition-all cursor-pointer ${flashlight ? 'border-pastel-yellow' : ''}`}>
+              <IoFlashlight className={`${flashlight ? 'text-pastel-yellow' : 'text-[--text-color]'}`} size={24} />
             </div>
-            <div className="min-w-0 flex-1">
-              <p className={`text-[12px] font-semibold leading-tight ${bluetoothstatus.enabled ? 'text-white' : 'text-[--text-color]'}`}>Bluetooth</p>
-              <p className={`text-[10px] truncate leading-tight mt-0.5 ${bluetoothstatus.enabled ? 'text-white/70' : 'text-[--text-muted]'}`}>{bluetoothstatus.enabled ? 'On' : 'Off'}</p>
-            </div>
+            <div className="bg-overlay border border-[--border-color] flex items-center justify-center"><IoStopwatch className="text-[--text-color]" size={24} /></div>
+            <div className="bg-overlay border border-[--border-color] flex items-center justify-center"><IoCalculator className="text-[--text-color]" size={24} /></div>
+            <div className="bg-overlay border border-[--border-color] flex items-center justify-center"><IoCamera className="text-[--text-color]" size={24} /></div>
           </div>
-        </button>
-      </div>
-
-      {/* Quick toggles */}
-      <div className="grid grid-cols-3 gap-3">
-        <button onClick={togglefullscreen} className="w-full text-left rounded-[14px] p-2.5 transition-all active:scale-[0.97] cursor-pointer select-none" style={isfullscreen ? { background: 'var(--pastel-blue)', border: '1px solid transparent' } : { background: 'var(--bg-overlay)', border: '1px solid var(--border-color)' }}>
-          <div className="flex flex-col items-center justify-center gap-1.5">
-            <div className="w-[28px] h-[28px] rounded-full flex items-center justify-center shrink-0" style={isfullscreen ? { background: 'rgba(255,255,255,0.25)' } : { background: 'var(--bg-overlay)' }}>
-              {isfullscreen ? <IoContract size={18} className="text-white" /> : <IoExpand size={18} className="text-[--text-color]" />}
-            </div>
-            <span className={`text-[10px] font-semibold leading-tight ${isfullscreen ? 'text-white/80' : 'text-[--text-muted]'}`}>Fullscreen</span>
-          </div>
-        </button>
-        <button onClick={() => toggletheme()} className="w-full text-left rounded-[14px] p-2.5 transition-all active:scale-[0.97] cursor-pointer select-none" style={theme === 'dark' ? { background: 'var(--pastel-blue)', border: '1px solid transparent' } : { background: 'var(--bg-overlay)', border: '1px solid var(--border-color)' }}>
-          <div className="flex flex-col items-center justify-center gap-1.5">
-            <div className="w-[28px] h-[28px] rounded-full flex items-center justify-center shrink-0" style={theme === 'dark' ? { background: 'rgba(255,255,255,0.25)' } : { background: 'var(--bg-overlay)' }}>
-              {theme === 'dark' ? <FaMoon size={16} className="text-white" /> : <FaSun size={16} className="text-[--text-color]" />}
-            </div>
-            <span className={`text-[10px] font-semibold leading-tight ${theme === 'dark' ? 'text-white/80' : 'text-[--text-muted]'}`}>Dark Mode</span>
-          </div>
-        </button>
-        <button onClick={togglefullscreen} className="w-full text-left rounded-[14px] p-2.5 transition-all active:scale-[0.97] cursor-pointer select-none" style={{ background: 'var(--bg-overlay)', border: '1px solid var(--border-color)' }}>
-          <div className="flex flex-col items-center justify-center gap-1.5">
-            <div className="w-[28px] h-[28px] rounded-full flex items-center justify-center shrink-0" style={{ background: 'var(--bg-overlay)' }}>
-              <MdAirplanemodeActive size={18} className="text-[--text-color]" />
-            </div>
-            <span className="text-[10px] font-semibold leading-tight text-[--text-muted]">Airplane</span>
-          </div>
-        </button>
-      </div>
-
-      {/* Now Playing */}
-      <div className="rounded-[14px] p-3 transition-all duration-200" style={{ background: 'var(--bg-overlay)', border: '1px solid var(--border-color)' }} onPointerDown={(e) => e.stopPropagation()}>
-        <div className="flex items-center gap-3">
-          <div className="w-[50px] h-[50px] rounded-[10px] shrink-0 overflow-hidden" style={{ background: 'linear-gradient(135deg, var(--pastel-pink), var(--pastel-mauve))', boxShadow: '0 2px 8px -2px rgba(0,0,0,0.12)' }}>
-            {currenttrack.cover ? (
-              <Image src={currenttrack.cover} alt="" width={50} height={50} className="object-cover w-full h-full" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center"><IoPlay className="text-white/60" size={20} /></div>
-            )}
+        </div>
+        <div onClick={toggletheme} className="bg-overlay border border-[--border-color] p-4 flex items-center justify-center transition-colors gap-3 cursor-pointer">
+          {theme == 'light' ? <FaSun className='text-[--text-color]' size={20} /> : <FaMoon className="text-[--text-color]" size={20} />}
+          <span className="text-[--text-color] font-medium">Switch Theme</span>
+        </div>
+        <div className="bg-overlay border border-[--border-color] p-4 flex items-center gap-3">
+          <div className="w-12 h-12 overflow-hidden border-2 border-[--border-color] shrink-0">
+            <Image src={user?.avatar || '/pfp.png'} alt="User" width={48} height={48} className="object-cover" />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5 mb-0.5">
-              <span className="w-[6px] h-[6px] rounded-full inline-block" style={isplaying ? { background: 'var(--pastel-green)' } : { background: 'var(--text-muted)' }} />
-              <span className="text-[10px] font-bold tracking-wide" style={isplaying ? { color: 'var(--pastel-green)' } : { color: 'var(--text-muted)' }}>{isplaying ? 'Now Playing' : 'Not Playing'}</span>
+            <div className="text-[--text-color] font-semibold truncate">{user?.name || 'Guest'}</div>
+            <div className="text-[--text-muted] text-xs">@{user?.username || 'guest'}</div>
+          </div>
+          <button onClick={(e) => { e.stopPropagation(); handlelockscreen(); }} className="px-4 py-2 bg-pastel-red/20 text-pastel-red text-[13px] font-medium active:bg-pastel-red/30">Lock</button>
+        </div>
+      </div>
+    ) : (
+      <div className="p-4 space-y-4 w-full" onClick={(e) => e.stopPropagation()}>
+        <div className="grid grid-cols-2 gap-4">
+          <div className='grid h-max grid-rows-3 gap-2' onPointerDown={(e) => e.stopPropagation()}>
+            <div onClick={togglewifi} className={`p-3 ${wifienabled ? 'bg-pastel-blue/20' : wificonnecting ? 'bg-pastel-yellow/20' : 'bg-overlay'} border border-[--border-color] flex space-x-2 items-center cursor-pointer active:scale-95 transition-all`}>
+              <div className={`p-[10px] ${wifienabled ? 'bg-pastel-blue' : wificonnecting ? 'bg-pastel-yellow' : 'bg-[--border-color]'}`}>
+                <FaWifi className={wifienabled ? 'text-[--bg-base]' : wificonnecting ? 'text-[--bg-base]' : 'text-[--text-color]'} size={16} />
+              </div>
+              <div>
+                <p className="text-[13px] font-semibold text-[--text-color]">Wi-Fi</p>
+                <p className="text-[12px] text-[--text-muted] truncate">{wifilabel}</p>
+              </div>
             </div>
-            <p className="text-[12px] font-semibold text-[--text-color] truncate">{currenttrack.title || 'No Track'}</p>
-            <div className="flex items-center gap-3 mt-2">
-              <button onClick={prev} className="text-[--text-muted] hover:text-[--text-color] transition-colors active:scale-[0.97]"><IoPlaySkipBack size={14} /></button>
-              <button onClick={toggle} className="transition-all active:scale-[0.97]">{isplaying ? <IoPause size={18} className="text-[--text-color]" /> : <IoPlay size={18} className="text-[--text-color]" />}</button>
-              <button onClick={next} className="text-[--text-muted] hover:text-[--text-color] transition-colors active:scale-[0.97]"><IoPlaySkipForward size={14} /></button>
+            <div onClick={togglebluetooth} className={`p-3 ${bluetoothstatus.enabled ? 'bg-pastel-blue/20' : 'bg-overlay'} border border-[--border-color] flex space-x-2 items-center cursor-pointer active:scale-95 transition-all`}>
+              <div className={`p-[10px] ${bluetoothstatus.enabled ? 'bg-pastel-blue' : 'bg-[--border-color]'}`}>
+                <FaBluetoothB className={bluetoothstatus.enabled ? 'text-[--bg-base]' : 'text-[--text-color]'} size={16} />
+              </div>
+              <div>
+                <p className="text-[13px] font-semibold text-[--text-color]">Bluetooth</p>
+                <p className="text-[12px] text-[--text-muted] truncate">{bluetoothstatus.enabled ? 'On' : 'Off'}</p>
+              </div>
+            </div>
+            <div onClick={togglefullscreen} className={`p-3 ${isfullscreen ? 'bg-pastel-green/20' : 'bg-overlay'} border border-[--border-color] flex space-x-2 items-center cursor-pointer active:scale-95 transition-all`}>
+              <div className={`p-[10px] ${isfullscreen ? 'bg-pastel-green' : 'bg-[--border-color]'}`}>
+                {isfullscreen ? <IoContract className="text-[--bg-base]" size={16} /> : <IoExpand className="text-[--text-color]" size={16} />}
+              </div>
+              <div><p className="text-[13px] font-semibold text-[--text-color]">Full Screen</p></div>
+            </div>
+          </div>
+          <div className='grid grid-rows-1 gap-2' onPointerDown={(e) => e.stopPropagation()}>
+            <div className="flex flex-col justify-between bg-overlay border border-[--border-color] p-3 px-0 h-full">
+              <div className="flex flex-col px-4">
+                <div className="w-10 h-10 mr-auto bg-gradient-to-br from-pastel-pink to-pastel-mauve mb-2"></div>
+                <div className="overflow-hidden">
+                  <p className="text-[13px] font-semibold text-[--text-color] truncate">{isplaying ? currenttrack.title : 'Not Playing'}</p>
+                  <p className="text-[11px] text-[--text-muted] truncate">{isplaying ? currenttrack.artist : 'Music'}</p>
+                </div>
+              </div>
+              <div className="flex px-4 items-center space-x-3 justify-end mt-1">
+                <button onClick={prev} className="text-[--text-color] opacity-60 hover:opacity-100"><IoPlaySkipBack size={18} /></button>
+                <button onClick={toggle} className="text-[--text-color] opacity-80 hover:opacity-100">{isplaying ? <IoPause size={24} /> : <IoPlay size={24} />}</button>
+                <button onClick={next} className="text-[--text-color] opacity-60 hover:opacity-100"><IoPlaySkipForward size={18} /></button>
+              </div>
+            </div>
+            <div onClick={() => toggletheme()} className="p-3 bg-overlay border border-[--border-color] flex space-x-2 items-center cursor-pointer h-min self-end">
+              <div className='p-[10px] bg-[--border-color]'>
+                {theme == 'light' && <FaSun className='text-[--text-color]' size={16} />}
+                {theme == 'dark' && <FaMoon className="text-[--text-color]" size={16} />}
+              </div>
+              <p className="text-[13px] font-semibold text-[--text-color] capitalize">{theme}<br /> Mode</p>
+            </div>
+          </div>
+        </div>
+        <div className="mt-4 space-y-4">
+          <div className='px-5 py-4 bg-overlay border border-[--border-color]' onPointerDown={(e) => e.stopPropagation()}>
+            <p className="text-xs font-semibold text-[--text-color] mb-2">Display</p>
+            <div className="relative flex items-center h-7">
+              <div className="absolute left-0 w-6 h-6 flex items-center justify-center"><BsSunFill size={16} className="text-[--text-color]" /></div>
+              <input type="range" min="0" max="100" value={brightnessval} onChange={(e) => handlebrightness(Number(e.target.value))}
+                className="w-full ml-10 mr-5 h-1 appearance-none [&::-webkit-slider-runnable-track]:w-full [&::-webkit-slider-runnable-track]:h-1 [&::-webkit-slider-runnable-track]:-mt-[6px] [&::-webkit-slider-runnable-track]:bg-transparent [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bottom-1 [&::-webkit-slider-thumb]:rounded-none [&::-webkit-slider-thumb]:bg-pastel-red"
+                style={{ background: `linear-gradient(to right, var(--pastel-red) ${brightnessval}%, var(--border-color) ${brightnessval}%)` }}
+              />
+            </div>
+          </div>
+          <div className='px-5 py-4 bg-overlay border border-[--border-color]' onPointerDown={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-semibold text-[--text-color]">Sound</p>
+              <button onClick={togglemute} className="text-xs text-[--text-muted] hover:text-[--text-color]">{ismuted ? 'Unmute' : 'Mute'}</button>
+            </div>
+            <div className="relative flex items-center h-7">
+              <div className="absolute left-0 w-6 h-6 flex items-center justify-center">
+                {ismuted ? <BsVolumeMuteFill size={16} className="text-pastel-red" /> : <BsFillVolumeUpFill size={16} className="text-[--text-color]" />}
+              </div>
+              <input type="range" min="0" max="100" value={volumeval} onChange={(e) => handlevolume(Number(e.target.value))}
+                className="w-full ml-10 mr-5 h-1 appearance-none [&::-webkit-slider-runnable-track]:w-full [&::-webkit-slider-runnable-track]:h-1 [&::-webkit-slider-runnable-track]:-mt-[6px] [&::-webkit-slider-runnable-track]:bg-transparent [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bottom-1 [&::-webkit-slider-thumb]:rounded-none [&::-webkit-slider-thumb]:bg-pastel-red"
+                style={{ background: `linear-gradient(to right, var(--pastel-red) ${volumeval}%, var(--border-color) ${volumeval}%)` }}
+              />
+            </div>
+          </div>
+        </div>
+        <div className="flex justify-between items-center bg-overlay border border-[--border-color] w-max px-5 py-3">
+          <div className="flex items-center space-x-2">
+            {batterystatus.charging ? <FiBatteryCharging size={20} className="text-pastel-green" /> : <FiBattery size={20} className="text-[--text-color]" />}
+            <div className='flex flex-col'>
+              <p className="text-[11px] font-normal text-[--text-muted]">Battery</p>
+              <p className="text-[12px] font-semibold text-[--text-color]">{batterystatus.available ? `${batterystatus.percentage}%` : 'N/A'}{batterystatus.charging && <span className="text-pastel-green ml-1">⚡</span>}</p>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Sliders */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-[14px] p-3 transition-all duration-200" style={{ background: 'var(--bg-overlay)', border: '1px solid var(--border-color)' }} onPointerDown={(e) => e.stopPropagation()}>
-          <div className="flex items-center gap-2 mb-2.5">
-            <BsSunFill size={13} className="text-pastel-yellow" />
-            <span className="text-[10px] font-semibold text-[--text-muted]">{brightnessval}%</span>
-          </div>
-          <input type="range" min="0" max="100" value={brightnessval} onChange={(e) => handlebrightness(Number(e.target.value))} className="w-full appearance-none cursor-pointer h-[5px] rounded-full" style={{ background: `linear-gradient(to right, var(--accent-color) ${brightnessval}%, var(--bg-overlay) ${brightnessval}%)` }} />
-        </div>
-        <div className="rounded-[14px] p-3 transition-all duration-200" style={{ background: 'var(--bg-overlay)', border: '1px solid var(--border-color)' }} onPointerDown={(e) => e.stopPropagation()}>
-          <div className="flex items-center gap-2 mb-2.5">
-            <button onClick={togglemute} className="transition-colors active:scale-[0.97]">
-              {ismuted ? <BsVolumeMuteFill size={13} style={{ color: 'var(--pastel-red)' }} /> : <BsFillVolumeUpFill size={13} className="text-[--text-color]" />}
-            </button>
-            <span className="text-[10px] font-semibold text-[--text-muted]">{ismuted ? 'Muted' : `${volumeval}%`}</span>
-          </div>
-          <input type="range" min="0" max="100" value={ismuted ? 0 : volumeval} onChange={(e) => handlevolume(Number(e.target.value))} className="w-full appearance-none cursor-pointer h-[5px] rounded-full" style={{ background: ismuted ? `linear-gradient(to right, var(--pastel-red) 0%, var(--bg-overlay) 0%)` : `linear-gradient(to right, var(--accent-color) ${volumeval}%, var(--bg-overlay) ${volumeval}%)` }} />
-        </div>
-      </div>
-
-      {/* Battery */}
-      <div className="rounded-[14px] p-3 relative overflow-hidden transition-all duration-200" style={{ background: batterystatus.percentage > 20 ? 'var(--pastel-green)' : 'var(--pastel-red)', border: '1px solid transparent' }}>
-        <div className="relative z-[1] flex items-center justify-between">
-          <div>
-            <p className="text-[22px] font-bold text-white leading-tight">{batterystatus.available ? `${batterystatus.percentage}%` : 'N/A'}</p>
-            <p className="text-[10px] font-semibold text-white/70">{batterystatus.charging ? 'Charging' : 'Battery'}</p>
-          </div>
-          <div className="flex items-center gap-2">
-            {batterystatus.charging ? <FiBatteryCharging size={22} className="text-white/50" /> : <FiBattery size={22} className="text-white/50" />}
-          </div>
-        </div>
-      </div>
-
-      {/* Customize */}
-      <button onClick={openSettings} className="w-full flex items-center gap-2.5 p-3 cursor-pointer active:scale-[0.97] transition-all duration-200 rounded-[14px]" style={{ background: 'var(--bg-overlay)', border: '1px solid var(--border-color)' }}>
-        <IoSettingsSharp size={14} className="text-[--text-muted]" />
-        <span className="text-[12px] font-medium text-[--text-color]">Customize</span>
-      </button>
-    </div>
+    )
   );
 
   /* ─── Outer shell — Animated panel ─── */
@@ -672,7 +706,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
             className={`${
               ismobile
                 ? 'fixed top-0 left-0 right-0 z-[500] flex flex-col w-full pointer-events-auto'
-                : 'w-[340px] block rounded-[24px]'
+                : `w-[340px] block ${clay ? 'rounded-[24px]' : ''}`
             } origin-bottom-right overflow-x-hidden z-[500]`}
             onClick={(e: React.MouseEvent) => e.stopPropagation()}
             style={{
@@ -680,14 +714,16 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
               maxHeight: ismobile ? '85vh' : 'calc(100vh - 80px)',
               ...(ismobile ? {} : { overflowY: 'auto' }),
               ...(clay ? {
-                background: 'var(--bg-glass)',
+                background: ismobile ? 'color-mix(in srgb, var(--bg-glass) 70%, transparent)' : 'var(--bg-glass)',
                 backdropFilter: 'blur(var(--glass-blur-heavy))',
                 WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
                 border: ismobile ? 'none' : '1px solid var(--glass-border)',
                 boxShadow: 'var(--glass-shadow)',
                 ...(ismobile ? { borderRadius: '0 0 28px 28px' } : {}),
               } : ismobile ? {
-                backgroundColor: 'var(--bg-surface)',
+                background: 'rgba(var(--bg-surface-rgb, 255,255,255), 0.75)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
                 borderRadius: '0 0 28px 28px',
               } : {
                 background: 'var(--bg-surface)',
@@ -727,3 +763,58 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
     </AnimatePresence>
   );
 }
+
+/* ─── Vertical slider for classic mobile CC ─── */
+const CCSlider = ({ value, onchange, icon: Icon, onIconClick }: any) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const [isdragging, setisdragging] = useState(false);
+
+  const handlepointerdown = (e: React.PointerEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setisdragging(true);
+    updatevalue(e);
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  const handlepointermove = (e: React.PointerEvent) => {
+    if (isdragging) {
+      e.preventDefault();
+      e.stopPropagation();
+      updatevalue(e);
+    }
+  };
+
+  const handlepointerup = (e: React.PointerEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setisdragging(false);
+    (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+  };
+
+  const updatevalue = (e: React.PointerEvent) => {
+    if (!ref.current) return;
+    const rect = ref.current.getBoundingClientRect();
+    const percentage = Math.max(0, Math.min(100, ((rect.bottom - e.clientY) / rect.height) * 100));
+    onchange(percentage);
+  };
+
+  return (
+    <div
+      ref={ref}
+      className={`relative w-full h-36 bg-[--bg-base] border border-[--border-color] overflow-hidden flex flex-col justify-end cursor-ns-resize touch-none ${isdragging ? 'scale-[0.98]' : ''} transition-transform`}
+      onPointerDown={handlepointerdown}
+      onPointerMove={handlepointermove}
+      onPointerUp={handlepointerup}
+      onPointerCancel={handlepointerup}
+    >
+      <div className="absolute bottom-0 w-full bg-pastel-pink transition-all duration-75 ease-out" style={{ height: `${value}%` }} />
+      <div className="absolute inset-0 flex flex-col items-center justify-between py-4 z-10 pointer-events-none">
+        <div />
+        <div className="pointer-events-auto cursor-pointer" onClick={(e) => { e.stopPropagation(); if (onIconClick) onIconClick(); }}>
+          <Icon size={24} className={`transition-colors ${value > 50 ? 'text-[--bg-base]' : 'text-[--text-color]'}`} />
+        </div>
+      </div>
+    </div>
+  );
+};

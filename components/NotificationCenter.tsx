@@ -105,25 +105,17 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                         <div
                             className="flex flex-col w-full h-full"
                             style={{
-                                background: 'var(--bg-glass)',
+                                background: 'color-mix(in srgb, var(--bg-glass) 70%, transparent)',
                                 backdropFilter: 'blur(var(--glass-blur-heavy))',
                                 WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
                                 borderRadius: '0 0 28px 28px',
                             }}
                         >
-                            {/* Top drag handle pill */}
-                            <div
-                                className="pt-14 pb-1 shrink-0 cursor-grab active:cursor-grabbing flex justify-center"
-                                onPointerDown={(e) => dragControls.start(e)}
-                            >
-                                <div className="w-10 h-1 rounded-full" style={{ background: 'color-mix(in srgb, var(--text-muted) 30%, transparent)' }} />
-                            </div>
-
                             {/* Compact header: time + date + clear all */}
-                            <div className="px-5 pt-2 pb-3 shrink-0">
+                            <div className="px-5 pt-14 pb-3 shrink-0 cursor-grab active:cursor-grabbing" onPointerDown={(e) => dragControls.start(e)}>
                                 <div className="flex items-end justify-between">
                                     <div>
-                                        <h1 className="text-5xl font-light text-[--text-color] tracking-tight leading-none">{time.split(' ')[0]}</h1>
+                                        <h1 className="text-5xl font-semibold text-[--text-color] tracking-tight leading-none">{time.split(' ')[0]}</h1>
                                         <div className="text-[14px] text-[--text-muted] font-medium mt-1.5">{date}</div>
                                     </div>
                                     {notifications.length > 0 && (
@@ -140,7 +132,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                             </div>
 
                             {/* Notifications section label */}
-                            <div className="px-5 pb-2 shrink-0">
+                            <div className="px-5 pb-2 pt-2 shrink-0">
                                 <span className="text-[11px] font-semibold text-[--text-muted] uppercase tracking-wider">Notifications</span>
                             </div>
 
@@ -163,7 +155,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                         <p className="text-[13px] text-[--text-muted]">No new notifications</p>
                                     </div>
                                 ) : (
-                                    <div className="flex flex-col gap-2.5 max-w-md mx-auto pb-6">
+                                    <div className="flex flex-col gap-2.5 sm:max-w-md sm:mx-auto pb-6">
                                         <AnimatePresence mode='popLayout'>
                                             {notifications.map((n) => (
                                                 <motion.div
@@ -215,12 +207,12 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                 )}
                             </div>
 
-                            {/* Bottom drag handle for swipe-up-to-dismiss */}
+                            {/* Bottom spacer with drag handle */}
                             <div
-                                className="py-3 pb-4 shrink-0 cursor-grab active:cursor-grabbing"
+                                className="py-2 pb-3 shrink-0 cursor-grab active:cursor-grabbing"
                                 onPointerDown={(e) => dragControls.start(e)}
                             >
-                                <div className="w-16 h-1.5 mx-auto rounded-full" style={{ background: 'color-mix(in srgb, var(--text-muted) 30%, transparent)' }} />
+                                <div className="w-10 h-1 mx-auto rounded-full" style={{ background: 'color-mix(in srgb, var(--text-muted) 20%, transparent)' }} />
                             </div>
                         </div>
                         ) : (
@@ -403,17 +395,15 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                 </AnimatePresence>
             </div>
 
+            {/* Backdrops — non-animated to prevent DOM leak */}
+            {isopen && clay && (
+                <div className="fixed inset-0 w-screen h-screen z-[699]" onClick={onclose} />
+            )}
+            {isopen && !clay && (
+                <div className="fixed inset-0 w-screen h-screen z-[699] bg-black/30" onClick={onclose} />
+            )}
+
             <AnimatePresence>
-                {isopen && clay && (
-                    <motion.div
-                        key="clay-backdrop"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 w-screen h-screen z-[699] pointer-events-auto"
-                        onClick={onclose}
-                    />
-                )}
                 {isopen && clay && (
                     <motion.div
                         key="clay-panel"
@@ -432,7 +422,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                     >
                             {/* Date & Time header */}
                             <div className="px-5 pt-5 pb-3 text-center shrink-0">
-                                <div className="text-[42px] font-light text-[--text-color] leading-none tracking-tight">
+                                <div className="text-[42px] font-semibold text-[--text-color] leading-none tracking-tight">
                                     {new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
                                 </div>
                                 <div className="text-[14px] text-[--text-muted] font-medium mt-1">
@@ -509,16 +499,6 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                         </motion.div>
                     )}
 
-                {isopen && !clay && (
-                    <motion.div
-                        key="classic-backdrop"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 0.3 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 w-screen h-screen z-[699] pointer-events-auto bg-black"
-                        onClick={onclose}
-                    />
-                )}
                 {isopen && !clay && (
                     <motion.div
                         key="classic-panel"

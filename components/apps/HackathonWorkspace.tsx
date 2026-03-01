@@ -34,6 +34,15 @@ import { getAncestryTracker, recordChange as ancestryRecordChange, markPaste as 
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false });
 const WebContainerTerminal = dynamic(() => import('../ui/WebContainerTerminal'), { ssr: false });
 
+// Clean up orphaned Monaco textareas on unmount
+function useMonacoCleanup() {
+    useEffect(() => {
+        return () => {
+            document.querySelectorAll('textarea[style*="position: fixed"][style*="opacity: 0"]').forEach(el => el.remove());
+        };
+    }, []);
+}
+
 const languageMap: Record<string, string> = {
     'py': 'python', 'js': 'javascript', 'ts': 'typescript', 'tsx': 'typescriptreact',
     'jsx': 'javascriptreact', 'json': 'json', 'html': 'html', 'css': 'css',
@@ -342,6 +351,7 @@ const HackathonTimer: React.FC = () => {
 };
 
 export default function HackathonWorkspace({ windowId, projectId, appId = 'hackathonworkspace', id }: { windowId?: string; projectId?: string; appId?: string; id?: string }) {
+    useMonacoCleanup();
     const { projects, currentProject, currentFiles, openProject, createProject, updateFile, createFile, deleteFileById, createSnapshot } = useProjects();
     const { theme } = useTheme();
     const { activewindow, addwindow, windows, updatewindow, setactivewindow } = useWindows();

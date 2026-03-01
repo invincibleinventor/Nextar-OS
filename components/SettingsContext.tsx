@@ -33,11 +33,11 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [reducemotion, setreducemotion] = useState(false);
     const [reducetransparency, setreducetransparency] = useState(false);
     const [soundeffects, setsoundeffects] = useState(false);
-    const [wallpaperurl, setwallpaperurl] = useState('/bg-dark.jpg');
+    const [wallpaperurl, setwallpaperurl] = useState('/bg.jpg');
     const [accentcolor, setaccentcolor] = useState('#e78284');
     const [islightbackground, setislightbackground] = useState(false);
     const [inverselabelcolor, setinverselabelcolor] = useState(false);
-    const [icontintmode, seticontintmode] = useState<IconTintMode>('adaptive');
+    const [icontintmode, seticontintmode] = useState<IconTintMode>('coloured-dark');
     const [accentmode, setaccentmode] = useState<AccentMode>('adaptive');
     const [wallpaperdominantcolor, setwallpaperdominantcolor] = useState('#e78284');
 
@@ -265,11 +265,16 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     }, [wallpaperurl, analyzebrightness]);
 
     useEffect(() => {
+        const isMobileDevice = typeof window !== 'undefined' && window.innerWidth < 768;
         const storedTheme = localStorage.getItem('theme');
-        const prefersDark = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const isDark = storedTheme === 'dark' || (!storedTheme && prefersDark);
+        const isDark = storedTheme === 'dark' || (!storedTheme && isMobileDevice);
         const defaultWallpaper = isDark ? '/bg-dark.jpg' : '/bg.jpg';
         setwallpaperurl(defaultWallpaper);
+
+        // Device-specific accent mode default: adaptive for mobile, dark for desktop
+        if (!localStorage.getItem('accentMode')) {
+            setaccentmode(isMobileDevice ? 'adaptive' : 'dark');
+        }
 
         if (isGuest) return;
 
@@ -348,11 +353,12 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             return rgbToHex(r1 + (r2 - r1) * amount, g1 + (g2 - g1) * amount, b1 + (b2 - b1) * amount);
         };
 
+        const isClay = typeof document !== 'undefined' && document.documentElement.classList.contains('clay');
         let effective = accentcolor;
         switch (accentmode) {
             case 'light': effective = mix(accentcolor, '#ffffff', 0.3); break;
             case 'dark': effective = mix(accentcolor, '#000000', 0.3); break;
-            case 'adaptive': effective = wallpaperdominantcolor; break;
+            case 'adaptive': effective = isClay ? wallpaperdominantcolor : accentcolor; break;
             case 'twilight': default: effective = accentcolor; break;
         }
         document.documentElement.style.setProperty('--accent-source', effective);

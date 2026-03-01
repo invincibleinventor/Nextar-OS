@@ -13,17 +13,18 @@ const ThemeContext = createContext({
 export const useTheme = () => useContext(ThemeContext);
 
 export const ThemeProvider = ({ children }: Props) => {
-  const [theme, settheme] = useState('dark');
+  const [theme, settheme] = useState('light');
   const [mounted, setmounted] = useState(false);
 
   useEffect(() => {
     const storedtheme = localStorage.getItem('theme');
-    const prefersdarkmode = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
     if (storedtheme) {
       settheme(storedtheme);
-    } else if (prefersdarkmode) {
-      settheme('dark');
+    } else {
+      // Default: dark for mobile, light for desktop
+      const isMobileDevice = typeof window !== 'undefined' && window.innerWidth < 768;
+      settheme(isMobileDevice ? 'dark' : 'light');
     }
     setmounted(true);
   }, []);

@@ -1283,23 +1283,21 @@ const FileConfig: Record<string, {
         })
     },
     'text/markdown': {
-        appId: 'hackathonworkspace',
+        appId: 'textedit',
         icon: <Image src="/icons/file.png" alt="File" width={64} height={64} className="w-full h-full object-contain" />,
         getLaunchProps: (file) => ({
             id: file.id,
             content: file.content,
             title: file.name,
-            type: file.mimetype
         })
     },
     'text/plain': {
-        appId: 'hackathonworkspace',
+        appId: 'textedit',
         icon: <Image src="/icons/file.png" alt="File" width={64} height={64} className="w-full h-full object-contain" />,
         getLaunchProps: (file) => ({
             id: file.id,
             content: file.content,
             title: file.name,
-            type: file.mimetype
         })
     }
 };
@@ -1457,8 +1455,8 @@ const resolveTarget = (itemOrId: string | filesystemitem, currentFiles?: filesys
 
     if (mimetype.startsWith('text/')) {
         return {
-            appId: 'hackathonworkspace',
-            props: { id: file.id, content: file.content, title: file.name, type: file.mimetype },
+            appId: 'textedit',
+            props: { id: file.id, content: file.content, title: file.name },
             title: file.name
         };
     }

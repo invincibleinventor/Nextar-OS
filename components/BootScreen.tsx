@@ -1,278 +1,153 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Image from 'next/image';
 import { useDevice } from './DeviceContext';
 import { useIsClay } from './hooks/useIsClay';
 import { useSettings } from './SettingsContext';
 
+/* ── SVG stroke-drawing "welcome" text ── */
+function WelcomeText() {
+    const textRef = useRef<SVGTextElement>(null);
+    const [showFill, setShowFill] = useState(false);
+
+    useEffect(() => {
+        const el = textRef.current;
+        if (!el) return;
+
+        const totalLength = 4000;
+        el.style.strokeDasharray = `${totalLength}`;
+        el.style.strokeDashoffset = `${totalLength}`;
+
+        const start = performance.now();
+        const duration = 2200;
+
+        const tick = (now: number) => {
+            const t = Math.min((now - start) / duration, 1);
+            const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+            el.style.strokeDashoffset = `${totalLength * (1 - eased)}`;
+
+            if (t < 1) requestAnimationFrame(tick);
+            else setTimeout(() => setShowFill(true), 150);
+        };
+
+        requestAnimationFrame(tick);
+    }, []);
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, scale: 0.92 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        >
+            <svg
+                viewBox="0 0 900 250"
+                style={{ width: 'clamp(280px, 65vw, 650px)', overflow: 'visible' }}
+            >
+                <text
+                    ref={textRef}
+                    x="450"
+                    y="185"
+                    textAnchor="middle"
+                    style={{
+                        fontFamily: "'Snell Roundhand', 'Segoe Script', 'Dancing Script', cursive",
+                        fontSize: 140,
+                        fontWeight: 700,
+                        fontStyle: 'italic',
+                        fill: showFill ? 'rgba(255,255,255,0.9)' : 'none',
+                        stroke: 'rgba(255,255,255,0.8)',
+                        strokeWidth: showFill ? 0 : 1.2,
+                        strokeLinecap: 'round',
+                        strokeLinejoin: 'round',
+                        transition: 'fill 0.6s ease, stroke-width 0.6s ease',
+                    }}
+                >
+                    welcome
+                </text>
+            </svg>
+        </motion.div>
+    );
+}
+
 export default function BootScreen() {
     const { osstate, setosstate } = useDevice();
-    const [progress, setprogress] = useState(0);
     const osstateref = useRef(osstate);
     const clay = useIsClay();
     const { wallpaperurl } = useSettings();
+    const [ready, setReady] = useState(false);
 
     useEffect(() => {
         osstateref.current = osstate;
     }, [osstate]);
 
+    // After welcome animation, transition to lock screen
     useEffect(() => {
         if (osstate === 'booting') {
-            setprogress(0);
-            const interval = setInterval(() => {
-                setprogress(prev => {
-                    if (prev >= 100) {
-                        clearInterval(interval);
-                        setTimeout(() => {
-                            if (osstateref.current === 'booting') setosstate('locked');
-                        }, 400);
-                        return 100;
-                    }
-                    return prev + 2;
-                });
-            }, 30);
-            return () => clearInterval(interval);
+            setReady(false);
+            const timer = setTimeout(() => {
+                setReady(true);
+                setTimeout(() => {
+                    if (osstateref.current === 'booting') setosstate('locked');
+                }, 500);
+            }, 3000);
+            return () => clearTimeout(timer);
         }
     }, [osstate, setosstate]);
 
     return (
         <AnimatePresence>
             {osstate === 'booting' && (
-                clay ? (
-                    /* ── Neo-Glass / Clay Mode ── */
-                    <motion.div
-                        key="bootscreen"
-                        className="fixed inset-0 z-[900] flex flex-col items-center justify-center cursor-none overflow-hidden"
-                        exit={{
-                            opacity: 0,
-                            scale: 1.08,
-                            transition: { duration: 0.9, ease: [0.4, 0, 0.2, 1] },
-                        }}
-                        initial={{ opacity: 1, scale: 1 }}
-                    >
-                        {/* Wallpaper background */}
-                        <div
-                            className="absolute inset-0"
-                            style={{
-                                backgroundImage: `url(${wallpaperurl})`,
-                                backgroundSize: 'cover',
-                                backgroundPosition: 'center',
-                            }}
-                        />
-
-                        {/* Heavy frosted glass overlay */}
-                        <div
-                            className="absolute inset-0"
-                            style={{
-                                backdropFilter: 'blur(60px) saturate(1.6)',
-                                WebkitBackdropFilter: 'blur(60px) saturate(1.6)',
-                                background: 'rgba(0, 0, 0, 0.25)',
-                            }}
-                        />
-
-                        {/* Center content */}
-                        <div className="relative z-10 flex flex-col items-center">
-                            {/* Circular glass container with pulsing glow */}
-                            <motion.div
-                                className="relative flex items-center justify-center"
-                                style={{ width: 120, height: 120 }}
-                                initial={{ opacity: 0, scale: 0.6 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-                            >
-                                {/* Pulsing glow behind the circle */}
-                                <motion.div
-                                    className="absolute inset-0 rounded-full"
-                                    style={{
-                                        background: 'radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%)',
-                                    }}
-                                    animate={{
-                                        scale: [1, 1.25, 1],
-                                        opacity: [0.6, 1, 0.6],
-                                    }}
-                                    transition={{
-                                        duration: 2.5,
-                                        repeat: Infinity,
-                                        ease: 'easeInOut',
-                                    }}
-                                />
-
-                                {/* Glass circle */}
-                                <div
-                                    className="relative flex items-center justify-center rounded-full"
-                                    style={{
-                                        width: 120,
-                                        height: 120,
-                                        background: 'rgba(255, 255, 255, 0.1)',
-                                        backdropFilter: 'blur(20px)',
-                                        WebkitBackdropFilter: 'blur(20px)',
-                                        border: '1px solid rgba(255, 255, 255, 0.18)',
-                                        boxShadow:
-                                            '0 8px 32px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.12)',
-                                    }}
-                                >
-                                    <Image
-                                        src="/logo.svg"
-                                        alt="NextarOS"
-                                        width={56}
-                                        height={56}
-                                        className="brightness-0 invert opacity-90"
-                                    />
-                                </div>
-                            </motion.div>
-
-                            {/* Thin progress line */}
-                            <motion.div
-                                className="mt-10 overflow-hidden"
+                <motion.div
+                    key="bootscreen"
+                    className="fixed inset-0 z-[900] flex flex-col items-center justify-center cursor-none overflow-hidden"
+                    exit={{ opacity: 0, transition: { duration: 0.6, ease: [0.4, 0, 0.2, 1] } }}
+                    initial={{ opacity: 1 }}
+                >
+                    {/* Background */}
+                    {clay ? (
+                        <>
+                            <div
+                                className="absolute inset-0"
                                 style={{
-                                    width: 160,
-                                    height: 3,
-                                    borderRadius: 999,
-                                    background: 'rgba(255, 255, 255, 0.1)',
+                                    backgroundImage: `url(${wallpaperurl})`,
+                                    backgroundSize: 'cover',
+                                    backgroundPosition: 'center',
+                                    filter: 'blur(40px) saturate(1.3)',
+                                    transform: 'scale(1.15)',
                                 }}
-                                initial={{ opacity: 0, scaleX: 0.5 }}
-                                animate={{ opacity: 1, scaleX: 1 }}
-                                transition={{ delay: 0.5, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-                            >
-                                <motion.div
-                                    style={{
-                                        height: '100%',
-                                        borderRadius: 999,
-                                        background: 'rgba(255, 255, 255, 0.55)',
-                                        boxShadow: '0 0 10px rgba(255, 255, 255, 0.2)',
-                                    }}
-                                    animate={{ width: `${progress}%` }}
-                                    transition={{ duration: 0.05, ease: 'linear' }}
-                                />
-                            </motion.div>
+                            />
+                            <div className="absolute inset-0" style={{ background: 'rgba(0, 0, 0, 0.35)' }} />
+                        </>
+                    ) : (
+                        <div className="absolute inset-0" style={{ background: 'linear-gradient(145deg, #0a0a0f 0%, #141420 50%, #0d0d16 100%)' }} />
+                    )}
 
-                            {/* NextarOS text */}
-                            <motion.p
-                                className="mt-5 text-[11px] font-medium uppercase"
-                                style={{
-                                    color: 'rgba(255, 255, 255, 0.5)',
-                                    letterSpacing: '0.25em',
-                                }}
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ delay: 0.7, duration: 0.6 }}
-                            >
-                                NextarOS
-                            </motion.p>
-                        </div>
+                    {/* Welcome text */}
+                    <div className="relative z-10">
+                        <WelcomeText />
+                    </div>
 
-                        {/* Fullscreen button — subtle transparent pill */}
-                        <motion.button
-                            onClick={() =>
-                                document.documentElement.requestFullscreen().catch(() => {})
-                            }
-                            className="absolute bottom-10 z-[901] active:scale-95 transition-transform"
-                            style={{
-                                padding: '8px 24px',
-                                borderRadius: 999,
-                                fontSize: 11,
-                                fontWeight: 500,
-                                letterSpacing: '0.15em',
-                                textTransform: 'uppercase' as const,
-                                color: 'rgba(255, 255, 255, 0.4)',
-                                background: 'rgba(255, 255, 255, 0.06)',
-                                backdropFilter: 'blur(12px)',
-                                WebkitBackdropFilter: 'blur(12px)',
-                                border: '1px solid rgba(255, 255, 255, 0.1)',
-                            }}
-                            whileHover={{
-                                background: 'rgba(255, 255, 255, 0.12)',
-                                borderColor: 'rgba(255, 255, 255, 0.2)',
-                                color: 'rgba(255, 255, 255, 0.7)',
-                            }}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 1, duration: 0.5 }}
-                        >
-                            Go Full Screen
-                        </motion.button>
-                    </motion.div>
-                ) : (
-                    /* ── Classic Mode ── */
-                    <motion.div
-                        key="bootscreen"
-                        className="fixed inset-0 z-[900] flex flex-col items-center justify-center cursor-none overflow-hidden"
+                    {/* Fullscreen button */}
+                    <motion.button
+                        onClick={() => document.documentElement.requestFullscreen().catch(() => {})}
+                        className="absolute bottom-10 z-[901] active:scale-95 transition-transform"
                         style={{
-                            background: 'linear-gradient(145deg, #0a0a0f 0%, #141420 50%, #0d0d16 100%)',
+                            padding: '8px 24px',
+                            borderRadius: 999,
+                            fontSize: 11,
+                            fontWeight: 500,
+                            letterSpacing: '0.15em',
+                            textTransform: 'uppercase' as const,
+                            color: 'rgba(255, 255, 255, 0.35)',
+                            background: 'transparent',
+                            border: '1px solid rgba(255, 255, 255, 0.1)',
                         }}
-                        exit={{
-                            opacity: 0,
-                            transition: { duration: 0.8, ease: [0.4, 0, 0.2, 1] },
-                        }}
-                        initial={{ opacity: 1 }}
+                        whileHover={{ borderColor: 'rgba(255, 255, 255, 0.2)', color: 'rgba(255, 255, 255, 0.6)' }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.8, duration: 0.4 }}
                     >
-                        <div className="relative z-10 flex flex-col items-center">
-                            {/* Logo */}
-                            <motion.div
-                                className="w-16 h-16 mb-10 flex items-center justify-center"
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                            >
-                                <Image
-                                    src="/logo.svg"
-                                    alt="NextarOS"
-                                    width={64}
-                                    height={64}
-                                    className="w-full h-full brightness-0 invert opacity-80"
-                                />
-                            </motion.div>
-
-                            {/* Thin progress bar */}
-                            <motion.div
-                                className="overflow-hidden"
-                                style={{
-                                    width: 180,
-                                    height: 2,
-                                    borderRadius: 999,
-                                    background: 'rgba(255, 255, 255, 0.08)',
-                                }}
-                                initial={{ opacity: 0, scaleX: 0.6 }}
-                                animate={{ opacity: 1, scaleX: 1 }}
-                                transition={{ delay: 0.4, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                            >
-                                <motion.div
-                                    style={{
-                                        height: '100%',
-                                        borderRadius: 999,
-                                        background: 'linear-gradient(90deg, #a0a0b0, #d0d0e0)',
-                                        boxShadow: '0 0 8px rgba(180, 180, 210, 0.3)',
-                                    }}
-                                    animate={{ width: `${progress}%` }}
-                                    transition={{ duration: 0.05, ease: 'linear' }}
-                                />
-                            </motion.div>
-                        </div>
-
-                        {/* Fullscreen button */}
-                        <motion.button
-                            onClick={() =>
-                                document.documentElement.requestFullscreen().catch(() => {})
-                            }
-                            className="absolute bottom-10 px-5 py-2 text-[11px] font-medium uppercase z-[901] transition-all active:scale-95 rounded-full"
-                            style={{
-                                letterSpacing: '0.2em',
-                                background: 'transparent',
-                                border: '1px solid rgba(255, 255, 255, 0.12)',
-                                color: 'rgba(255, 255, 255, 0.35)',
-                            }}
-                            whileHover={{
-                                borderColor: 'rgba(255, 255, 255, 0.25)',
-                                color: 'rgba(255, 255, 255, 0.6)',
-                            }}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 0.8, duration: 0.5 }}
-                        >
-                            Go Full Screen
-                        </motion.button>
-                    </motion.div>
-                )
+                        Go Full Screen
+                    </motion.button>
+                </motion.div>
             )}
         </AnimatePresence>
     );

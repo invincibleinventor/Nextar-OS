@@ -13,8 +13,8 @@ import { ui } from '../utils/constants';
 import { useIsClay } from './hooks/useIsClay';
 import { glassPanel } from './hooks/useClayStyles';
 
-const panelheight = ui.panelHeight;
-const dockheight = ui.dockHeight;
+const defaultPanelHeight = ui.panelHeight;
+const defaultDockHeight = ui.dockHeight;
 
 const shallowEqual = (a: Record<string, any> | undefined, b: Record<string, any> | undefined): boolean => {
   if (a === b) return true;
@@ -66,8 +66,9 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
   const { ismobile } = useDevice();
   const { reducemotion, reducetransparency } = useSettings();
   const clay = useIsClay();
-  // Clay dock: 56px height + 8px bottom offset + 8px gap = 72px reserve
-  const dockheight = clay ? 72 : ui.dockHeight;
+  // Clay: floating pill panel ~8px, dock 72px.  Classic: full-width panel 35px, dock 54px.
+  const panelheight = clay ? defaultPanelHeight : 35;
+  const dockheight = clay ? 72 : defaultDockHeight;
   const { spawn, suspend, resume, kill, crash, getByWindow } = useProcess();
   const app = apps.find((app) => app.appname === appname);
   const processref = useRef<number | null>(null);
@@ -459,7 +460,7 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
       }}
       className={`window overflow-hidden flex flex-col bg-surface
       ${clay && !ismobile ? 'rounded-[20px]' : ''}
-      ${!clay && activewindow === id ? 'border border-[--border-color] shadow-[0_8px_32px_-6px_rgba(0,0,0,0.25),0_0_0_1px_rgba(237,135,150,0.4),0_2px_8px_-2px_rgba(237,135,150,0.1)] anime-glow' : !clay ? 'border border-[--border-color] shadow-[0_4px_16px_-4px_rgba(0,0,0,0.15),0_0_0_1px_var(--border-color)]' : ''}
+      ${!clay && activewindow === id ? 'border border-[--border-color] anime-glow anime-window-active' : !clay ? 'border border-[--border-color] shadow-[0_4px_16px_-4px_rgba(0,0,0,0.15),0_0_0_1px_var(--border-color)]' : ''}
       ${clay && activewindow !== id ? 'opacity-[0.92]' : ''}
       ${isdragging ? 'cursor-grabbing' : 'cursor-default'} ${(isminimized || shouldblur || isRecentAppView) ? 'pointer-events-none' : 'pointer-events-auto'}
         ${(ismobile && isRecentAppView) ? 'absolute inset-0 w-full h-full' : 'absolute'}`}

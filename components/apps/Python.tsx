@@ -20,6 +20,15 @@ import { api } from '../../utils/constants';
 
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false });
 
+// Clean up orphaned Monaco textareas on unmount
+function useMonacoCleanup() {
+    useEffect(() => {
+        return () => {
+            document.querySelectorAll('textarea[style*="position: fixed"][style*="opacity: 0"]').forEach(el => el.remove());
+        };
+    }, []);
+}
+
 interface OpenFile {
     id: string;
     name: string;
@@ -93,6 +102,7 @@ const fileIcons: Record<string, { icon: React.ReactNode; color: string }> = {
 };
 
 export default function CodeEditor({ isFocused = true, appId = 'python', id }: { isFocused?: boolean, appId?: string, id?: string }) {
+    useMonacoCleanup();
     const { ismobile } = useDevice();
     const { user } = useAuth();
     const { theme } = useTheme();
