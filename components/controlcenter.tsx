@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { FaWifi, FaMoon, FaSun, FaBluetoothB } from 'react-icons/fa'
 import { BsFillVolumeUpFill, BsSunFill, BsVolumeMuteFill } from 'react-icons/bs'
 import { FiBatteryCharging, FiBattery } from 'react-icons/fi'
-import { IoPlay, IoPause, IoPlaySkipForward, IoPlaySkipBack, IoContract, IoPower, IoSettingsSharp, IoExpand, IoFlashlight, IoCamera, IoCalculator, IoStopwatch } from 'react-icons/io5'
+import { IoPlay, IoPause, IoPlaySkipForward, IoPlaySkipBack, IoContract, IoPower, IoSettingsSharp, IoExpand, IoFlashlight, IoCamera, IoCalculator, IoStopwatch, IoMusicalNotes } from 'react-icons/io5'
 import { MdAirplanemodeActive } from 'react-icons/md'
 import { HiSparkles } from 'react-icons/hi2'
 import { FaPlane } from 'react-icons/fa'
@@ -33,7 +33,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
   const { theme, toggletheme } = useTheme()
   const { reducemotion } = useSettings()
   const { user, logout } = useAuth()
-  const { currenttrack, isplaying, toggle, next, prev } = useMusic()
+  const { currenttrack, isplaying, toggle, next, prev, currenttime, duration } = useMusic()
   const clay = useIsClay()
   const { addwindow } = useWindows()
 
@@ -397,16 +397,16 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
       >
         {/* Album art banner */}
         <div className="relative h-[56px] overflow-hidden" style={{
-          background: currenttrack.cover ? undefined : 'linear-gradient(135deg, var(--accent-color), color-mix(in srgb, var(--accent-color) 60%, var(--bg-glass)))',
+          background: 'linear-gradient(135deg, var(--accent-color), color-mix(in srgb, var(--accent-color) 60%, var(--bg-glass)))',
         }}>
-          {currenttrack.cover && (
-            <Image src={currenttrack.cover} alt="" fill className="object-cover" style={{ filter: 'blur(16px) saturate(1.4)', transform: 'scale(1.3)' }} />
-          )}
+          <div className="absolute inset-0 flex items-center justify-center opacity-20">
+            <IoMusicalNotes size={36} className="text-white" />
+          </div>
           <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 30%, var(--bg-glass-active))' }} />
           {/* Progress bar at bottom of banner */}
           <div className="absolute bottom-0 left-0 right-0 h-[2px]" style={{ background: 'var(--bg-glass)' }}>
             <div className="h-full transition-all duration-300" style={{
-              width: isplaying ? '60%' : '0%',
+              width: `${duration > 0 ? (currenttime / duration) * 100 : 0}%`,
               background: 'var(--accent-color)',
             }} />
           </div>
@@ -417,13 +417,9 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
               className="w-[44px] h-[44px] rounded-[10px] overflow-hidden"
               style={{ boxShadow: '0 4px 12px -2px rgba(0,0,0,0.2)', border: '2px solid var(--bg-glass-active)' }}
             >
-              {currenttrack.cover ? (
-                <Image src={currenttrack.cover} alt="" width={44} height={44} className="object-cover w-full h-full" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--accent-gradient)' }}>
-                  <IoPlay className="text-white/60" size={16} />
-                </div>
-              )}
+              <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--accent-gradient)' }}>
+                <IoMusicalNotes className="text-white/70" size={18} />
+              </div>
             </div>
           </div>
           <div className="flex-1 min-w-0">
@@ -602,7 +598,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
           <div className='grid grid-rows-1 gap-2' onPointerDown={(e) => e.stopPropagation()}>
             <div className="flex flex-col justify-between bg-overlay border border-[--border-color] p-3 px-0 h-full">
               <div className="flex flex-col px-4">
-                <div className="w-10 h-10 mr-auto bg-gradient-to-br from-pastel-pink to-pastel-mauve mb-2"></div>
+                <div className="w-10 h-10 mr-auto bg-gradient-to-br from-pastel-pink to-pastel-mauve mb-2 flex items-center justify-center"><IoMusicalNotes className="text-white/70" size={18} /></div>
                 <div className="overflow-hidden">
                   <p className="text-[13px] font-semibold text-[--text-color] truncate">{isplaying ? currenttrack.title : 'Not Playing'}</p>
                   <p className="text-[11px] text-[--text-muted] truncate">{isplaying ? currenttrack.artist : 'Music'}</p>

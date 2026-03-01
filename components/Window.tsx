@@ -11,7 +11,6 @@ import { useProcess } from './ProcessContext';
 import AppErrorBoundary from './AppErrorBoundary';
 import { ui } from '../utils/constants';
 import { useIsClay } from './hooks/useIsClay';
-import { glassPanel } from './hooks/useClayStyles';
 
 const defaultPanelHeight = ui.panelHeight;
 const defaultDockHeight = ui.dockHeight;
@@ -474,7 +473,8 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
         willChange: 'transform, opacity, top, left, width, height',
         pointerEvents: (shouldblur || isRecentAppView || isminimized || issystemgestureactive) ? 'none' : 'auto',
         ...(clay ? {
-          ...glassPanel,
+          background: 'var(--bg-base)',
+          border: '1px solid var(--glass-border)',
           boxShadow: activewindow === id ? 'var(--shadow-xl)' : 'var(--shadow-lg)',
         } : {}),
       }}

@@ -431,7 +431,7 @@ export default function LockScreen() {
                                     border: isDark ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(0,0,0,0.08)',
                                 }}
                             >
-                                <IoMoon size={16} className={secondaryText} />
+                                <IoMoon size={16} className={isDark ? 'text-white' : 'text-black/70'} />
                             </div>
                         </div>
                         <div
@@ -441,13 +441,13 @@ export default function LockScreen() {
                             <div
                                 className="w-11 h-11 rounded-full flex items-center justify-center transition-transform duration-200 group-active:scale-90"
                                 style={{
-                                    background: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)',
+                                    background: isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.1)',
                                     backdropFilter: 'blur(24px)',
                                     WebkitBackdropFilter: 'blur(24px)',
-                                    border: isDark ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(0,0,0,0.08)',
+                                    border: isDark ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(0,0,0,0.1)',
                                 }}
                             >
-                                <IoRefresh size={16} className={secondaryText} />
+                                <IoRefresh size={16} className={isDark ? 'text-white' : 'text-black/70'} />
                             </div>
                         </div>
                     </motion.div>
@@ -723,14 +723,14 @@ export default function LockScreen() {
                         <div
                             className="w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 group-hover:scale-110 group-active:scale-95"
                             style={{
-                                background: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.07)',
+                                background: isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.1)',
                                 backdropFilter: 'blur(24px)',
                                 WebkitBackdropFilter: 'blur(24px)',
-                                border: isDark ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(0,0,0,0.08)',
+                                border: isDark ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(0,0,0,0.1)',
                                 boxShadow: isDark ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.06)',
                             }}
                         >
-                            <IoMoon size={16} className={secondaryText} />
+                            <IoMoon size={16} className={isDark ? 'text-white' : 'text-black/70'} />
                         </div>
                     </div>
                     <div
@@ -740,14 +740,14 @@ export default function LockScreen() {
                         <div
                             className="w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 group-hover:scale-110 group-active:scale-95"
                             style={{
-                                background: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.07)',
+                                background: isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.1)',
                                 backdropFilter: 'blur(24px)',
                                 WebkitBackdropFilter: 'blur(24px)',
-                                border: isDark ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(0,0,0,0.08)',
+                                border: isDark ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(0,0,0,0.1)',
                                 boxShadow: isDark ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.06)',
                             }}
                         >
-                            <IoRefresh size={16} className={secondaryText} />
+                            <IoRefresh size={16} className={isDark ? 'text-white' : 'text-black/70'} />
                         </div>
                     </div>
                 </motion.div>

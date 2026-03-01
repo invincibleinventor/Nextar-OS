@@ -40,7 +40,7 @@ function WelcomeText() {
         >
             <svg
                 viewBox="0 0 900 250"
-                style={{ width: 'clamp(280px, 65vw, 650px)', overflow: 'visible' }}
+                style={{ width: 'clamp(320px, 80vw, 650px)', overflow: 'visible' }}
             >
                 <text
                     ref={textRef}

@@ -207,12 +207,12 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                 )}
                             </div>
 
-                            {/* Bottom spacer with drag handle */}
+                            {/* Bottom drag handle */}
                             <div
-                                className="py-2 pb-3 shrink-0 cursor-grab active:cursor-grabbing"
+                                className="py-3 pb-4 shrink-0 cursor-grab active:cursor-grabbing"
                                 onPointerDown={(e) => dragControls.start(e)}
                             >
-                                <div className="w-10 h-1 mx-auto rounded-full" style={{ background: 'color-mix(in srgb, var(--text-muted) 20%, transparent)' }} />
+                                <div className="w-12 h-1.5 mx-auto rounded-full" style={{ background: 'color-mix(in srgb, var(--text-muted) 35%, transparent)' }} />
                             </div>
                         </div>
                         ) : (
@@ -277,10 +277,10 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                             </div>
 
                             <div
-                                className="py-3 shrink-0 cursor-grab active:cursor-grabbing"
+                                className="py-3 pb-4 shrink-0 cursor-grab active:cursor-grabbing"
                                 onPointerDown={(e) => dragControls.start(e)}
                             >
-                                <div className="w-16 h-1.5 mx-auto rounded-full" style={{ background: 'color-mix(in srgb, var(--text-muted) 40%, transparent)' }} />
+                                <div className="w-12 h-1.5 mx-auto rounded-full" style={{ background: 'color-mix(in srgb, var(--text-muted) 40%, transparent)' }} />
                             </div>
                         </div>
                         )}

@@ -13,11 +13,11 @@ interface Track {
 }
 
 const sampleplaylist: Track[] = [
-    { id: '1', title: 'Midnight Dreams', artist: 'Lunar Echo', album: 'Nocturnal Vibes', duration: 234, cover: '/album1.jpg', audiourl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' },
-    { id: '2', title: 'Electric Sunset', artist: 'Synthwave Riders', album: 'Neon Nights', duration: 198, cover: '/album2.jpg', audiourl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3' },
-    { id: '3', title: 'Ocean Waves', artist: 'Calm Waters', album: 'Relaxation', duration: 312, cover: '/album3.jpg', audiourl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3' },
-    { id: '4', title: 'Mountain High', artist: 'Nature Sounds', album: 'Earth Elements', duration: 267, cover: '/album4.jpg', audiourl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3' },
-    { id: '5', title: 'City Lights', artist: 'Urban Jazz', album: 'Metropolitan', duration: 285, cover: '/album5.jpg', audiourl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3' },
+    { id: '1', title: 'Midnight Dreams', artist: 'Lunar Echo', album: 'Nocturnal Vibes', duration: 234, cover: '', audiourl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' },
+    { id: '2', title: 'Electric Sunset', artist: 'Synthwave Riders', album: 'Neon Nights', duration: 198, cover: '', audiourl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3' },
+    { id: '3', title: 'Ocean Waves', artist: 'Calm Waters', album: 'Relaxation', duration: 312, cover: '', audiourl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3' },
+    { id: '4', title: 'Mountain High', artist: 'Nature Sounds', album: 'Earth Elements', duration: 267, cover: '', audiourl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3' },
+    { id: '5', title: 'City Lights', artist: 'Urban Jazz', album: 'Metropolitan', duration: 285, cover: '', audiourl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3' },
 ];
 
 interface MusicContextType {
@@ -55,16 +55,36 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const [isrepeat, setisrepeat] = useState(false);
 
     const audioref = useRef<HTMLAudioElement | null>(null);
+    const pendingplayref = useRef(false);
+    const handlenextref = useRef<() => void>(() => {});
 
     const currenttrack = playlist[currenttrackindex];
 
-    useEffect(() => {
-        if (typeof window !== 'undefined' && !audioref.current) {
+    // Lazily get or create the Audio element — ensures it's created from user gesture context on mobile
+    const getaudio = useCallback(() => {
+        if (!audioref.current && typeof window !== 'undefined') {
             audioref.current = new Audio();
             audioref.current.volume = volume / 100;
         }
+        return audioref.current;
     }, []);
 
+    // Keep handlenext ref up to date to avoid stale closures in event listeners
+    const handlenext = useCallback(() => {
+        if (isshuffle) {
+            setcurrenttrackindex(Math.floor(Math.random() * playlist.length));
+        } else if (currenttrackindex < playlist.length - 1) {
+            setcurrenttrackindex(prev => prev + 1);
+        } else if (isrepeat) {
+            setcurrenttrackindex(0);
+        } else {
+            setisplaying(false);
+        }
+    }, [isshuffle, isrepeat, currenttrackindex, playlist.length]);
+
+    handlenextref.current = handlenext;
+
+    // Load track when index changes
     useEffect(() => {
         const audio = audioref.current;
         if (!audio) return;
@@ -72,6 +92,7 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         audio.src = currenttrack.audiourl || '';
         audio.load();
         setcurrenttime(0);
+        setduration(0);
 
         const handleloadedmetadata = () => {
             setduration(audio.duration || currenttrack.duration);
@@ -82,31 +103,51 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         };
 
         const handleended = () => {
-            handlenext();
+            handlenextref.current();
+        };
+
+        const handleerror = () => {
+            setisplaying(false);
         };
 
         audio.addEventListener('loadedmetadata', handleloadedmetadata);
         audio.addEventListener('timeupdate', handletimeupdate);
         audio.addEventListener('ended', handleended);
+        audio.addEventListener('error', handleerror);
 
-        if (isplaying) {
-            audio.play().catch(() => { });
+        // Auto-play if pending (triggered by settrackindex)
+        if (pendingplayref.current) {
+            pendingplayref.current = false;
+            audio.play().then(() => {
+                setisplaying(true);
+            }).catch(() => {
+                setisplaying(false);
+            });
         }
 
         return () => {
             audio.removeEventListener('loadedmetadata', handleloadedmetadata);
             audio.removeEventListener('timeupdate', handletimeupdate);
             audio.removeEventListener('ended', handleended);
+            audio.removeEventListener('error', handleerror);
         };
     }, [currenttrackindex]);
 
     const play = useCallback(() => {
-        const audio = audioref.current;
+        const audio = getaudio();
         if (audio) {
-            audio.play().catch(() => { });
-            setisplaying(true);
+            // If no src is set yet, load the current track
+            if (!audio.src || audio.src === window.location.href) {
+                audio.src = playlist[currenttrackindex]?.audiourl || '';
+                audio.load();
+            }
+            audio.play().then(() => {
+                setisplaying(true);
+            }).catch(() => {
+                setisplaying(false);
+            });
         }
-    }, []);
+    }, [getaudio, playlist, currenttrackindex]);
 
     const pause = useCallback(() => {
         const audio = audioref.current;
@@ -124,26 +165,15 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
     }, [isplaying, play, pause]);
 
-    const handlenext = useCallback(() => {
-        if (isshuffle) {
-            setcurrenttrackindex(Math.floor(Math.random() * playlist.length));
-        } else if (currenttrackindex < playlist.length - 1) {
-            setcurrenttrackindex(prev => prev + 1);
-        } else if (isrepeat) {
-            setcurrenttrackindex(0);
-        } else {
-            setisplaying(false);
-        }
-    }, [isshuffle, isrepeat, currenttrackindex, playlist.length]);
-
     const handleprev = useCallback(() => {
         const audio = audioref.current;
         if (audio && audio.currentTime > 3) {
             audio.currentTime = 0;
         } else if (currenttrackindex > 0) {
+            pendingplayref.current = isplaying;
             setcurrenttrackindex(prev => prev - 1);
         }
-    }, [currenttrackindex]);
+    }, [currenttrackindex, isplaying]);
 
     const seek = useCallback((time: number) => {
         const audio = audioref.current;
@@ -154,9 +184,10 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }, []);
 
     const settrackindex = useCallback((index: number) => {
+        getaudio(); // Ensure audio element exists (created from user gesture)
+        pendingplayref.current = true;
         setcurrenttrackindex(index);
-        setisplaying(true);
-    }, []);
+    }, [getaudio]);
 
     const setvolume = useCallback((vol: number) => {
         setvolumestate(vol);
@@ -168,6 +199,22 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     const toggleshuffle = useCallback(() => setisshuffle(p => !p), []);
     const togglerepeat = useCallback(() => setisrepeat(p => !p), []);
+
+    // Also handle next with pending play
+    const nextwithplay = useCallback(() => {
+        if (isplaying) pendingplayref.current = true;
+        handlenext();
+    }, [isplaying, handlenext]);
+
+    const prevwithplay = useCallback(() => {
+        const audio = audioref.current;
+        if (audio && audio.currentTime > 3) {
+            audio.currentTime = 0;
+        } else if (currenttrackindex > 0) {
+            if (isplaying) pendingplayref.current = true;
+            setcurrenttrackindex(prev => prev - 1);
+        }
+    }, [currenttrackindex, isplaying]);
 
     return (
         <MusicContext.Provider value={{
@@ -183,8 +230,8 @@ export const MusicProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             play,
             pause,
             toggle,
-            next: handlenext,
-            prev: handleprev,
+            next: nextwithplay,
+            prev: prevwithplay,
             seek,
             settrackindex,
             setvolume,
