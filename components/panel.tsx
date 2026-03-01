@@ -24,7 +24,7 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
     // Auto-hide panel when a window is maximized/tiled
     const [panelhovered, setpanelhovered] = useState(false);
     const panelhidetimer = useRef<NodeJS.Timeout | null>(null);
-    const shouldautohide = windows.some((w: any) => !w.isminimized && w.ismaximized);
+    const shouldautohide = windows.some((w: any) => !w.isminimized && (w.ismaximized || w.istiled));
 
     const handlepanelenter = useCallback(() => {
         if (panelhidetimer.current) { clearTimeout(panelhidetimer.current); panelhidetimer.current = null; }

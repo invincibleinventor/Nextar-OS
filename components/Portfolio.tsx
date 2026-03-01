@@ -2,9 +2,10 @@
 import React, { useRef, useCallback } from 'react';
 import Image from 'next/image';
 import { personal } from './data';
-import { IoLogoGithub, IoLogoLinkedin, IoMail, IoGlobeOutline, IoArrowForward, IoRocketOutline, IoChevronForward } from 'react-icons/io5';
+import { IoLogoGithub, IoLogoLinkedin, IoMail, IoGlobeOutline, IoArrowForward, IoRocketOutline, IoChevronForward, IoCodeSlash, IoCalendarOutline, IoLayersOutline } from 'react-icons/io5';
 import { useDevice } from './DeviceContext';
 import { useIsClay } from './hooks/useIsClay';
+import { glassCard } from './hooks/useClayStyles';
 
 const PROJECTS = [
     { name: 'NextarOS', desc: 'Browser-based macOS/iOS simulation with window management and installable apps', url: 'https://github.com/invincibleinventor/nextar-os', live: 'https://baladev.in', tags: ['Next.js', 'React', 'Electron'], img: '/projects/nextaros.png' },
@@ -28,6 +29,14 @@ const EXPERIENCES = [
     { role: 'Technical Lead', company: 'The TVS School', period: 'Aug 2022 – May 2024', current: false },
 ];
 
+const STATS = [
+    { icon: IoCodeSlash, value: '7+', label: 'Projects' },
+    { icon: IoCalendarOutline, value: '4+', label: 'Years' },
+    { icon: IoLayersOutline, value: '20+', label: 'Technologies' },
+];
+
+const cursiveFont = "'Snell Roundhand', 'Segoe Script', 'Dancing Script', cursive";
+
 export default function Portfolio({ embedded }: { embedded?: boolean } = {}) {
     const containerref = useRef<HTMLDivElement>(null);
     const { ismobile } = useDevice();
@@ -39,175 +48,209 @@ export default function Portfolio({ embedded }: { embedded?: boolean } = {}) {
         }
     }, [embedded]);
 
-    const sectionTitle = (text: string) => (
-        <h2 className={`text-[11px] font-bold uppercase tracking-[0.15em] mb-4 ${clay ? 'text-[--text-muted]' : 'text-[--text-muted]'}`}>{text}</h2>
-    );
+    const cardCls = (extra = '') => clay
+        ? `rounded-[16px] ${extra}`
+        : `bg-[--bg-surface] border border-[--border-color] ${extra}`;
+    const cardSty = clay ? glassCard : undefined;
 
     return (
         <div
             ref={containerref}
             className={`w-full h-full overflow-y-auto overflow-x-hidden bg-[--bg-base] ${clay ? '' : 'font-mono'}`}
         >
-            <div className={`max-w-3xl mx-auto px-6 md:px-10 ${ismobile ? 'py-6' : 'py-10'}`}>
+            <div className={`max-w-4xl mx-auto px-5 md:px-8 ${ismobile ? 'py-6' : 'py-10'} space-y-5`}>
 
-                {/* ── Profile Header ── */}
-                <div className="flex items-center gap-5 mb-2">
-                    <div className={`w-[72px] h-[72px] relative shrink-0 overflow-hidden ${clay ? 'rounded-full' : 'rounded-full'}`}
-                        style={{ boxShadow: clay ? 'var(--shadow-md)' : '0 2px 8px rgba(0,0,0,0.12)' }}
-                    >
-                        <Image src="/bala.jpeg" alt="Bala" fill className="object-cover" />
+                {/* ── Hero Card ── */}
+                <div className={`p-6 md:p-8 ${cardCls()}`} style={cardSty}>
+                    <div className="flex items-start gap-5 md:gap-6">
+                        <div className={`w-20 h-20 md:w-24 md:h-24 relative shrink-0 overflow-hidden ${clay ? 'rounded-[18px]' : 'rounded-[12px]'}`}
+                            style={{ boxShadow: clay ? 'var(--shadow-md)' : '0 2px 12px rgba(0,0,0,0.12)' }}
+                        >
+                            <Image src="/bala.jpeg" alt="Bala" fill className="object-cover" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <h1 className="text-3xl md:text-4xl font-bold text-[--text-color] leading-none tracking-tight"
+                                style={{ fontFamily: cursiveFont, fontStyle: 'italic' }}
+                            >
+                                Balasubramanian
+                            </h1>
+                            <p className="text-[13px] text-accent font-semibold mt-1.5">Full Stack Developer</p>
+                            <p className="text-[12px] text-[--text-muted] mt-2 leading-relaxed max-w-md">
+                                Engineering student with 4+ years building production-ready web apps, tools, and browser extensions. Currently interning at For Real.
+                            </p>
+                        </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                        <h1 className="text-xl md:text-2xl font-bold text-[--text-color] leading-tight tracking-tight">
-                            Balasubramanian
-                        </h1>
-                        <p className="text-[13px] text-accent font-medium mt-0.5">Full Stack Developer</p>
+
+                    <div className="flex flex-wrap items-center gap-2 mt-5">
+                        <a href={personal.personal.socials.github} target="_blank"
+                            className={`inline-flex items-center gap-1.5 px-4 py-1.5 text-[11px] font-semibold transition-all ${clay
+                                ? 'rounded-full text-white active:scale-[0.97]'
+                                : 'text-[--bg-base] bg-accent'
+                            }`}
+                            style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
+                        >
+                            <IoLogoGithub size={13} /> GitHub
+                        </a>
+                        <a href={personal.personal.socials.linkedin} target="_blank"
+                            className={`inline-flex items-center gap-1.5 px-4 py-1.5 text-[11px] font-semibold text-[--text-color] transition-all ${clay
+                                ? 'rounded-full border border-[--glass-border] hover:bg-[--bg-glass-hover] active:scale-[0.97]'
+                                : 'border border-[--border-color] hover:bg-[--bg-overlay]'
+                            }`}
+                        >
+                            <IoLogoLinkedin size={13} /> LinkedIn
+                        </a>
+                        <a href="/Balasubramanian TBR.pdf" target="_blank"
+                            className={`inline-flex items-center gap-1.5 px-4 py-1.5 text-[11px] font-semibold text-[--text-color] transition-all ${clay
+                                ? 'rounded-full border border-[--glass-border] hover:bg-[--bg-glass-hover] active:scale-[0.97]'
+                                : 'border border-[--border-color] hover:bg-[--bg-overlay]'
+                            }`}
+                        >
+                            Resume <IoArrowForward size={11} />
+                        </a>
                     </div>
                 </div>
 
-                <p className="text-[13px] text-[--text-muted] leading-relaxed mb-5 max-w-lg">
-                    Engineering student with 4+ years building production-ready web apps. Currently interning at For Real.
-                </p>
-
-                <div className="flex flex-wrap items-center gap-2 mb-10">
-                    <a href={personal.personal.socials.github} target="_blank"
-                        className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[11px] font-semibold transition-all ${clay
-                            ? 'rounded-full text-white active:scale-[0.97]'
-                            : 'text-[--bg-base] bg-accent'
-                        }`}
-                        style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
-                    >
-                        <IoLogoGithub size={13} /> GitHub
-                    </a>
-                    <a href={personal.personal.socials.linkedin} target="_blank"
-                        className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[11px] font-semibold text-[--text-color] transition-all ${clay
-                            ? 'rounded-full border border-[--glass-border] hover:bg-[--bg-glass-hover] active:scale-[0.97]'
-                            : 'border border-[--border-color] hover:bg-[--bg-overlay]'
-                        }`}
-                    >
-                        <IoLogoLinkedin size={13} /> LinkedIn
-                    </a>
-                    <a href="/Balasubramanian TBR.pdf" target="_blank"
-                        className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[11px] font-semibold text-[--text-color] transition-all ${clay
-                            ? 'rounded-full border border-[--glass-border] hover:bg-[--bg-glass-hover] active:scale-[0.97]'
-                            : 'border border-[--border-color] hover:bg-[--bg-overlay]'
-                        }`}
-                    >
-                        Resume <IoArrowForward size={11} />
-                    </a>
+                {/* ── Stats Row ── */}
+                <div className="grid grid-cols-3 gap-3">
+                    {STATS.map((stat, i) => (
+                        <div key={i} className={`p-4 text-center ${cardCls()}`} style={cardSty}>
+                            <stat.icon size={18} className="mx-auto text-accent mb-2" />
+                            <div className="text-2xl font-bold text-[--text-color] leading-none">{stat.value}</div>
+                            <div className="text-[10px] uppercase tracking-widest text-[--text-muted] mt-1">{stat.label}</div>
+                        </div>
+                    ))}
                 </div>
 
                 {/* ── Experience ── */}
-                {sectionTitle('Experience')}
-                <div className="space-y-3 mb-10">
-                    {EXPERIENCES.map((exp, i) => (
-                        <div key={i} className="flex items-start gap-3">
-                            <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${exp.current ? 'bg-accent' : clay ? 'bg-[--glass-border]' : 'bg-[--border-color]'}`} />
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-baseline gap-2 flex-wrap">
-                                    <span className="text-[13px] font-semibold text-[--text-color]">{exp.role}</span>
-                                    {exp.current && (
-                                        <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 text-white ${clay ? 'rounded-full' : ''}`}
-                                            style={{ background: 'var(--accent-color)' }}>Now</span>
-                                    )}
+                <div className={`p-5 md:p-6 ${cardCls()}`} style={cardSty}>
+                    <h2 className="text-[11px] font-bold uppercase tracking-[0.15em] text-[--text-muted] mb-4">Experience</h2>
+                    <div className="space-y-4">
+                        {EXPERIENCES.map((exp, i) => (
+                            <div key={i} className={`flex items-start gap-3.5 p-3.5 ${clay ? 'rounded-[12px] bg-[--bg-glass-active]' : 'bg-[--bg-base] border border-[--border-color]'}`}>
+                                <div className={`w-1.5 self-stretch shrink-0 ${clay ? 'rounded-full' : ''}`}
+                                    style={{ background: exp.current ? 'var(--accent-color)' : clay ? 'var(--glass-border)' : 'var(--border-color)' }}
+                                />
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <span className="text-[13px] font-bold text-[--text-color]">{exp.role}</span>
+                                        {exp.current && (
+                                            <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 text-white ${clay ? 'rounded-full' : ''}`}
+                                                style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : { background: 'var(--accent-color)' }}
+                                            >Now</span>
+                                        )}
+                                    </div>
+                                    <p className="text-[12px] text-[--text-muted] mt-0.5">{exp.company} &middot; {exp.period}</p>
                                 </div>
-                                <p className="text-[12px] text-[--text-muted]">{exp.company} &middot; {exp.period}</p>
                             </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
 
                 {/* ── Projects ── */}
-                {sectionTitle('Projects')}
-                <div className="space-y-3 mb-10">
-                    {PROJECTS.map((p, i) => (
-                        <div key={i}
-                            className={`flex gap-4 p-3 transition-colors ${clay
-                                ? 'rounded-[14px] hover:bg-[--bg-glass-hover]'
-                                : 'hover:bg-[--bg-overlay] border-b border-[--border-color] last:border-0'
-                            }`}
-                        >
-                            <div className={`w-[100px] h-[64px] md:w-[130px] md:h-[80px] relative shrink-0 overflow-hidden ${clay ? 'rounded-[10px] border border-[--glass-border]' : 'border border-[--border-color]'}`}>
-                                <Image src={p.img} alt={p.name} fill className="object-cover" sizes="130px" />
-                            </div>
-                            <div className="flex-1 min-w-0 flex flex-col justify-center">
-                                <div className="flex items-center gap-2 mb-0.5">
-                                    <h3 className="text-[14px] font-bold text-[--text-color] leading-tight">{p.name}</h3>
-                                    <div className="flex gap-1.5 ml-auto shrink-0">
-                                        {p.live && (
-                                            <a href={p.live} target="_blank" className="text-[--text-muted] hover:text-accent transition-colors" title="Live">
-                                                <IoGlobeOutline size={14} />
+                <div>
+                    <h2 className="text-[11px] font-bold uppercase tracking-[0.15em] text-[--text-muted] mb-3 px-1">Projects</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {PROJECTS.map((p, i) => (
+                            <div key={i}
+                                className={`group overflow-hidden transition-all ${cardCls('hover:shadow-lg')}`}
+                                style={cardSty}
+                            >
+                                <div className={`h-32 relative overflow-hidden ${clay ? 'border-b border-[--glass-border]' : 'border-b border-[--border-color]'}`}>
+                                    <Image src={p.img} alt={p.name} fill className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300" sizes="(max-width: 768px) 100vw, 50vw" />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                                    <div className="absolute bottom-2.5 left-3 right-3 flex items-end justify-between">
+                                        <div>
+                                            <h3 className="text-[14px] font-bold text-white leading-tight drop-shadow-md">{p.name}</h3>
+                                            <div className="flex gap-1 mt-1">
+                                                {p.tags.map(tag => (
+                                                    <span key={tag} className="text-[8px] px-1.5 py-0.5 bg-white/20 backdrop-blur-sm text-white/90 rounded-full font-medium">{tag}</span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-1.5">
+                                            {p.live && (
+                                                <a href={p.live} target="_blank"
+                                                    className={`w-7 h-7 flex items-center justify-center text-white hover:scale-110 transition-transform ${clay ? 'rounded-[8px]' : 'rounded-sm'}`}
+                                                    style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : { background: 'var(--accent-color)' }}
+                                                    onClick={e => e.stopPropagation()}
+                                                >
+                                                    <IoGlobeOutline size={13} />
+                                                </a>
+                                            )}
+                                            <a href={p.url} target="_blank"
+                                                className={`w-7 h-7 flex items-center justify-center text-white/90 hover:scale-110 transition-transform backdrop-blur-sm ${clay ? 'rounded-[8px] bg-white/15 border border-white/20' : 'rounded-sm bg-white/15'}`}
+                                                onClick={e => e.stopPropagation()}
+                                            >
+                                                <IoLogoGithub size={13} />
                                             </a>
-                                        )}
-                                        <a href={p.url} target="_blank" className="text-[--text-muted] hover:text-accent transition-colors" title="Source">
-                                            <IoLogoGithub size={14} />
-                                        </a>
+                                        </div>
                                     </div>
                                 </div>
-                                <p className="text-[12px] text-[--text-muted] leading-relaxed line-clamp-2 mb-1.5">{p.desc}</p>
-                                <div className="flex flex-wrap gap-1">
-                                    {p.tags.map(tag => (
-                                        <span key={tag} className={`text-[9px] px-1.5 py-0.5 font-semibold ${clay
-                                            ? 'bg-[--bg-glass-active] text-accent rounded-[4px]'
-                                            : 'bg-[--bg-overlay] text-accent'
-                                        }`}>{tag}</span>
-                                    ))}
+                                <div className="px-3.5 py-3">
+                                    <p className="text-[12px] text-[--text-muted] leading-relaxed line-clamp-2">{p.desc}</p>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
 
                 {/* ── Skills ── */}
-                {sectionTitle('Tech Stack')}
-                <div className="space-y-4 mb-10">
-                    {Object.entries(SKILLS).map(([category, skills]) => (
-                        <div key={category}>
-                            <div className="text-[11px] font-semibold text-[--text-color] mb-1.5">{category}</div>
-                            <div className="flex flex-wrap gap-1.5">
-                                {skills.map(skill => (
-                                    <span key={skill}
-                                        className={`px-2.5 py-1 text-[11px] font-medium text-[--text-muted] ${clay
-                                            ? 'rounded-full border border-[--glass-border]'
-                                            : 'border border-[--border-color]'
-                                        }`}
-                                    >{skill}</span>
-                                ))}
+                <div className={`p-5 md:p-6 ${cardCls()}`} style={cardSty}>
+                    <h2 className="text-[11px] font-bold uppercase tracking-[0.15em] text-[--text-muted] mb-4">Tech Stack</h2>
+                    <div className="space-y-4">
+                        {Object.entries(SKILLS).map(([category, skills]) => (
+                            <div key={category}>
+                                <div className="text-[11px] font-semibold text-[--text-color] mb-2">{category}</div>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {skills.map(skill => (
+                                        <span key={skill}
+                                            className={`px-3 py-1.5 text-[11px] font-medium text-[--text-color] transition-all ${clay
+                                                ? 'rounded-full border border-[--glass-border] hover:bg-[--bg-glass-hover]'
+                                                : 'bg-[--bg-base] border border-[--border-color] hover:bg-[--bg-overlay]'
+                                            }`}
+                                        >{skill}</span>
+                                    ))}
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
 
                 {/* ── Contact ── */}
-                {sectionTitle('Contact')}
-                <div className="flex flex-wrap gap-2 mb-6">
-                    <a href={`mailto:${personal.personal.email}`}
-                        className={`inline-flex items-center gap-1.5 px-4 py-2 text-[11px] font-semibold text-white transition-all ${clay ? 'rounded-full active:scale-[0.97]' : ''}`}
-                        style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : { background: 'var(--accent-color)' }}
-                    >
-                        <IoMail size={13} /> Email
-                    </a>
-                    <a href={personal.personal.socials.linkedin} target="_blank"
-                        className={`inline-flex items-center gap-1.5 px-4 py-2 text-[11px] font-semibold text-[--text-color] transition-all ${clay
-                            ? 'rounded-full border border-[--glass-border] hover:bg-[--bg-glass-hover] active:scale-[0.97]'
-                            : 'border border-[--border-color] hover:bg-[--bg-overlay]'
-                        }`}
-                    >
-                        <IoLogoLinkedin size={13} /> LinkedIn
-                    </a>
-                    <a href={personal.personal.socials.github} target="_blank"
-                        className={`inline-flex items-center gap-1.5 px-4 py-2 text-[11px] font-semibold text-[--text-color] transition-all ${clay
-                            ? 'rounded-full border border-[--glass-border] hover:bg-[--bg-glass-hover] active:scale-[0.97]'
-                            : 'border border-[--border-color] hover:bg-[--bg-overlay]'
-                        }`}
-                    >
-                        <IoLogoGithub size={13} /> GitHub
-                    </a>
+                <div className={`p-5 md:p-6 ${cardCls()}`} style={cardSty}>
+                    <h2 className="text-[11px] font-bold uppercase tracking-[0.15em] text-[--text-muted] mb-2">Get in Touch</h2>
+                    <p className="text-[12px] text-[--text-muted] mb-4 leading-relaxed">
+                        Open to internship opportunities and collaborations. Let&apos;s build something together.
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                        <a href={`mailto:${personal.personal.email}`}
+                            className={`inline-flex items-center gap-1.5 px-5 py-2 text-[11px] font-semibold text-white transition-all ${clay ? 'rounded-full active:scale-[0.97]' : ''}`}
+                            style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : { background: 'var(--accent-color)' }}
+                        >
+                            <IoMail size={13} /> Email
+                        </a>
+                        <a href={personal.personal.socials.linkedin} target="_blank"
+                            className={`inline-flex items-center gap-1.5 px-5 py-2 text-[11px] font-semibold text-[--text-color] transition-all ${clay
+                                ? 'rounded-full border border-[--glass-border] hover:bg-[--bg-glass-hover] active:scale-[0.97]'
+                                : 'border border-[--border-color] hover:bg-[--bg-overlay]'
+                            }`}
+                        >
+                            <IoLogoLinkedin size={13} /> LinkedIn
+                        </a>
+                        <a href={personal.personal.socials.github} target="_blank"
+                            className={`inline-flex items-center gap-1.5 px-5 py-2 text-[11px] font-semibold text-[--text-color] transition-all ${clay
+                                ? 'rounded-full border border-[--glass-border] hover:bg-[--bg-glass-hover] active:scale-[0.97]'
+                                : 'border border-[--border-color] hover:bg-[--bg-overlay]'
+                            }`}
+                        >
+                            <IoLogoGithub size={13} /> GitHub
+                        </a>
+                    </div>
                 </div>
 
                 {/* ── Get Started (embedded mode) ── */}
                 {embedded && (
-                    <div className="py-6 text-center">
+                    <div className={`p-5 text-center ${cardCls()}`} style={cardSty}>
                         <button onClick={handlegetstarted}
                             className={`px-8 py-2.5 text-white font-bold text-[12px] inline-flex items-center gap-2 hover:opacity-90 transition-all uppercase tracking-wider ${clay ? 'rounded-full active:scale-[0.97]' : ''}`}
                             style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : { background: 'var(--accent-color)' }}
@@ -218,7 +261,7 @@ export default function Portfolio({ embedded }: { embedded?: boolean } = {}) {
                 )}
 
                 {/* ── Footer ── */}
-                <div className={`flex items-center justify-between text-[11px] text-[--text-muted] py-4 ${clay ? 'border-t border-[--glass-border]' : 'border-t border-[--border-color]'}`}>
+                <div className={`flex items-center justify-between text-[11px] text-[--text-muted] py-3 px-1`}>
                     <span>&copy; {new Date().getFullYear()} Balasubramanian</span>
                     <div className="flex gap-3">
                         <a href={personal.personal.socials.github} target="_blank" className="hover:text-accent transition-colors"><IoLogoGithub size={14} /></a>
