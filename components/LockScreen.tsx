@@ -188,10 +188,10 @@ export default function LockScreen() {
         if (ismobile) {
             return (
                 <div className="fixed inset-0 z-[800] flex flex-col items-center overflow-hidden font-sans select-none">
-                    {/* Wallpaper */}
+                    {/* Wallpaper with blur */}
                     <div
                         className="absolute inset-0 z-0 bg-cover bg-center"
-                        style={{ backgroundImage: `url('${wallpaperurl}')` }}
+                        style={{ backgroundImage: `url('${wallpaperurl}')`, filter: 'blur(8px) saturate(1.2)', transform: 'scale(1.05)' }}
                     />
                     {/* Dark overlay for depth */}
                     <div
@@ -207,8 +207,8 @@ export default function LockScreen() {
                         transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
                     >
                         <h1
-                            className={`text-[72px] font-black ${primaryText} tracking-tight leading-none`}
-                            style={{ textShadow: clockShadow, letterSpacing: '-0.02em' }}
+                            className={`text-[72px] font-bold ${primaryText} leading-none`}
+                            style={{ textShadow: clockShadow, fontFamily: "'Snell Roundhand', 'Segoe Script', 'Dancing Script', cursive", fontStyle: 'italic' }}
                         >
                             {timeStr}
                         </h1>
@@ -420,37 +420,35 @@ export default function LockScreen() {
                     >
                         <div
                             onClick={async () => { if (iselectron) await power.sleep(); }}
-                            className="group cursor-pointer flex flex-col items-center gap-1.5"
+                            className="group cursor-pointer"
                         >
                             <div
-                                className="w-10 h-10 rounded-full flex items-center justify-center transition-transform duration-200 group-active:scale-90"
+                                className="w-11 h-11 rounded-full flex items-center justify-center transition-transform duration-200 group-active:scale-90"
                                 style={{
-                                    background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
-                                    backdropFilter: 'blur(20px)',
-                                    WebkitBackdropFilter: 'blur(20px)',
-                                    border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.06)',
+                                    background: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)',
+                                    backdropFilter: 'blur(24px)',
+                                    WebkitBackdropFilter: 'blur(24px)',
+                                    border: isDark ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(0,0,0,0.08)',
                                 }}
                             >
-                                <IoMoon size={15} className={secondaryText} />
+                                <IoMoon size={16} className={secondaryText} />
                             </div>
-                            <span className={`text-[9px] font-medium ${tertiaryText}`} style={{ textShadow: subtleShadow }}>Sleep</span>
                         </div>
                         <div
                             onClick={async () => { if (iselectron) await power.restart(); else window.location.reload(); }}
-                            className="group cursor-pointer flex flex-col items-center gap-1.5"
+                            className="group cursor-pointer"
                         >
                             <div
-                                className="w-10 h-10 rounded-full flex items-center justify-center transition-transform duration-200 group-active:scale-90"
+                                className="w-11 h-11 rounded-full flex items-center justify-center transition-transform duration-200 group-active:scale-90"
                                 style={{
-                                    background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
-                                    backdropFilter: 'blur(20px)',
-                                    WebkitBackdropFilter: 'blur(20px)',
-                                    border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.06)',
+                                    background: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)',
+                                    backdropFilter: 'blur(24px)',
+                                    WebkitBackdropFilter: 'blur(24px)',
+                                    border: isDark ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(0,0,0,0.08)',
                                 }}
                             >
-                                <IoRefresh size={15} className={secondaryText} />
+                                <IoRefresh size={16} className={secondaryText} />
                             </div>
-                            <span className={`text-[9px] font-medium ${tertiaryText}`} style={{ textShadow: subtleShadow }}>Restart</span>
                         </div>
                     </motion.div>
                 </div>
@@ -460,10 +458,10 @@ export default function LockScreen() {
         // ---- DESKTOP CLAY ----
         return (
             <div className="fixed inset-0 z-[800] flex flex-col items-center justify-center overflow-hidden font-sans select-none">
-                {/* Wallpaper */}
+                {/* Wallpaper with blur */}
                 <div
                     className="absolute inset-0 z-0 bg-cover bg-center"
-                    style={{ backgroundImage: `url('${wallpaperurl}')` }}
+                    style={{ backgroundImage: `url('${wallpaperurl}')`, filter: 'blur(8px) saturate(1.2)', transform: 'scale(1.05)' }}
                 />
                 {/* Cinematic dark overlay */}
                 <div
@@ -484,8 +482,8 @@ export default function LockScreen() {
                 >
                     {/* Clock -- huge bold */}
                     <motion.h1
-                        className={`text-[96px] font-black ${primaryText} tracking-tight leading-none`}
-                        style={{ textShadow: clockShadow, letterSpacing: '-0.02em' }}
+                        className={`text-[96px] font-bold ${primaryText} leading-none`}
+                        style={{ textShadow: clockShadow, fontFamily: "'Snell Roundhand', 'Segoe Script', 'Dancing Script', cursive", fontStyle: 'italic' }}
                         initial={{ opacity: 0, y: -30, scale: 0.9 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
@@ -720,49 +718,37 @@ export default function LockScreen() {
                 >
                     <div
                         onClick={async () => { if (iselectron) await power.sleep(); }}
-                        className="group cursor-pointer flex flex-col items-center gap-2"
+                        className="group cursor-pointer"
                     >
                         <div
                             className="w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 group-hover:scale-110 group-active:scale-95"
                             style={{
-                                background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
-                                backdropFilter: 'blur(20px)',
-                                WebkitBackdropFilter: 'blur(20px)',
-                                border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.06)',
+                                background: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.07)',
+                                backdropFilter: 'blur(24px)',
+                                WebkitBackdropFilter: 'blur(24px)',
+                                border: isDark ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(0,0,0,0.08)',
                                 boxShadow: isDark ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.06)',
                             }}
                         >
                             <IoMoon size={16} className={secondaryText} />
                         </div>
-                        <span
-                            className={`text-[10px] font-medium ${tertiaryText}`}
-                            style={{ textShadow: subtleShadow }}
-                        >
-                            Sleep
-                        </span>
                     </div>
                     <div
                         onClick={async () => { if (iselectron) await power.restart(); else window.location.reload(); }}
-                        className="group cursor-pointer flex flex-col items-center gap-2"
+                        className="group cursor-pointer"
                     >
                         <div
                             className="w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 group-hover:scale-110 group-active:scale-95"
                             style={{
-                                background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
-                                backdropFilter: 'blur(20px)',
-                                WebkitBackdropFilter: 'blur(20px)',
-                                border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.06)',
+                                background: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.07)',
+                                backdropFilter: 'blur(24px)',
+                                WebkitBackdropFilter: 'blur(24px)',
+                                border: isDark ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(0,0,0,0.08)',
                                 boxShadow: isDark ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.06)',
                             }}
                         >
                             <IoRefresh size={16} className={secondaryText} />
                         </div>
-                        <span
-                            className={`text-[10px] font-medium ${tertiaryText}`}
-                            style={{ textShadow: subtleShadow }}
-                        >
-                            Restart
-                        </span>
                     </div>
                 </motion.div>
             </div>
@@ -1136,7 +1122,7 @@ export default function LockScreen() {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
             >
-                <div onClick={async () => { if (iselectron) await power.sleep(); }} className="flex flex-col items-center gap-2 cursor-pointer group">
+                <div onClick={async () => { if (iselectron) await power.sleep(); }} className="cursor-pointer group">
                     <div className="w-11 h-11 bg-black/20 border border-white/20 flex items-center justify-center group-hover:border-accent transition-all duration-300"
                         style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.2)' }}
                         onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 24px rgba(237,135,150,0.4)'; }}
@@ -1144,9 +1130,8 @@ export default function LockScreen() {
                     >
                         <IoMoon size={18} className={islightbackground ? 'text-black/70' : 'text-white/90'} />
                     </div>
-                    <span className={`text-[10px] font-medium ${textMutedColor}`} style={{ textShadow: textShadowSm }}>Sleep</span>
                 </div>
-                <div onClick={async () => { if (iselectron) await power.restart(); else window.location.reload(); }} className="flex flex-col items-center gap-2 cursor-pointer group">
+                <div onClick={async () => { if (iselectron) await power.restart(); else window.location.reload(); }} className="cursor-pointer group">
                     <div className="w-11 h-11 bg-black/20 border border-white/20 flex items-center justify-center group-hover:border-accent transition-all duration-300"
                         style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.2)' }}
                         onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 24px rgba(237,135,150,0.4)'; }}
@@ -1154,7 +1139,6 @@ export default function LockScreen() {
                     >
                         <IoRefresh size={18} className={islightbackground ? 'text-black/70' : 'text-white/90'} />
                     </div>
-                    <span className={`text-[10px] font-medium ${textMutedColor}`} style={{ textShadow: textShadowSm }}>Restart</span>
                 </div>
             </motion.div>
         </div>
