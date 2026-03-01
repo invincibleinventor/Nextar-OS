@@ -7,6 +7,8 @@ import {
     IoSearch, IoGridOutline, IoListOutline, IoTerminal
 } from 'react-icons/io5';
 import { iselectron, nativefs } from '@/utils/platform';
+import { useIsClay } from '../hooks/useIsClay';
+import { glassCard, glassSidebar, glassInput } from '../hooks/useClayStyles';
 
 interface NativeFile {
     name: string;
@@ -23,6 +25,7 @@ interface NativeFileBrowserProps {
 }
 
 export default function NativeFileBrowser({ isFocused, initialPath }: NativeFileBrowserProps) {
+    const clay = useIsClay();
     const [currentpath, setcurrentpath] = useState(initialPath || '/home');
     const [files, setfiles] = useState<NativeFile[]>([]);
     const [loading, setloading] = useState(false);
@@ -135,7 +138,7 @@ export default function NativeFileBrowser({ isFocused, initialPath }: NativeFile
 
     if (!iselectron) {
         return (
-            <div className="h-full flex flex-col items-center justify-center bg-surface text-[--text-color]">
+            <div className={`h-full flex flex-col items-center justify-center text-[--text-color] ${clay ? 'bg-[--bg-base]' : 'bg-surface'}`}>
                 <IoFolderOutline size={64} className="text-[--text-muted] mb-4" />
                 <p className="text-xl font-medium mb-2">Native File Browser</p>
                 <p className="text-[--text-muted]">Only available in Electron mode</p>
@@ -145,53 +148,56 @@ export default function NativeFileBrowser({ isFocused, initialPath }: NativeFile
     }
 
     return (
-        <div className="h-full flex flex-col bg-[--bg-base] text-[--text-color]">
-            <div className="h-12 bg-surface border-b border-[--border-color] flex items-center px-4 shrink-0 gap-2">
+        <div className="h-full flex flex-col text-[--text-color] bg-[--bg-base]">
+            {/* Toolbar */}
+            <div className={`h-12 flex items-center px-4 shrink-0 gap-2 border-b ${clay ? 'border-[--glass-border] bg-transparent' : 'bg-surface border-[--border-color]'}`}>
                 <div className="flex items-center gap-1 ml-16">
                     <button
                         onClick={goback}
                         disabled={historyindex <= 0}
-                        className={`p-1.5 hover:bg-overlay ${historyindex <= 0 ? 'opacity-30' : ''}`}
+                        className={`p-1.5 ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'} ${historyindex <= 0 ? 'opacity-30' : ''}`}
                     >
                         <IoChevronBack size={18} />
                     </button>
                     <button
                         onClick={goforward}
                         disabled={historyindex >= history.length - 1}
-                        className={`p-1.5 hover:bg-overlay ${historyindex >= history.length - 1 ? 'opacity-30' : ''}`}
+                        className={`p-1.5 ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'} ${historyindex >= history.length - 1 ? 'opacity-30' : ''}`}
                     >
                         <IoChevronForward size={18} />
                     </button>
                     <button
                         onClick={goup}
-                        className="p-1.5 hover:bg-overlay"
+                        className={`p-1.5 ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'}`}
                         title="Go up"
                     >
                         ↑
                     </button>
                 </div>
 
-                <div className="flex-1 flex items-center bg-overlay px-3 py-1.5 mx-4">
+                <div className={`flex-1 flex items-center px-3 py-1.5 mx-4 ${clay ? 'rounded-full' : 'bg-overlay'}`}
+                    style={clay ? glassInput : undefined}
+                >
                     <span className="text-[--text-muted] text-[13px] truncate">{currentpath}</span>
                 </div>
 
                 <button
                     onClick={() => loaddir(currentpath)}
-                    className="p-1.5 hover:bg-overlay"
+                    className={`p-1.5 ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'}`}
                 >
                     <IoRefresh size={18} className={loading ? 'animate-spin' : ''} />
                 </button>
 
-                <div className="flex bg-overlay p-0.5">
+                <div className={`flex p-0.5 ${clay ? 'rounded-[10px] bg-[--bg-glass-active]' : 'bg-overlay'}`}>
                     <button
                         onClick={() => setviewmode('list')}
-                        className={`p-1.5 ${viewmode === 'list' ? 'bg-surface' : ''}`}
+                        className={`p-1.5 ${clay ? 'rounded-[8px]' : ''} ${viewmode === 'list' ? (clay ? 'bg-[--bg-glass]' : 'bg-surface') : ''}`}
                     >
                         <IoListOutline size={16} />
                     </button>
                     <button
                         onClick={() => setviewmode('grid')}
-                        className={`p-1.5 ${viewmode === 'grid' ? 'bg-surface' : ''}`}
+                        className={`p-1.5 ${clay ? 'rounded-[8px]' : ''} ${viewmode === 'grid' ? (clay ? 'bg-[--bg-glass]' : 'bg-surface') : ''}`}
                     >
                         <IoGridOutline size={16} />
                     </button>
@@ -199,34 +205,47 @@ export default function NativeFileBrowser({ isFocused, initialPath }: NativeFile
             </div>
 
             <div className="flex flex-1 overflow-hidden">
-                <div className="w-48 bg-surface border-r border-[--border-color] p-2 overflow-y-auto shrink-0">
-                    <div className="text-xs text-[--text-muted] uppercase mb-2 px-2">Quick Access</div>
-                    {quicknav.map((item) => (
-                        <button
-                            key={item.path}
-                            onClick={() => navigate(item.path)}
-                            className={`w-full flex items-center gap-2 px-3 py-2 text-[13px] text-left hover:bg-overlay ${currentpath === item.path ? 'bg-accent/30 text-accent' : ''}`}
-                        >
-                            <item.icon size={16} />
-                            {item.name}
-                        </button>
-                    ))}
+                {/* Sidebar */}
+                <div className={`w-48 p-2 overflow-y-auto shrink-0 border-r ${clay ? 'border-[--glass-border]' : 'border-[--border-color] bg-surface'}`}
+                    style={clay ? glassSidebar : undefined}
+                >
+                    <div className="text-xs text-[--text-muted] uppercase mb-2 px-2 font-semibold tracking-wide">Quick Access</div>
+                    {quicknav.map((item) => {
+                        const isActive = currentpath === item.path;
+                        return (
+                            <button
+                                key={item.path}
+                                onClick={() => navigate(item.path)}
+                                className={`w-full flex items-center gap-2 px-3 py-2 text-[13px] text-left transition-all ${clay
+                                    ? `rounded-[12px] ${isActive ? 'text-white' : 'hover:bg-[--bg-glass-hover] active:scale-[0.98]'}`
+                                    : `${isActive ? 'bg-accent text-[--bg-base]' : 'hover:bg-overlay'}`
+                                }`}
+                                style={isActive && clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
+                            >
+                                <item.icon size={16} />
+                                {item.name}
+                            </button>
+                        );
+                    })}
                 </div>
 
                 <div className="flex-1 flex flex-col min-w-0">
-                    <div className="p-2 border-b border-[--border-color]">
-                        <div className="relative">
+                    {/* Search */}
+                    <div className={`p-2 border-b ${clay ? 'border-[--glass-border]' : 'border-[--border-color]'}`}>
+                        <div className={`relative ${clay ? 'rounded-full' : ''}`}
+                            style={clay ? glassInput : undefined}>
                             <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[--text-muted]" size={16} />
                             <input
                                 type="text"
                                 value={searchquery}
                                 onChange={(e) => setsearchquery(e.target.value)}
                                 placeholder="Search files..."
-                                className="w-full bg-overlay pl-9 pr-4 py-2 text-[13px] outline-none placeholder-[--text-muted]"
+                                className={`w-full pl-9 pr-4 py-2 text-[13px] outline-none placeholder-[--text-muted] text-[--text-color] ${clay ? 'bg-transparent' : 'bg-overlay'}`}
                             />
                         </div>
                     </div>
 
+                    {/* File listing */}
                     <div className="flex-1 overflow-auto p-2">
                         {loading ? (
                             <div className="flex items-center justify-center h-full">
@@ -238,7 +257,8 @@ export default function NativeFileBrowser({ isFocused, initialPath }: NativeFile
                                 <p className="text-[13px] text-[--text-muted]">{error}</p>
                                 <button
                                     onClick={() => navigate('/home')}
-                                    className="mt-4 px-4 py-2 bg-overlay hover:bg-surface"
+                                    className={`mt-4 px-4 py-2 transition-colors ${clay ? 'rounded-[12px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'bg-overlay hover:bg-surface'}`}
+                                    style={clay ? glassCard : undefined}
                                 >
                                     Go Home
                                 </button>
@@ -250,7 +270,7 @@ export default function NativeFileBrowser({ isFocused, initialPath }: NativeFile
                             </div>
                         ) : viewmode === 'list' ? (
                             <table className="w-full text-[13px]">
-                                <thead className="text-[--text-muted] text-xs uppercase sticky top-0 bg-[--bg-base]">
+                                <thead className={`text-[--text-muted] text-xs uppercase sticky top-0 ${clay ? 'bg-[--bg-glass]' : 'bg-[--bg-base]'}`}>
                                     <tr>
                                         <th className="text-left py-2 px-3">Name</th>
                                         <th className="text-left py-2 px-3 w-24">Size</th>
@@ -258,87 +278,102 @@ export default function NativeFileBrowser({ isFocused, initialPath }: NativeFile
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredfiles.map((file) => (
-                                        <tr
-                                            key={file.name}
-                                            className={`hover:bg-overlay cursor-pointer ${selectedfile === file.name ? 'bg-accent/20' : ''}`}
-                                            onClick={() => setselectedfile(file.name)}
-                                            onDoubleClick={() => openfile(file)}
-                                        >
-                                            <td className="py-2 px-3">
-                                                <div className="flex items-center gap-2">
-                                                    {file.isdir ? (
-                                                        <IoFolderOutline className="text-accent" size={18} />
-                                                    ) : (
-                                                        <IoDocumentOutline className="text-[--text-muted]" size={18} />
-                                                    )}
-                                                    <span className={file.name.startsWith('.') ? 'text-[--text-muted]' : ''}>
-                                                        {file.name}
-                                                    </span>
-                                                    {file.issymlink && <span className="text-xs text-[--text-muted]">→</span>}
-                                                </div>
-                                            </td>
-                                            <td className="py-2 px-3 text-[--text-muted]">
-                                                {file.isdir ? '--' : formatsize(file.size || 0)}
-                                            </td>
-                                            <td className="py-2 px-3 text-right">
-                                                <div className="flex items-center justify-end gap-1 opacity-0 hover:opacity-100 transition-opacity">
-                                                    <button
-                                                        onClick={(e) => { e.stopPropagation(); openfile(file); }}
-                                                        className="p-1 hover:bg-overlay"
-                                                        title="Open"
-                                                    >
-                                                        <IoOpenOutline size={14} />
-                                                    </button>
-                                                    <button
-                                                        onClick={(e) => { e.stopPropagation(); showinfolder(file.name); }}
-                                                        className="p-1 hover:bg-overlay"
-                                                        title="Show in folder"
-                                                    >
-                                                        <IoFolderOutline size={14} />
-                                                    </button>
-                                                    <button
-                                                        onClick={(e) => { e.stopPropagation(); trashfile(file.name); }}
-                                                        className="p-1 hover:bg-overlay text-pastel-red"
-                                                        title="Move to trash"
-                                                    >
-                                                        <IoTrashOutline size={14} />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
+                                    {filteredfiles.map((file) => {
+                                        const isSelected = selectedfile === file.name;
+                                        return (
+                                            <tr
+                                                key={file.name}
+                                                className={`cursor-pointer transition-colors ${clay
+                                                    ? `${isSelected ? 'text-white' : 'hover:bg-[--bg-glass-hover]'}`
+                                                    : `${isSelected ? 'bg-accent text-[--bg-base]' : 'hover:bg-overlay'}`
+                                                }`}
+                                                style={isSelected && clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)', borderRadius: '10px' } : undefined}
+                                                onClick={() => setselectedfile(file.name)}
+                                                onDoubleClick={() => openfile(file)}
+                                            >
+                                                <td className="py-2 px-3">
+                                                    <div className="flex items-center gap-2">
+                                                        {file.isdir ? (
+                                                            <IoFolderOutline className={isSelected && clay ? 'text-white' : 'text-accent'} size={18} />
+                                                        ) : (
+                                                            <IoDocumentOutline className={isSelected && clay ? 'text-white/70' : 'text-[--text-muted]'} size={18} />
+                                                        )}
+                                                        <span className={file.name.startsWith('.') && !isSelected ? 'text-[--text-muted]' : ''}>
+                                                            {file.name}
+                                                        </span>
+                                                        {file.issymlink && <span className={`text-xs ${isSelected && clay ? 'text-white/60' : 'text-[--text-muted]'}`}>→</span>}
+                                                    </div>
+                                                </td>
+                                                <td className={`py-2 px-3 ${isSelected && clay ? 'text-white/70' : 'text-[--text-muted]'}`}>
+                                                    {file.isdir ? '--' : formatsize(file.size || 0)}
+                                                </td>
+                                                <td className="py-2 px-3 text-right">
+                                                    <div className="flex items-center justify-end gap-1 opacity-0 hover:opacity-100 transition-opacity">
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); openfile(file); }}
+                                                            className={`p-1 ${clay ? 'rounded-[6px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`}
+                                                            title="Open"
+                                                        >
+                                                            <IoOpenOutline size={14} />
+                                                        </button>
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); showinfolder(file.name); }}
+                                                            className={`p-1 ${clay ? 'rounded-[6px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`}
+                                                            title="Show in folder"
+                                                        >
+                                                            <IoFolderOutline size={14} />
+                                                        </button>
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); trashfile(file.name); }}
+                                                            className={`p-1 text-pastel-red ${clay ? 'rounded-[6px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`}
+                                                            title="Move to trash"
+                                                        >
+                                                            <IoTrashOutline size={14} />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         ) : (
                             <div className="grid grid-cols-4 gap-3 p-2">
-                                {filteredfiles.map((file) => (
-                                    <div
-                                        key={file.name}
-                                        className={`flex flex-col items-center p-3 hover:bg-overlay cursor-pointer ${selectedfile === file.name ? 'bg-accent/20 ring-1 ring-accent' : ''}`}
-                                        onClick={() => setselectedfile(file.name)}
-                                        onDoubleClick={() => openfile(file)}
-                                    >
-                                        {file.isdir ? (
-                                            <IoFolderOutline className="text-accent" size={40} />
-                                        ) : (
-                                            <IoDocumentOutline className="text-[--text-muted]" size={40} />
-                                        )}
-                                        <span className={`text-xs mt-2 text-center truncate w-full ${file.name.startsWith('.') ? 'text-[--text-muted]' : ''}`}>
-                                            {file.name}
-                                        </span>
-                                    </div>
-                                ))}
+                                {filteredfiles.map((file) => {
+                                    const isSelected = selectedfile === file.name;
+                                    return (
+                                        <div
+                                            key={file.name}
+                                            className={`flex flex-col items-center p-3 cursor-pointer transition-all ${clay
+                                                ? `rounded-[12px] ${isSelected ? 'text-white' : 'hover:bg-[--bg-glass-hover]'}`
+                                                : `${isSelected ? 'bg-accent text-[--bg-base] ring-1 ring-accent' : 'hover:bg-overlay'}`
+                                            }`}
+                                            style={isSelected && clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
+                                            onClick={() => setselectedfile(file.name)}
+                                            onDoubleClick={() => openfile(file)}
+                                        >
+                                            {file.isdir ? (
+                                                <IoFolderOutline className={isSelected && clay ? 'text-white' : 'text-accent'} size={40} />
+                                            ) : (
+                                                <IoDocumentOutline className={isSelected && clay ? 'text-white/70' : 'text-[--text-muted]'} size={40} />
+                                            )}
+                                            <span className={`text-xs mt-2 text-center truncate w-full ${file.name.startsWith('.') && !isSelected ? 'text-[--text-muted]' : ''}`}>
+                                                {file.name}
+                                            </span>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         )}
                     </div>
                 </div>
             </div>
 
-            <div className="h-8 bg-surface border-t border-[--border-color] flex items-center px-4 text-xs text-[--text-muted] shrink-0">
+            {/* Status bar */}
+            <div className={`h-8 flex items-center px-4 text-xs text-[--text-muted] shrink-0 border-t ${clay ? 'border-[--glass-border] bg-transparent' : 'bg-surface border-[--border-color]'}`}>
                 <span>{filteredfiles.length} items</span>
                 {selectedfile && <span className="ml-4">Selected: {selectedfile}</span>}
-                <span className="ml-auto">Native File Browser • Linux Host</span>
+                <span className="ml-auto">Native File Browser</span>
             </div>
         </div>
     );

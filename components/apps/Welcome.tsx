@@ -9,6 +9,8 @@ import { IoArrowForward, IoCheckmarkCircle, IoDownloadOutline, IoAppsOutline, Io
 import { useAuth } from '../AuthContext';
 import { createUser, getUsers, User, saveAllFiles, isFilesystemInstalled, resetDB, initDB } from '../../utils/db';
 import { hashPassword } from '../../utils/crypto';
+import { useIsClay } from '../hooks/useIsClay';
+import { glassPanel, glassCard, glassInput, glassButton } from '../hooks/useClayStyles';
 
 export default function Welcome(props: any) {
     const { removewindow, addwindow, windows, updatewindow, setactivewindow } = useWindows();
@@ -19,6 +21,7 @@ export default function Welcome(props: any) {
     const containerref = useRef<HTMLDivElement>(null);
 
     const { user, login, logout } = useAuth();
+    const clay = useIsClay();
 
     const [isReady, setIsReady] = useState(false);
     const [hasUsers, setHasUsers] = useState(false);
@@ -58,7 +61,7 @@ export default function Welcome(props: any) {
         return () => observer.disconnect();
     }, []);
 
-    if (!isReady) return <div className="w-full h-full bg-[--bg-base]" />;
+    if (!isReady) return <div className={`w-full h-full ${clay ? 'bg-[--bg-base]' : 'bg-[--bg-base]'}`} />;
 
 
     const context = { addwindow, windows, updatewindow, setactivewindow, ismobile };
@@ -151,8 +154,11 @@ export default function Welcome(props: any) {
             title: "Get Started",
             content: (
                 <div className="text-center space-y-6">
-                    <div className="w-20 h-20 mx-auto bg-accent flex items-center justify-center">
-                        <IoDownloadOutline size={40} className="text-[--text-color]" />
+                    <div
+                        className={`w-20 h-20 mx-auto flex items-center justify-center ${clay ? 'rounded-[16px]' : 'bg-accent'}`}
+                        style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
+                    >
+                        <IoDownloadOutline size={40} className={clay ? 'text-white drop-shadow-sm' : 'text-[--text-color]'} />
                     </div>
                     <div>
                         <h2 className="text-2xl font-semibold mb-2">NextarOS Setup</h2>
@@ -172,7 +178,7 @@ export default function Welcome(props: any) {
                             <div className="flex items-center gap-2 mb-6">
                                 <button
                                     onClick={() => setView('welcome')}
-                                    className="p-1 hover:bg-overlay transition-colors"
+                                    className={`p-1 transition-colors ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`}
                                 >
                                     <IoArrowForward className="rotate-180 text-xl text-[--text-muted]" />
                                 </button>
@@ -184,42 +190,48 @@ export default function Welcome(props: any) {
                                     <label className="text-[13px] font-medium ml-1 text-[--text-muted]">Display Name</label>
                                     <input
                                         type="text" placeholder="John Doe" value={name} onChange={e => setName(e.target.value)}
-                                        className="w-full px-3 py-2 bg-overlay border border-[--border-color] outline-none focus:ring-2 ring-accent/50 transition-all font-medium placeholder-[--text-muted]"
+                                        className={`w-full px-3 py-2 outline-none transition-all font-medium placeholder-[--text-muted] ${clay ? 'rounded-[10px]' : 'bg-overlay border border-[--border-color] focus:ring-2 ring-accent/50'}`}
+                                        style={clay ? glassInput : undefined}
                                     />
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-[13px] font-medium ml-1 text-[--text-muted]">Username</label>
                                     <input
                                         type="text" placeholder="john" value={username} onChange={e => setUsername(e.target.value)}
-                                        className="w-full px-3 py-2 bg-overlay border border-[--border-color] outline-none focus:ring-2 ring-accent/50 transition-all font-medium placeholder-[--text-muted]"
+                                        className={`w-full px-3 py-2 outline-none transition-all font-medium placeholder-[--text-muted] ${clay ? 'rounded-[10px]' : 'bg-overlay border border-[--border-color] focus:ring-2 ring-accent/50'}`}
+                                        style={clay ? glassInput : undefined}
                                     />
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-[13px] font-medium ml-1 text-[--text-muted]">Password</label>
                                     <input
                                         type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)}
-                                        className="w-full px-3 py-2 bg-overlay border border-[--border-color] outline-none focus:ring-2 ring-accent/50 transition-all font-medium placeholder-[--text-muted]"
+                                        className={`w-full px-3 py-2 outline-none transition-all font-medium placeholder-[--text-muted] ${clay ? 'rounded-[10px]' : 'bg-overlay border border-[--border-color] focus:ring-2 ring-accent/50'}`}
+                                        style={clay ? glassInput : undefined}
                                     />
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-[13px] font-medium ml-1 text-[--text-muted]">Confirm Password</label>
                                     <input
                                         type="password" placeholder="••••••••" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
-                                        className="w-full px-3 py-2 bg-overlay border border-[--border-color] outline-none focus:ring-2 ring-accent/50 transition-all font-medium placeholder-[--text-muted]"
+                                        className={`w-full px-3 py-2 outline-none transition-all font-medium placeholder-[--text-muted] ${clay ? 'rounded-[10px]' : 'bg-overlay border border-[--border-color] focus:ring-2 ring-accent/50'}`}
+                                        style={clay ? glassInput : undefined}
                                     />
                                 </div>
 
                                 <div className="pt-2">
                                     {createError && (
-                                        <div className="text-pastel-red text-[13px] font-medium bg-pastel-red/10 px-3 py-2 mb-3 flex items-center gap-2">
-                                            <div className="w-1.5 h-1.5 bg-pastel-red" />
+                                        <div className={`text-pastel-red text-[13px] font-medium px-3 py-2 mb-3 flex items-center gap-2 ${clay ? 'rounded-[10px]' : ''}`}
+                                            style={clay ? { background: 'var(--bg-glass)', border: '1px solid var(--glass-border)' } : { background: 'color-mix(in srgb, var(--pastel-red) 10%, transparent)' }}>
+                                            <div className={`w-1.5 h-1.5 bg-pastel-red ${clay ? 'rounded-full' : ''}`} />
                                             {createError}
                                         </div>
                                     )}
                                     <button
                                         type="submit"
                                         disabled={isCreating}
-                                        className="w-full py-2.5 bg-accent hover:bg-accent/80 text-[--text-color] font-semibold text-[15px] transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none"
+                                        className={`py-2.5 font-semibold text-[15px] transition-all active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none ${clay ? 'rounded-[12px] px-8 mx-auto block text-white hover:opacity-90' : 'w-full bg-accent text-[--text-color]'}`}
+                                        style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                                     >
                                         {isCreating ? 'Creating...' : 'Create Account'}
                                     </button>
@@ -231,7 +243,7 @@ export default function Welcome(props: any) {
                             <div className="flex items-center gap-2 mb-6">
                                 <button
                                     onClick={() => setView('welcome')}
-                                    className="p-1 hover:bg-overlay transition-colors"
+                                    className={`p-1 transition-colors ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`}
                                 >
                                     <IoArrowForward className="rotate-180 text-xl text-[--text-muted]" />
                                 </button>
@@ -239,7 +251,7 @@ export default function Welcome(props: any) {
                             </div>
 
                             <div className="text-center space-y-4">
-                                <div className="w-16 h-16 mx-auto bg-overlay flex items-center justify-center">
+                                <div className={`w-16 h-16 mx-auto flex items-center justify-center ${clay ? 'rounded-[16px]' : 'bg-overlay'}`} style={clay ? glassCard : undefined}>
                                     <IoCloudDownloadOutline size={32} className="text-accent" />
                                 </div>
                                 <p className="text-[13px] text-[--text-muted]">
@@ -295,7 +307,8 @@ export default function Welcome(props: any) {
                                 />
                                 <label
                                     htmlFor="snapshot-file"
-                                    className="inline-block w-full py-3 bg-accent hover:bg-accent/80 text-[--text-color] font-semibold text-[15px] transition-all cursor-pointer active:scale-[0.98]"
+                                    className={`inline-block py-3 text-center font-semibold text-[15px] transition-all cursor-pointer active:scale-[0.97] ${clay ? 'rounded-[12px] px-8 text-white hover:opacity-90' : 'w-full bg-accent text-[--text-color]'}`}
+                                    style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                                 >
                                     Select Snapshot File
                                 </label>
@@ -304,7 +317,7 @@ export default function Welcome(props: any) {
                     ) : (
                         <div className="text-center space-y-6">
                             <div className="relative w-20 h-20 mx-auto">
-                                <div className="absolute inset-0 overflow-hidden border-2 border-[--border-color] bg-[--bg-overlay] flex items-center justify-center">
+                                <div className={`absolute inset-0 overflow-hidden border-2 bg-[--bg-overlay] flex items-center justify-center ${clay ? 'rounded-[16px] border-[--glass-border]' : 'border-[--border-color]'}`}>
                                     {user?.username === 'guest' ? (
                                         <IoPersonAdd size={36} className="text-[--text-muted]" />
                                     ) : (
@@ -312,7 +325,8 @@ export default function Welcome(props: any) {
                                     )}
                                 </div>
                                 {user?.username === 'guest' && (
-                                    <div className="absolute -bottom-1 -right-1 bg-accent text-[--text-color] text-[10px] font-bold px-1.5 py-0.5 border border-[--border-color]">
+                                    <div className={`absolute -bottom-1 -right-1 text-[10px] font-bold px-1.5 py-0.5 ${clay ? 'rounded-[6px] text-white' : 'bg-accent text-[--text-color] border border-[--border-color]'}`}
+                                        style={clay ? { background: 'var(--accent-gradient)' } : undefined}>
                                         GUEST
                                     </div>
                                 )}
@@ -328,9 +342,11 @@ export default function Welcome(props: any) {
                                 <div className="space-y-3">
                                     {!hasUsers ? (
                                         <div className="space-y-3">
-                                            <div className="p-4 bg-accent/10 border border-accent/20">
+                                            <div className={`p-4 ${clay ? 'rounded-[16px]' : ''}`}
+                                                style={clay ? { ...glassCard } : { background: 'color-mix(in srgb, var(--accent-color) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--accent-color) 20%, transparent)' }}>
                                                 <div className="flex items-center gap-3 mb-3">
-                                                    <div className="p-2 bg-accent text-[--text-color]">
+                                                    <div className={`p-2 ${clay ? 'rounded-[10px] text-white' : 'bg-accent text-[--text-color]'}`}
+                                                        style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}>
                                                         <IoPersonAdd size={18} />
                                                     </div>
                                                     <div className="text-left">
@@ -340,15 +356,17 @@ export default function Welcome(props: any) {
                                                 </div>
                                                 <button
                                                     onClick={() => setView('create-account')}
-                                                    className="w-full py-2 bg-accent hover:bg-accent/80 text-[--text-color] text-[13px] font-medium transition-colors"
+                                                    className={`py-2 text-[13px] font-medium transition-colors active:scale-[0.97] ${clay ? 'rounded-[12px] px-5 text-white hover:opacity-90' : 'w-full bg-accent text-[--text-color]'}`}
+                                                    style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                                                 >
                                                     Set up System
                                                 </button>
                                             </div>
 
-                                            <div className="p-4 bg-overlay border border-[--border-color]">
+                                            <div className={`p-4 ${clay ? 'rounded-[16px]' : 'bg-overlay border border-[--border-color]'}`} style={clay ? glassCard : undefined}>
                                                 <div className="flex items-center gap-3 mb-3">
-                                                    <div className="p-2 bg-accent text-[--text-color]">
+                                                    <div className={`p-2 ${clay ? 'rounded-[10px] text-white' : 'bg-accent text-[--text-color]'}`}
+                                                        style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}>
                                                         <IoCloudDownloadOutline size={18} />
                                                     </div>
                                                     <div className="text-left">
@@ -358,14 +376,15 @@ export default function Welcome(props: any) {
                                                 </div>
                                                 <button
                                                     onClick={() => setView('restore-snapshot')}
-                                                    className="w-full py-2 bg-accent hover:bg-accent/80 text-[--text-color] text-[13px] font-medium transition-colors"
+                                                    className={`py-2 text-[13px] font-medium transition-colors active:scale-[0.97] ${clay ? 'rounded-[12px] px-5 text-white hover:opacity-90' : 'w-full bg-accent text-[--text-color]'}`}
+                                                    style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                                                 >
                                                     Restore Snapshot
                                                 </button>
                                             </div>
                                         </div>
                                     ) : (
-                                        <div className="p-4 bg-overlay border border-[--border-color]">
+                                        <div className={`p-4 ${clay ? 'rounded-[12px]' : 'bg-overlay border border-[--border-color]'}`} style={clay ? glassCard : undefined}>
                                             <div className="text-center">
                                                 <div className="font-semibold text-[13px] mb-1">Standard User Access</div>
                                                 <div className="text-xs text-[--text-muted]">
@@ -376,7 +395,8 @@ export default function Welcome(props: any) {
                                     )}
                                     <button
                                         onClick={logout}
-                                        className="w-full py-2 text-accent text-[13px] font-medium hover:bg-overlay transition-colors"
+                                        className={`py-2 text-accent text-[13px] font-medium hover:bg-[--bg-glass-hover] transition-colors ${clay ? 'rounded-[12px] px-5' : 'w-full hover:bg-overlay'}`}
+                                        style={clay ? glassButton : undefined}
                                     >
                                         Sign in as different user
                                     </button>
@@ -397,7 +417,11 @@ export default function Welcome(props: any) {
                         { icon: IoTerminalOutline, label: "Terminal", desc: "Command line" },
                         { icon: IoDocumentTextOutline, label: "Text Editor", desc: "Rich text support" },
                     ].map((item, i) => (
-                        <div key={i} className="flex items-center gap-3 p-3 bg-overlay">
+                        <div
+                            key={i}
+                            className={`flex items-center gap-3 p-3 ${clay ? 'rounded-[12px] active:scale-[0.97]' : 'bg-overlay'}`}
+                            style={clay ? { background: 'var(--bg-glass)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-xs)' } : undefined}
+                        >
                             <item.icon size={24} className="text-accent shrink-0" />
                             <div className="min-w-0">
                                 <div className="text-[13px] font-medium truncate">{item.label}</div>
@@ -412,8 +436,9 @@ export default function Welcome(props: any) {
             title: "Get Started",
             content: (
                 <div className="text-center space-y-6">
-                    <div className="w-16 h-16 mx-auto bg-accent flex items-center justify-center">
-                        <IoCheckmarkCircle size={36} className="text-[--text-color]" />
+                    <div className={`w-16 h-16 mx-auto flex items-center justify-center ${clay ? 'rounded-[16px]' : 'bg-accent'}`}
+                        style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}>
+                        <IoCheckmarkCircle size={36} className={clay ? 'text-white drop-shadow-sm' : 'text-[--text-color]'} />
                     </div>
                     <div>
                         <h3 className="text-xl font-semibold mb-2">Ready to explore</h3>
@@ -426,12 +451,14 @@ export default function Welcome(props: any) {
                             if (props.windowId) removewindow(props.windowId);
                             setTimeout(() => window.dispatchEvent(new Event('start-tour')), 300);
                         }}
-                            className="flex items-center justify-center gap-2 px-4 py-2 bg-accent text-[--text-color] text-[13px] font-medium hover:bg-accent/80 transition-colors">
+                            className={`flex items-center justify-center gap-2 px-5 py-2.5 text-[13px] font-medium transition-colors active:scale-[0.97] ${clay ? 'rounded-[12px] text-white hover:opacity-90' : 'bg-accent text-[--text-color]'}`}
+                            style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}>
                             <IoCheckmarkCircle size={18} />
                             Take a Tour
                         </button>
                         <button onClick={() => openSystemItem('finder', context)}
-                            className="flex items-center justify-center gap-2 px-4 py-2 bg-overlay text-[13px] font-medium hover:bg-overlay transition-colors">
+                            className={`flex items-center justify-center gap-2 px-5 py-2.5 text-[13px] font-medium transition-colors active:scale-[0.97] ${clay ? 'rounded-[12px] hover:bg-[--bg-glass-hover]' : 'bg-overlay hover:bg-overlay'}`}
+                            style={clay ? glassButton : undefined}>
                             <Image src="/explorer.png" alt="" width={20} height={20} className="w-5 h-5" />
                             Open Explorer
                         </button>
@@ -451,7 +478,7 @@ export default function Welcome(props: any) {
                                 type="checkbox"
                                 checked={dontshowagain}
                                 onChange={(e) => setdontshowagain(e.target.checked)}
-                                className="w-4 h-4 border-[--border-color] text-accent focus:ring-accent"
+                                className={`w-4 h-4 text-accent focus:ring-accent ${clay ? 'border-[--glass-border] rounded-[4px]' : 'border-[--border-color]'}`}
                             />
                             Don&apos;t show this again
                         </label>
@@ -462,7 +489,7 @@ export default function Welcome(props: any) {
     ];
 
     return (
-        <div ref={containerref} className="flex flex-col h-full w-full bg-[--bg-base] font-mono text-[--text-color] overflow-hidden">
+        <div ref={containerref} className={`flex flex-col h-full w-full text-[--text-color] overflow-hidden ${clay ? 'bg-[--bg-base]' : 'bg-[--bg-base] font-mono'}`}>
             <div className="h-10 shrink-0" />
 
             <div className="flex-1 flex flex-col items-center justify-center px-6 overflow-hidden">
@@ -480,10 +507,10 @@ export default function Welcome(props: any) {
                 </AnimatePresence>
             </div>
 
-            <div className="h-24 lg:h-16 shrink-0 relative flex items-center justify-between px-6 border-t border-[--border-color]">
+            <div className={`h-24 lg:h-16 shrink-0 relative flex items-center justify-between px-6 border-t ${clay ? 'border-[--glass-border]' : 'border-[--border-color]'}`}>
                 <button
                     onClick={() => step > 0 && setstep(step - 1)}
-                    className={`text-accent text-[13px] font-medium px-3 py-1.5 hover:bg-overlay transition-colors ${step === 0 ? 'opacity-0 pointer-events-none' : ''}`}
+                    className={`text-accent text-[13px] font-medium px-3 py-1.5 transition-colors ${clay ? 'rounded-[10px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'} ${step === 0 ? 'opacity-0 pointer-events-none' : ''}`}
                 >
                     Go Back
                 </button>
@@ -491,7 +518,7 @@ export default function Welcome(props: any) {
                 <div className="flex gap-1.5 absolute top-[50%]  w-max h-max mx-auto  left-0 right-0 bottom-[50%]">
                     {steps.map((_, i) => (
                         <button key={i} onClick={() => setstep(i)}
-                            className={`w-2 h-2 transition-colors ${i === step ? 'bg-accent' : 'bg-overlay'}`} />
+                            className={`w-2 h-2 transition-colors ${clay ? 'rounded-full' : ''} ${i === step ? 'bg-accent' : clay ? 'bg-[--bg-glass-active]' : 'bg-overlay'}`} />
                     ))}
                 </div>
 
@@ -507,7 +534,8 @@ export default function Welcome(props: any) {
                             removewindow(props.windowId || 'welcome');
                         }
                     }}
-                    className={`flex items-center gap-1.5 bg-accent text-[--text-color] px-4 py-1.5 text-[13px] font-medium transition-colors ${step === 1 && user?.username === 'guest' ? 'opacity-30 cursor-not-allowed' : 'hover:bg-accent/80'}`}
+                    className={`flex items-center gap-1.5 px-5 py-2 text-[13px] font-medium transition-colors active:scale-[0.97] ${step === 1 && user?.username === 'guest' ? 'opacity-30 cursor-not-allowed' : 'hover:opacity-90'} ${clay ? 'rounded-[12px] text-white' : 'bg-accent text-[--text-color]'}`}
+                    style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                 >
                     {step < steps.length - 1 ? 'Continue' : 'Get Started'}
                 </button>

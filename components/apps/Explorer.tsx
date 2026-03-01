@@ -26,6 +26,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../AuthContext';
 import { useProjects } from '../ProjectContext';
 import { iselectron, nativefs } from '@/utils/platform';
+import { useIsClay } from '../hooks/useIsClay';
+import { glassCard, glassSidebar, glassInput, glassButton, clayClasses } from '../hooks/useClayStyles';
 
 export default function Explorer({ windowId, initialpath, istrash, openPath, selectItem, isDesktopBackend }: { windowId?: string, initialpath?: string[], istrash?: boolean, openPath?: string, selectItem?: string, isDesktopBackend?: boolean }) {
     const [selected, setselected] = useState(istrash ? 'Trash' : 'Desktop');
@@ -39,6 +41,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
     const { launchApp } = useExternalApps();
 
     const { createProjectFromRawFiles } = useProjects();
+    const clay = useIsClay();
 
     const username = user?.username || 'guest';
     const userhome = isGuest ? 'Guest' : (username.charAt(0).toUpperCase() + username.slice(1));
@@ -851,7 +854,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
         return (
             <div
                 ref={containerref}
-                className="flex flex-col h-full w-full bg-[--bg-base] text-[--text-color] font-mono text-[15px] overflow-hidden relative select-none"
+                className={`flex flex-col h-full w-full text-[--text-color] text-[15px] overflow-hidden relative select-none ${clay ? 'bg-[--bg-base] font-sans' : 'bg-[--bg-base] font-mono'}`}
             >
                 <input
                     type="file"
@@ -884,10 +887,10 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                             animate={{ x: 0 }}
                             exit={{ x: '-105%' }}
                             transition={{ type: 'tween', ease: 'easeOut', duration: 0.25 }}
-                            className="absolute inset-0 z-20 bg-surface pt-2"
+                            className={`absolute inset-0 z-20 pt-2 ${clay ? 'bg-[--bg-surface]' : 'bg-surface'}`}
                         >
-                            <div className="h-12 flex items-center justify-between px-4 border-b border-[--border-color]">
-                                <span className="font-semibold text-lg">Browse</span>
+                            <div className={`h-12 flex items-center justify-between px-4 border-b ${clay ? 'border-[--glass-border]' : 'border-[--border-color]'}`}>
+                                <span className="font-semibold text-lg text-[--text-color]">Browse</span>
                                 <button
                                     onClick={() => setmobileview('files')}
                                     className="text-accent font-medium"
@@ -907,11 +910,13 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                                     key={item.name}
                                                     onClick={() => handlesidebarclick(item.name, item.path)}
                                                     className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-all duration-200
+                                                        ${clay ? 'rounded-[12px] active:scale-[0.97]' : ''}
                                                         ${selected === item.name
-                                                            ? 'bg-accent text-[--bg-base]'
-                                                            : 'text-[--text-color] active:bg-overlay'}`}
+                                                            ? 'text-white'
+                                                            : clay ? 'text-[--text-color] active:bg-[--bg-glass-hover]' : 'text-[--text-color] active:bg-overlay'}`}
+                                                    style={selected === item.name ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                                                 >
-                                                    <item.icon className={`text-xl ${selected === item.name ? 'text-[--bg-base]' : 'text-accent'}`} />
+                                                    <item.icon className={`text-xl ${selected === item.name ? 'text-white' : 'text-accent'}`} />
                                                     <span className="font-medium">{item.name}</span>
                                                 </div>
                                             ))}
@@ -920,13 +925,15 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                                     key="Trash"
                                                     onClick={() => handlesidebarclick('Trash', [])}
                                                     className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-all duration-200 mt-4
+                                                        ${clay ? 'rounded-[12px] active:scale-[0.97]' : ''}
                                                         ${selected === 'Trash'
-                                                            ? 'bg-accent text-[--bg-base]'
-                                                            : 'text-[--text-color] active:bg-overlay'}`}
+                                                            ? 'text-white'
+                                                            : clay ? 'text-[--text-color] active:bg-[--bg-glass-hover]' : 'text-[--text-color] active:bg-overlay'}`}
+                                                    style={selected === 'Trash' ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                                                 >
                                                     {trashHasItems
-                                                        ? <IoTrash className={`text-xl ${selected === 'Trash' ? 'text-[--bg-base]' : 'text-pastel-red'}`} />
-                                                        : <IoTrashOutline className={`text-xl ${selected === 'Trash' ? 'text-[--bg-base]' : 'text-pastel-red'}`} />
+                                                        ? <IoTrash className={`text-xl ${selected === 'Trash' ? 'text-white' : 'text-pastel-red'}`} />
+                                                        : <IoTrashOutline className={`text-xl ${selected === 'Trash' ? 'text-white' : 'text-pastel-red'}`} />
                                                     }
                                                     <span className="font-medium">Trash</span>
                                                 </div>
@@ -946,7 +953,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                             exit={{ opacity: 0 }}
                             className="flex-1 flex flex-col h-full"
                         >
-                            <div className="h-14 shrink-0 flex items-center justify-between px-4 border-b border-[--border-color] bg-surface">
+                            <div className={`h-14 shrink-0 flex items-center justify-between px-4 border-b ${clay ? 'border-[--glass-border]' : 'border-[--border-color] bg-surface'}`}>
                                 <div className="flex items-center gap-3">
                                     {currentpath.length > 1 ? (
                                         <button
@@ -988,11 +995,12 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                 </div>
                             </div>
 
-                            <div className="px-4 py-2 border-b border-[--border-color]">
-                                <div className="relative">
+                            <div className={`px-4 py-2 border-b ${clay ? 'border-[--glass-border]' : 'border-[--border-color]'}`}>
+                                <div className={`relative ${clay ? 'rounded-full' : ''}`}
+                                    style={clay ? glassInput : undefined}>
                                     <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[--text-muted]" />
                                     <input
-                                        className="w-full bg-overlay pl-10 pr-4 py-2.5 text-[15px] outline-none placeholder-[--text-muted] text-[--text-color]"
+                                        className={`w-full pl-10 pr-4 py-2.5 text-[15px] outline-none placeholder-[--text-muted] text-[--text-color] ${clay ? 'bg-transparent' : 'bg-overlay'}`}
                                         placeholder="Search"
                                         value={searchquery}
                                         onChange={(e) => setsearchquery(e.target.value)}
@@ -1013,7 +1021,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                     <div className="flex flex-col items-center justify-center h-full text-[--text-muted]">
                                         <span className="text-4xl mb-2 opacity-50">!</span>
                                         <span className="text-[13px] text-pastel-red">{nativeError}</span>
-                                        <button onClick={() => nativeNavigate('/home')} className="mt-3 px-3 py-1.5 text-xs bg-overlay hover:bg-surface transition-colors">Go Home</button>
+                                        <button onClick={() => nativeNavigate('/home')} className={`mt-3 px-3 py-1.5 text-xs transition-colors ${clay ? 'bg-[--bg-glass-hover] hover:bg-[--bg-glass-active] rounded-[8px]' : 'bg-overlay hover:bg-surface'}`}>Go Home</button>
                                     </div>
                                 ) : filesList.length === 0 ? (
                                     <div className="flex flex-col items-center justify-center h-full text-[--text-muted]">
@@ -1021,11 +1029,11 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                         <span className="text-[13px]">No items found</span>
                                     </div>
                                 ) : (
-                                    <div className="divide-y divide-[--border-color]">
+                                    <div className={`divide-y ${clay ? 'divide-[--text-muted]/10' : 'divide-[--border-color]'}`}>
                                         {filesList.map((file) => (
                                             <div
                                                 key={file.id}
-                                                className="flex items-center gap-4 px-4 py-3 active:bg-overlay"
+                                                className={`flex items-center gap-4 px-4 py-3 ${clay ? 'active:bg-[--bg-glass-hover]' : 'active:bg-overlay'}`}
                                                 onClick={() => handlefileopen(file)}
                                                 onTouchStart={(e) => handlelongpress(file.id, e)}
                                                 onTouchEnd={cancellongpress}
@@ -1036,7 +1044,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                                     handleContextMenu(e, file.id);
                                                 }}
                                             >
-                                                <div className="w-12 h-12 relative flex-shrink-0">
+                                                <div className="w-12 h-12 relative flex-shrink-0 overflow-hidden rounded-[8px]">
                                                     {getFileIcon(file.mimetype, file.name, file.icon, file.id, file.content || file.link)}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
@@ -1066,10 +1074,11 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                             </div>
 
                             {isTrashView && (
-                                <div className="p-4 border-t border-[--border-color] bg-[--bg-base]">
+                                <div className={`p-4 border-t ${clay ? 'border-[--glass-border]' : 'border-[--border-color] bg-[--bg-base]'}`}>
                                     <button
                                         onClick={emptyTrash}
-                                        className="w-full py-3 bg-pastel-red/10 text-pastel-red font-medium text-[15px]"
+                                        className={`w-full py-3 text-pastel-red font-medium text-[15px] ${clay ? 'rounded-[12px] active:scale-[0.97]' : ''}`}
+                                        style={{ background: 'color-mix(in srgb, var(--pastel-red) 10%, transparent)' }}
                                     >
                                         Empty Trash
                                     </button>
@@ -1086,7 +1095,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
         <div
             ref={containerref}
             onContextMenu={(e) => handleContextMenu(e)}
-            className="flex h-full w-full bg-transparent text-[--text-color] font-mono text-[13px] overflow-hidden relative select-none"
+            className={`flex h-full w-full text-[--text-color] text-[13px] overflow-hidden relative select-none ${clay ? 'bg-[--bg-base]' : 'bg-transparent font-mono'}`}
             onClick={() => {
                 if (isnarrow && showsidebar) setshowsidebar(false);
                 setContextMenu(null);
@@ -1125,32 +1134,37 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                 show={showsidebar}
                 isOverlay={isnarrow}
                 items={sidebaritems}
+                header={undefined}
             >
                 <div
                     onClick={() => handlesidebarclick('Trash', [])}
-                    className={`flex items-center gap-3 px-3 py-1.5 cursor-pointer transition-colors mt-4 mx-1
+                    className={`flex items-center cursor-pointer transition-colors mt-4 mx-1
+                        ${clay ? 'gap-3 px-3 py-2.5 rounded-[12px]' : 'gap-3 px-3 py-1.5'}
                         ${selected === 'Trash'
-                            ? 'bg-overlay text-[--text-color]'
-                            : 'text-[--text-muted] hover:bg-overlay'}`}
+                            ? clay ? 'text-white' : 'bg-overlay text-[--text-color]'
+                            : clay ? 'text-[--text-muted] hover:bg-[--bg-glass-hover] active:scale-[0.98]' : 'text-[--text-muted] hover:bg-overlay'}`}
+                    style={selected === 'Trash' && clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                 >
                     {trashHasItems
-                        ? <IoTrash className={`text-lg ${selected === 'Trash' ? 'text-accent' : 'text-[--text-muted]'}`} />
-                        : <IoTrashOutline className={`text-lg ${selected === 'Trash' ? 'text-accent' : 'text-[--text-muted]'}`} />
+                        ? <IoTrash className={`${clay ? 'text-xl' : 'text-lg'} ${selected === 'Trash' ? (clay ? 'text-white' : 'text-accent') : 'text-[--text-muted]'}`} />
+                        : <IoTrashOutline className={`${clay ? 'text-xl' : 'text-lg'} ${selected === 'Trash' ? (clay ? 'text-white' : 'text-accent') : 'text-[--text-muted]'}`} />
                     }
-                    <span className="text-[13px] font-medium leading-none pb-0.5">Trash</span>
+                    <span className={`${clay ? 'text-[14px]' : 'text-[13px]'} font-medium leading-none`}>Trash</span>
                 </div>
             </Sidebar>
 
-            <div className={`flex-1 flex ${isnarrow ? 'flex-col' : 'flex-row'} min-w-0 bg-[--bg-base] relative overflow-hidden`}>
+            <div className={`flex-1 flex ${isnarrow ? 'flex-col' : 'flex-row'} min-w-0 relative overflow-hidden ${clay ? 'bg-[--bg-base]' : 'bg-[--bg-base]'}`}>
 
                 <div className="flex-1 flex flex-col min-w-0 min-h-0">
-                    <div className="h-[34px] shrink-0 flex items-center px-3 border-b border-[--border-color] bg-overlay gap-1">
+                    <div className={`${clay ? 'h-[40px]' : 'h-[34px]'} shrink-0 flex items-center px-3 border-b gap-2 ${clay ? 'border-[--glass-border]' : 'border-[--border-color] bg-overlay'}`}
+                        style={clay ? { background: 'var(--bg-glass)' } : undefined}
+                    >
                         {isnarrow && (
                             <button onClick={() => setshowsidebar(!showsidebar)} className="p-1 hover:bg-overlay transition-colors mr-1 shrink-0">
                                 <IoListOutline className="text-lg text-[--text-color]" />
                             </button>
                         )}
-                        <div className="flex items-center gap-0.5 shrink-0">
+                        <div className={`flex items-center shrink-0 ${clay ? 'gap-1' : 'gap-0.5'}`}>
                             <button onClick={() => {
                                 if (fsMode === 'native') {
                                     if (nativeHistoryIdx > 0) {
@@ -1160,28 +1174,32 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                 } else {
                                     if (currentpath.length > 1) setcurrentpath(currentpath.slice(0, -1));
                                 }
-                            }} className={`p-0.5 ${(fsMode === 'native' ? nativeHistoryIdx > 0 : currentpath.length > 1) ? 'text-[--text-color] cursor-pointer hover:bg-overlay' : 'text-[--text-muted] opacity-30'}`}>
-                                <IoChevronBack className="text-lg" />
+                            }} className={`p-1 ${clay ? 'rounded-[8px] transition-all active:scale-[0.95]' : ''} ${(fsMode === 'native' ? nativeHistoryIdx > 0 : currentpath.length > 1) ? `text-[--text-color] cursor-pointer ${clay ? 'hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}` : 'text-[--text-muted] opacity-30'}`}
+                            >
+                                <IoChevronBack className="text-[16px]" />
                             </button>
                             <button onClick={() => {
                                 if (fsMode === 'native' && nativeHistoryIdx < nativeHistory.length - 1) {
                                     setNativeHistoryIdx(nativeHistoryIdx + 1);
                                     setNativePath(nativeHistory[nativeHistoryIdx + 1]);
                                 }
-                            }} className={`p-0.5 ${(fsMode === 'native' && nativeHistoryIdx < nativeHistory.length - 1) ? 'text-[--text-color] cursor-pointer hover:bg-overlay' : 'text-[--text-muted] opacity-30'}`}>
-                                <IoChevronForward className="text-lg" />
+                            }} className={`p-1 ${clay ? 'rounded-[8px] transition-all active:scale-[0.95]' : ''} ${(fsMode === 'native' && nativeHistoryIdx < nativeHistory.length - 1) ? `text-[--text-color] cursor-pointer ${clay ? 'hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}` : 'text-[--text-muted] opacity-30'}`}
+                            >
+                                <IoChevronForward className="text-[16px]" />
                             </button>
                         </div>
                         {isTrashView ? (
                             <span className="text-[13px] font-semibold text-[--text-color] ml-1">Trash</span>
                         ) : fsMode === 'native' ? (
-                            <div className="flex items-center gap-0.5 ml-1 min-w-0 overflow-hidden flex-1">
+                            <div className={`flex items-center gap-0.5 ml-1 min-w-0 overflow-hidden flex-1 ${clay ? 'rounded-[12px] px-2 py-0.5' : ''}`}
+                                style={clay ? { ...glassInput, boxShadow: 'none' } : undefined}
+                            >
                                 {nativePath.split('/').filter(Boolean).map((seg, i, arr) => (
                                     <React.Fragment key={i}>
                                         {i > 0 && <span className="text-[--text-muted] text-xs opacity-40 shrink-0">/</span>}
                                         <button
                                             onClick={() => nativeNavigate('/' + arr.slice(0, i + 1).join('/'))}
-                                            className={`text-[12px] shrink-0 px-1 py-0.5 hover:bg-overlay hover:text-accent transition-colors truncate max-w-[120px] ${i === arr.length - 1 ? 'font-semibold text-[--text-color]' : 'text-[--text-muted]'}`}
+                                            className={`text-[13px] shrink-0 px-1.5 py-0.5 ${clay ? 'rounded-[6px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'} hover:text-accent transition-colors truncate max-w-[120px] ${i === arr.length - 1 ? 'font-semibold text-[--text-color]' : 'text-[--text-muted]'}`}
                                         >
                                             {seg}
                                         </button>
@@ -1190,13 +1208,15 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                 {nativePath === '/' && <span className="text-[12px] font-semibold text-[--text-color] px-1">/</span>}
                             </div>
                         ) : (
-                            <div className="flex items-center gap-0.5 ml-1 min-w-0 overflow-hidden flex-1">
+                            <div className={`flex items-center gap-0.5 ml-1 min-w-0 overflow-hidden flex-1 ${clay ? 'rounded-[12px] px-2 py-0.5' : ''}`}
+                                style={clay ? { ...glassInput, boxShadow: 'none' } : undefined}
+                            >
                                 {currentpath.map((seg, i) => (
                                     <React.Fragment key={i}>
                                         {i > 0 && <span className="text-[--text-muted] text-xs opacity-40 shrink-0">/</span>}
                                         <button
                                             onClick={() => setcurrentpath(currentpath.slice(0, i + 1))}
-                                            className={`text-[12px] shrink-0 px-1 py-0.5 hover:bg-overlay hover:text-accent transition-colors truncate max-w-[120px] ${i === currentpath.length - 1 ? 'font-semibold text-[--text-color]' : 'text-[--text-muted]'}`}
+                                            className={`text-[13px] shrink-0 px-1.5 py-0.5 ${clay ? 'rounded-[6px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'} hover:text-accent transition-colors truncate max-w-[120px] ${i === currentpath.length - 1 ? 'font-semibold text-[--text-color]' : 'text-[--text-muted]'}`}
                                         >
                                             {seg}
                                         </button>
@@ -1205,52 +1225,55 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                             </div>
                         )}
                     </div>
-                    <div className="h-[34px] shrink-0 flex items-center justify-between px-3 border-b border-[--border-color] bg-overlay gap-2" style={{ color: 'var(--text-muted)' }}>
+                    <div className={`${clay ? 'h-[38px]' : 'h-[34px]'} shrink-0 flex items-center justify-between px-3 border-b gap-2 ${clay ? 'border-[--glass-border]' : 'border-[--border-color] bg-overlay'}`} style={{ color: 'var(--text-color)', ...(clay ? { background: 'var(--bg-glass)' } : {}) }}>
                         <div className="flex items-center gap-1.5">
-                            <div className="flex items-center bg-overlay p-0.5 border border-[--border-color]">
+                            <div className={`flex items-center p-0.5 border ${clay ? 'rounded-[8px] border-[--glass-border]' : 'bg-overlay border-[--border-color]'}`}
+                                style={clay ? { background: 'var(--bg-glass)' } : undefined}
+                            >
                                 <button
                                     onClick={() => { setviewmode('grid'); localStorage.setItem('nextaros-explorer-viewmode', 'grid'); }}
-                                    className={`p-1 transition-colors ${viewmode === 'grid' ? 'bg-[--bg-base]' : 'hover:bg-[--bg-base]'}`}
-                                    style={viewmode === 'grid' ? { color: 'var(--text-color)' } : undefined}
+                                    className={`p-1.5 transition-colors ${clay ? 'rounded-[6px]' : ''} ${viewmode === 'grid' ? (clay ? 'bg-[--bg-glass-active] text-[--text-color]' : 'bg-[--bg-base] text-[--text-color]') : (clay ? 'text-[--text-muted] hover:bg-[--bg-glass-hover] hover:text-[--text-color]' : 'text-[--text-muted] hover:bg-[--bg-base] hover:text-[--text-color]')}`}
                                     title="Grid View"
                                 >
-                                    <IoGridOutline className="text-[13px]" />
+                                    <IoGridOutline className="text-[14px]" />
                                 </button>
                                 <button
                                     onClick={() => { setviewmode('list'); localStorage.setItem('nextaros-explorer-viewmode', 'list'); }}
-                                    className={`p-1 transition-colors ${viewmode === 'list' ? 'bg-[--bg-base]' : 'hover:bg-[--bg-base]'}`}
-                                    style={viewmode === 'list' ? { color: 'var(--text-color)' } : undefined}
+                                    className={`p-1.5 transition-colors ${clay ? 'rounded-[6px]' : ''} ${viewmode === 'list' ? (clay ? 'bg-[--bg-glass-active] text-[--text-color]' : 'bg-[--bg-base] text-[--text-color]') : (clay ? 'text-[--text-muted] hover:bg-[--bg-glass-hover] hover:text-[--text-color]' : 'text-[--text-muted] hover:bg-[--bg-base] hover:text-[--text-color]')}`}
                                     title="List View"
                                 >
-                                    <IoListOutline className="text-[13px] text-inherit" />
+                                    <IoListOutline className="text-[14px]" />
                                 </button>
                             </div>
                             {!isTrashView && (
-                                <div className="flex items-center bg-overlay p-0.5 border border-[--border-color]">
+                                <div className={`flex items-center p-0.5 border ${clay ? 'rounded-[8px] border-[--glass-border]' : 'bg-overlay border-[--border-color]'}`}
+                                    style={clay ? { background: 'var(--bg-glass)' } : undefined}
+                                >
                                     <button
                                         onClick={() => setFileModal({ isOpen: true, type: 'create-folder' })}
-                                        className="p-1 hover:bg-[--bg-base] transition-colors"
+                                        className={`p-1.5 text-[--text-muted] hover:text-[--text-color] hover:bg-[--bg-base] transition-colors ${clay ? 'rounded-[6px] active:scale-[0.97]' : ''}`}
                                         title="New Folder"
                                     >
-                                        <IoFolderOpenOutline className="text-base text-inherit" />
+                                        <IoFolderOpenOutline className="text-[14px]" />
                                     </button>
-                                    <div className="w-px h-3.5 bg-[--border-color] mx-1"></div>
+                                    <div className={`w-px h-3.5 mx-0.5 ${clay ? 'bg-[--glass-border]' : 'bg-[--border-color]'}`}></div>
                                     <button
                                         onClick={() => setFileModal({ isOpen: true, type: 'create-file' })}
-                                        className="p-1 hover:bg-[--bg-base] transition-colors"
+                                        className={`p-1.5 text-[--text-muted] hover:text-[--text-color] hover:bg-[--bg-base] transition-colors ${clay ? 'rounded-[6px] active:scale-[0.97]' : ''}`}
                                         title="New File"
                                     >
-                                        <IoDocumentTextOutline className="text-base text-inherit" />
+                                        <IoDocumentTextOutline className="text-[14px]" />
                                     </button>
                                 </div>
                             )}
                         </div>
                         <div className="flex items-center gap-1.5">
-                            <div className="relative w-40 sm:w-48">
-                                <IoSearch className="absolute left-2 top-1/2 -translate-y-1/2" size={12} />
+                            <div className={`relative w-40 sm:w-48 ${clay ? 'rounded-[8px]' : ''}`}
+                                style={clay ? { ...glassInput, color: 'var(--text-color)' } : undefined}>
+                                <IoSearch className="absolute left-2 top-1/2 -translate-y-1/2 text-[--text-muted]" size={12} />
                                 <input
-                                    className="w-full bg-overlay pl-7 pr-2 py-1 text-xs outline-none focus:ring-1 ring-accent/50 transition-all placeholder-[--text-muted]"
-                                    style={{ color: 'var(--text-color)' }}
+                                    className={`w-full pl-7 pr-2 py-1 text-xs outline-none transition-all placeholder-[--text-muted] ${clay ? 'bg-transparent text-[--text-color]' : 'bg-overlay focus:ring-1'}`}
+                                    style={clay ? undefined : { color: 'var(--text-color)', '--tw-ring-color': 'color-mix(in srgb, var(--accent-color) 50%, transparent)' } as React.CSSProperties}
                                     placeholder="Search"
                                     value={searchquery}
                                     onChange={(e) => setsearchquery(e.target.value)}
@@ -1258,11 +1281,11 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                             </div>
                             <button
                                 onClick={() => setshowpreview(!showpreview)}
-                                className={`p-1 text-white transition-colors ${showpreview ? 'bg-overlay' : 'hover:bg-overlay'}`}
-                                style={showpreview ? { color: 'var(--accent-color)' } : undefined}
+                                className={`p-1 transition-colors ${clay ? 'rounded-[6px] active:scale-[0.97]' : ''} ${showpreview ? (clay ? '' : 'bg-overlay') : (clay ? 'hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay')} ${showpreview ? 'text-accent' : 'text-[--text-muted]'}`}
+                                style={showpreview && clay ? glassButton : undefined}
                                 title="Toggle Preview"
                             >
-                                <IoInformationCircleOutline className="text-base text-inherit" />
+                                <IoInformationCircleOutline className="text-[15px]" />
                             </button>
                         </div>
                     </div>
@@ -1307,10 +1330,12 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                         <div
                                             key={i}
                                             data-id={file.id}
-                                            className={`explorer-item group flex flex-col items-center gap-2 p-2 transition-colors cursor-default
+                                            className={`explorer-item group flex flex-col items-center gap-2 p-2 cursor-default
+                                        ${clay ? `${clayClasses.radiusSm} transition-all` : 'transition-colors'}
                                         ${isSelected
-                                                    ? 'bg-overlay'
-                                                    : 'hover:bg-overlay'}`}
+                                                    ? clay ? '' : 'bg-overlay'
+                                                    : clay ? 'hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`}
+                                            style={isSelected && clay ? { ...glassCard, background: 'var(--bg-glass-active)' } : undefined}
                                             onDoubleClick={() => handlefileopen(file)}
                                             onContextMenu={(e) => {
                                                 e.stopPropagation();
@@ -1347,15 +1372,18 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                                 }
                                             }}
                                         >
-                                            <div className="w-12 h-12 sm:w-16 sm:h-16 relative flex items-center justify-center">
+                                            <div className={`w-12 h-12 sm:w-16 sm:h-16 relative flex items-center justify-center overflow-hidden ${clay ? 'rounded-[10px]' : ''}`}>
                                                 {getFileIcon(file.mimetype, file.name, file.icon, file.id, file.content || file.link)}
                                             </div>
-                                            <span className={`text-[12px] text-center leading-tight px-2 py-0.5 break-words w-full line-clamp-2
-                                        ${isSelected ? 'bg-accent text-[--bg-base] font-medium' : 'text-[--text-muted]'}`}>
+                                            <span
+                                                className={`text-[12px] text-center leading-tight px-2 py-0.5 break-words w-full line-clamp-2
+                                        ${isSelected ? `font-medium ${clay ? 'rounded-[6px] text-white' : 'text-[--bg-base]'}` : 'text-[--text-muted]'}`}
+                                                style={isSelected ? { background: 'var(--accent-color)' } : undefined}
+                                            >
                                                 {getDisplayName(file)}
                                             </span>
                                             {isLocked(file.id) && (
-                                                <div className="absolute top-1 right-1 bg-surface p-0.5">
+                                                <div className={`absolute top-1 right-1 p-0.5 ${clay ? 'bg-[--bg-glass] rounded-[4px]' : 'bg-surface'}`}>
                                                     <IoLockClosed className="text-[8px] text-[--text-muted]" />
                                                 </div>
                                             )}
@@ -1365,17 +1393,19 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                             </div>
                         ) : (
                             <div className="w-full">
-                                <div className="flex items-center border-b border-[--border-color] text-[10px] uppercase tracking-wider text-[--text-muted] font-semibold sticky top-0 bg-[--bg-base] z-[5]">
-                                    <button onClick={() => { if (sortby === 'name') setsortasc(!sortasc); else { setsortby('name'); setsortasc(true); } }} className="flex items-center gap-1 flex-1 min-w-0 px-2 py-2 hover:bg-overlay">
+                                <div className={`flex items-center border-b text-[10px] uppercase tracking-wider text-[--text-muted] font-semibold sticky top-0 z-[5] ${clay ? 'border-[--glass-border] rounded-t-[10px]' : 'border-[--border-color] bg-[--bg-base]'}`}
+                                    style={clay ? { background: 'var(--bg-glass-active)' } : undefined}
+                                >
+                                    <button onClick={() => { if (sortby === 'name') setsortasc(!sortasc); else { setsortby('name'); setsortasc(true); } }} className={`flex items-center gap-1 flex-1 min-w-0 px-2 py-2 ${clay ? 'hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`}>
                                         Name {sortby === 'name' && (sortasc ? <IoChevronUp size={10} /> : <IoChevronDown size={10} />)}
                                     </button>
-                                    <button onClick={() => { if (sortby === 'date') setsortasc(!sortasc); else { setsortby('date'); setsortasc(true); } }} className="flex items-center gap-1 w-32 px-2 py-2 hover:bg-overlay shrink-0 hidden sm:flex">
+                                    <button onClick={() => { if (sortby === 'date') setsortasc(!sortasc); else { setsortby('date'); setsortasc(true); } }} className={`flex items-center gap-1 w-32 px-2 py-2 ${clay ? 'hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'} shrink-0 hidden sm:flex`}>
                                         Date Modified {sortby === 'date' && (sortasc ? <IoChevronUp size={10} /> : <IoChevronDown size={10} />)}
                                     </button>
-                                    <button onClick={() => { if (sortby === 'size') setsortasc(!sortasc); else { setsortby('size'); setsortasc(true); } }} className="flex items-center gap-1 w-20 px-2 py-2 hover:bg-overlay shrink-0">
+                                    <button onClick={() => { if (sortby === 'size') setsortasc(!sortasc); else { setsortby('size'); setsortasc(true); } }} className={`flex items-center gap-1 w-20 px-2 py-2 ${clay ? 'hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'} shrink-0`}>
                                         Size {sortby === 'size' && (sortasc ? <IoChevronUp size={10} /> : <IoChevronDown size={10} />)}
                                     </button>
-                                    <button onClick={() => { if (sortby === 'type') setsortasc(!sortasc); else { setsortby('type'); setsortasc(true); } }} className="flex items-center gap-1 w-24 px-2 py-2 hover:bg-overlay shrink-0 hidden md:flex">
+                                    <button onClick={() => { if (sortby === 'type') setsortasc(!sortasc); else { setsortby('type'); setsortasc(true); } }} className={`flex items-center gap-1 w-24 px-2 py-2 ${clay ? 'hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'} shrink-0 hidden md:flex`}>
                                         Kind {sortby === 'type' && (sortasc ? <IoChevronUp size={10} /> : <IoChevronDown size={10} />)}
                                     </button>
                                 </div>
@@ -1385,7 +1415,8 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                         <div
                                             key={i}
                                             data-id={file.id}
-                                            className={`explorer-item flex items-center border-b border-[--border-color]/50 cursor-default transition-colors ${isSelected ? 'bg-accent/10' : 'hover:bg-overlay'}`}
+                                            className={`explorer-item flex items-center cursor-default ${clay ? 'rounded-[12px] mx-1 transition-all' : 'border-b border-[--border-color]/50 transition-colors'} ${isSelected ? (clay ? '' : 'bg-[--bg-glass-hover]') : (clay ? 'hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay')}`}
+                                            style={isSelected && clay ? { ...glassCard, background: 'var(--bg-glass-active)' } : undefined}
                                             onDoubleClick={() => handlefileopen(file)}
                                             onContextMenu={(e) => { e.stopPropagation(); handleContextMenu(e, file.id); if (!isSelected) setSelectedFileIds([file.id]); }}
                                             onClick={(e) => {
@@ -1400,7 +1431,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                             onDrop={(e) => { if (file.mimetype === 'inode/directory' && !isTrashView) { e.preventDefault(); e.stopPropagation(); handleDrop(e, file.id); } }}
                                         >
                                             <div className="flex items-center gap-2.5 flex-1 min-w-0 px-2 py-1.5">
-                                                <div className="w-5 h-5 relative shrink-0 flex items-center justify-center">
+                                                <div className="w-5 h-5 relative shrink-0 flex items-center justify-center overflow-hidden rounded-[3px]">
                                                     {getFileIcon(file.mimetype, file.name, file.icon, file.id, file.content || file.link)}
                                                 </div>
                                                 <span className={`text-[12px] truncate ${isSelected ? 'text-accent font-medium' : 'text-[--text-color]'}`}>
@@ -1438,7 +1469,9 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                         )}
                     </div>
 
-                    <div className="h-[24px] bg-surface border-t border-[--border-color] flex items-center px-4 justify-between shrink-0">
+                    <div className={`h-[24px] border-t flex items-center px-4 justify-between shrink-0 ${clay ? 'border-[--glass-border]' : 'border-[--border-color] bg-surface'}`}
+                        style={clay ? { background: 'var(--bg-glass)' } : undefined}
+                    >
                         <span className="text-[10px] text-[--text-muted] font-medium">
                             {filesList.length} item{filesList.length !== 1 && 's'}
                         </span>
@@ -1451,21 +1484,24 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                 {showpreview && (
                     <div className={`
                         ${isnarrow
-                            ? 'h-[30%] w-full border-t border-[--border-color]'
-                            : 'w-[250px] border-l border-[--border-color]'
+                            ? `h-[30%] w-full border-t ${clay ? 'border-[--glass-border]' : 'border-[--border-color]'}`
+                            : `w-[250px] border-l ${clay ? 'border-[--glass-border]' : 'border-[--border-color]'}`
                         }
-                        bg-surface flex flex-col transition-all duration-300 overflow-y-auto shrink-0
-                    `}>
+                        flex flex-col transition-all duration-300 overflow-y-auto shrink-0
+                        ${clay ? '' : 'bg-surface'}
+                    `}
+                        style={clay ? { ...glassSidebar, borderRight: 'none', borderLeft: isnarrow ? 'none' : '1px solid var(--glass-border)', borderTop: isnarrow ? '1px solid var(--glass-border)' : 'none' } : undefined}
+                    >
                         {activefile ? (
                             <div className="flex flex-col items-center p-6 text-center animate-in fade-in duration-300">
-                                <div className="w-24 object-cover h-24 mb-4 drop-shadow-xl relative">
+                                <div className={`w-24 object-cover h-24 mb-4 drop-shadow-xl relative overflow-hidden ${clay ? 'rounded-[14px]' : ''}`}>
                                     {getFileIcon(activefile.mimetype, activefile.name, activefile.icon, activefile.id, activefile.content || activefile.link)}
                                 </div>
                                 <h3 className="text-lg font-semibold text-[--text-color] mb-1 break-words w-full">{getDisplayName(activefile)}</h3>
                                 <p className="text-[11px] text-[--text-muted] mb-4">{activefile.mimetype}</p>
 
                                 <div className="w-full space-y-3 text-left">
-                                    <div className="h-px w-full bg-[--border-color]"></div>
+                                    <div className={`h-px w-full ${clay ? 'bg-[--glass-border]' : 'bg-[--border-color]'}`}></div>
 
                                     <div className="grid grid-cols-[80px_1fr] gap-2 text-[11px]">
                                         <span className="text-[--text-muted] text-right">Modified</span>
@@ -1487,14 +1523,15 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                     <div className="pt-4 flex justify-center gap-2">
                                         <button
                                             onClick={() => handlefileopen(activefile)}
-                                            className="bg-accent hover:bg-accent/80 text-[--bg-base] px-4 py-1.5 text-xs font-medium active:scale-95 transition-all"
+                                            className={`text-white px-4 py-1.5 text-xs font-medium active:scale-95 transition-all hover:opacity-80 ${clay ? 'rounded-[8px]' : ''}`}
+                                            style={{ background: 'var(--accent-color)' }}
                                         >
                                             Open
                                         </button>
                                         {activefile.isTrash && (
                                             <button
                                                 onClick={() => restoreFromTrash(activefile.id)}
-                                                className="bg-overlay hover:bg-overlay text-[--text-color] px-4 py-1.5 text-xs font-medium active:scale-95 transition-all"
+                                                className={`text-[--text-color] px-4 py-1.5 text-xs font-medium active:scale-95 transition-all ${clay ? 'rounded-[8px] bg-[--bg-glass-hover]' : 'bg-overlay hover:bg-overlay'}`}
                                             >
                                                 Put Back
                                             </button>
@@ -1504,7 +1541,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                         {(activefile.isTrash || !activefile.isSystem) && (
                                             <button
                                                 onClick={() => activefile.isTrash ? deleteItem(activefile.id) : moveToTrash(activefile.id)}
-                                                className="text-pastel-red hover:text-pastel-red/80 text-[10px] font-medium transition-colors"
+                                                className="text-pastel-red hover:opacity-80 text-[10px] font-medium transition-colors"
                                             >
                                                 {activefile.isTrash ? 'Delete Immediately' : 'Move to Trash'}
                                             </button>
@@ -1519,7 +1556,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                     <span className="text-xs mb-4">Items in Trash are deleted after 30 days</span>
                                     <button
                                         onClick={emptyTrash}
-                                        className="px-4 py-1.5 border border-[--border-color] text-[--text-muted] text-xs font-medium hover:bg-overlay"
+                                        className={`px-4 py-1.5 border text-[--text-muted] text-xs font-medium hover:bg-overlay ${clay ? 'border-[--glass-border] rounded-[10px]' : 'border-[--border-color]'}`}
                                     >
                                         Empty Trash
                                     </button>
@@ -1551,12 +1588,16 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.92, opacity: 0 }}
                             transition={{ duration: 0.15, ease: 'easeOut' }}
-                            className="bg-surface border border-[--border-color] shadow-2xl flex flex-col max-w-[80%] max-h-[80%] min-w-[300px] overflow-hidden"
+                            className={`flex flex-col max-w-[80%] max-h-[80%] min-w-[300px] overflow-hidden ${clay ? 'rounded-[16px]' : 'bg-surface border border-[--border-color] shadow-2xl'}`}
+                            style={clay ? {
+                                ...glassCard,
+                                boxShadow: 'var(--shadow-xl)',
+                            } : undefined}
                             onClick={(e) => e.stopPropagation()}
                         >
-                            <div className="h-9 shrink-0 flex items-center justify-between px-3 border-b border-[--border-color] bg-overlay">
+                            <div className={`h-9 shrink-0 flex items-center justify-between px-3 border-b ${clay ? 'border-[--glass-border]' : 'border-[--border-color] bg-overlay'}`}>
                                 <span className="text-[12px] font-semibold text-[--text-color] truncate">{quicklook.name}</span>
-                                <button onClick={() => setquicklook(null)} className="p-1 hover:bg-overlay transition-colors text-[--text-muted] hover:text-[--text-color]">
+                                <button onClick={() => setquicklook(null)} className={`p-1 hover:bg-overlay transition-colors text-[--text-muted] hover:text-[--text-color] ${clay ? 'rounded-[6px]' : ''}`}>
                                     <IoCloseOutline size={16} />
                                 </button>
                             </div>
@@ -1589,7 +1630,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                         </div>
                                     )
                                 ) : quicklook.mimetype?.startsWith('text/') || quicklook.mimetype === 'application/json' || quicklook.mimetype === 'application/javascript' || quicklook.mimetype === 'application/xml' ? (
-                                    <pre className="w-full h-full overflow-auto bg-[--bg-base] border border-[--border-color] p-3 text-[11px] text-[--text-color] font-mono whitespace-pre-wrap break-words max-h-[60vh]">
+                                    <pre className={`w-full h-full overflow-auto bg-[--bg-base] border p-3 text-[11px] text-[--text-color] font-mono whitespace-pre-wrap break-words max-h-[60vh] ${clay ? 'border-[--glass-border] rounded-[10px]' : 'border-[--border-color]'}`}>
                                         {quicklook.content || '(empty)'}
                                     </pre>
                                 ) : (
@@ -1608,7 +1649,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                                     </div>
                                 )}
                             </div>
-                            <div className="h-7 shrink-0 flex items-center justify-between px-3 border-t border-[--border-color] bg-overlay text-[10px] text-[--text-muted]">
+                            <div className={`h-7 shrink-0 flex items-center justify-between px-3 border-t text-[10px] text-[--text-muted] ${clay ? 'border-[--glass-border]' : 'border-[--border-color] bg-overlay'}`}>
                                 <span>{quicklook.mimetype || 'Unknown'}</span>
                                 <span>{quicklook.size || '--'}</span>
                             </div>

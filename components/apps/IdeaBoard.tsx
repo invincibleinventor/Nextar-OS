@@ -6,6 +6,8 @@ import { useNotifications } from '../NotificationContext';
 import { useWindows } from '../WindowContext';
 import { useMenuAction } from '../hooks/useMenuAction';
 import { useMenuRegistration } from '../AppMenuContext';
+import { useIsClay } from '../hooks/useIsClay';
+import { glassCard, glassButton, glassInput } from '../hooks/useClayStyles';
 
 interface Task {
     id: string;
@@ -38,6 +40,7 @@ const TaskCard: React.FC<{
     onDelete: (id: string) => void;
     onMove: (id: string, status: Task['status']) => void;
 }> = ({ task, onEdit, onDelete, onMove }) => {
+    const clay = useIsClay();
     const nextStatus = (): Task['status'] | null => {
         const order: Task['status'][] = ['backlog', 'todo', 'in_progress', 'done'];
         const idx = order.indexOf(task.status);
@@ -47,16 +50,19 @@ const TaskCard: React.FC<{
     const next = nextStatus();
 
     return (
-        <div className="bg-surface border border-[--border-color] p-3 group hover:bg-overlay transition cursor-default">
+        <div
+            className={`p-3 group transition cursor-default ${clay ? 'rounded-[12px] active:scale-[0.97] hover:bg-[--bg-glass-hover]' : 'bg-surface border border-[--border-color] hover:bg-overlay'}`}
+            style={clay ? glassCard : undefined}
+        >
             <div className="flex items-start justify-between mb-1.5">
-                <span className={`text-[10px] px-1.5 py-0.5 ${priorityStyles[task.priority]}`}>
+                <span className={`text-[10px] px-1.5 py-0.5 ${clay ? 'rounded-[6px]' : ''} ${priorityStyles[task.priority]}`}>
                     {task.priority}
                 </span>
                 <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition">
-                    <button onClick={() => onEdit(task)} className="p-0.5 hover:bg-overlay">
+                    <button onClick={() => onEdit(task)} className={`p-0.5 ${clay ? 'rounded-[6px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`}>
                         <IoCreateOutline size={12} className="text-[--text-muted]" />
                     </button>
-                    <button onClick={() => onDelete(task.id)} className="p-0.5 hover:bg-overlay">
+                    <button onClick={() => onDelete(task.id)} className={`p-0.5 ${clay ? 'rounded-[6px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`}>
                         <IoTrashOutline size={12} className="text-pastel-red" />
                     </button>
                 </div>
@@ -75,7 +81,7 @@ const TaskCard: React.FC<{
                 {next && (
                     <button
                         onClick={() => onMove(task.id, next)}
-                        className="text-[10px] px-1.5 py-0.5 bg-overlay hover:bg-[--border-color] text-[--text-muted] hover:text-[--text-color] transition"
+                        className={`text-[10px] px-1.5 py-0.5 text-[--text-muted] hover:text-[--text-color] transition ${clay ? 'rounded-[6px] bg-[--bg-glass-active] hover:bg-[--bg-glass-hover]' : 'bg-overlay hover:bg-[--border-color]'}`}
                     >
                         Move &rarr;
                     </button>
@@ -90,6 +96,7 @@ const TaskDialog: React.FC<{
     onSave: (task: Omit<Task, 'id' | 'createdAt'> & { id?: string }) => void;
     onClose: () => void;
 }> = ({ task, onSave, onClose }) => {
+    const clay = useIsClay();
     const [title, setTitle] = useState(task?.title || '');
     const [description, setDescription] = useState(task?.description || '');
     const [status, setStatus] = useState<Task['status']>(task?.status || 'todo');
@@ -98,7 +105,11 @@ const TaskDialog: React.FC<{
 
     return (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[999]" onClick={onClose}>
-            <div className="bg-surface border border-[--border-color] p-5 w-[380px]" onClick={e => e.stopPropagation()}>
+            <div
+                className={`p-5 w-[380px] rounded-[16px] ${clay ? '' : 'bg-surface border border-[--border-color]'}`}
+                style={clay ? { background: 'var(--bg-glass)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-lg)', backdropFilter: 'blur(var(--glass-blur-heavy))' } : undefined}
+                onClick={e => e.stopPropagation()}
+            >
                 <h3 className="text-[13px] font-semibold text-[--text-color] mb-4">{task ? 'Edit Task' : 'New Task'}</h3>
 
                 <div className="space-y-3 mb-4">
@@ -106,14 +117,16 @@ const TaskDialog: React.FC<{
                         value={title}
                         onChange={e => setTitle(e.target.value)}
                         placeholder="Task title"
-                        className="w-full bg-overlay border border-transparent px-3 py-2 text-[13px] text-[--text-color] outline-none focus:border-accent"
+                        className={`w-full px-3 py-2 text-[13px] text-[--text-color] outline-none rounded-[12px] ${clay ? '' : 'bg-overlay border border-transparent focus:border-accent'}`}
+                        style={clay ? { background: 'var(--bg-glass-active)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-inset)' } : undefined}
                         autoFocus
                     />
                     <textarea
                         value={description}
                         onChange={e => setDescription(e.target.value)}
                         placeholder="Description (optional)"
-                        className="w-full bg-overlay border border-transparent px-3 py-2 text-[13px] text-[--text-color] outline-none focus:border-accent resize-none h-20"
+                        className={`w-full px-3 py-2 text-[13px] text-[--text-color] outline-none resize-none h-20 rounded-[12px] ${clay ? '' : 'bg-overlay border border-transparent focus:border-accent'}`}
+                        style={clay ? { background: 'var(--bg-glass-active)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-inset)' } : undefined}
                     />
                     <div className="flex gap-2">
                         <div className="flex-1">
@@ -121,7 +134,8 @@ const TaskDialog: React.FC<{
                             <select
                                 value={status}
                                 onChange={e => setStatus(e.target.value as Task['status'])}
-                                className="w-full bg-overlay border border-[--border-color] px-2 py-1.5 text-xs text-[--text-color] outline-none"
+                                className={`w-full px-2 py-1.5 text-xs text-[--text-color] outline-none ${clay ? 'rounded-[8px]' : 'bg-overlay border border-[--border-color]'}`}
+                                style={clay ? { background: 'var(--bg-glass-active)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-inset)' } : undefined}
                             >
                                 {columns.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
                             </select>
@@ -131,7 +145,8 @@ const TaskDialog: React.FC<{
                             <select
                                 value={priority}
                                 onChange={e => setPriority(e.target.value as Task['priority'])}
-                                className="w-full bg-overlay border border-[--border-color] px-2 py-1.5 text-xs text-[--text-color] outline-none"
+                                className={`w-full px-2 py-1.5 text-xs text-[--text-color] outline-none ${clay ? 'rounded-[8px]' : 'bg-overlay border border-[--border-color]'}`}
+                                style={clay ? { background: 'var(--bg-glass-active)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-inset)' } : undefined}
                             >
                                 <option value="low">Low</option>
                                 <option value="medium">Medium</option>
@@ -143,16 +158,21 @@ const TaskDialog: React.FC<{
                         value={linkedFile}
                         onChange={e => setLinkedFile(e.target.value)}
                         placeholder="Link to file (optional path)"
-                        className="w-full bg-overlay border border-transparent px-3 py-2 text-xs text-[--text-color] outline-none focus:border-accent"
+                        className={`w-full px-3 py-2 text-xs text-[--text-color] outline-none ${clay ? 'rounded-[12px]' : 'bg-overlay border border-transparent focus:border-accent'}`}
+                        style={clay ? { background: 'var(--bg-glass-active)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-inset)' } : undefined}
                     />
                 </div>
 
                 <div className="flex gap-2">
-                    <button onClick={onClose} className="flex-1 py-2 bg-overlay hover:bg-[--border-color] text-[--text-muted] text-[13px] transition">Cancel</button>
+                    <button onClick={onClose}
+                        className={`flex-1 py-2 text-[--text-muted] text-[13px] transition ${clay ? 'rounded-[12px] active:scale-[0.97] hover:bg-[--bg-glass-hover]' : 'bg-overlay hover:bg-[--border-color]'}`}
+                        style={clay ? glassButton : undefined}
+                    >Cancel</button>
                     <button
                         onClick={() => { if (title.trim()) onSave({ id: task?.id, title: title.trim(), description, status, priority, linkedFile: linkedFile || undefined }); }}
                         disabled={!title.trim()}
-                        className="flex-1 py-2 bg-accent hover:opacity-90 disabled:opacity-50 text-[--bg-base] text-[13px] font-medium transition"
+                        className={`flex-1 py-2 hover:opacity-90 disabled:opacity-50 text-[13px] font-medium transition ${clay ? 'rounded-[12px] active:scale-[0.97] text-white' : 'bg-accent text-[--bg-base]'}`}
+                        style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                     >
                         {task ? 'Save' : 'Create'}
                     </button>
@@ -163,6 +183,7 @@ const TaskDialog: React.FC<{
 };
 
 export default function IdeaBoard({ windowId, appId = 'ideaboard', id }: { windowId?: string; appId?: string; id?: string }) {
+    const clay = useIsClay();
     const { currentProject } = useProjects();
     const { addToast } = useNotifications();
     const { activewindow } = useWindows();
@@ -227,10 +248,11 @@ export default function IdeaBoard({ windowId, appId = 'ideaboard', id }: { windo
 
     if (!currentProject) {
         return (
-            <div className="flex items-center justify-center h-full bg-[--bg-base] text-[--text-color] font-mono">
+            <div className={`flex items-center justify-center h-full text-[--text-color] ${clay ? 'bg-[--bg-base]' : 'bg-[--bg-base] font-mono'}`}>
                 <div className="text-center space-y-2">
-                    <IoCheckmarkCircle size={32} className="mx-auto text-[--text-muted] opacity-50" />
-                    <div className="text-[13px] text-[--text-muted]">Open a project to use the Idea Board</div>
+                    <IoCheckmarkCircle size={48} className="mx-auto text-[--text-muted] mb-4" />
+                    <div className="text-lg font-semibold text-[--text-color]">No Project Open</div>
+                    <div className="text-[13px] text-[--text-muted] max-w-[300px]">Open a project to use the Idea Board</div>
                 </div>
             </div>
         );
@@ -240,8 +262,10 @@ export default function IdeaBoard({ windowId, appId = 'ideaboard', id }: { windo
     const doneTasks = tasks.filter(t => t.status === 'done').length;
 
     return (
-        <div className="flex flex-col h-full bg-[--bg-base] text-[--text-color] overflow-hidden font-mono">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-[--border-color] shrink-0">
+        <div className={`flex flex-col h-full text-[--text-color] overflow-hidden ${clay ? 'bg-[--bg-base]' : 'bg-[--bg-base] font-mono'}`}>
+            <div
+                className={`flex items-center justify-between px-4 py-3 shrink-0 ${clay ? 'border-b border-[--text-muted]/10' : 'border-b border-[--border-color]'}`}
+            >
                 <div>
                     <h2 className="text-[13px] font-semibold flex items-center gap-2">
                         <IoCheckmarkCircle size={16} className="text-accent" />
@@ -249,8 +273,8 @@ export default function IdeaBoard({ windowId, appId = 'ideaboard', id }: { windo
                     </h2>
                     {totalTasks > 0 && (
                         <div className="flex items-center gap-2 mt-1">
-                            <div className="w-24 h-1.5 bg-overlay overflow-hidden">
-                                <div className="h-full bg-pastel-green transition-all" style={{ width: `${(doneTasks / totalTasks) * 100}%` }} />
+                            <div className={`w-24 h-1.5 overflow-hidden ${clay ? 'rounded-full bg-[--bg-glass-active]' : 'bg-overlay'}`}>
+                                <div className={`h-full bg-pastel-green transition-all ${clay ? 'rounded-full' : ''}`} style={{ width: `${(doneTasks / totalTasks) * 100}%` }} />
                             </div>
                             <span className="text-[10px] text-[--text-muted]">{doneTasks}/{totalTasks} done</span>
                         </div>
@@ -258,7 +282,8 @@ export default function IdeaBoard({ windowId, appId = 'ideaboard', id }: { windo
                 </div>
                 <button
                     onClick={() => { setEditingTask(undefined); setShowDialog(true); }}
-                    className="px-3 py-1.5 bg-accent text-[--bg-base] text-xs font-medium flex items-center gap-1 transition hover:opacity-90"
+                    className={`px-3 py-1.5 text-xs font-medium flex items-center gap-1 transition hover:opacity-90 ${clay ? 'rounded-[12px] active:scale-[0.97] text-white' : 'bg-accent text-[--bg-base]'}`}
+                    style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                 >
                     <IoAddOutline size={12} /> Add Task
                 </button>
@@ -271,9 +296,9 @@ export default function IdeaBoard({ windowId, appId = 'ideaboard', id }: { windo
                         <div key={col.id} className="flex-1 min-w-[220px] flex flex-col">
                             <div className="flex items-center justify-between mb-2 px-1">
                                 <div className="flex items-center gap-1.5">
-                                    <div className="w-2 h-2" style={{ backgroundColor: col.color }} />
+                                    <div className={`w-2 h-2 ${clay ? 'rounded-full' : ''}`} style={{ backgroundColor: col.color }} />
                                     <span className="text-xs font-medium text-[--text-muted]">{col.label}</span>
-                                    <span className="text-[10px] text-[--text-muted] bg-overlay px-1.5">{colTasks.length}</span>
+                                    <span className={`text-[10px] text-[--text-muted] px-1.5 ${clay ? 'rounded-[6px] bg-[--bg-glass-active]' : 'bg-overlay'}`}>{colTasks.length}</span>
                                 </div>
                             </div>
                             <div className="flex-1 space-y-2 overflow-y-auto">
@@ -287,7 +312,10 @@ export default function IdeaBoard({ windowId, appId = 'ideaboard', id }: { windo
                                     />
                                 ))}
                                 {colTasks.length === 0 && (
-                                    <div className="border border-dashed border-[--border-color] p-4 text-center text-[11px] text-[--text-muted] opacity-60">
+                                    <div
+                                        className={`p-4 text-center text-[11px] text-[--text-muted] opacity-60 ${clay ? 'rounded-[12px]' : 'border border-dashed border-[--border-color]'}`}
+                                        style={clay ? { border: '1px dashed var(--glass-border)' } : undefined}
+                                    >
                                         No tasks
                                     </div>
                                 )}

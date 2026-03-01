@@ -6,6 +6,8 @@ import { useFileSystem } from './FileSystemContext';
 import { apps, getFileIcon } from './data';
 import { useWindows } from './WindowContext';
 import TintedAppIcon from './ui/TintedAppIcon';
+import { useIsClay } from './hooks/useIsClay';
+import { glassPanel } from './hooks/useClayStyles';
 
 interface NextResult {
     type: 'app' | 'file' | 'folder' | 'setting' | 'calculation';
@@ -22,6 +24,7 @@ export default function Next({ isOpen, onClose }: { isOpen: boolean; onClose: ()
     const inputRef = useRef<HTMLInputElement>(null);
     const { files } = useFileSystem();
     const { addwindow } = useWindows();
+    const clay = useIsClay();
 
     const results = useMemo((): NextResult[] => {
         if (!query.trim()) return [];
@@ -181,9 +184,16 @@ export default function Next({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                     exit={{ opacity: 0, scale: 0.95, y: -20 }}
                     transition={{ type: 'spring', damping: 25, stiffness: 400 }}
                     onClick={e => e.stopPropagation()}
-                    className="w-[600px] max-w-[90vw] bg-[--bg-surface] shadow-pastel-active border border-[--border-color] overflow-hidden anime-glow-lg"
+                    className={`w-[600px] max-w-[90vw] overflow-hidden ${clay
+                        ? 'rounded-[20px]'
+                        : 'bg-[--bg-surface] shadow-pastel-active border border-[--border-color] anime-glow-lg'
+                    }`}
+                    style={clay ? {
+                        ...glassPanel,
+                        boxShadow: 'var(--shadow-lg)',
+                    } : undefined}
                 >
-                    <div className="flex items-center gap-3 p-4 border-b border-[--border-color]">
+                    <div className={`flex items-center gap-3 p-4 border-b ${clay ? 'border-[--glass-border]' : 'border-[--border-color]'}`}>
                         <IoSearch className="text-xl text-[--text-muted]" />
                         <input
                             ref={inputRef}
@@ -197,7 +207,7 @@ export default function Next({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                     </div>
 
                     {results.length > 0 && (
-                        <div className="max-h-[400px] overflow-auto">
+                        <div className="max-h-[400px] overflow-auto py-1.5">
                             {results.map((result, idx) => (
                                 <div
                                     key={result.id}
@@ -206,24 +216,27 @@ export default function Next({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                                         onClose();
                                     }}
                                     className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${idx === selectedIndex
-                                        ? 'bg-accent text-[--bg-base]'
-                                        : 'text-[--text-color] hover:bg-overlay'
-                                        }`}
+                                        ? clay ? 'text-white' : 'bg-accent text-[--bg-base]'
+                                        : clay ? 'text-[--text-color] hover:bg-[--bg-glass-hover]' : 'text-[--text-color] hover:bg-overlay'
+                                        } ${clay ? 'mx-2 rounded-[12px]' : ''}`}
+                                    style={idx === selectedIndex && clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                                 >
                                     <div className="w-8 h-8 flex items-center justify-center shrink-0 relative">
                                         {result.icon}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <div className={`font-medium truncate ${idx === selectedIndex ? 'text-[--bg-base]' : 'text-[--text-color]'}`}>
+                                        <div className={`font-medium truncate ${idx === selectedIndex ? (clay ? 'text-white' : 'text-[--bg-base]') : 'text-[--text-color]'}`}>
                                             {result.name}
                                         </div>
                                         {result.subtitle && (
-                                            <div className={`text-xs truncate ${idx === selectedIndex ? 'opacity-70' : 'text-[--text-muted]'}`}>
+                                            <div className={`text-xs truncate ${idx === selectedIndex ? (clay ? 'text-white/70' : 'opacity-70') : 'text-[--text-muted]'}`}>
                                                 {result.subtitle}
                                             </div>
                                         )}
                                     </div>
-                                    <div className={`text-xs px-2 py-0.5 ${idx === selectedIndex ? 'bg-[--bg-base]/20' : 'bg-overlay'
+                                    <div className={`text-xs px-2 py-0.5 rounded-full ${idx === selectedIndex
+                                        ? clay ? 'bg-white/20 text-white' : 'bg-[--bg-base]/20'
+                                        : clay ? 'bg-[--bg-glass-active] text-[--text-muted]' : 'bg-overlay'
                                         }`}>
                                         {result.type}
                                     </div>

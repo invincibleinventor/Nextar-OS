@@ -18,6 +18,8 @@ import { useWindows } from '../WindowContext';
 import { useDevice } from '../DeviceContext';
 import { openSystemItem } from '../data';
 import { useNotifications } from '../NotificationContext';
+import { useIsClay } from '../hooks/useIsClay';
+import { glassCard, glassInput, glassSidebar, glassPanel, clayClasses } from '../hooks/useClayStyles';
 import { useMenuAction } from '../hooks/useMenuAction';
 import { useMenuRegistration } from '../AppMenuContext';
 import { ProjectFile } from '../../types/project';
@@ -162,11 +164,12 @@ const FileTreeItem: React.FC<{
 }> = React.memo(({ node, depth, expandedDirs, toggleDir, activeFile, onFileClick, onDelete, onNewFile }) => {
     const isExpanded = expandedDirs.has(node.path);
     const isActive = activeFile === node.path;
+    const clay = useIsClay();
 
     return (
         <div>
             <div
-                className={`flex items-center gap-1 px-2 py-[3px] cursor-pointer text-[13px] group hover:bg-overlay ${isActive ? 'bg-overlay text-[--text-color]' : 'text-[--text-muted]'}`}
+                className={`flex items-center gap-1 px-2 py-[3px] cursor-pointer text-[13px] group ${clay ? (isActive ? 'bg-[--bg-glass-active] rounded-[6px] mx-1' : 'hover:bg-[--bg-glass-hover] rounded-[6px] mx-1') : (isActive ? 'bg-overlay' : 'hover:bg-overlay')} ${isActive ? 'text-[--text-color]' : 'text-[--text-muted]'}`}
                 style={{ paddingLeft: `${8 + depth * 12}px` }}
                 onClick={() => {
                     if (node.isDirectory) toggleDir(node.path);
@@ -189,11 +192,11 @@ const FileTreeItem: React.FC<{
                 <span className="truncate ml-1 flex-1">{node.name}</span>
                 <div className="hidden group-hover:flex items-center gap-0.5">
                     {node.isDirectory && (
-                        <button onClick={(e) => { e.stopPropagation(); onNewFile(node.path); }} className="p-0.5 hover:bg-[--border-color]">
+                        <button onClick={(e) => { e.stopPropagation(); onNewFile(node.path); }} className={`p-0.5 ${clay ? 'rounded-[4px] hover:bg-[--bg-glass-hover]' : 'hover:bg-[--border-color]'}`}>
                             <VscNewFile size={12} />
                         </button>
                     )}
-                    <button onClick={(e) => { e.stopPropagation(); if (node.file) onDelete(node.file); }} className="p-0.5 hover:bg-[--border-color] text-pastel-red">
+                    <button onClick={(e) => { e.stopPropagation(); if (node.file) onDelete(node.file); }} className={`p-0.5 text-pastel-red ${clay ? 'rounded-[4px] hover:bg-[--bg-glass-hover]' : 'hover:bg-[--border-color]'}`}>
                         <VscTrash size={12} />
                     </button>
                 </div>
@@ -228,22 +231,25 @@ const SnapshotPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const { snapshots, createSnapshot, restoreSnapshot, deleteSnapshotById } = useProjects();
     const { addToast } = useNotifications();
     const [label, setLabel] = useState('');
+    const clay = useIsClay();
 
     return (
-        <div className="absolute right-0 top-0 bottom-0 w-72 bg-surface border-l border-[--border-color] z-50 flex flex-col">
-            <div className="flex items-center justify-between px-3 py-2 border-b border-[--border-color]">
+        <div className={`absolute right-0 top-0 bottom-0 w-72 z-50 flex flex-col ${clay ? '' : 'bg-surface border-l border-[--border-color]'}`}
+            style={clay ? { background: 'var(--bg-glass)', borderLeft: '1px solid var(--glass-border)' } : undefined}
+        >
+            <div className={`flex items-center justify-between px-3 py-2 ${clay ? 'border-b border-[--text-muted]/10' : 'border-b border-[--border-color]'}`}>
                 <span className="text-xs font-medium text-[--text-color] flex items-center gap-1.5">
                     <VscHistory size={14} /> Snapshots
                 </span>
-                <button onClick={onClose} className="p-1 hover:bg-overlay"><VscClose size={14} /></button>
+                <button onClick={onClose} className={`p-1 ${clay ? 'rounded-[6px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`}><VscClose size={14} /></button>
             </div>
-            <div className="p-2 border-b border-[--border-color]">
+            <div className={`p-2 ${clay ? 'border-b border-[--text-muted]/10' : 'border-b border-[--border-color]'}`}>
                 <div className="flex gap-1">
                     <input
                         value={label}
                         onChange={(e) => setLabel(e.target.value)}
                         placeholder="Snapshot label..."
-                        className="flex-1 bg-overlay border border-transparent focus:border-accent px-2 py-1 text-xs text-[--text-color] outline-none"
+                        className={`flex-1 px-2 py-1 text-xs text-[--text-color] outline-none ${clay ? 'rounded-[8px] bg-[--bg-glass-active] border border-[--glass-border]' : 'bg-overlay border border-transparent focus:border-accent'}`}
                     />
                     <button
                         onClick={async () => {
@@ -251,7 +257,8 @@ const SnapshotPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                             setLabel('');
                             addToast('Snapshot created', 'success');
                         }}
-                        className="px-2 py-1 bg-accent text-[--bg-base] text-xs hover:opacity-90"
+                        className={`px-2 py-1 text-xs hover:opacity-90 ${clay ? 'rounded-[8px] text-white' : 'bg-accent text-[--bg-base]'}`}
+                        style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                     >
                         <VscSaveAll size={12} />
                     </button>
@@ -262,17 +269,17 @@ const SnapshotPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                     <div className="p-3 text-xs text-[--text-muted] text-center">No snapshots yet</div>
                 )}
                 {snapshots.map(snap => (
-                    <div key={snap.id} className="flex items-center justify-between px-3 py-2 border-b border-[--border-color] hover:bg-overlay group">
+                    <div key={snap.id} className={`flex items-center justify-between px-3 py-2 group ${clay ? 'border-b border-[--text-muted]/10 hover:bg-[--bg-glass-hover]' : 'border-b border-[--border-color] hover:bg-overlay'}`}>
                         <div className="flex-1 min-w-0">
                             <div className="text-xs text-[--text-color] truncate">{snap.metadata.label || 'Auto-save'}</div>
                             <div className="text-[10px] text-[--text-muted]">{new Date(snap.timestamp).toLocaleString()}</div>
                             <div className="text-[10px] text-[--text-muted]">{snap.files.filter(f => !f.isDirectory).length} files</div>
                         </div>
                         <div className="hidden group-hover:flex items-center gap-1">
-                            <button onClick={() => { restoreSnapshot(snap.id); addToast('Snapshot restored', 'success'); }} className="p-1 hover:bg-overlay text-accent" title="Restore">
+                            <button onClick={() => { restoreSnapshot(snap.id); addToast('Snapshot restored', 'success'); }} className={`p-1 text-accent ${clay ? 'rounded-[4px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`} title="Restore">
                                 <VscRefresh size={12} />
                             </button>
-                            <button onClick={() => { deleteSnapshotById(snap.id); addToast('Snapshot deleted', 'success'); }} className="p-1 hover:bg-overlay text-pastel-red" title="Delete">
+                            <button onClick={() => { deleteSnapshotById(snap.id); addToast('Snapshot deleted', 'success'); }} className={`p-1 text-pastel-red ${clay ? 'rounded-[4px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`} title="Delete">
                                 <VscTrash size={12} />
                             </button>
                         </div>
@@ -288,6 +295,7 @@ const HackathonTimer: React.FC = () => {
     const [showSetup, setShowSetup] = useState(false);
     const [minutes, setMinutes] = useState('25');
     const timerRef = useRef(getSprintTimer());
+    const clay = useIsClay();
 
     useEffect(() => {
         const unsub = timerRef.current.subscribe(setState);
@@ -304,15 +312,15 @@ const HackathonTimer: React.FC = () => {
         if (showSetup) {
             return (
                 <div className="flex items-center gap-1">
-                    <input value={minutes} onChange={(e) => setMinutes(e.target.value)} className="w-10 bg-overlay border border-transparent focus:border-accent px-1 py-0.5 text-[10px] text-[--text-color] text-center outline-none" placeholder="min" />
+                    <input value={minutes} onChange={(e) => setMinutes(e.target.value)} className={`w-10 px-1 py-0.5 text-[10px] text-[--text-color] text-center outline-none ${clay ? 'rounded-[6px] bg-[--bg-glass-active] border border-[--glass-border]' : 'bg-overlay border border-transparent focus:border-accent'}`} placeholder="min" />
                     <span className="text-[10px] text-[--text-muted]">min</span>
-                    <button onClick={() => { timerRef.current = getSprintTimer({ workMinutes: parseInt(minutes) || 25 }); timerRef.current.subscribe(setState); timerRef.current.start(); setShowSetup(false); }} className="px-1.5 py-0.5 bg-pastel-green text-[--bg-base] text-[10px] hover:opacity-90">Start</button>
+                    <button onClick={() => { timerRef.current = getSprintTimer({ workMinutes: parseInt(minutes) || 25 }); timerRef.current.subscribe(setState); timerRef.current.start(); setShowSetup(false); }} className={`px-1.5 py-0.5 bg-pastel-green text-[--bg-base] text-[10px] hover:opacity-90 ${clay ? 'rounded-[6px]' : ''}`}>Start</button>
                     <button onClick={() => setShowSetup(false)} className="text-[10px] text-[--text-muted] hover:text-[--text-color]">Cancel</button>
                 </div>
             );
         }
         return (
-            <button onClick={() => setShowSetup(true)} className="flex items-center gap-1 px-2 py-1 text-[10px] text-[--text-muted] hover:text-[--text-color] hover:bg-overlay" title="Sprint timer">
+            <button onClick={() => setShowSetup(true)} className={`flex items-center gap-1 px-2 py-1 text-[10px] text-[--text-muted] hover:text-[--text-color] ${clay ? 'rounded-[6px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`} title="Sprint timer">
                 <IoTimeOutline size={12} /> Sprint
             </button>
         );
@@ -322,7 +330,7 @@ const HackathonTimer: React.FC = () => {
     const isLow = state.remaining <= 60;
 
     return (
-        <div className="flex items-center gap-1.5 px-2 py-1 bg-overlay">
+        <div className={`flex items-center gap-1.5 px-2 py-1 ${clay ? 'rounded-[6px] bg-[--bg-glass-active]' : 'bg-overlay'}`}>
             <IoTimeOutline size={12} className={isLow ? 'text-pastel-red animate-pulse' : isBreak ? 'text-pastel-green' : 'text-pastel-peach'} />
             <span className={`text-[10px] font-mono font-bold ${isLow ? 'text-pastel-red' : isBreak ? 'text-pastel-green' : 'text-pastel-peach'}`}>
                 {isBreak ? 'BREAK ' : `#${state.sprint} `}{formatTime(state.remaining)}
@@ -339,6 +347,7 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
     const { activewindow, addwindow, windows, updatewindow, setactivewindow } = useWindows();
     const { ismobile } = useDevice();
     const { addToast } = useNotifications();
+    const clay = useIsClay();
     const isActiveWindow = activewindow === (id || windowId);
 
     const [openTabs, setOpenTabs] = useState<OpenTab[]>([]);
@@ -951,9 +960,9 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
             } catch (e) { console.error(e); }
         };
         return (
-            <div className="flex flex-col items-center justify-center h-full bg-[--bg-base] text-[--text-color] font-mono gap-6">
+            <div className={`flex flex-col items-center justify-center h-full text-[--text-color] gap-6 ${clay ? 'bg-[--bg-base]' : 'bg-[--bg-base] font-mono'}`}>
                 <div className="flex items-center gap-3 mb-2">
-                    <div className="w-8 h-8 bg-pastel-green flex items-center justify-center">
+                    <div className={`w-8 h-8 bg-pastel-green flex items-center justify-center ${clay ? 'rounded-[8px]' : ''}`}>
                         <VscRepo className="text-white" size={18} />
                     </div>
                     <span className="text-sm font-semibold">Code Editor</span>
@@ -961,9 +970,10 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                 <div className="flex flex-col gap-2 w-[280px]">
                     <button
                         onClick={() => openSystemItem('explorer', sysContext)}
-                        className="w-full flex items-center gap-3 px-4 py-3 bg-surface border border-[--border-color] hover:bg-overlay hover:border-accent/40 transition-all group"
+                        className={`w-full flex items-center gap-3 px-4 py-3 transition-all group ${clay ? 'rounded-[12px] active:scale-[0.97] hover:bg-[--bg-glass-hover]' : 'bg-surface border border-[--border-color] hover:bg-overlay'}`}
+                        style={clay ? { background: 'var(--bg-glass)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-xs)' } : undefined}
                     >
-                        <div className="w-6 h-6 bg-pastel-blue flex items-center justify-center shrink-0">
+                        <div className={`w-6 h-6 bg-pastel-blue flex items-center justify-center shrink-0 ${clay ? 'rounded-[6px]' : ''}`}>
                             <VscFiles className="text-white" size={13} />
                         </div>
                         <div className="text-left">
@@ -973,9 +983,10 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                     </button>
                     <button
                         onClick={handleBlankProject}
-                        className="w-full flex items-center gap-3 px-4 py-3 bg-surface border border-[--border-color] hover:bg-overlay hover:border-accent/40 transition-all group"
+                        className={`w-full flex items-center gap-3 px-4 py-3 transition-all group ${clay ? 'rounded-[12px] active:scale-[0.97] hover:bg-[--bg-glass-hover]' : 'bg-surface border border-[--border-color] hover:bg-overlay'}`}
+                        style={clay ? { background: 'var(--bg-glass)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-xs)' } : undefined}
                     >
-                        <div className="w-6 h-6 bg-pastel-teal flex items-center justify-center shrink-0">
+                        <div className={`w-6 h-6 bg-pastel-teal flex items-center justify-center shrink-0 ${clay ? 'rounded-[6px]' : ''}`}>
                             <VscNewFile className="text-white" size={13} />
                         </div>
                         <div className="text-left">
@@ -985,9 +996,10 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                     </button>
                     <button
                         onClick={() => openSystemItem('templatesmanager', sysContext)}
-                        className="w-full flex items-center gap-3 px-4 py-3 bg-surface border border-[--border-color] hover:bg-overlay hover:border-accent/40 transition-all group"
+                        className={`w-full flex items-center gap-3 px-4 py-3 transition-all group ${clay ? 'rounded-[12px] active:scale-[0.97] hover:bg-[--bg-glass-hover]' : 'bg-surface border border-[--border-color] hover:bg-overlay'}`}
+                        style={clay ? { background: 'var(--bg-glass)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-xs)' } : undefined}
                     >
-                        <div className="w-6 h-6 bg-pastel-peach flex items-center justify-center shrink-0">
+                        <div className={`w-6 h-6 bg-pastel-peach flex items-center justify-center shrink-0 ${clay ? 'rounded-[6px]' : ''}`}>
                             <VscSettingsGear className="text-white" size={13} />
                         </div>
                         <div className="text-left">
@@ -1001,30 +1013,31 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
     }
 
     return (
-        <div className="flex flex-col h-full bg-[--bg-base] text-[--text-muted] text-xs overflow-hidden relative font-mono">
-            <div className="flex items-center justify-between px-2 py-1 bg-surface border-b border-[--border-color] shrink-0 min-w-0 overflow-x-auto">
+        <div className={`flex flex-col h-full text-[--text-muted] text-xs overflow-hidden relative ${clay ? 'bg-[--bg-base]' : 'bg-[--bg-base] font-mono'}`}>
+            <div className={`flex items-center justify-between px-2 py-1 shrink-0 min-w-0 overflow-x-auto ${clay ? '' : 'bg-surface border-b border-[--border-color]'}`}
+                style={clay ? { borderBottom: '1px solid var(--glass-border)' } : undefined}>
                 <div className="flex items-center gap-2 min-w-0 shrink-0">
-                    <button onClick={() => setSidebarOpen(p => !p)} className={`p-1 hover:bg-overlay shrink-0 ${sidebarOpen ? 'text-[--text-color]' : 'text-[--text-muted]'}`} title="Toggle sidebar (Cmd+B)">
+                    <button onClick={() => setSidebarOpen(p => !p)} className={`p-1 shrink-0 ${clay ? 'rounded-[6px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'} ${sidebarOpen ? 'text-[--text-color]' : 'text-[--text-muted]'}`} title="Toggle sidebar (Cmd+B)">
                         <VscFiles size={14} />
                     </button>
-                    {!ismobile && <button onClick={() => setGitPanelOpen(p => !p)} className={`p-1 hover:bg-overlay shrink-0 ${gitPanelOpen ? 'text-[--text-color]' : 'text-[--text-muted]'}`} title="Git panel">
+                    {!ismobile && <button onClick={() => setGitPanelOpen(p => !p)} className={`p-1 shrink-0 ${clay ? 'rounded-[6px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'} ${gitPanelOpen ? 'text-[--text-color]' : 'text-[--text-muted]'}`} title="Git panel">
                         <VscGitMerge size={14} />
                     </button>}
                     <span className="text-[--text-color] font-medium truncate max-w-[120px]">{currentProject.name}</span>
                     {!ismobile && detectedFramework && (
-                        <span className="px-1.5 py-0.5 bg-overlay text-[10px] text-pastel-blue shrink-0">{detectedFramework}</span>
+                        <span className={`px-1.5 py-0.5 text-[10px] text-pastel-blue shrink-0 ${clay ? 'rounded-[6px] bg-[--bg-glass-active]' : 'bg-overlay'}`}>{detectedFramework}</span>
                     )}
                     {!ismobile && currentProject.stack && !detectedFramework && (
                         <div className="flex items-center gap-1 ml-2">
                             {currentProject.stack.slice(0, 3).map(s => (
-                                <span key={s} className="px-1.5 py-0.5 bg-overlay text-[10px] text-[--text-muted]">{s}</span>
+                                <span key={s} className={`px-1.5 py-0.5 text-[10px] text-[--text-muted] ${clay ? 'rounded-[6px] bg-[--bg-glass-active]' : 'bg-overlay'}`}>{s}</span>
                             ))}
                         </div>
                     )}
                     {!ismobile && hasPackageJson && (
                         <button
                             onClick={() => { setBottomPanelOpen(true); setBottomPanelTab('terminal'); }}
-                            className="flex items-center gap-1 px-1.5 py-0.5 text-[10px] text-pastel-green hover:bg-overlay shrink-0"
+                            className={`flex items-center gap-1 px-1.5 py-0.5 text-[10px] text-pastel-green shrink-0 ${clay ? 'rounded-[6px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`}
                             title="Open terminal to run dev server"
                         >
                             <VscRunAll size={10} /> Dev Server
@@ -1033,23 +1046,23 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
                     {!ismobile && <HackathonTimer />}
-                    {!ismobile && <button onClick={() => setSnapshotPanelOpen(p => !p)} className="p-1 hover:bg-overlay text-[--text-muted] hover:text-[--text-color]" title="Snapshots">
+                    {!ismobile && <button onClick={() => setSnapshotPanelOpen(p => !p)} className={`p-1 text-[--text-muted] hover:text-[--text-color] ${clay ? 'rounded-[6px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`} title="Snapshots">
                         <VscHistory size={14} />
                     </button>}
-                    <button onClick={saveCurrentFile} className="p-1 hover:bg-overlay text-[--text-muted] hover:text-[--text-color]" title="Save">
+                    <button onClick={saveCurrentFile} className={`p-1 text-[--text-muted] hover:text-[--text-color] ${clay ? 'rounded-[6px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`} title="Save">
                         <VscSave size={14} />
                     </button>
-                    <button onClick={() => setBottomPanelOpen(p => !p)} className={`p-1 hover:bg-overlay ${bottomPanelOpen ? 'text-[--text-color]' : 'text-[--text-muted]'}`} title="Toggle terminal">
+                    <button onClick={() => setBottomPanelOpen(p => !p)} className={`p-1 ${clay ? 'rounded-[6px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'} ${bottomPanelOpen ? 'text-[--text-color]' : 'text-[--text-muted]'}`} title="Toggle terminal">
                         <VscTerminal size={14} />
                     </button>
                     {!ismobile && <>
-                        <button onClick={async () => { await createSnapshot(); addToast('Snapshot created', 'success'); }} className="p-1 hover:bg-overlay text-[--text-muted] hover:text-[--text-color]" title="Quick snapshot">
+                        <button onClick={async () => { await createSnapshot(); addToast('Snapshot created', 'success'); }} className={`p-1 text-[--text-muted] hover:text-[--text-color] ${clay ? 'rounded-[6px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`} title="Quick snapshot">
                             <VscSaveAll size={14} />
                         </button>
-                        <button onClick={() => setPreviewOpen(p => !p)} className={`p-1 hover:bg-overlay ${previewOpen ? 'text-[--text-color]' : 'text-[--text-muted]'}`} title="Toggle preview">
+                        <button onClick={() => setPreviewOpen(p => !p)} className={`p-1 ${clay ? 'rounded-[6px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'} ${previewOpen ? 'text-[--text-color]' : 'text-[--text-muted]'}`} title="Toggle preview">
                             {previewOpen ? <VscEye size={14} /> : <VscEyeClosed size={14} />}
                         </button>
-                        <button onClick={() => setFocusMode(p => !p)} className={`p-1 hover:bg-overlay ${focusMode ? 'text-pastel-peach' : 'text-[--text-muted]'}`} title="Focus mode">
+                        <button onClick={() => setFocusMode(p => !p)} className={`p-1 ${clay ? 'rounded-[6px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'} ${focusMode ? 'text-pastel-peach' : 'text-[--text-muted]'}`} title="Focus mode">
                             <VscSplitHorizontal size={14} />
                         </button>
                     </>}
@@ -1058,12 +1071,15 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
 
             <div className="flex flex-1 overflow-hidden relative">
                 {sidebarOpen && !focusMode && (
-                    <div className={`${ismobile ? 'absolute inset-y-0 left-0 z-40 w-[70%] max-w-[240px]' : 'w-56 shrink-0'} bg-surface border-r border-[--border-color] flex flex-col`}>
-                        <div className="flex items-center justify-between px-2 py-1.5 border-b border-[--border-color]">
+                    <div
+                        className={`${ismobile ? 'absolute inset-y-0 left-0 z-40 w-[70%] max-w-[240px]' : 'w-56 shrink-0'} flex flex-col ${clay ? '' : 'bg-surface border-r border-[--border-color]'}`}
+                        style={clay ? { background: 'var(--bg-glass)', borderRight: '1px solid var(--glass-border)' } : undefined}
+                    >
+                        <div className={`flex items-center justify-between px-2 py-1.5 border-b ${clay ? 'border-[--text-muted]/10' : 'border-[--border-color]'}`}>
                             <span className="text-[10px] uppercase tracking-wider text-[--text-muted] font-medium">Explorer</span>
                             <div className="flex items-center gap-0.5">
-                                <button onClick={() => handleNewFile('/')} className="p-0.5 hover:bg-overlay" title="New file"><VscNewFile size={12} /></button>
-                                <button onClick={() => { setNewFileParent('/'); setNewFileName(''); }} className="p-0.5 hover:bg-overlay" title="New folder"><VscNewFolder size={12} /></button>
+                                <button onClick={() => handleNewFile('/')} className={`p-0.5 ${clay ? 'rounded-[4px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`} title="New file"><VscNewFile size={12} /></button>
+                                <button onClick={() => { setNewFileParent('/'); setNewFileName(''); }} className={`p-0.5 ${clay ? 'rounded-[4px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`} title="New folder"><VscNewFolder size={12} /></button>
                             </div>
                         </div>
                         <div className="flex-1 overflow-y-auto py-1">
@@ -1082,13 +1098,13 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                             ))}
                         </div>
                         {newFileParent !== null && (
-                            <div className="px-2 py-1.5 border-t border-[--border-color]">
+                            <div className={`px-2 py-1.5 ${clay ? 'border-t border-[--text-muted]/10' : 'border-t border-[--border-color]'}`}>
                                 <input
                                     value={newFileName}
                                     onChange={(e) => setNewFileName(e.target.value)}
                                     onKeyDown={(e) => { if (e.key === 'Enter') confirmNewFile(); if (e.key === 'Escape') setNewFileParent(null); }}
                                     placeholder="filename.ext (or dir/)"
-                                    className="w-full bg-overlay border border-transparent focus:border-accent px-2 py-1 text-xs text-[--text-color] outline-none"
+                                    className={`w-full px-2 py-1 text-xs text-[--text-color] outline-none ${clay ? 'rounded-[8px] bg-[--bg-glass-active] border border-[--glass-border]' : 'bg-overlay border border-transparent focus:border-accent'}`}
                                     autoFocus
                                 />
                             </div>
@@ -1100,24 +1116,27 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                 )}
 
                 {gitPanelOpen && !focusMode && !ismobile && (
-                    <div className="w-64 bg-surface border-r border-[--border-color] flex flex-col shrink-0">
-                        <div className="flex items-center justify-between px-2 py-1.5 border-b border-[--border-color]">
+                    <div
+                        className={`w-64 flex flex-col shrink-0 ${clay ? '' : 'bg-surface border-r border-[--border-color]'}`}
+                        style={clay ? { background: 'var(--bg-glass)', borderRight: '1px solid var(--glass-border)' } : undefined}
+                    >
+                        <div className={`flex items-center justify-between px-2 py-1.5 ${clay ? 'border-b border-[--text-muted]/10' : 'border-b border-[--border-color]'}`}>
                             <span className="text-[10px] uppercase tracking-wider text-[--text-muted] font-medium flex items-center gap-1">
                                 <VscGitMerge size={10} /> Source Control
                                 {gitBranch && <span className="text-pastel-blue normal-case tracking-normal">({gitBranch})</span>}
                             </span>
                             <div className="flex items-center gap-0.5">
-                                <button onClick={refreshGitStatus} className="p-0.5 hover:bg-overlay" title="Refresh">
+                                <button onClick={refreshGitStatus} className={`p-0.5 ${clay ? 'rounded-[4px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`} title="Refresh">
                                     <VscRefresh size={10} className="text-[--text-muted]" />
                                 </button>
-                                <button onClick={() => setGitPanelOpen(false)} className="p-0.5 hover:bg-overlay">
+                                <button onClick={() => setGitPanelOpen(false)} className={`p-0.5 ${clay ? 'rounded-[4px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`}>
                                     <VscClose size={12} className="text-[--text-muted]" />
                                 </button>
                             </div>
                         </div>
 
                         {gitBranch && (
-                            <div className="flex items-center border-b border-[--border-color] shrink-0">
+                            <div className={`flex items-center shrink-0 ${clay ? 'border-b border-[--text-muted]/10' : 'border-b border-[--border-color]'}`}>
                                 <button
                                     onClick={() => setGitView('changes')}
                                     className={`flex-1 py-1 text-[10px] font-medium text-center ${gitView === 'changes' ? 'text-[--text-color] border-b border-accent' : 'text-[--text-muted] hover:text-[--text-color]'}`}
@@ -1140,11 +1159,11 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                                         <VscRepo size={20} className="mx-auto text-[--text-muted] mb-2 opacity-50" />
                                         <p className="text-[10px] text-[--text-muted] mb-2">No git repository</p>
                                         <button onClick={handleGitInit} disabled={gitLoading}
-                                            className="w-full py-1 text-[10px] bg-pastel-blue text-white font-medium hover:opacity-90 disabled:opacity-50 transition-opacity">
+                                            className={`w-full py-1 text-[10px] bg-pastel-blue text-white font-medium hover:opacity-90 disabled:opacity-50 transition-opacity ${clay ? 'rounded-[8px]' : ''}`}>
                                             {gitLoading ? 'Initializing...' : 'Initialize Repository'}
                                         </button>
                                     </div>
-                                    <div className="border-t border-[--border-color] pt-3">
+                                    <div className={`pt-3 ${clay ? 'border-t border-[--text-muted]/10' : 'border-t border-[--border-color]'}`}>
                                         <div className="flex items-center gap-1 mb-1.5">
                                             <VscCloudDownload size={11} className="text-pastel-blue" />
                                             <span className="text-[10px] font-medium text-[--text-color]">Clone Repository</span>
@@ -1155,10 +1174,10 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                                             onChange={e => setGitCloneUrl(e.target.value)}
                                             onKeyDown={e => { if (e.key === 'Enter') handleGitClone(); }}
                                             placeholder="https://github.com/user/repo.git"
-                                            className="w-full bg-[--bg-base] border border-[--border-color] px-2 py-1 text-[10px] text-[--text-color] outline-none focus:border-accent placeholder:text-[--text-muted] mb-1.5"
+                                            className={`w-full px-2 py-1 text-[10px] text-[--text-color] outline-none focus:border-accent placeholder:text-[--text-muted] mb-1.5 ${clay ? 'rounded-[8px] bg-[--bg-glass-active] border border-[--glass-border]' : 'bg-[--bg-base] border border-[--border-color]'}`}
                                         />
                                         <button onClick={handleGitClone} disabled={gitLoading || !gitCloneUrl.trim()}
-                                            className="w-full py-1 text-[10px] bg-accent text-[--bg-base] font-medium hover:opacity-90 disabled:opacity-50 transition-opacity">
+                                            className={`w-full py-1 text-[10px] bg-accent text-[--bg-base] font-medium hover:opacity-90 disabled:opacity-50 transition-opacity ${clay ? 'rounded-[8px]' : ''}`}>
                                             {gitLoading ? 'Cloning...' : 'Clone'}
                                         </button>
                                     </div>
@@ -1167,43 +1186,43 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
 
                             {gitBranch && gitView === 'changes' && (
                                 <>
-                                    <div className="px-2 py-2 border-b border-[--border-color]">
+                                    <div className={`px-2 py-2 ${clay ? 'border-b border-[--text-muted]/10' : 'border-b border-[--border-color]'}`}>
                                         <input
                                             type="text"
                                             value={commitMsg}
                                             onChange={e => setCommitMsg(e.target.value)}
                                             onKeyDown={e => { if (e.key === 'Enter') handleGitCommit(); }}
                                             placeholder="Commit message..."
-                                            className="w-full bg-[--bg-base] border border-[--border-color] px-2 py-1 text-[10px] text-[--text-color] outline-none focus:border-accent placeholder:text-[--text-muted] mb-1.5"
+                                            className={`w-full px-2 py-1 text-[10px] text-[--text-color] outline-none focus:border-accent placeholder:text-[--text-muted] mb-1.5 ${clay ? 'rounded-[8px] bg-[--bg-glass-active] border border-[--glass-border]' : 'bg-[--bg-base] border border-[--border-color]'}`}
                                         />
                                         <div className="flex gap-1">
                                             <button onClick={handleGitCommit} disabled={gitLoading || !commitMsg.trim()}
-                                                className="flex-1 py-1 text-[10px] bg-pastel-green text-[--bg-base] font-medium hover:opacity-90 disabled:opacity-50 transition-opacity flex items-center justify-center gap-1">
+                                                className={`flex-1 py-1 text-[10px] bg-pastel-green text-[--bg-base] font-medium hover:opacity-90 disabled:opacity-50 transition-opacity flex items-center justify-center gap-1 ${clay ? 'rounded-[8px]' : ''}`}>
                                                 <VscGitCommit size={10} />
                                                 {gitLoading ? 'Committing...' : 'Commit'}
                                             </button>
                                         </div>
                                     </div>
-                                    <div className="px-2 py-1.5 border-b border-[--border-color] flex gap-1">
+                                    <div className={`px-2 py-1.5 flex gap-1 ${clay ? 'border-b border-[--text-muted]/10' : 'border-b border-[--border-color]'}`}>
                                         <button onClick={handleGitPull} disabled={gitLoading}
-                                            className="flex-1 flex items-center justify-center gap-1 py-1 text-[10px] hover:bg-overlay text-[--text-muted] hover:text-[--text-color] disabled:opacity-50 transition-colors border border-[--border-color]">
+                                            className={`flex-1 flex items-center justify-center gap-1 py-1 text-[10px] text-[--text-muted] hover:text-[--text-color] disabled:opacity-50 transition-colors ${clay ? 'rounded-[8px] border border-[--glass-border] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay border border-[--border-color]'}`}>
                                             <VscRefresh size={10} /> Pull
                                         </button>
                                         <button onClick={handleGitPush} disabled={gitLoading || !gitToken}
-                                            className="flex-1 flex items-center justify-center gap-1 py-1 text-[10px] hover:bg-overlay text-[--text-muted] hover:text-[--text-color] disabled:opacity-50 transition-colors border border-[--border-color]"
+                                            className={`flex-1 flex items-center justify-center gap-1 py-1 text-[10px] text-[--text-muted] hover:text-[--text-color] disabled:opacity-50 transition-colors ${clay ? 'rounded-[8px] border border-[--glass-border] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay border border-[--border-color]'}`}
                                             title={!gitToken ? 'Set a PAT in Settings tab to push' : 'Push to remote'}>
                                             <VscGitPullRequest size={10} /> Push
                                         </button>
                                     </div>
                                     {gitBranches.length > 1 && (
-                                        <div className="px-2 py-1.5 border-b border-[--border-color]">
+                                        <div className={`px-2 py-1.5 ${clay ? 'border-b border-[--text-muted]/10' : 'border-b border-[--border-color]'}`}>
                                             <div className="flex items-center gap-1 mb-1">
                                                 <span className="text-[10px] text-[--text-muted] font-medium">Branch</span>
                                             </div>
                                             <select
                                                 value={gitBranch}
                                                 onChange={(e) => handleGitCheckout(e.target.value)}
-                                                className="w-full bg-overlay border border-[--border-color] px-2 py-1 text-[10px] text-[--text-color] outline-none focus:border-accent"
+                                                className={`w-full px-2 py-1 text-[10px] text-[--text-color] outline-none focus:border-accent ${clay ? 'rounded-[8px] bg-[--bg-glass-active] border border-[--glass-border]' : 'bg-overlay border border-[--border-color]'}`}
                                             >
                                                 {gitBranches.map(b => (
                                                     <option key={b} value={b}>{b}</option>
@@ -1224,7 +1243,7 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                                         ) : (
                                             <div className="space-y-0.5">
                                                 {gitChanges.map(c => (
-                                                    <div key={c.filepath} className="flex items-center gap-1.5 px-1 py-0.5 text-[10px] hover:bg-overlay">
+                                                    <div key={c.filepath} className={`flex items-center gap-1.5 px-1 py-0.5 text-[10px] ${clay ? 'rounded-[4px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`}>
                                                         <span className={`font-bold w-3 text-center shrink-0 ${c.status === 'new' ? 'text-pastel-green' : c.status === 'deleted' ? 'text-pastel-red' : 'text-pastel-yellow'}`}>
                                                             {c.status === 'new' ? 'A' : c.status === 'deleted' ? 'D' : 'M'}
                                                         </span>
@@ -1245,7 +1264,7 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                                         </div>
                                     ) : (
                                         gitLogEntries.map(entry => (
-                                            <div key={entry.oid} className="px-2 py-1.5 border-b border-[--border-color] hover:bg-overlay">
+                                            <div key={entry.oid} className={`px-2 py-1.5 ${clay ? 'border-b border-[--text-muted]/10 hover:bg-[--bg-glass-hover]' : 'border-b border-[--border-color] hover:bg-overlay'}`}>
                                                 <div className="flex items-start gap-1.5">
                                                     <span className="text-pastel-blue font-mono text-[10px] shrink-0 mt-0.5">{entry.oid.slice(0, 7)}</span>
                                                     <div className="flex-1 min-w-0">
@@ -1273,10 +1292,10 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                                             value={gitRemoteUrl}
                                             onChange={e => setGitRemoteUrl(e.target.value)}
                                             placeholder="https://github.com/user/repo.git"
-                                            className="w-full bg-[--bg-base] border border-[--border-color] px-2 py-1 text-[10px] text-[--text-color] outline-none focus:border-accent placeholder:text-[--text-muted] mb-1.5"
+                                            className={`w-full px-2 py-1 text-[10px] text-[--text-color] outline-none focus:border-accent placeholder:text-[--text-muted] mb-1.5 ${clay ? 'rounded-[8px] bg-[--bg-glass-active] border border-[--glass-border]' : 'bg-[--bg-base] border border-[--border-color]'}`}
                                         />
                                         <button onClick={() => handleSetRemote(gitRemoteUrl)} disabled={gitLoading || !gitRemoteUrl.trim()}
-                                            className="w-full py-1 text-[10px] bg-accent text-[--bg-base] font-medium hover:opacity-90 disabled:opacity-50 transition-opacity">
+                                            className={`w-full py-1 text-[10px] bg-accent text-[--bg-base] font-medium hover:opacity-90 disabled:opacity-50 transition-opacity ${clay ? 'rounded-[8px]' : ''}`}>
                                             {gitRemotes.find(r => r.remote === 'origin') ? 'Update Remote' : 'Set Remote'}
                                         </button>
                                         {gitRemotes.length > 0 && (
@@ -1291,7 +1310,7 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                                         )}
                                     </div>
 
-                                    <div className="border-t border-[--border-color] pt-3">
+                                    <div className={`pt-3 ${clay ? 'border-t border-[--text-muted]/10' : 'border-t border-[--border-color]'}`}>
                                         <div className="flex items-center gap-1 mb-1.5">
                                             <VscKey size={11} className="text-pastel-peach" />
                                             <span className="text-[10px] font-medium text-[--text-color]">Personal Access Token</span>
@@ -1302,18 +1321,18 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                                                 value={gitToken}
                                                 onChange={e => { setGitToken(e.target.value); setGitTokenSaved(false); }}
                                                 placeholder="ghp_xxxxxxxxxxxx"
-                                                className="flex-1 bg-[--bg-base] border border-[--border-color] px-2 py-1 text-[10px] text-[--text-color] outline-none focus:border-accent placeholder:text-[--text-muted] font-mono"
+                                                className={`flex-1 px-2 py-1 text-[10px] text-[--text-color] outline-none focus:border-accent placeholder:text-[--text-muted] font-mono ${clay ? 'rounded-[8px] bg-[--bg-glass-active] border border-[--glass-border]' : 'bg-[--bg-base] border border-[--border-color]'}`}
                                             />
                                             <button
                                                 onClick={() => setGitShowToken(p => !p)}
-                                                className="px-1.5 border border-[--border-color] hover:bg-overlay text-[--text-muted]"
+                                                className={`px-1.5 text-[--text-muted] ${clay ? 'rounded-[8px] border border-[--glass-border] hover:bg-[--bg-glass-hover]' : 'border border-[--border-color] hover:bg-overlay'}`}
                                                 title={gitShowToken ? 'Hide token' : 'Show token'}
                                             >
                                                 {gitShowToken ? <VscEyeClosed size={10} /> : <VscEye size={10} />}
                                             </button>
                                         </div>
                                         <button onClick={handleSaveToken} disabled={!gitToken.trim() || gitTokenSaved}
-                                            className="w-full py-1 text-[10px] font-medium hover:opacity-90 disabled:opacity-50 transition-opacity bg-pastel-peach text-[--bg-base]">
+                                            className={`w-full py-1 text-[10px] font-medium hover:opacity-90 disabled:opacity-50 transition-opacity bg-pastel-peach text-[--bg-base] ${clay ? 'rounded-[8px]' : ''}`}>
                                             {gitTokenSaved ? 'Token Saved' : 'Save Token'}
                                         </button>
                                         <p className="text-[9px] text-[--text-muted] mt-1 opacity-70">
@@ -1321,7 +1340,7 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                                         </p>
                                     </div>
 
-                                    <div className="border-t border-[--border-color] pt-3">
+                                    <div className={`pt-3 ${clay ? 'border-t border-[--text-muted]/10' : 'border-t border-[--border-color]'}`}>
                                         <div className="flex items-center gap-1 mb-1.5">
                                             <VscGitMerge size={11} className="text-pastel-green" />
                                             <span className="text-[10px] font-medium text-[--text-color]">Branches</span>
@@ -1333,7 +1352,8 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                                                 {gitBranches.map(b => (
                                                     <div key={b}
                                                         onClick={() => { if (b !== gitBranch) handleGitCheckout(b); }}
-                                                        className={`flex items-center gap-1.5 px-2 py-1 text-[10px] cursor-pointer ${b === gitBranch ? 'bg-accent text-[--bg-base]' : 'text-[--text-muted] hover:bg-overlay hover:text-[--text-color]'}`}
+                                                        className={`flex items-center gap-1.5 px-2 py-1 text-[10px] cursor-pointer ${clay ? 'rounded-[6px]' : ''} ${b === gitBranch ? (clay ? 'text-white' : 'bg-accent text-[--bg-base]') : (clay ? 'text-[--text-muted] hover:bg-[--bg-glass-hover] hover:text-[--text-color]' : 'text-[--text-muted] hover:bg-overlay hover:text-[--text-color]')}`}
+                                                        style={b === gitBranch && clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                                                     >
                                                         <VscGitMerge size={10} />
                                                         <span className="truncate">{b}</span>
@@ -1344,7 +1364,7 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                                         )}
                                     </div>
 
-                                    <div className="border-t border-[--border-color] pt-3">
+                                    <div className={`pt-3 ${clay ? 'border-t border-[--text-muted]/10' : 'border-t border-[--border-color]'}`}>
                                         <div className="flex items-center gap-1 mb-1.5">
                                             <VscSettingsGear size={11} className="text-[--text-muted]" />
                                             <span className="text-[10px] font-medium text-[--text-color]">Clone</span>
@@ -1355,10 +1375,10 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                                             onChange={e => setGitCloneUrl(e.target.value)}
                                             onKeyDown={e => { if (e.key === 'Enter') handleGitClone(); }}
                                             placeholder="https://github.com/user/repo.git"
-                                            className="w-full bg-[--bg-base] border border-[--border-color] px-2 py-1 text-[10px] text-[--text-color] outline-none focus:border-accent placeholder:text-[--text-muted] mb-1.5"
+                                            className={`w-full px-2 py-1 text-[10px] text-[--text-color] outline-none focus:border-accent placeholder:text-[--text-muted] mb-1.5 ${clay ? 'rounded-[8px] bg-[--bg-glass-active] border border-[--glass-border]' : 'bg-[--bg-base] border border-[--border-color]'}`}
                                         />
                                         <button onClick={handleGitClone} disabled={gitLoading || !gitCloneUrl.trim()}
-                                            className="w-full py-1 text-[10px] bg-accent text-[--bg-base] font-medium hover:opacity-90 disabled:opacity-50 transition-opacity">
+                                            className={`w-full py-1 text-[10px] bg-accent text-[--bg-base] font-medium hover:opacity-90 disabled:opacity-50 transition-opacity ${clay ? 'rounded-[8px]' : ''}`}>
                                             {gitLoading ? 'Cloning...' : 'Clone into Project'}
                                         </button>
                                     </div>
@@ -1370,11 +1390,13 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
 
                 <div className="flex-1 flex flex-col overflow-hidden">
                     {openTabs.length > 0 && (
-                        <div className="flex items-center bg-surface border-b border-[--border-color] overflow-x-auto shrink-0">
+                        <div className={`flex items-center overflow-x-auto shrink-0 ${clay ? 'border-b border-[--glass-border]' : 'bg-surface border-b border-[--border-color]'}`}
+                            style={clay ? { background: 'var(--bg-glass)' } : undefined}
+                        >
                             {openTabs.map(tab => (
                                 <div
                                     key={tab.fileId}
-                                    className={`flex items-center gap-1.5 px-3 py-1.5 cursor-pointer border-r border-[--border-color] min-w-0 ${activeTab === tab.fileId ? 'bg-[--bg-base] text-[--text-color]' : 'text-[--text-muted] hover:bg-overlay'}`}
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 cursor-pointer min-w-0 ${clay ? 'border-r border-[--glass-border]' : 'border-r border-[--border-color]'} ${activeTab === tab.fileId ? (clay ? 'bg-[--bg-glass-active] text-[--text-color]' : 'bg-[--bg-base] text-[--text-color]') : (clay ? 'text-[--text-muted] hover:bg-[--bg-glass-hover]' : 'text-[--text-muted] hover:bg-overlay')}`}
                                     onClick={() => setActiveTab(tab.fileId)}
                                 >
                                     <span className="text-[9px] font-bold shrink-0" style={{ color: getFileIcon(tab.name).color }}>
@@ -1386,7 +1408,7 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                                     </span>
                                     <button
                                         onClick={(e) => { e.stopPropagation(); closeTab(tab.fileId); }}
-                                        className="ml-1 p-0.5 hover:bg-overlay shrink-0"
+                                        className={`ml-1 p-0.5 shrink-0 ${clay ? 'rounded-[4px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`}
                                     >
                                         <VscClose size={12} />
                                     </button>
@@ -1394,22 +1416,22 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                             ))}
                             <div className="flex-1" />
                             <div className="flex items-center gap-1 px-2 shrink-0">
-                                <button onClick={saveCurrentFile} disabled={!openTabs.find(t => t.fileId === activeTab)?.modified} className={`flex items-center gap-1 px-2 py-1 text-xs ${openTabs.find(t => t.fileId === activeTab)?.modified ? 'text-[--text-color] hover:bg-overlay' : 'text-[--text-muted]'}`} title="Save (Cmd+S)">
+                                <button onClick={saveCurrentFile} disabled={!openTabs.find(t => t.fileId === activeTab)?.modified} className={`flex items-center gap-1 px-2 py-1 text-xs ${clay ? 'rounded-[6px]' : ''} ${openTabs.find(t => t.fileId === activeTab)?.modified ? (clay ? 'text-[--text-color] hover:bg-[--bg-glass-hover]' : 'text-[--text-color] hover:bg-overlay') : 'text-[--text-muted]'}`} title="Save (Cmd+S)">
                                     <VscSave size={14} />
                                 </button>
                                 {isRunnable && (
-                                    <button onClick={runCode} disabled={isRunning} className={`flex items-center gap-1 px-2 py-1 text-xs ${isRunning ? 'text-[--text-muted]' : 'text-pastel-green hover:bg-overlay'}`} title="Run Code (Cmd+R)">
+                                    <button onClick={runCode} disabled={isRunning} className={`flex items-center gap-1 px-2 py-1 text-xs ${clay ? 'rounded-[6px]' : ''} ${isRunning ? 'text-[--text-muted]' : (clay ? 'text-pastel-green hover:bg-[--bg-glass-hover]' : 'text-pastel-green hover:bg-overlay')}`} title="Run Code (Cmd+R)">
                                         <VscRunAll size={16} /> Run
                                     </button>
                                 )}
                                 {isAppRunnable && (
-                                    <button onClick={runAsApp} className="flex items-center gap-1 px-2 py-1 text-xs text-accent hover:bg-overlay" title="Run as App (opens new window)">
+                                    <button onClick={runAsApp} className={`flex items-center gap-1 px-2 py-1 text-xs text-accent ${clay ? 'rounded-[6px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`} title="Run as App (opens new window)">
                                         <IoRocketOutline size={14} /> App
                                     </button>
                                 )}
                                 <button
                                     onClick={() => setMinimapEnabled(p => !p)}
-                                    className={`p-1 ${minimapEnabled ? 'text-[--text-color] bg-overlay' : 'text-[--text-muted] hover:text-[--text-color] hover:bg-overlay'}`}
+                                    className={`p-1 ${clay ? 'rounded-[6px]' : ''} ${minimapEnabled ? (clay ? 'text-[--text-color] bg-[--bg-glass-active]' : 'text-[--text-color] bg-overlay') : (clay ? 'text-[--text-muted] hover:text-[--text-color] hover:bg-[--bg-glass-hover]' : 'text-[--text-muted] hover:text-[--text-color] hover:bg-overlay')}`}
                                     title="Toggle Minimap"
                                 >
                                     <VscEye size={14} />
@@ -1419,12 +1441,12 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                                         if (splitMode) { setSplitMode(null); setSplitFileId(null); }
                                         else setSplitMode('vertical');
                                     }}
-                                    className={`p-1 ${splitMode ? 'text-[--text-color] bg-overlay' : 'text-[--text-muted] hover:text-[--text-color] hover:bg-overlay'}`}
+                                    className={`p-1 ${clay ? 'rounded-[6px]' : ''} ${splitMode ? (clay ? 'text-[--text-color] bg-[--bg-glass-active]' : 'text-[--text-color] bg-overlay') : (clay ? 'text-[--text-muted] hover:text-[--text-color] hover:bg-[--bg-glass-hover]' : 'text-[--text-muted] hover:text-[--text-color] hover:bg-overlay')}`}
                                     title="Split Editor"
                                 >
                                     <VscSplitHorizontal size={14} />
                                 </button>
-                                <button onClick={() => { setBottomPanelOpen(true); setBottomPanelTab('output'); }} className={`p-1 ${bottomPanelOpen && bottomPanelTab === 'output' ? 'text-[--text-color] bg-overlay' : 'text-[--text-muted] hover:text-[--text-color] hover:bg-overlay'}`} title="Output Panel">
+                                <button onClick={() => { setBottomPanelOpen(true); setBottomPanelTab('output'); }} className={`p-1 ${clay ? 'rounded-[6px]' : ''} ${bottomPanelOpen && bottomPanelTab === 'output' ? (clay ? 'text-[--text-color] bg-[--bg-glass-active]' : 'text-[--text-color] bg-overlay') : (clay ? 'text-[--text-muted] hover:text-[--text-color] hover:bg-[--bg-glass-hover]' : 'text-[--text-muted] hover:text-[--text-color] hover:bg-overlay')}`} title="Output Panel">
                                     <VscTerminal size={14} />
                                 </button>
                             </div>
@@ -1432,7 +1454,7 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                     )}
 
                     {activeTab && activeFileName && (
-                        <div className="flex items-center px-2 py-0.5 bg-surface border-b border-[--border-color] shrink-0 gap-1 text-[10px]">
+                        <div className={`flex items-center px-2 py-0.5 shrink-0 gap-1 text-[10px] ${clay ? 'border-b border-[--glass-border]' : 'bg-surface border-b border-[--border-color]'}`}>
                             {activeFileName.split('/').length > 1 ? (
                                 activeFileName.split('/').map((seg, i, arr) => (
                                     <React.Fragment key={i}>
@@ -1445,9 +1467,10 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                             )}
                             <div className="flex-1" />
                             {detectedFramework && (
-                                <span className="px-1.5 py-0.5 bg-pastel-blue/20 text-pastel-blue text-[10px]">{detectedFramework}</span>
+                                <span className={`px-1.5 py-0.5 text-pastel-blue text-[10px] ${clay ? 'rounded-[6px] bg-[--bg-glass-active]' : ''}`}
+                                    style={!clay ? { background: 'color-mix(in srgb, var(--pastel-blue) 20%, transparent)' } : undefined}>{detectedFramework}</span>
                             )}
-                            <span className="px-1.5 py-0.5 bg-overlay text-[--text-muted]">{getLanguage(activeFileName)}</span>
+                            <span className={`px-1.5 py-0.5 text-[--text-muted] ${clay ? 'rounded-[6px] bg-[--bg-glass-active]' : 'bg-overlay'}`}>{getLanguage(activeFileName)}</span>
                         </div>
                     )}
 
@@ -1505,10 +1528,10 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                         </div>
 
                         {splitMode && (
-                            <div className={`flex-1 overflow-hidden ${splitMode === 'horizontal' ? 'border-t' : 'border-l'} border-[--border-color]`}>
+                            <div className={`flex-1 overflow-hidden ${splitMode === 'horizontal' ? 'border-t' : 'border-l'} ${clay ? 'border-[--glass-border]' : 'border-[--border-color]'}`}>
                                 {splitFileId && fileContents.has(splitFileId) ? (
                                     <>
-                                        <div className="flex items-center px-2 py-0.5 bg-surface border-b border-[--border-color] shrink-0">
+                                        <div className={`flex items-center px-2 py-0.5 shrink-0 ${clay ? 'border-b border-[--glass-border]' : 'bg-surface border-b border-[--border-color]'}`}>
                                             <select
                                                 value={splitFileId}
                                                 onChange={(e) => {
@@ -1524,7 +1547,7 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                                                     <option key={f.id} value={f.id}>{f.name}</option>
                                                 ))}
                                             </select>
-                                            <button onClick={() => { setSplitMode(null); setSplitFileId(null); }} className="p-0.5 hover:bg-overlay">
+                                            <button onClick={() => { setSplitMode(null); setSplitFileId(null); }} className={`p-0.5 ${clay ? 'rounded-[4px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`}>
                                                 <VscClose size={12} className="text-[--text-muted]" />
                                             </button>
                                         </div>
@@ -1566,7 +1589,7 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                                                     const file = currentFiles.find(f => f.id === e.target.value);
                                                     if (file) openInSplit(file);
                                                 }}
-                                                className="bg-overlay border border-[--border-color] text-[10px] text-[--text-color] outline-none px-2 py-1"
+                                                className={`text-[10px] text-[--text-color] outline-none px-2 py-1 ${clay ? 'rounded-[8px] bg-[--bg-glass-active] border border-[--glass-border]' : 'bg-overlay border border-[--border-color]'}`}
                                                 defaultValue=""
                                             >
                                                 <option value="" disabled>Pick a file...</option>
@@ -1581,8 +1604,8 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                         )}
 
                         {previewOpen && (
-                            <div className="w-96 border-l border-[--border-color] bg-[--bg-base] flex flex-col shrink-0">
-                                <div className="flex items-center justify-between px-2 py-1 bg-surface border-b border-[--border-color]">
+                            <div className={`w-96 flex flex-col shrink-0 ${clay ? 'border-l border-[--glass-border] bg-[--bg-base]' : 'border-l border-[--border-color] bg-[--bg-base]'}`}>
+                                <div className={`flex items-center justify-between px-2 py-1 ${clay ? 'border-b border-[--glass-border]' : 'bg-surface border-b border-[--border-color]'}`}>
                                     <span className="text-[10px] text-[--text-muted] truncate flex-1">
                                         {previewUrl ? `Preview — ${previewUrl}` : 'Preview'}
                                     </span>
@@ -1596,17 +1619,17 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                                                         setPreviewUrl(URL.createObjectURL(blob));
                                                     }
                                                 }}
-                                                className="p-0.5 hover:bg-overlay" title="Preview current HTML"
+                                                className={`p-0.5 ${clay ? 'rounded-[4px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`} title="Preview current HTML"
                                             >
                                                 <VscEye size={12} className="text-pastel-green" />
                                             </button>
                                         )}
                                         {previewUrl && (
-                                            <button onClick={() => setPreviewUrl(previewUrl + (previewUrl.includes('?') ? '&' : '?') + '_t=' + Date.now())} className="p-0.5 hover:bg-overlay" title="Refresh">
+                                            <button onClick={() => setPreviewUrl(previewUrl + (previewUrl.includes('?') ? '&' : '?') + '_t=' + Date.now())} className={`p-0.5 ${clay ? 'rounded-[4px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`} title="Refresh">
                                                 <VscRefresh size={12} className="text-[--text-muted]" />
                                             </button>
                                         )}
-                                        <button onClick={() => setPreviewOpen(false)} className="p-0.5 hover:bg-overlay">
+                                        <button onClick={() => setPreviewOpen(false)} className={`p-0.5 ${clay ? 'rounded-[4px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`}>
                                             <VscClose size={12} className="text-[--text-muted]" />
                                         </button>
                                     </div>
@@ -1636,8 +1659,8 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                     </div>
 
                     {bottomPanelOpen && !focusMode && (
-                        <div className="flex flex-col border-t border-[--border-color] shrink-0" style={{ height: '40%', maxHeight: '50%', minHeight: 120 }}>
-                            <div className="flex items-center px-2 bg-surface border-b border-[--border-color] shrink-0 gap-0">
+                        <div className={`flex flex-col shrink-0 ${clay ? 'border-t border-[--glass-border]' : 'border-t border-[--border-color]'}`} style={{ height: '40%', maxHeight: '50%', minHeight: 120 }}>
+                            <div className={`flex items-center px-2 shrink-0 gap-0 ${clay ? 'border-b border-[--glass-border]' : 'bg-surface border-b border-[--border-color]'}`}>
                                 <button
                                     onClick={() => setBottomPanelTab('terminal')}
                                     className={`flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-medium transition-colors ${bottomPanelTab === 'terminal' ? 'text-[--text-color] border-b border-accent' : 'text-[--text-muted] hover:text-[--text-color]'}`}
@@ -1657,24 +1680,24 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
                                             value={outputFilter}
                                             onChange={(e) => setOutputFilter(e.target.value)}
                                             placeholder="Filter..."
-                                            className="w-24 bg-overlay border border-transparent focus:border-accent px-1.5 py-0.5 text-[10px] text-[--text-color] outline-none placeholder-[--text-muted]"
+                                            className={`w-24 px-1.5 py-0.5 text-[10px] text-[--text-color] outline-none placeholder-[--text-muted] ${clay ? 'rounded-[6px] bg-[--bg-glass-active] border border-[--glass-border]' : 'bg-overlay border border-transparent focus:border-accent'}`}
                                         />
                                         <button
                                             onClick={() => {
                                                 const text = outputLines.map(l => l.text).join('\n');
                                                 navigator.clipboard.writeText(text);
                                             }}
-                                            className="text-[--text-muted] hover:text-[--text-color] p-0.5 hover:bg-overlay ml-1"
+                                            className={`text-[--text-muted] hover:text-[--text-color] p-0.5 ml-1 ${clay ? 'rounded-[4px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`}
                                             title="Copy output"
                                         >
                                             <VscSave size={11} />
                                         </button>
-                                        <button onClick={() => setOutputLines([])} className="text-[--text-muted] hover:text-[--text-color] p-0.5 hover:bg-overlay" title="Clear">
+                                        <button onClick={() => setOutputLines([])} className={`text-[--text-muted] hover:text-[--text-color] p-0.5 ${clay ? 'rounded-[4px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`} title="Clear">
                                             <IoTrashOutline size={12} />
                                         </button>
                                     </>
                                 )}
-                                <button onClick={() => setBottomPanelOpen(false)} className="text-[--text-muted] hover:text-[--text-color] p-0.5 hover:bg-overlay ml-1">
+                                <button onClick={() => setBottomPanelOpen(false)} className={`text-[--text-muted] hover:text-[--text-color] p-0.5 ml-1 ${clay ? 'rounded-[4px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`}>
                                     <VscClose size={12} />
                                 </button>
                             </div>

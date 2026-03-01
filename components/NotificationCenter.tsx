@@ -6,10 +6,14 @@ import { useNotifications } from './NotificationContext';
 import { useDevice } from './DeviceContext';
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { IoClose, IoNotificationsOutline, IoTrashOutline } from 'react-icons/io5';
+import { useIsClay } from './hooks/useIsClay';
+import { glassPanel, glassCard, glassButton } from './hooks/useClayStyles';
+import MiniCalendar from './ui/MiniCalendar';
 
 export default function NotificationCenter({ isopen, onclose }: { isopen: boolean; onclose: () => void }) {
     const { handlenotificationclick, handleactionclick, notifications, clearnotification, clearallnotifications, markasviewed, version } = useNotifications();
     const { ismobile, osstate } = useDevice();
+    const clay = useIsClay();
     const [mounted, setmounted] = useState(false);
     const [tick, setTick] = useState(0);
 
@@ -73,7 +77,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
                         style={{ zIndex: 700 }}
-                        className="fixed inset-0 bg-black"
+                        className={`fixed inset-0 ${clay ? 'bg-black/20 backdrop-blur-sm' : 'bg-black'}`}
                         onClick={onclose}
                         onPointerDown={(e) => dragControls.start(e)}
                     />
@@ -95,8 +99,131 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                             }
                         }}
                         style={{ zIndex: 700 }}
-                        className="fixed top-0 left-0 right-0 flex flex-col w-full pointer-events-auto min-h-[70vh] max-h-[80vh]"
+                        className={`fixed top-0 left-0 right-0 flex flex-col w-full pointer-events-auto ${clay ? 'max-h-[85vh]' : 'min-h-[70vh] max-h-[80vh]'}`}
                     >
+                        {clay ? (
+                        <div
+                            className="flex flex-col w-full h-full"
+                            style={{
+                                background: 'var(--bg-glass)',
+                                backdropFilter: 'blur(var(--glass-blur-heavy))',
+                                WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
+                                borderRadius: '0 0 28px 28px',
+                            }}
+                        >
+                            {/* Top drag handle pill */}
+                            <div
+                                className="pt-14 pb-1 shrink-0 cursor-grab active:cursor-grabbing flex justify-center"
+                                onPointerDown={(e) => dragControls.start(e)}
+                            >
+                                <div className="w-10 h-1 rounded-full" style={{ background: 'color-mix(in srgb, var(--text-muted) 30%, transparent)' }} />
+                            </div>
+
+                            {/* Compact header: time + date + clear all */}
+                            <div className="px-5 pt-2 pb-3 shrink-0">
+                                <div className="flex items-end justify-between">
+                                    <div>
+                                        <h1 className="text-5xl font-light text-[--text-color] tracking-tight leading-none">{time.split(' ')[0]}</h1>
+                                        <div className="text-[14px] text-[--text-muted] font-medium mt-1.5">{date}</div>
+                                    </div>
+                                    {notifications.length > 0 && (
+                                        <button
+                                            onClick={() => clearallnotifications()}
+                                            className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium text-[--text-muted] hover:text-[--text-color] active:scale-95 transition-all rounded-full"
+                                            style={{ background: 'var(--bg-glass-active)', border: '1px solid var(--glass-border)' }}
+                                        >
+                                            <IoTrashOutline size={13} />
+                                            Clear All
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Notifications section label */}
+                            <div className="px-5 pb-2 shrink-0">
+                                <span className="text-[11px] font-semibold text-[--text-muted] uppercase tracking-wider">Notifications</span>
+                            </div>
+
+                            {/* Scrollable notifications list */}
+                            <div
+                                ref={contentscrollref}
+                                onPointerDown={handlecontentpointerdown}
+                                className="w-full px-4 flex-1 min-h-0 overflow-y-auto"
+                                style={{ touchAction: 'pan-y', overscrollBehavior: 'contain' }}
+                            >
+                                {notifications.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                                        <div
+                                            className="w-14 h-14 rounded-[14px] flex items-center justify-center mb-3"
+                                            style={{ boxShadow: 'var(--shadow-inset)', background: 'var(--bg-glass-active)' }}
+                                        >
+                                            <IoNotificationsOutline size={24} className="text-[--text-muted]" />
+                                        </div>
+                                        <p className="text-[15px] font-semibold text-[--text-color] mb-0.5">All Caught Up</p>
+                                        <p className="text-[13px] text-[--text-muted]">No new notifications</p>
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col gap-2.5 max-w-md mx-auto pb-6">
+                                        <AnimatePresence mode='popLayout'>
+                                            {notifications.map((n) => (
+                                                <motion.div
+                                                    key={n.id}
+                                                    layout
+                                                    initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                                    exit={{ opacity: 0, scale: 0.95, height: 0 }}
+                                                    transition={{ duration: 0.2 }}
+                                                    drag="x"
+                                                    dragConstraints={{ left: -1000, right: 1000 }}
+                                                    onDragEnd={(_, info) => {
+                                                        if (Math.abs(info.offset.x) > 80) {
+                                                            clearnotification(n.id);
+                                                        }
+                                                    }}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handlenotificationclick(n);
+                                                        onclose();
+                                                    }}
+                                                    className="w-full p-3.5 active:scale-[0.98] transition-transform relative overflow-hidden rounded-[16px]"
+                                                    style={{
+                                                        background: 'var(--bg-glass-active)',
+                                                        border: '1px solid var(--glass-border)',
+                                                        boxShadow: 'var(--shadow-xs)',
+                                                    }}
+                                                >
+                                                    <div className="flex items-start gap-3">
+                                                        <div
+                                                            className="w-[38px] h-[38px] overflow-hidden shrink-0 rounded-[10px]"
+                                                            style={{ boxShadow: '0 2px 8px -2px rgba(0,0,0,0.12)' }}
+                                                        >
+                                                            <Image src={n.icon} width={38} height={38} className="w-full h-full object-cover" alt={n.appname} />
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex justify-between items-center mb-0.5">
+                                                                <span className="text-[12px] font-semibold text-[--text-muted] uppercase tracking-wide">{n.appname}</span>
+                                                                <span className="text-[11px] text-[--text-muted]">{n.time}</span>
+                                                            </div>
+                                                            <h3 className="text-[14px] font-semibold text-[--text-color] leading-tight mb-0.5">{n.title}</h3>
+                                                            <p className="text-[13px] text-[--text-muted] leading-snug line-clamp-3">{n.description}</p>
+                                                        </div>
+                                                    </div>
+                                                </motion.div>
+                                            ))}
+                                        </AnimatePresence>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Bottom drag handle for swipe-up-to-dismiss */}
+                            <div
+                                className="py-3 pb-4 shrink-0 cursor-grab active:cursor-grabbing"
+                                onPointerDown={(e) => dragControls.start(e)}
+                            >
+                                <div className="w-16 h-1.5 mx-auto rounded-full" style={{ background: 'color-mix(in srgb, var(--text-muted) 30%, transparent)' }} />
+                            </div>
+                        </div>
+                        ) : (
                         <div
                             className="flex flex-col w-full h-full"
                             style={{ backgroundColor: 'var(--bg-surface)' }}
@@ -135,7 +262,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                                         handlenotificationclick(n);
                                                         onclose();
                                                     }}
-                                                    className="w-full bg-overlay border border-[--border-color] anime-accent-left p-4 active:scale-[0.98] transition-transform relative overflow-hidden"
+                                                    className="w-full p-4 active:scale-[0.98] transition-transform relative overflow-hidden bg-overlay border border-[--border-color] anime-accent-left"
                                                 >
                                                     <div className="flex items-start gap-4">
                                                         <div className="w-[42px] h-[42px] overflow-hidden shrink-0">
@@ -161,9 +288,10 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                 className="py-3 shrink-0 cursor-grab active:cursor-grabbing"
                                 onPointerDown={(e) => dragControls.start(e)}
                             >
-                                <div className="w-16 h-1.5 bg-[--text-muted]/40 mx-auto" />
+                                <div className="w-16 h-1.5 mx-auto rounded-full" style={{ background: 'color-mix(in srgb, var(--text-muted) 40%, transparent)' }} />
                             </div>
                         </div>
+                        )}
                     </motion.div>
                 </>,
                 document.body
@@ -181,7 +309,15 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: -20, scale: 0.9, transition: { duration: 0.2 } }}
                             transition={{ type: "tween", ease: "easeOut", duration: 0.2 }}
-                            className="w-full max-w-[400px] bg-overlay border border-[--border-color] p-3 cursor-pointer select-none pointer-events-auto"
+                            className={`w-full max-w-[400px] p-3 cursor-pointer select-none pointer-events-auto ${clay
+                                ? 'rounded-[16px]'
+                                : 'bg-overlay border border-[--border-color]'
+                            }`}
+                            style={clay ? {
+                                ...glassPanel,
+                                backdropFilter: 'blur(var(--glass-blur-heavy))',
+                                WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
+                            } : undefined}
                             onClick={() => { handlenotificationclick(n); markasviewed(n.id); }}
                             drag="x"
                             dragConstraints={{ left: 0, right: 0 }}
@@ -208,23 +344,28 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
 
     return createPortal(
         <>
-            <div style={{ zIndex: 700 }} className="fixed top-14 right-4 flex flex-col items-end space-y-2 pointer-events-none">
+            <div style={{ zIndex: 700 }} className="fixed bottom-24 right-4 flex flex-col-reverse items-end space-y-2 space-y-reverse pointer-events-none">
                 <AnimatePresence>
                     {unviewednotifications.slice(0, 4).map((n) => (
                         <motion.div
                             key={n.id}
                             layout
-                            initial={{ opacity: 0, x: 100, scale: 0.95 }}
-                            animate={{ opacity: 1, x: 0, scale: 1 }}
-                            exit={{ opacity: 0, x: 50, scale: 0.95, transition: { duration: 0.15 } }}
+                            initial={{ opacity: 0, y: 50, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 20, scale: 0.95, transition: { duration: 0.15 } }}
                             transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                            className="group relative w-[340px] bg-overlay border border-[--border-color] anime-accent-left anime-glow-sm p-4 cursor-pointer select-none pointer-events-auto"
+                            className={`group relative w-[340px] p-4 cursor-pointer select-none pointer-events-auto ${clay
+                                ? 'rounded-[16px]'
+                                : 'bg-overlay border border-[--border-color] anime-accent-left anime-glow-sm'
+                            }`}
+                            style={clay ? glassPanel : undefined}
                             onClick={() => { handlenotificationclick(n); markasviewed(n.id); }}
                             whileHover={{ scale: 1.01 }}
                         >
                             <button
                                 onClick={(e) => { e.stopPropagation(); markasviewed(n.id); }}
-                                className="absolute -top-1.5 -right-1.5 w-6 h-6 bg-overlay hover:bg-[--border-color] text-[--text-color]  flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
+                                className={`absolute -top-1.5 -right-1.5 w-6 h-6 text-[--text-color] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all ${clay ? 'rounded-full' : ''}`}
+                                style={clay ? glassButton : { background: 'var(--bg-overlay)' }}
                             >
                                 <IoClose size={14} />
                             </button>
@@ -241,12 +382,16 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                 </div>
                             </div>
                             {n.actions && n.actions.length > 0 && (
-                                <div className="flex gap-2 mt-2 pt-2 border-t border-[--border-color]">
+                                <div className={`flex gap-2 mt-2 pt-2 ${clay ? 'border-t border-[--glass-border]' : 'border-t border-[--border-color]'}`}>
                                     {n.actions.slice(0, 3).map(a => (
                                         <button
                                             key={a.actionId}
                                             onClick={(e) => { e.stopPropagation(); handleactionclick(n, a.actionId); }}
-                                            className="flex-1 px-2 py-1 text-[11px] font-medium text-pastel-blue hover:bg-[--bg-overlay] transition-colors border border-[--border-color]"
+                                            className={`flex-1 px-2 py-1 text-[11px] font-medium transition-colors active:scale-[0.97] ${clay
+                                                ? 'rounded-[8px] border border-[--glass-border] hover:bg-[--bg-glass-hover]'
+                                                : 'text-pastel-blue hover:bg-[--bg-overlay] border border-[--border-color]'
+                                            }`}
+                                            style={clay ? { color: 'var(--accent-color)' } : undefined}
                                         >
                                             {a.label}
                                         </button>
@@ -259,23 +404,131 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
             </div>
 
             <AnimatePresence>
-                {isopen && (
-                    <>
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 0.3 }}
-                            exit={{ opacity: 0 }}
-                            className="fixed inset-0 w-screen h-screen z-[699] pointer-events-auto bg-black"
-                            onClick={onclose}
-                        />
-                        <motion.div
-                            initial={{ x: '100%' }}
-                            animate={{ x: 0 }}
-                            exit={{ x: '100%' }}
-                            transition={{ type: "spring", stiffness: 400, damping: 40 }}
-                            className="fixed top-0 right-0 bottom-0 z-[700] w-[380px] h-full bg-surface border-l-2 border-accent/30 overflow-hidden flex flex-col"
-                        >
-                            <div className="px-5 pt-12 pb-4  shrink-0">
+                {isopen && clay && (
+                    <motion.div
+                        key="clay-backdrop"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 w-screen h-screen z-[699] pointer-events-auto"
+                        onClick={onclose}
+                    />
+                )}
+                {isopen && clay && (
+                    <motion.div
+                        key="clay-panel"
+                        initial={{ opacity: 0, y: 10, scale: 0.96 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.96 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 28 }}
+                        className="fixed z-[700] bottom-[72px] right-3 w-[360px] max-h-[70vh] overflow-hidden flex flex-col rounded-[22px]"
+                        style={{
+                            ...glassPanel,
+                            backdropFilter: 'blur(var(--glass-blur-heavy))',
+                            WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
+                            boxShadow: 'var(--shadow-xl)',
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                            {/* Date & Time header */}
+                            <div className="px-5 pt-5 pb-3 text-center shrink-0">
+                                <div className="text-[42px] font-light text-[--text-color] leading-none tracking-tight">
+                                    {new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                                </div>
+                                <div className="text-[14px] text-[--text-muted] font-medium mt-1">
+                                    {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                                </div>
+                            </div>
+
+                            {/* Mini calendar */}
+                            <div className="mx-4 mb-3 p-3 rounded-[14px]"
+                                style={glassCard}
+                            >
+                                <MiniCalendar />
+                            </div>
+
+                            {/* Notifications section */}
+                            <div className="px-4 pb-2 shrink-0">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-[12px] font-semibold text-[--text-muted] uppercase tracking-wide">Notifications</span>
+                                    {notifications.length > 0 && (
+                                        <button
+                                            onClick={() => clearallnotifications()}
+                                            className="text-[11px] font-medium text-[--text-muted] hover:text-[--text-color] active:scale-95 transition-all"
+                                        >
+                                            Clear All
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-2">
+                                {notifications.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                                        <div className="w-12 h-12 rounded-[12px] flex items-center justify-center mb-3"
+                                            style={{ boxShadow: 'var(--shadow-inset)', background: 'var(--bg-overlay)' }}
+                                        >
+                                            <IoNotificationsOutline size={22} className="text-[--text-muted]" />
+                                        </div>
+                                        <p className="text-[--text-muted] text-[13px] font-medium">No Notifications</p>
+                                    </div>
+                                ) : (
+                                    notifications.map(n => (
+                                        <motion.div
+                                            key={n.id}
+                                            layout
+                                            initial={{ opacity: 0, y: 8 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, scale: 0.95 }}
+                                            className="group relative w-full p-3 rounded-[16px] transition-all cursor-pointer active:scale-[0.98]"
+                                            style={glassCard}
+                                            onClick={() => handlenotificationclick(n)}
+                                        >
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); clearnotification(n.id); }}
+                                                className="absolute top-2 right-2 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-all"
+                                                style={{ background: 'var(--bg-glass-active)', boxShadow: 'var(--shadow-xs)' }}
+                                            >
+                                                <IoClose size={12} className="text-[--text-muted]" />
+                                            </button>
+                                            <div className="flex items-start gap-2.5">
+                                                <Image src={n.icon} width={32} height={32} className="w-8 h-8 shrink-0 rounded-[8px]" alt={n.appname} />
+                                                <div className="flex-1 min-w-0 text-left pr-5">
+                                                    <div className="flex justify-between items-center mb-0.5">
+                                                        <span className="font-semibold text-[10px] uppercase tracking-wide text-[--text-muted]">{n.appname}</span>
+                                                        <span className="text-[10px] text-[--text-muted]">{n.time}</span>
+                                                    </div>
+                                                    <h4 className="font-semibold text-[13px] text-[--text-color] leading-tight">{n.title}</h4>
+                                                    <p className="text-[12px] text-[--text-muted] leading-snug mt-0.5 line-clamp-2">{n.description}</p>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    ))
+                                )}
+                            </div>
+                        </motion.div>
+                    )}
+
+                {isopen && !clay && (
+                    <motion.div
+                        key="classic-backdrop"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 0.3 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 w-screen h-screen z-[699] pointer-events-auto bg-black"
+                        onClick={onclose}
+                    />
+                )}
+                {isopen && !clay && (
+                    <motion.div
+                        key="classic-panel"
+                        initial={{ x: '100%' }}
+                        animate={{ x: 0 }}
+                        exit={{ x: '100%' }}
+                        transition={{ type: "spring", stiffness: 400, damping: 40 }}
+                        className="fixed top-0 right-0 bottom-0 z-[700] w-[380px] h-full bg-surface border-l-2 border-[--border-color] overflow-hidden flex flex-col"
+                    >
+                            <div className="px-5 pt-12 pb-4 shrink-0">
                                 <div className="flex justify-between items-center">
                                     <h3 className="text-2xl font-bold text-[--text-color]">Notifications</h3>
                                     {notifications.length > 0 && (
@@ -293,7 +546,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                             <div className="flex-1 overflow-y-auto p-4 space-y-3">
                                 {notifications.length === 0 ? (
                                     <div className="flex flex-col items-center justify-center h-full text-center">
-                                        <div className="w-16 h-16  bg-overlay flex items-center justify-center mb-4">
+                                        <div className="w-16 h-16 bg-overlay flex items-center justify-center mb-4">
                                             <IoNotificationsOutline size={28} className="text-pastel-lavender" />
                                         </div>
                                         <p className="text-[--text-muted] font-medium">No Notifications</p>
@@ -346,8 +599,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                 )}
                             </div>
                         </motion.div>
-                    </>
-                )}
+                    )}
             </AnimatePresence>
         </>,
         document.body

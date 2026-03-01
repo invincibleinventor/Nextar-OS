@@ -1,6 +1,6 @@
 export const ui = {
-    panelHeight: 35,
-    dockHeight: 67,
+    panelHeight: 8,
+    dockHeight: 54,
     windowMinWidth: 300,
     windowMinHeight: 200,
     defaultWindowWidth: 900,

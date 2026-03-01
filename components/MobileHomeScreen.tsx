@@ -18,6 +18,8 @@ import { useWindows } from './WindowContext';
 import { useFileSystem } from './FileSystemContext';
 import ContextMenu from './ui/ContextMenu';
 import TintedAppIcon from './ui/TintedAppIcon';
+import { useIsClay } from './hooks/useIsClay';
+import { glassPanel, glassInput } from './hooks/useClayStyles';
 
 const GRID_COLS = 4;
 const GRID_ROWS = 5;
@@ -26,6 +28,7 @@ const ITEMS_PER_PAGE = GRID_COLS * GRID_ROWS;
 export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayopen?: boolean }) {
     const { addwindow, windows, setactivewindow, updatewindow } = useWindows();
     const { reducemotion, islightbackground, inverselabelcolor } = useSettings();
+    const clay = useIsClay();
     const { ismobile } = useDevice();
     const { files, moveToTrash, createFolder, createFile, renameItem, currentUserDesktopId, copyItem, cutItem, pasteItem, clipboard } = useFileSystem();
     const [page, setpage] = useState(0);
@@ -319,9 +322,17 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
 
     const [draggeditem, setdraggeditem] = useState<string | null>(null);
 
+    // ── Clay-specific icon size & gap ──
+    const iconSize = clay ? 66 : 60;
+    const gridGapClass = clay ? 'gap-x-5 gap-y-6' : 'gap-x-4 gap-y-5';
+
     const renderGridPage = (pageItems: filesystemitem[], pageIndex: number) => (
-        <div className="flex-1 px-5">
-            <div data-tour={pageIndex === 0 ? "ios-apps" : undefined} className="grid grid-cols-4 gap-x-4 gap-y-5" style={{ gridTemplateRows: `repeat(${GRID_ROWS}, minmax(0, 1fr))` }}>
+        <div className={`flex-1 ${clay ? 'px-6' : 'px-5'}`}>
+            <div
+                data-tour={pageIndex === 0 ? "ios-apps" : undefined}
+                className={`grid grid-cols-4 ${gridGapClass}`}
+                style={{ gridTemplateRows: `repeat(${GRID_ROWS}, minmax(0, 1fr))` }}
+            >
                 {pageItems.map((item, index) => {
                     const globalIndex = pageIndex * ITEMS_PER_PAGE + index;
                     const isRenaming = renameTarget === item.id;
@@ -330,7 +341,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                             key={item.id}
                             layout
                             layoutId={item.id}
-                            className="app-icon flex flex-col items-center gap-1 touch-pan-x"
+                            className="app-icon flex flex-col items-center gap-1.5 touch-pan-x"
                             initial={{ opacity: 0, scale: 0.8 }}
                             animate={editmode ? {
                                 opacity: 1,
@@ -379,12 +390,17 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                                 e.stopPropagation();
                                 setcontextmenu({ x: e.clientX, y: e.clientY, item });
                             }}
-                            whileTap={editmode ? {} : { scale: 0.9 }}
+                            whileTap={editmode ? {} : { scale: clay ? 0.92 : 0.9 }}
                         >
                             <div className="relative">
+                                {/* Edit-mode remove badge */}
                                 {editmode && (
                                     <button
-                                        className="absolute -top-1 -left-1 w-5 h-5 bg-overlay border border-[--border-color] flex items-center justify-center z-10"
+                                        className={`absolute -top-1.5 -left-1.5 w-[22px] h-[22px] flex items-center justify-center z-10 transition-transform active:scale-90 ${
+                                            clay
+                                                ? 'rounded-full bg-[--bg-glass] border border-[--glass-border] shadow-sm'
+                                                : 'bg-overlay border border-[--border-color]'
+                                        }`}
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             if (item.mimetype === 'application/x-executable' || item.id.startsWith('desktop-app-')) {
@@ -399,7 +415,11 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                                         </svg>
                                     </button>
                                 )}
-                                <div className="w-[60px] h-[60px] overflow-hidden shadow-sm relative">
+                                {/* App icon container */}
+                                <div
+                                    className={`overflow-hidden shadow-sm relative ${clay ? 'rounded-[16px]' : ''}`}
+                                    style={{ width: iconSize, height: iconSize }}
+                                >
                                     {item.mimetype === 'application/x-executable' ? (() => {
                                         const appId = extractAppId(item.id);
                                         const appData = apps.find(a => a.id === appId);
@@ -408,7 +428,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                                                 appId={appData.id}
                                                 appName={appData.appname}
                                                 originalIcon={appData.icon}
-                                                size={60}
+                                                size={iconSize}
                                                 useFill={false}
                                             />
                                         ) : (
@@ -423,6 +443,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                                     )}
                                 </div>
                             </div>
+                            {/* Label / rename input */}
                             {isRenaming ? (
                                 <input
                                     autoFocus
@@ -430,13 +451,25 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                                     onChange={(e) => setRenameValue(e.target.value)}
                                     onBlur={submitRename}
                                     onKeyDown={(e) => { if (e.key === 'Enter') submitRename(); if (e.key === 'Escape') { setRenameTarget(null); setRenameValue(''); } }}
-                                    className="text-[11px] font-semibold text-center leading-tight w-full tracking-tight px-1 font-mono bg-black/30 text-white border border-pastel-red/50 outline-none"
+                                    className={`text-[11px] font-semibold text-center leading-tight w-full tracking-tight px-1 outline-none ${
+                                        clay
+                                            ? 'font-sans rounded-[8px] text-[--text-color]'
+                                            : 'font-mono bg-[--bg-overlay] text-[--text-color] border border-pastel-red/50'
+                                    }`}
+                                    style={clay ? glassInput : undefined}
                                     onClick={(e) => e.stopPropagation()}
                                 />
                             ) : (
                                 <span
-                                    className={`text-[11px] font-semibold text-center leading-tight truncate w-full tracking-tight px-1 font-mono ${inverselabelcolor && islightbackground ? 'text-black' : 'text-white'}`}
-                                    style={{ textShadow: (inverselabelcolor && islightbackground) ? 'none' : '0 1px 3px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.3)' }}
+                                    className={`text-[11px] font-semibold text-center leading-tight truncate w-full tracking-tight px-1 ${
+                                        clay
+                                            ? 'font-sans text-[--text-color]'
+                                            : `font-mono ${inverselabelcolor && islightbackground ? 'text-black' : 'text-white'}`
+                                    }`}
+                                    style={clay
+                                        ? undefined
+                                        : { textShadow: (inverselabelcolor && islightbackground) ? 'none' : '0 1px 3px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.3)' }
+                                    }
                                 >
                                     {item.name}
                                 </span>
@@ -474,13 +507,17 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                 />
             )}
 
+            {/* ── Delete confirmation sheet ── */}
             <AnimatePresence>
                 {confirmDelete && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="absolute inset-0 z-50 flex items-end justify-center bg-[--bg-base]/70"
+                        className={`absolute inset-0 z-50 flex items-end justify-center ${
+                            clay ? 'bg-black/30' : 'bg-[--bg-base]/70'
+                        }`}
+                        style={clay ? { backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' } : undefined}
                         onClick={() => setConfirmDelete(null)}
                     >
                         <motion.div
@@ -491,25 +528,51 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                             className="w-full max-w-sm m-4 mb-6"
                             onClick={(e) => e.stopPropagation()}
                         >
-                            <div className="flex flex-col gap-2">
-                                <div className="bg-surface border border-[--border-color] overflow-hidden">
-                                    <div className="p-4 text-center border-b border-[--border-color]">
-                                        <h3 className="text-[13px] font-semibold text-[--text-muted]">Delete Item?</h3>
-                                        <p className="text-[13px] text-[--text-muted] mt-1">Are you sure you want to remove this item from the home screen?</p>
+                            <div className="flex flex-col gap-2.5">
+                                {/* Action card */}
+                                <div
+                                    className={`overflow-hidden ${
+                                        clay ? 'rounded-[18px]' : 'bg-surface border border-[--border-color]'
+                                    }`}
+                                    style={clay ? {
+                                        ...glassPanel,
+                                        borderRadius: '18px',
+                                    } : undefined}
+                                >
+                                    <div className={`p-5 text-center ${clay ? 'border-b border-[--glass-border]' : 'border-b border-[--border-color]'}`}>
+                                        <h3 className={`text-[14px] font-semibold ${clay ? 'font-sans text-[--text-color]' : 'text-[--text-muted]'}`}>
+                                            Delete Item?
+                                        </h3>
+                                        <p className={`text-[13px] mt-1.5 ${clay ? 'font-sans text-[--text-muted]' : 'text-[--text-muted]'}`}>
+                                            Are you sure you want to remove this item from the home screen?
+                                        </p>
                                     </div>
                                     <button
                                         onClick={() => {
                                             if (confirmDelete) moveToTrash(confirmDelete);
                                             setConfirmDelete(null);
                                         }}
-                                        className="w-full py-4 text-[20px] text-pastel-red font-normal active:bg-overlay transition-colors"
+                                        className={`w-full py-4 text-[18px] text-pastel-red font-normal transition-colors ${
+                                            clay
+                                                ? 'font-sans active:bg-[--bg-glass-active] active:scale-[0.98]'
+                                                : 'active:bg-overlay'
+                                        }`}
                                     >
                                         Delete
                                     </button>
                                 </div>
+                                {/* Cancel button */}
                                 <button
                                     onClick={() => setConfirmDelete(null)}
-                                    className="w-full py-4 bg-overlay border border-[--border-color] text-[20px] text-accent font-semibold active:scale-[0.98] transition-all"
+                                    className={`w-full py-4 text-[18px] font-semibold active:scale-[0.98] transition-all ${
+                                        clay
+                                            ? 'rounded-[18px] font-sans text-accent'
+                                            : 'bg-overlay border border-[--border-color] text-accent'
+                                    }`}
+                                    style={clay ? {
+                                        ...glassPanel,
+                                        borderRadius: '18px',
+                                    } : undefined}
                                 >
                                     Cancel
                                 </button>
@@ -519,6 +582,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                 )}
             </AnimatePresence>
 
+            {/* ── Horizontal page scroller ── */}
             <div
                 ref={scrollcontainerref}
                 className="flex w-full h-full overflow-x-auto snap-x snap-mandatory scrollbar-hide [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
@@ -533,14 +597,23 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                 }}
             >
                 {gridPages.map((pageItems, pageIndex) => (
-                    <div key={`page-${pageIndex}`} className="w-[100vw] h-full flex flex-col pt-6 relative snap-start flex-shrink-0 [scroll-snap-stop:always]">
+                    <div key={`page-${pageIndex}`} className={`w-[100vw] h-full flex flex-col relative snap-start flex-shrink-0 [scroll-snap-stop:always] ${clay ? 'pt-8' : 'pt-6'}`}>
                         {renderGridPage(pageItems, pageIndex)}
 
+                        {/* Edit-mode "Done" button */}
                         {editmode && pageIndex === 0 && (
                             <motion.button
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="absolute bottom-[165px] left-0 right-0 mx-auto w-max z-30 px-6 py-2 bg-pastel-red/20 text-pastel-red border border-pastel-red/30 font-medium text-[13px]"
+                                className={`absolute bottom-[165px] left-0 right-0 mx-auto w-max z-30 px-8 py-2.5 font-semibold text-[14px] active:scale-[0.97] transition-transform ${
+                                    clay
+                                        ? 'rounded-full font-sans text-[--text-color]'
+                                        : 'bg-pastel-red/20 text-pastel-red border border-pastel-red/30'
+                                }`}
+                                style={clay ? {
+                                    ...glassPanel,
+                                    borderRadius: '9999px',
+                                } : undefined}
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     seteditmode(false);
@@ -552,27 +625,50 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                     </div>
                 ))}
 
+                {/* App Library page */}
                 <div className="w-[100vw] h-full pt-0 snap-start flex-shrink-0 [scroll-snap-stop:always]">
                     <AppLibrary />
                 </div>
             </div>
 
-            <div data-tour="ios-dock" className={`absolute bottom-0 left-0 right-0 z-20 flex justify-center pb-7 pointer-events-auto transition-all duration-300 ${page >= gridPages.length ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-                <div className={`p-3 flex items-center justify-between gap-4 transition-all duration-300 ${isoverlayopen ? 'bg-transparent' : 'backdrop-blur-lg filter border border-[--border-color]/50'}`} style={!isoverlayopen ? { backgroundColor: 'color-mix(in srgb, var(--bg-surface) 50%, transparent)' } : undefined}>
+            {/* ── Dock ── */}
+            <div
+                data-tour="ios-dock"
+                className={`absolute bottom-0 left-0 right-0 z-20 flex justify-center pb-7 pointer-events-auto transition-all duration-300 ${
+                    page >= gridPages.length ? 'opacity-0 pointer-events-none' : 'opacity-100'
+                }`}
+            >
+                <div
+                    className={`flex items-center justify-between transition-all duration-300 ${
+                        clay
+                            ? 'rounded-[22px] p-3.5 gap-5'
+                            : `p-3 gap-4 ${isoverlayopen ? '' : 'backdrop-blur-lg filter border border-[--border-color]/50'}`
+                    }`}
+                    style={
+                        isoverlayopen
+                            ? { backgroundColor: 'transparent' }
+                            : clay
+                                ? {
+                                    ...glassPanel,
+                                    borderRadius: '22px',
+                                  }
+                                : { backgroundColor: 'color-mix(in srgb, var(--bg-surface) 50%, transparent)' }
+                    }
+                >
                     {dockapps.map(app => (
                         <motion.button
                             key={app.id}
                             onClick={() => {
                                 openSystemItem(app.id, { addwindow, windows, setactivewindow, updatewindow, ismobile });
                             }}
-                            whileTap={{ scale: 0.85 }}
-                            className="w-[65px] h-[65px] aspect-square overflow-hidden relative"
+                            whileTap={{ scale: clay ? 0.88 : 0.85 }}
+                            className={`aspect-square overflow-hidden relative ${clay ? 'w-[68px] h-[68px]' : 'w-[65px] h-[65px]'}`}
                         >
                             <TintedAppIcon
                                 appId={app.id}
                                 appName={app.appname}
                                 originalIcon={app.icon}
-                                size={65}
+                                size={clay ? 68 : 65}
                                 useFill={false}
                             />
                         </motion.button>
@@ -580,11 +676,30 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                 </div>
             </div>
 
-            <div className={`absolute bottom-[140px] left-0 right-0 flex justify-center gap-1.5 z-20 pointer-events-none transition-opacity duration-300 ${isoverlayopen || page >= gridPages.length ? 'opacity-0' : 'opacity-100'}`}>
+            {/* ── Page indicator dots ── */}
+            <div
+                className={`absolute left-0 right-0 flex justify-center items-center gap-2 z-20 pointer-events-none transition-opacity duration-300 ${
+                    clay ? 'bottom-[145px]' : 'bottom-[140px]'
+                } ${isoverlayopen || page >= gridPages.length ? 'opacity-0' : 'opacity-100'}`}
+            >
                 {gridPages.map((_, i) => (
-                    <div key={`dot-${i}`} className={`w-[6px] h-[6px] rounded-none transition-all duration-300 ${page === i ? 'bg-pastel-red scale-110' : 'bg-neutral-400'}`} />
+                    <div
+                        key={`dot-${i}`}
+                        className={`transition-all duration-300 ${
+                            clay
+                                ? `rounded-full ${page === i ? 'w-[8px] h-[8px] bg-accent scale-110' : 'w-[7px] h-[7px] bg-[--text-muted]/50'}`
+                                : `w-[6px] h-[6px] rounded-none ${page === i ? 'bg-pastel-red scale-110' : 'bg-[--text-muted]'}`
+                        }`}
+                    />
                 ))}
-                <div className={`w-[6px] h-[6px] rounded-none transition-all duration-300 ${page >= gridPages.length ? 'bg-pastel-red scale-110' : 'bg-neutral-400'}`} />
+                {/* App Library dot */}
+                <div
+                    className={`transition-all duration-300 ${
+                        clay
+                            ? `rounded-full ${page >= gridPages.length ? 'w-[8px] h-[8px] bg-accent scale-110' : 'w-[7px] h-[7px] bg-[--text-muted]/50'}`
+                            : `w-[6px] h-[6px] rounded-none ${page >= gridPages.length ? 'bg-pastel-red scale-110' : 'bg-[--text-muted]'}`
+                    }`}
+                />
             </div>
         </div>
     );

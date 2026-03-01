@@ -10,6 +10,8 @@ import { useExternalApps } from './ExternalAppsContext';
 import TintedAppIcon from './ui/TintedAppIcon';
 import { useSettings } from './SettingsContext';
 import ContextMenu from './ui/ContextMenu';
+import { useIsClay } from './hooks/useIsClay';
+import { glassCard, glassPanel } from './hooks/useClayStyles';
 
 const AppLibrary = () => {
     const { addwindow, windows, setactivewindow, updatewindow } = useWindows();
@@ -17,6 +19,7 @@ const AppLibrary = () => {
     const { files, createFile, currentUserDesktopId } = useFileSystem();
     const { launchApp } = useExternalApps();
     const { islightbackground } = useSettings();
+    const clay = useIsClay();
 
     const [openfolder, setopenfolder] = useState<string | null>(null);
     const [searchquery, setsearchquery] = useState('');
@@ -149,14 +152,15 @@ const AppLibrary = () => {
 
             <h1 className="text-2xl font-bold text-[--text-color] mb-4">App Library</h1>
             <div className="relative w-full text-center mb-6">
-                <div className="relative w-full mx-auto bg-overlay border border-[--border-color] h-10 flex items-center px-3">
-                    <IoSearch className="text-[--text-muted]" size={20} />
+                <div className={`relative w-full mx-auto flex items-center ${clay ? 'rounded-full py-2.5 px-4 border border-[--glass-border] bg-[--bg-glass-active]' : 'h-10 px-3 bg-overlay border border-[--border-color]'}`}
+                >
+                    <IoSearch className="text-[--text-muted]" size={18} />
                     <input
                         type="text"
                         value={searchquery}
                         onChange={(e) => setsearchquery(e.target.value)}
                         placeholder="Search apps..."
-                        className="ml-2 flex-1 bg-transparent text-[--text-color] text-lg outline-none placeholder-[--text-muted]"
+                        className={`ml-2 flex-1 bg-transparent text-[--text-color] outline-none ${clay ? 'text-[15px] placeholder:text-[--text-muted]' : 'text-lg placeholder-[--text-muted]'}`}
                     />
                     {searchquery && (
                         <button onClick={() => setsearchquery('')} className="p-1">
@@ -180,7 +184,8 @@ const AppLibrary = () => {
                                     e.stopPropagation();
                                     setcontextmenu({ x: e.clientX, y: e.clientY, app });
                                 }}
-                                className="flex items-center gap-4 p-3 bg-overlay border border-[--border-color] cursor-pointer active:scale-[0.98] transition-transform"
+                                className={`flex items-center gap-4 p-3 cursor-pointer active:scale-[0.98] transition-transform ${clay ? 'rounded-[12px]' : 'bg-overlay border border-[--border-color]'}`}
+                                style={clay ? glassCard : undefined}
                             >
                                 <div className="w-12 h-12 shrink-0 shadow-md">
                                     <TintedAppIcon
@@ -192,7 +197,7 @@ const AppLibrary = () => {
                                     />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <div className={`font-semibold text-base truncate ${islightbackground ? 'text-black' : 'text-[--text-color]'}`}>{app.appname}</div>
+                                    <div className={`font-semibold text-base truncate text-[--text-color]`}>{app.appname}</div>
                                     <div className="text-[--text-muted] text-[13px]">{app.category || 'App'}</div>
                                 </div>
                             </div>
@@ -216,8 +221,8 @@ const AppLibrary = () => {
                         return (
                             <div key={category} className="flex flex-col gap-2 relative">
                                 <div
-                                    className={`bg-white/10 dark:bg-white/10 p-4 w-auto aspect-square shrink-0 h-auto shadow-md ${hasoverflow ? 'cursor-pointer active:scale-95 transition-transform' : ''}`}
-                                    style={{ aspectRatio: '1/1' }}
+                                    className={`p-4 w-auto aspect-square shrink-0 h-auto ${clay ? 'rounded-[16px]' : 'bg-[--bg-overlay] shadow-md'} ${hasoverflow ? 'cursor-pointer active:scale-95 transition-transform' : ''}`}
+                                    style={clay ? { ...glassCard, aspectRatio: '1/1' } : { aspectRatio: '1/1' }}
                                     onClick={() => hasoverflow && setopenfolder(category)}
                                 >
                                     <div className="grid grid-cols-2 grid-rows-2 gap-3 w-auto h-auto">
@@ -250,7 +255,7 @@ const AppLibrary = () => {
                                             </div>
                                         ))}
                                         {hasoverflow && (
-                                            <div className="relative w-full h-full flex items-center justify-center bg-white/10 dark:bg-white/5">
+                                            <div className="relative w-full h-full flex items-center justify-center bg-[--bg-overlay]">
                                                 <span
                                                     className="font-bold text-lg text-[--text-color]"
                                                 >+{overflowcount}</span>
@@ -283,7 +288,8 @@ const AppLibrary = () => {
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.8, opacity: 0 }}
                             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                            className="bg-surface border border-[--border-color] shadow-pastel-lg p-6 w-[90%] max-w-sm max-h-[70vh] overflow-y-auto"
+                            className={`p-6 w-[90%] max-w-sm max-h-[70vh] overflow-y-auto ${clay ? 'rounded-[20px]' : 'bg-surface border border-[--border-color] shadow-pastel-lg'}`}
+                            style={clay ? { ...glassPanel, backdropFilter: 'blur(var(--glass-blur-heavy))', WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))' } : undefined}
                             onClick={(e) => e.stopPropagation()}
                         >
                             <div className="flex items-center justify-between mb-4">

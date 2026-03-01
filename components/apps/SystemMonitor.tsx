@@ -7,6 +7,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { IoStopCircle, IoPauseCircle, IoPlayCircle, IoRefresh, IoSkull, IoDesktop } from 'react-icons/io5';
 import TintedAppIcon from '../ui/TintedAppIcon';
 import { iselectron, processes as systemprocesses, getsysteminfo } from '@/utils/platform';
+import { useIsClay } from '../hooks/useIsClay';
+import { glassCard } from '../hooks/useClayStyles';
 
 interface SystemProcess {
     pid: number;
@@ -23,6 +25,7 @@ interface SystemMonitorProps {
 export default function SystemMonitor({ isFocused }: SystemMonitorProps) {
     const { processes: internalprocesses, suspend, resume, kill } = useProcess();
     const { windows, removewindow, updatewindow } = useWindows();
+    const clay = useIsClay();
     const [selectedpid, setselectedpid] = useState<number | null>(null);
     const [viewmode, setviewmode] = useState<'internal' | 'system'>('internal');
     const [systemprocs, setsystemprocs] = useState<SystemProcess[]>([]);
@@ -137,26 +140,28 @@ export default function SystemMonitor({ isFocused }: SystemMonitorProps) {
     };
 
     return (
-        <div className="h-full flex flex-col bg-[--bg-base] text-[--text-color]">
-            <div className="h-12 bg-surface border-b border-[--border-color] flex items-center px-4 shrink-0">
-                <div className="flex items-center gap-2 ml-16">
-                    <div className="w-3 h-3  bg-pastel-green animate-pulse" />
+        <div className={`h-full flex flex-col text-[--text-color] ${clay ? 'font-sans bg-[--bg-base]' : 'bg-[--bg-base]'}`}>
+            <div className={`h-[40px] flex items-center px-4 shrink-0 ${clay ? 'border-b border-[--glass-border]' : 'bg-surface border-b border-[--border-color]'}`}>
+                <div className="flex items-center gap-2">
+                    <div className={`w-3 h-3 bg-pastel-green animate-pulse rounded-full`} />
                     <span className="text-[13px] font-medium">System Monitor</span>
-                    {stats.hostname && <span className="text-xs text-[--text-muted]">• {stats.hostname}</span>}
+                    {stats.hostname && <span className="text-xs text-[--text-muted]">-- {stats.hostname}</span>}
                 </div>
                 <div className="ml-auto flex items-center gap-4">
                     {iselectron && (
-                        <div className="flex bg-overlay p-0.5">
+                        <div className={`flex p-0.5 ${clay ? 'rounded-[10px] border border-[--glass-border]' : 'bg-overlay'}`} style={clay ? { background: 'var(--bg-glass)' } : undefined}>
                             <button
                                 onClick={() => setviewmode('internal')}
-                                className={`px-3 py-1 text-xs transition-colors ${viewmode === 'internal' ? 'bg-accent text-[--text-color]' : 'text-[--text-muted] hover:text-[--text-color]'}`}
+                                className={`px-3 py-1 text-xs transition-colors ${clay ? 'rounded-[8px] active:scale-[0.97]' : ''} ${viewmode === 'internal' ? (clay ? 'text-white' : 'bg-accent text-[--text-color]') : 'text-[--text-muted] hover:text-[--text-color]'}`}
+                                style={viewmode === 'internal' ? (clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : { background: 'var(--accent-color)' }) : undefined}
                             >
                                 <IoDesktop className="inline mr-1" size={12} />
                                 NextarOS
                             </button>
                             <button
                                 onClick={() => setviewmode('system')}
-                                className={`px-3 py-1 text-xs transition-colors ${viewmode === 'system' ? 'bg-accent text-[--text-color]' : 'text-[--text-muted] hover:text-[--text-color]'}`}
+                                className={`px-3 py-1 text-xs transition-colors ${clay ? 'rounded-[8px] active:scale-[0.97]' : ''} ${viewmode === 'system' ? (clay ? 'text-white' : 'bg-accent text-[--text-color]') : 'text-[--text-muted] hover:text-[--text-color]'}`}
+                                style={viewmode === 'system' ? (clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : { background: 'var(--accent-color)' }) : undefined}
                             >
                                 <IoSkull className="inline mr-1" size={12} />
                                 Host System
@@ -167,11 +172,14 @@ export default function SystemMonitor({ isFocused }: SystemMonitorProps) {
                 </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-3 p-4 border-b border-[--border-color]">
-                <div className="bg-surface p-4">
+            <div className={`grid grid-cols-3 gap-3 p-4 ${clay ? 'border-b border-[--glass-border]' : 'border-b border-[--border-color]'}`}>
+                <div
+                    className={`p-4 ${clay ? 'rounded-[16px]' : 'bg-surface'}`}
+                    style={clay ? { background: 'var(--bg-glass)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-xs)' } : undefined}
+                >
                     <div className="text-xs text-[--text-muted] mb-1">CPU {viewmode === 'system' && `(${stats.cpucount} cores)`}</div>
                     <div className="text-2xl font-bold text-[#ed8796]">{stats.cpu.toFixed(1)}%</div>
-                    <div className="h-2 bg-overlay mt-2 overflow-hidden">
+                    <div className={`h-2 mt-2 overflow-hidden ${clay ? 'rounded-full bg-[--bg-glass-active]' : 'bg-overlay'}`}>
                         <motion.div
                             className="h-full bg-[#ed8796]"
                             animate={{ width: `${stats.cpu}%` }}
@@ -179,12 +187,15 @@ export default function SystemMonitor({ isFocused }: SystemMonitorProps) {
                         />
                     </div>
                 </div>
-                <div className="bg-surface p-4">
+                <div
+                    className={`p-4 ${clay ? 'rounded-[16px]' : 'bg-surface'}`}
+                    style={clay ? { background: 'var(--bg-glass)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-xs)' } : undefined}
+                >
                     <div className="text-xs text-[--text-muted] mb-1">
                         Memory {viewmode === 'system' && stats.memtotal > 0 && `(${stats.memtotal}GB)`}
                     </div>
                     <div className="text-2xl font-bold text-[#8aadf4]">{stats.memory.toFixed(1)}%</div>
-                    <div className="h-2 bg-overlay mt-2 overflow-hidden">
+                    <div className={`h-2 mt-2 overflow-hidden ${clay ? 'rounded-full bg-[--bg-glass-active]' : 'bg-overlay'}`}>
                         <motion.div
                             className="h-full bg-[#8aadf4]"
                             animate={{ width: `${stats.memory}%` }}
@@ -195,7 +206,10 @@ export default function SystemMonitor({ isFocused }: SystemMonitorProps) {
                         <div className="text-[10px] text-[--text-muted] mt-1">{stats.memfree}GB free</div>
                     )}
                 </div>
-                <div className="bg-surface p-4">
+                <div
+                    className={`p-4 ${clay ? 'rounded-[16px]' : 'bg-surface'}`}
+                    style={clay ? { background: 'var(--bg-glass)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-xs)' } : undefined}
+                >
                     <div className="text-xs text-[--text-muted] mb-1">Processes</div>
                     <div className="text-2xl font-bold text-[#c6a0f6]">
                         {viewmode === 'system' ? systemprocs.length : runningprocesses.length}
@@ -209,7 +223,7 @@ export default function SystemMonitor({ isFocused }: SystemMonitorProps) {
             <div className="flex-1 overflow-auto">
                 {viewmode === 'internal' ? (
                     <table className="w-full text-[13px]">
-                        <thead className="bg-surface sticky top-0">
+                        <thead className={`sticky top-0 ${clay ? 'bg-[--bg-glass]' : 'bg-surface'}`}>
                             <tr className="text-left text-[--text-muted] text-xs uppercase">
                                 <th className="px-4 py-3 font-medium">PID</th>
                                 <th className="px-4 py-3 font-medium">Process</th>
@@ -229,7 +243,8 @@ export default function SystemMonitor({ isFocused }: SystemMonitorProps) {
                                             initial={{ opacity: 0, y: -10 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             exit={{ opacity: 0, x: -50 }}
-                                            className={`border-b border-[--border-color] hover:bg-overlay cursor-pointer transition-colors ${selectedpid === proc.pid ? 'bg-accent/20' : ''}`}
+                                            className={`cursor-pointer transition-colors ${clay ? 'border-b border-[--text-muted]/10 hover:bg-[--bg-glass-hover]' : 'border-b border-[--border-color] hover:bg-overlay'} ${selectedpid === proc.pid ? '' : ''}`}
+                                            style={selectedpid === proc.pid ? { background: 'color-mix(in srgb, var(--accent-color) 12%, transparent)' } : undefined}
                                             onClick={() => setselectedpid(proc.pid)}
                                         >
                                             <td className="px-4 py-3 font-mono text-[--text-muted]">{proc.pid}</td>
@@ -255,8 +270,8 @@ export default function SystemMonitor({ isFocused }: SystemMonitorProps) {
                                                 </div>
                                             </td>
                                             <td className="px-4 py-3">
-                                                <span className={`inline-flex items-center gap-2 px-2 py-1 text-xs capitalize ${getstatuscolor(proc.state)} bg-opacity-20`}>
-                                                    <span className={`w-2 h-2  ${getstatuscolor(proc.state)}`} />
+                                                <span className={`inline-flex items-center gap-2 px-2 py-1 text-xs capitalize rounded-full ${clay ? 'bg-[--bg-glass-active]' : `${getstatuscolor(proc.state)} bg-opacity-20`}`}>
+                                                    <span className={`w-2 h-2 rounded-full ${getstatuscolor(proc.state)}`} />
                                                     {proc.state}
                                                 </span>
                                             </td>
@@ -268,7 +283,7 @@ export default function SystemMonitor({ isFocused }: SystemMonitorProps) {
                                                     {proc.state === 'running' && (
                                                         <button
                                                             onClick={(e) => { e.stopPropagation(); handlesuspendprocess(proc); }}
-                                                            className="p-1.5 hover:bg-overlay text-pastel-yellow transition-colors"
+                                                            className={`p-1.5 text-pastel-yellow transition-colors ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'}`}
                                                             title="Suspend"
                                                         >
                                                             <IoPauseCircle size={18} />
@@ -277,7 +292,7 @@ export default function SystemMonitor({ isFocused }: SystemMonitorProps) {
                                                     {proc.state === 'suspended' && (
                                                         <button
                                                             onClick={(e) => { e.stopPropagation(); handleresumeprocess(proc); }}
-                                                            className="p-1.5 hover:bg-overlay text-pastel-green transition-colors"
+                                                            className={`p-1.5 text-pastel-green transition-colors ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'}`}
                                                             title="Resume"
                                                         >
                                                             <IoPlayCircle size={18} />
@@ -286,7 +301,7 @@ export default function SystemMonitor({ isFocused }: SystemMonitorProps) {
                                                     {proc.state !== 'killed' && proc.state !== 'crashed' && (
                                                         <button
                                                             onClick={(e) => { e.stopPropagation(); handlekillprocess(proc); }}
-                                                            className="p-1.5 hover:bg-overlay text-pastel-red transition-colors"
+                                                            className={`p-1.5 text-pastel-red transition-colors ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'}`}
                                                             title="Force Quit"
                                                         >
                                                             <IoStopCircle size={18} />
@@ -302,7 +317,7 @@ export default function SystemMonitor({ isFocused }: SystemMonitorProps) {
                     </table>
                 ) : (
                     <table className="w-full text-[13px]">
-                        <thead className="bg-surface sticky top-0">
+                        <thead className={`sticky top-0 ${clay ? 'bg-[--bg-glass]' : 'bg-surface'}`}>
                             <tr className="text-left text-[--text-muted] text-xs uppercase">
                                 <th className="px-4 py-3 font-medium">PID</th>
                                 <th className="px-4 py-3 font-medium">Command</th>
@@ -324,7 +339,8 @@ export default function SystemMonitor({ isFocused }: SystemMonitorProps) {
                                 systemprocs.map((proc) => (
                                     <tr
                                         key={proc.pid}
-                                        className={`border-b border-[--border-color] hover:bg-overlay cursor-pointer transition-colors ${selectedpid === proc.pid ? 'bg-accent/20' : ''}`}
+                                        className={`cursor-pointer transition-colors ${clay ? 'border-b border-[--text-muted]/10 hover:bg-[--bg-glass-hover]' : 'border-b border-[--border-color] hover:bg-overlay'}`}
+                                        style={selectedpid === proc.pid ? { background: 'color-mix(in srgb, var(--accent-color) 12%, transparent)' } : undefined}
                                         onClick={() => setselectedpid(proc.pid)}
                                     >
                                         <td className="px-4 py-2 font-mono text-[--text-muted]">{proc.pid}</td>
@@ -346,14 +362,14 @@ export default function SystemMonitor({ isFocused }: SystemMonitorProps) {
                                             <div className="flex items-center justify-end gap-1">
                                                 <button
                                                     onClick={(e) => { e.stopPropagation(); killsystemprocess(proc.pid, false); }}
-                                                    className="px-2 py-1 text-xs hover:bg-overlay text-pastel-yellow transition-colors"
+                                                    className={`px-2 py-1 text-xs text-pastel-yellow transition-colors ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'}`}
                                                     title="Terminate (SIGTERM)"
                                                 >
                                                     Stop
                                                 </button>
                                                 <button
                                                     onClick={(e) => { e.stopPropagation(); killsystemprocess(proc.pid, true); }}
-                                                    className="px-2 py-1 text-xs hover:bg-overlay text-pastel-red transition-colors"
+                                                    className={`px-2 py-1 text-xs text-pastel-red transition-colors ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'}`}
                                                     title="Kill (SIGKILL)"
                                                 >
                                                     Kill
@@ -375,7 +391,7 @@ export default function SystemMonitor({ isFocused }: SystemMonitorProps) {
                 )}
             </div>
 
-            <div className="h-8 bg-surface border-t border-[--border-color] flex items-center px-4 text-xs text-[--text-muted] shrink-0">
+            <div className={`h-8 flex items-center px-4 text-xs text-[--text-muted] shrink-0 ${clay ? 'border-t border-[--glass-border]' : 'bg-surface border-t border-[--border-color]'}`}>
                 <span>
                     {viewmode === 'system'
                         ? `${systemprocs.length} host processes`

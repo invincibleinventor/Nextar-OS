@@ -5,6 +5,8 @@ import { useDevice } from '../DeviceContext';
 import { useWindows } from '../WindowContext';
 import { useMenuAction } from '../hooks/useMenuAction';
 import { useAppPreferences } from '../AppPreferencesContext';
+import { useIsClay } from '../hooks/useIsClay';
+import { glassCard, glassButton, glassInput, glassSidebar, insetWell, clayClasses } from '../hooks/useClayStyles';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface CalendarEvent {
@@ -23,6 +25,7 @@ export default function Calendar({ windowId }: { windowId?: string }) {
     const { ismobile } = useDevice();
     const { activewindow } = useWindows();
     const { getPreference, setPreference } = useAppPreferences();
+    const clay = useIsClay();
     const today = new Date();
     const [currentmonth, setcurrentmonth] = useState(today.getMonth());
     const [currentyear, setcurrentyear] = useState(today.getFullYear());
@@ -174,19 +177,29 @@ export default function Calendar({ windowId }: { windowId?: string }) {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-black/40 z-50"
+                        className={`fixed inset-0 z-50 ${clay ? 'bg-black/30 backdrop-blur-sm' : 'bg-black/40'}`}
                         onClick={resetmodal}
                     />
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        className="fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] w-[320px] bg-surface border border-[--border-color] shadow-pastel-lg z-50 p-4"
+                        className={`fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] w-[340px] z-50 p-5 ${clay
+                            ? 'rounded-[28px]'
+                            : 'bg-surface border border-[--border-color] shadow-pastel-lg'
+                        }`}
+                        style={clay ? {
+                            background: 'var(--bg-glass)',
+                            backdropFilter: 'blur(var(--glass-blur))',
+                            WebkitBackdropFilter: 'blur(var(--glass-blur))',
+                            border: '1px solid var(--glass-border)',
+                            boxShadow: 'var(--shadow-xl)',
+                        } : undefined}
                     >
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-semibold text-[--text-color]">{editingevent ? 'Edit Event' : 'New Event'}</h3>
-                            <button onClick={resetmodal} className="p-1 hover:bg-overlay">
-                                <IoClose size={20} className="text-[--text-color]" />
+                            <h3 className="font-semibold text-[15px] text-[--text-color]">{editingevent ? 'Edit Event' : 'New Event'}</h3>
+                            <button onClick={resetmodal} className={`p-1.5 transition-all ${clay ? 'rounded-[10px] active:scale-90 hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`}>
+                                <IoClose size={18} className="text-[--text-color]" />
                             </button>
                         </div>
                         <input
@@ -194,37 +207,63 @@ export default function Calendar({ windowId }: { windowId?: string }) {
                             placeholder="Event title"
                             value={neweventtitle}
                             onChange={e => setneweventtitle(e.target.value)}
-                            className="w-full px-3 py-2 bg-overlay border border-[--border-color] mb-3 outline-none text-[13px] text-[--text-color] placeholder:text-[--text-muted]"
+                            className={`w-full px-4 py-2.5 mb-3 outline-none text-[13px] text-[--text-color] placeholder:text-[--text-muted] ${clay
+                                ? 'rounded-[12px]'
+                                : 'bg-overlay border border-[--border-color]'
+                            }`}
+                            style={clay ? glassInput : undefined}
                             autoFocus
                         />
                         <input
                             type="time"
                             value={neweventtime}
                             onChange={e => setneweventtime(e.target.value)}
-                            className="w-full px-3 py-2 bg-overlay border border-[--border-color] mb-3 outline-none text-[13px] text-[--text-color]"
+                            className={`w-full px-4 py-2.5 mb-3 outline-none text-[13px] text-[--text-color] ${clay
+                                ? 'rounded-[12px]'
+                                : 'bg-overlay border border-[--border-color]'
+                            }`}
+                            style={clay ? glassInput : undefined}
                         />
-                        <div className="flex gap-2 mb-4">
+                        <div className={`flex gap-2.5 mb-4 ${clay ? 'px-1' : ''}`}>
                             {eventcolors.map(c => (
                                 <button
                                     key={c}
                                     onClick={() => setneweventcolor(c)}
-                                    className={`w-6 h-6 ${neweventcolor === c ? 'ring-2 ring-offset-2 ring-accent' : ''}`}
-                                    style={{ backgroundColor: c }}
+                                    className={`w-7 h-7 transition-all ${clay
+                                        ? `rounded-full ${neweventcolor === c ? 'scale-110' : 'scale-100 hover:scale-105'}`
+                                        : neweventcolor === c ? 'ring-2 ring-offset-2 ring-accent' : ''
+                                    }`}
+                                    style={{
+                                        backgroundColor: c,
+                                        ...(clay ? {
+                                            boxShadow: neweventcolor === c ? `0 0 0 3px var(--bg-surface), 0 0 0 5px ${c}` : 'var(--shadow-xs)',
+                                        } : {}),
+                                    }}
                                 />
                             ))}
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2.5">
                             {editingevent && (
                                 <button
                                     onClick={() => deleteEvent(editingevent.id)}
-                                    className="px-3 py-2 bg-pastel-red/10 text-pastel-red text-[13px] font-medium flex items-center gap-1"
+                                    className={`px-4 py-2.5 text-pastel-red text-[13px] font-medium flex items-center gap-1.5 transition-all ${clay
+                                        ? 'rounded-[12px] active:scale-95'
+                                        : ''
+                                    }`}
+                                    style={clay
+                                        ? { ...glassButton, background: 'color-mix(in srgb, var(--pastel-red) 10%, var(--bg-glass))' }
+                                        : { background: 'color-mix(in srgb, var(--pastel-red) 10%, transparent)' }}
                                 >
-                                    <IoTrash size={16} /> Delete
+                                    <IoTrash size={15} /> Delete
                                 </button>
                             )}
                             <button
                                 onClick={editingevent ? updateEvent : addEvent}
-                                className="flex-1 px-3 py-2 bg-accent text-[--bg-base] text-[13px] font-medium"
+                                className={`flex-1 px-4 py-2.5 text-[13px] font-semibold transition-all ${clay
+                                    ? 'rounded-[12px] active:scale-[0.97] text-white'
+                                    : 'bg-accent text-[--bg-base]'
+                                }`}
+                                style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                             >
                                 {editingevent ? 'Update' : 'Add Event'}
                             </button>
@@ -237,30 +276,37 @@ export default function Calendar({ windowId }: { windowId?: string }) {
 
     if (ismobile) {
         return (
-            <div className="h-full w-full bg-[--bg-base] flex flex-col font-mono text-[--text-color]">
+            <div className={`h-full w-full bg-[--bg-base] flex flex-col text-[--text-color] ${clay ? '' : 'font-mono'}`}>
                 <div className="px-4 pt-4 pb-2">
                     <div className="flex items-center justify-between mb-4">
                         <h1 className="text-[34px] font-bold text-[--text-color]">{monthnames[currentmonth]}</h1>
                         <span className="text-[17px] text-[--text-muted]">{currentyear}</span>
                     </div>
                     <div className="flex items-center gap-4">
-                        <button onClick={prevmonth} className="p-2 bg-surface border border-[--border-color]">
+                        <button onClick={prevmonth} className={`p-2 ${clay ? 'rounded-[12px] active:scale-[0.97]' : 'bg-surface border border-[--border-color]'}`}
+                            style={clay ? glassButton : undefined}
+                        >
                             <IoChevronBack size={20} className="text-[--text-color]" />
                         </button>
                         <button
                             onClick={() => { setcurrentmonth(today.getMonth()); setcurrentyear(today.getFullYear()); }}
-                            className="px-4 py-2 bg-accent text-[--bg-base] text-[15px] font-semibold"
+                            className={`px-4 py-2 text-[15px] font-semibold ${clay ? 'rounded-[12px] text-white active:scale-[0.97]' : 'bg-accent text-[--bg-base]'}`}
+                            style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                         >
                             Today
                         </button>
-                        <button onClick={nextmonth} className="p-2 bg-surface border border-[--border-color]">
+                        <button onClick={nextmonth} className={`p-2 ${clay ? 'rounded-[12px] active:scale-[0.97]' : 'bg-surface border border-[--border-color]'}`}
+                            style={clay ? glassButton : undefined}
+                        >
                             <IoChevronForward size={20} className="text-[--text-color]" />
                         </button>
                     </div>
                 </div>
 
                 <div className="flex-1 p-4">
-                    <div className="bg-surface border border-[--border-color] p-4">
+                    <div className={`p-4 ${clay ? 'rounded-[16px]' : 'bg-surface border border-[--border-color]'}`}
+                        style={clay ? glassCard : undefined}
+                    >
                         <div className="grid grid-cols-7 gap-1 mb-2">
                             {weekdays.map(day => (
                                 <div key={day} className="text-center text-[12px] font-semibold text-[--text-muted]">
@@ -272,9 +318,12 @@ export default function Calendar({ windowId }: { windowId?: string }) {
                             {days.map((day, i) => (
                                 <div
                                     key={i}
-                                    className={`aspect-square flex items-center justify-center text-[15px] font-medium ${day === null ? '' :
-                                        istoday(day) ? 'bg-accent text-[--bg-base]' : 'hover:bg-overlay text-[--text-color]'
+                                    className={`aspect-square flex items-center justify-center text-[15px] font-medium ${clay ? 'rounded-[10px]' : ''} ${day === null ? '' :
+                                        istoday(day)
+                                            ? (clay ? 'text-white' : 'bg-accent text-[--bg-base]')
+                                            : 'hover:bg-[--bg-glass-hover] text-[--text-color]'
                                         }`}
+                                    style={istoday(day) && clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                                 >
                                     {day}
                                 </div>
@@ -287,33 +336,55 @@ export default function Calendar({ windowId }: { windowId?: string }) {
     }
 
     return (
-        <div className="h-full w-full bg-[--bg-base] flex font-mono text-[--text-color]">
-            <div className="w-[240px] border-r border-[--border-color] bg-surface flex flex-col pt-4 anime-gradient-top">
-                <div className="px-4 mb-6">
-                    <div className="w-full aspect-square bg-overlay border border-[--border-color] flex flex-col items-center justify-center mb-4">
-                        <div className="text-[14px] font-semibold text-pastel-red uppercase mb-1">{today.toLocaleDateString('en-US', { weekday: 'short' })}</div>
-                        <div className="text-[48px] font-light leading-none tracking-tighter text-[--text-color]">{today.getDate()}</div>
+        <div className={`h-full w-full flex text-[--text-color] ${clay ? 'bg-[--bg-base]' : 'bg-[--bg-base] font-mono'}`}>
+            {/* Sidebar */}
+            <div className={`w-[240px] flex flex-col pt-5 ${clay
+                ? ''
+                : 'border-r border-[--border-color] bg-surface anime-gradient-top'
+            }`}
+                style={clay ? glassSidebar : undefined}
+            >
+                <div className="px-5 mb-6">
+                    <div className={`w-full aspect-square flex flex-col items-center justify-center ${clay
+                        ? 'rounded-[18px]'
+                        : 'bg-overlay border border-[--border-color]'
+                    }`}
+                        style={clay ? glassCard : undefined}
+                    >
+                        <div className="text-[13px] font-semibold text-pastel-red uppercase tracking-wider mb-1">{today.toLocaleDateString('en-US', { weekday: 'short' })}</div>
+                        <div className="text-[52px] font-light leading-none tracking-tighter text-[--text-color]">{today.getDate()}</div>
                     </div>
                 </div>
 
-                <div className="space-y-1 px-2 flex-1">
-                    <div className="px-3 py-2 bg-overlay text-[13px] font-medium flex justify-between items-center cursor-pointer text-[--text-color]">
+                <div className="space-y-1 px-3 flex-1">
+                    <div className={`px-3 py-2.5 text-[13px] font-medium flex justify-between items-center cursor-pointer text-[--text-color] ${clay
+                        ? 'rounded-[12px]'
+                        : 'bg-overlay'
+                    }`}
+                        style={clay ? insetWell : undefined}
+                    >
                         <span>All Calendars</span>
                     </div>
-                    <div className="px-3 py-2 hover:bg-overlay text-[13px] text-[--text-muted] flex items-center gap-2 cursor-pointer">
-                        <span className="w-2 h-2 bg-accent"></span>
+                    <div className={`px-3 py-2.5 text-[13px] text-[--text-muted] flex items-center gap-2.5 cursor-pointer transition-all ${clay
+                        ? 'rounded-[12px] hover:bg-[--bg-glass-hover]'
+                        : 'hover:bg-overlay'
+                    }`}>
+                        <span className={`w-2.5 h-2.5 bg-accent ${clay ? 'rounded-full' : ''}`} />
                         <span>Personal</span>
                     </div>
-                    <div className="px-3 py-2 hover:bg-overlay text-[13px] text-[--text-muted] flex items-center gap-2 cursor-pointer">
-                        <span className="w-2 h-2 bg-pastel-green"></span>
+                    <div className={`px-3 py-2.5 text-[13px] text-[--text-muted] flex items-center gap-2.5 cursor-pointer transition-all ${clay
+                        ? 'rounded-[12px] hover:bg-[--bg-glass-hover]'
+                        : 'hover:bg-overlay'
+                    }`}>
+                        <span className={`w-2.5 h-2.5 bg-pastel-green ${clay ? 'rounded-full' : ''}`} />
                         <span>Work</span>
                     </div>
                 </div>
 
-                <div className="p-4 border-t border-[--border-color]">
+                <div className={`p-4 ${clay ? 'border-t border-[--text-muted]/10' : 'border-t border-[--border-color]'}`}>
                     <button
                         onClick={() => openaddmodal(today.getDate())}
-                        className="flex items-center gap-2 text-accent text-[13px] font-medium"
+                        className={`flex items-center gap-2 text-accent text-[13px] font-semibold transition-all ${clay ? 'active:scale-95' : ''}`}
                     >
                         <IoAddCircleOutline size={18} />
                         Add Event
@@ -321,29 +392,40 @@ export default function Calendar({ windowId }: { windowId?: string }) {
                 </div>
             </div>
 
-            <div className="flex-1 flex flex-col">
-                <div className="h-[52px] shrink-0 flex items-center justify-between px-6 border-b border-[--border-color]">
-                    <div className="flex items-center gap-4">
-                        <button onClick={prevmonth} className="p-1 hover:bg-overlay text-[--text-color]">
-                            <IoChevronBack size={18} />
+            {/* Main area */}
+            <div className={`flex-1 flex flex-col ${clay ? 'bg-[--bg-base]' : ''}`}>
+                <div className={`h-[52px] shrink-0 flex items-center justify-between px-6 ${clay
+                    ? 'border-b border-[--glass-border]'
+                    : 'border-b border-[--border-color]'
+                }`}>
+                    <div className="flex items-center gap-3">
+                        <button onClick={prevmonth} className={`p-1.5 text-[--text-color] transition-all ${clay ? 'rounded-[8px] active:scale-90 hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`}>
+                            <IoChevronBack size={16} />
                         </button>
-                        <button onClick={nextmonth} className="p-1 hover:bg-overlay text-[--text-color]">
-                            <IoChevronForward size={18} />
+                        <button onClick={nextmonth} className={`p-1.5 text-[--text-color] transition-all ${clay ? 'rounded-[8px] active:scale-90 hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`}>
+                            <IoChevronForward size={16} />
                         </button>
-                        <span className="font-bold text-[18px] text-[--text-color]">{monthnames[currentmonth]} {currentyear}</span>
+                        <span className="font-bold text-[18px] text-[--text-color] ml-1">{monthnames[currentmonth]} {currentyear}</span>
                     </div>
                     <button
                         onClick={() => { setcurrentmonth(today.getMonth()); setcurrentyear(today.getFullYear()); }}
-                        className="px-3 py-1 text-[13px] font-medium bg-overlay hover:bg-surface text-[--text-color]"
+                        className={`px-4 py-1.5 text-[13px] font-semibold text-[--text-color] transition-all ${clay
+                            ? 'rounded-[12px] active:scale-95'
+                            : 'bg-overlay hover:bg-surface'
+                        }`}
+                        style={clay ? glassButton : undefined}
                     >
                         Today
                     </button>
                 </div>
 
-                <div className="flex-1 p-6 overflow-y-auto">
-                    <div className="grid grid-cols-7 border-l border-t border-[--border-color]">
+                <div className={`flex-1 overflow-y-auto ${clay ? 'p-5' : 'p-6'}`}>
+                    <div className={`grid grid-cols-7 ${clay ? 'gap-[2px]' : 'border-l border-t border-[--border-color]'}`}>
                         {weekdays.map(day => (
-                            <div key={day} className="text-center py-2 text-[12px] font-semibold text-[--text-muted] border-r border-b border-[--border-color] bg-overlay">
+                            <div key={day} className={`text-center py-2.5 text-[11px] font-semibold text-[--text-muted] uppercase tracking-wider ${clay
+                                ? ''
+                                : 'border-r border-b border-[--border-color] bg-overlay'
+                            }`}>
                                 {day}
                             </div>
                         ))}
@@ -352,14 +434,20 @@ export default function Calendar({ windowId }: { windowId?: string }) {
                             return (
                                 <div
                                     key={i}
-                                    className={`min-h-[80px] p-2 border-r border-b border-[--border-color] ${day === null ? 'bg-overlay' : 'hover:bg-surface cursor-pointer'
-                                        }`}
+                                    className={`min-h-[80px] p-2 transition-all ${clay
+                                        ? `rounded-[10px] ${day === null ? 'opacity-30' : 'cursor-pointer hover:bg-[--bg-glass-hover]'}`
+                                        : `border-r border-b border-[--border-color] ${day === null ? 'bg-overlay' : 'hover:bg-surface cursor-pointer'}`
+                                    }`}
                                     onDoubleClick={() => day && openaddmodal(day)}
                                 >
                                     {day && (
                                         <>
-                                            <span className={`inline-flex items-center justify-center w-7 h-7 text-[13px] font-medium ${istoday(day) ? 'bg-pastel-red text-[--bg-base]' : 'text-[--text-color]'
-                                                }`}>
+                                            <span className={`inline-flex items-center justify-center w-7 h-7 text-[13px] font-medium ${clay
+                                                ? `rounded-full ${istoday(day) ? 'text-white' : 'text-[--text-color]'}`
+                                                : istoday(day) ? 'bg-pastel-red text-[--bg-base]' : 'text-[--text-color]'
+                                            }`}
+                                                style={clay && istoday(day) ? { background: 'var(--pastel-red)', boxShadow: '0 2px 8px color-mix(in srgb, var(--pastel-red) 40%, transparent)' } : undefined}
+                                            >
                                                 {day}
                                             </span>
                                             <div className="mt-1 space-y-1">
@@ -367,7 +455,7 @@ export default function Calendar({ windowId }: { windowId?: string }) {
                                                     <div
                                                         key={ev.id}
                                                         onClick={(e) => { e.stopPropagation(); openeditmodal(ev); }}
-                                                        className="text-[11px] px-1.5 py-0.5 truncate cursor-pointer hover:opacity-80"
+                                                        className={`text-[11px] px-1.5 py-0.5 truncate cursor-pointer hover:opacity-80 ${clay ? 'rounded-[6px]' : ''}`}
                                                         style={{ backgroundColor: ev.color + '20', color: ev.color }}
                                                     >
                                                         {ev.time && <span className="font-semibold">{ev.time} </span>}{ev.title}

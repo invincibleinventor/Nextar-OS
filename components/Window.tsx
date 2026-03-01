@@ -10,6 +10,8 @@ import { useSettings } from './SettingsContext';
 import { useProcess } from './ProcessContext';
 import AppErrorBoundary from './AppErrorBoundary';
 import { ui } from '../utils/constants';
+import { useIsClay } from './hooks/useIsClay';
+import { glassPanel } from './hooks/useClayStyles';
 
 const panelheight = ui.panelHeight;
 const dockheight = ui.dockHeight;
@@ -37,7 +39,7 @@ const MemoizedDynamicComponent = memo(
     if (!DynamicComponent) {
       return (
         <div className="flex flex-row h-full w-full items-center content-center">
-          <div className="flex flex-col space-y-5 font-mono mx-auto items-center content-center">
+          <div className="flex flex-col space-y-5 mx-auto items-center content-center">
             <Image className="w-24 h-24" src={icon} width={96} height={96} alt={appname} />
             <div className="text-[13px] text-[--text-color]">{appname} is coming soon</div>
           </div>
@@ -63,6 +65,9 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
   const { removewindow, updatewindow, activewindow, setactivewindow, windows } = useWindows();
   const { ismobile } = useDevice();
   const { reducemotion, reducetransparency } = useSettings();
+  const clay = useIsClay();
+  // Clay dock: 56px height + 8px bottom offset + 8px gap = 72px reserve
+  const dockheight = clay ? 72 : ui.dockHeight;
   const { spawn, suspend, resume, kill, crash, getByWindow } = useProcess();
   const app = apps.find((app) => app.appname === appname);
   const processref = useRef<number | null>(null);
@@ -95,8 +100,6 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
       crash(processref.current, error);
     }
   }, [crash]);
-
-
 
   const dragCleanupRef = useRef<(() => void) | null>(null);
 
@@ -161,19 +164,13 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
   const positionref = useRef(position);
   const sizeref = useRef(size);
 
-  useEffect(() => {
-    positionref.current = position;
-  }, [position]);
-
-  useEffect(() => {
-    sizeref.current = size;
-  }, [size]);
+  useEffect(() => { positionref.current = position; }, [position]);
+  useEffect(() => { sizeref.current = size; }, [size]);
 
   const myindex = windows ? windows.findIndex((w: any) => w.id === id) : 0;
   const zindex = activewindow === id ? 199 : 100 + myindex;
 
   useEffect(() => {
-
     if (ismobile) {
       if (typeof window !== 'undefined') {
         setposition({ top: 44, left: 0 });
@@ -182,7 +179,6 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
       return;
     }
     if (isminimized) {
-
       if (typeof window !== 'undefined') {
         if (!ismaximized) {
           previousStateRef.current = {
@@ -191,8 +187,6 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
           };
         }
       }
-
-
     } else {
       setposition(previousStateRef.current.position);
       setsize(previousStateRef.current.size);
@@ -274,7 +268,6 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
   };
 
   const handledragstart = (e: any) => {
-
     if (e.detail === 2) return;
 
     const target = e.target as HTMLElement;
@@ -283,10 +276,7 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
     const clienty = 'touches' in e ? e.touches[0].clientY : e.clientY;
     const istoparea = (clienty - rect.top) <= 50;
 
-    if (!istoparea || isinteractive) {
-      return;
-    }
-
+    if (!istoparea || isinteractive) return;
 
     let dragstarted = false;
     const wasmaximized = ismaximized;
@@ -317,20 +307,14 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
       const movex = 'touches' in moveevent ? moveevent.touches[0].clientX : moveevent.clientX;
       const movey = 'touches' in moveevent ? moveevent.touches[0].clientY : moveevent.clientY;
 
-      if (!isdragging && Math.abs(movex - startx) < 5 && Math.abs(movey - starty) < 5) {
-        return;
-      }
+      if (!isdragging && Math.abs(movex - startx) < 5 && Math.abs(movey - starty) < 5) return;
 
       if (!dragstarted && wasmaximized && Math.abs(movey - starty) > 10) {
         dragstarted = true;
         updatewindow(id, { ismaximized: false });
-
         setTimeout(() => {
           setsize(prevsize);
-          setposition({
-            top: movey - dragoffsety,
-            left: movex - dragoffsetx,
-          });
+          setposition({ top: movey - dragoffsety, left: movex - dragoffsetx });
         }, 0);
         setisdragging(true);
       } else if (!wasmaximized) {
@@ -346,22 +330,14 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
       newleft = Math.max(-size.width / 2.0, Math.min(screenwidth - size.width / 2.0, newleft));
       newtop = Math.max(panelheight - 20, Math.min(screenheight - dockheight - size.height / 4.0, newtop));
 
-      setposition({
-        top: newtop,
-        left: newleft,
-      });
+      setposition({ top: newtop, left: newleft });
       lasttop = newtop;
 
       const SNAP_THRESHOLD = 20;
-      if (movex <= SNAP_THRESHOLD) {
-        setsnappreview('left');
-      } else if (movex >= screenwidth - SNAP_THRESHOLD) {
-        setsnappreview('right');
-      } else if (movey <= panelheight + SNAP_THRESHOLD) {
-        setsnappreview('top');
-      } else {
-        setsnappreview(null);
-      }
+      if (movex <= SNAP_THRESHOLD) setsnappreview('left');
+      else if (movex >= screenwidth - SNAP_THRESHOLD) setsnappreview('right');
+      else if (movey <= panelheight + SNAP_THRESHOLD) setsnappreview('top');
+      else setsnappreview(null);
     };
 
     const cleanup = () => {
@@ -404,7 +380,6 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
   };
 
   const handleresizestart = (e: any, direction: any) => {
-
     e.preventDefault();
     e.stopPropagation();
 
@@ -445,14 +420,8 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
         }
       }
 
-      setsize({
-        width: newwidth,
-        height: newheight,
-      });
-      setposition({
-        top: newtop,
-        left: newleft,
-      });
+      setsize({ width: newwidth, height: newheight });
+      setposition({ top: newtop, left: newleft });
     };
 
     const cleanup = () => {
@@ -463,9 +432,7 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
       dragCleanupRef.current = null;
     };
 
-    const onmouseup = () => {
-      cleanup();
-    };
+    const onmouseup = () => { cleanup(); };
 
     document.addEventListener('mousemove', onmousemove);
     document.addEventListener('mouseup', onmouseup);
@@ -491,7 +458,9 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
         mass: 1,
       }}
       className={`window overflow-hidden flex flex-col bg-surface
-      ${activewindow === id ? 'border border-[--border-color] shadow-[0_8px_32px_-6px_rgba(0,0,0,0.25),0_0_0_1px_rgba(237,135,150,0.4),0_2px_8px_-2px_rgba(237,135,150,0.1)] anime-glow' : 'border border-[--border-color] shadow-[0_4px_16px_-4px_rgba(0,0,0,0.15),0_0_0_1px_var(--border-color)]'}
+      ${clay && !ismobile ? 'rounded-[20px]' : ''}
+      ${!clay && activewindow === id ? 'border border-[--border-color] shadow-[0_8px_32px_-6px_rgba(0,0,0,0.25),0_0_0_1px_rgba(237,135,150,0.4),0_2px_8px_-2px_rgba(237,135,150,0.1)] anime-glow' : !clay ? 'border border-[--border-color] shadow-[0_4px_16px_-4px_rgba(0,0,0,0.15),0_0_0_1px_var(--border-color)]' : ''}
+      ${clay && activewindow !== id ? 'opacity-[0.92]' : ''}
       ${isdragging ? 'cursor-grabbing' : 'cursor-default'} ${(isminimized || shouldblur || isRecentAppView) ? 'pointer-events-none' : 'pointer-events-auto'}
         ${(ismobile && isRecentAppView) ? 'absolute inset-0 w-full h-full' : 'absolute'}`}
       data-window-id={id}
@@ -502,70 +471,97 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
         height: (ismobile && isRecentAppView) ? '100%' : (ismobile ? 'calc(100% - 44px)' : (ismaximized ? `calc(100vh - ${panelheight + dockheight}px)` : (size?.height || 0))),
         zIndex: isminimized ? -1 : zindex,
         willChange: 'transform, opacity, top, left, width, height',
-        pointerEvents: (shouldblur || isRecentAppView || isminimized || issystemgestureactive) ? 'none' : 'auto'
+        pointerEvents: (shouldblur || isRecentAppView || isminimized || issystemgestureactive) ? 'none' : 'auto',
+        ...(clay ? {
+          ...glassPanel,
+          boxShadow: activewindow === id ? 'var(--shadow-xl)' : 'var(--shadow-lg)',
+        } : {}),
       }}
       onMouseDown={(e) => {
         if (shouldblur || isRecentAppView || isminimized || issystemgestureactive) return;
         setactivewindow(id);
-        if (!ismobile) {
-          handledragstart(e)
-        }
+        if (!ismobile) handledragstart(e);
       }}
       onDoubleClick={(e) => {
         if (shouldblur || isRecentAppView || isminimized || issystemgestureactive) return;
         if (!ismobile) {
           const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-          if (e.clientY - rect.top <= 50) {
-            handlemaximize();
-          }
+          if (e.clientY - rect.top <= 50) handlemaximize();
         }
       }}
     >
 
       {!ismobile && (
-        <div className={`w-full h-[48px] shrink-0 flex items-center border-b border-[--border-color] bg-[--bg-overlay] px-4 z-50 anime-gradient-top ${isdragging ? 'cursor-grabbing' : 'cursor-grab'}`}>
-          <div id="buttons" className="flex flex-row items-center space-x-[8px] group shrink-0">
-            <button
-              aria-label="Close window"
-              className={`w-[12px] h-[12px]  ${activewindow == id ? 'bg-pastel-red' : 'bg-[--border-color]'} window-button flex items-center justify-center`}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                removewindow(id);
-              }}
-            >
-              <span className="opacity-0 group-hover:opacity-100 text-[8px] font-bold text-[--bg-base]">×</span>
-            </button>
-
-            <button
-              aria-label="Minimize window"
-              className={`w-[12px] h-[12px]  ${activewindow == id ? 'bg-pastel-yellow' : 'bg-[--border-color]'} window-button flex items-center justify-center`}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                updatewindow(id, { isminimized: true });
-              }}
-            >
-              <span className="opacity-0 group-hover:opacity-100 text-[8px] font-bold text-[--bg-base]">−</span>
-            </button>
-            <button
-              aria-label={ismaximized ? "Restore window" : "Maximize window"}
-              className={`w-[12px] h-[12px]  ${activewindow == id ? 'bg-pastel-teal' : 'bg-[--border-color]'} window-button flex items-center justify-center`}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                handlemaximize();
-              }}
-            >
-              <span className="opacity-0 group-hover:opacity-100 text-[6px] font-bold text-[--bg-base]">↗</span>
-            </button>
-          </div>
-          <span className="ml-4 text-[13px] text-[--text-muted] truncate select-none">{title || appname}</span>
+        <div
+          className={`w-full shrink-0 flex items-center justify-between z-50 ${clay ? 'h-[44px] px-[14px] relative' : 'h-[48px] px-4 border-b border-[--border-color] bg-[--bg-overlay] anime-gradient-top'} ${isdragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+          style={clay ? { background: 'transparent', borderBottom: '1px solid var(--border-subtle)' } : undefined}
+        >
+          {clay ? (
+            <>
+              {/* Spacer to balance layout */}
+              <div className="w-[96px] shrink-0" />
+              {/* Clay: App name CENTERED */}
+              <span className="absolute left-1/2 -translate-x-1/2 text-[13px] font-semibold text-[--text-color] truncate select-none pointer-events-none max-w-[50%]">{title || appname}</span>
+              {/* Clay: Window controls on RIGHT */}
+              <div className="flex items-center gap-[6px] shrink-0 group">
+                <button
+                  aria-label="Minimize window"
+                  className="window-button w-[28px] h-[28px] rounded-[8px] flex items-center justify-center text-[--text-muted] hover:bg-[--bg-glass-hover] transition-all"
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); updatewindow(id, { isminimized: true }); }}
+                >
+                  <svg className="w-[14px] h-[14px]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path d="M5 12h14" /></svg>
+                </button>
+                <button
+                  aria-label={ismaximized ? "Restore window" : "Maximize window"}
+                  className="window-button w-[28px] h-[28px] rounded-[8px] flex items-center justify-center text-[--text-muted] hover:bg-[--bg-glass-hover] transition-all"
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); handlemaximize(); }}
+                >
+                  <svg className="w-[13px] h-[13px]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><rect x="4" y="4" width="16" height="16" rx="2" /></svg>
+                </button>
+                <button
+                  aria-label="Close window"
+                  className="window-button w-[28px] h-[28px] rounded-[8px] flex items-center justify-center text-[--text-muted] hover:bg-pastel-red/20 hover:text-pastel-red transition-all"
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); removewindow(id); }}
+                >
+                  <svg className="w-[14px] h-[14px]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}><path d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Classic: macOS traffic lights on LEFT */}
+              <div id="buttons" className="flex flex-row items-center space-x-[8px] group shrink-0">
+                <button
+                  aria-label="Close window"
+                  className={`w-[12px] h-[12px] ${activewindow === id ? 'bg-pastel-red' : 'bg-[--border-color]'} window-button flex items-center justify-center`}
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); removewindow(id); }}
+                >
+                  <span className="opacity-0 group-hover:opacity-100 text-[8px] font-bold text-[--bg-base]">×</span>
+                </button>
+                <button
+                  aria-label="Minimize window"
+                  className={`w-[12px] h-[12px] ${activewindow === id ? 'bg-pastel-yellow' : 'bg-[--border-color]'} window-button flex items-center justify-center`}
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); updatewindow(id, { isminimized: true }); }}
+                >
+                  <span className="opacity-0 group-hover:opacity-100 text-[8px] font-bold text-[--bg-base]">−</span>
+                </button>
+                <button
+                  aria-label={ismaximized ? "Restore window" : "Maximize window"}
+                  className={`w-[12px] h-[12px] ${activewindow === id ? 'bg-pastel-teal' : 'bg-[--border-color]'} window-button flex items-center justify-center`}
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); handlemaximize(); }}
+                >
+                  <span className="opacity-0 group-hover:opacity-100 text-[6px] font-bold text-[--bg-base]">↗</span>
+                </button>
+              </div>
+              <span className="ml-4 text-[13px] text-[--text-muted] truncate select-none">{title || appname}</span>
+              <div />
+            </>
+          )}
         </div>
       )}
 
       <div
-        className={`w-full h-full flex-1 overflow-hidden ${ismaximized || ismobile ? '' : ''} ${(isminimized || issystemgestureactive || shouldblur || isRecentAppView) ? 'pointer-events-none' : 'pointer-events-auto'} ${isRecentAppView && !app?.hidePreview ? 'recent-app-frozen' : ''}`}
+        className={`w-full h-full flex-1 overflow-hidden ${(isminimized || issystemgestureactive || shouldblur || isRecentAppView) ? 'pointer-events-none' : 'pointer-events-auto'} ${isRecentAppView && !app?.hidePreview ? 'recent-app-frozen' : ''}`}
       >
         <AppErrorBoundary appId={app?.id || appname} windowId={id} onCrash={handleCrash}>
           <MemoizedDynamicComponent appname={app ? app.appname : ''} icon={app ? app.icon : ''} component={app?.componentname ? app.componentname : component} appprops={stableAppProps} isFocused={activewindow === id && !shouldblur} isExternal={app?.isExternal} externalUrl={app?.externalUrl} />
@@ -576,69 +572,36 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
         )}
       </div>
 
-
       {!ismobile && !ismaximized && (
         <>
-          <div
-            className="absolute w-full h-[8px] -top-[4px] left-0 z-[60]"
-            style={{ cursor: 'ns-resize' }}
-            onMouseDown={(e) => { e.stopPropagation(); handleresizestart(e, 'top'); }}
-          />
-          <div
-            className="absolute w-full h-[8px] -bottom-[4px] left-0 z-[60]"
-            style={{ cursor: 'ns-resize' }}
-            onMouseDown={(e) => { e.stopPropagation(); handleresizestart(e, 'bottom'); }}
-          />
-          <div
-            className="absolute top-0 -left-[4px] w-[8px] h-full z-[60]"
-            style={{ cursor: 'ew-resize' }}
-            onMouseDown={(e) => { e.stopPropagation(); handleresizestart(e, 'left'); }}
-          />
-          <div
-            className="absolute top-0 -right-[4px] w-[8px] h-full z-[60]"
-            style={{ cursor: 'ew-resize' }}
-            onMouseDown={(e) => { e.stopPropagation(); handleresizestart(e, 'right'); }}
-          />
-          <div
-            className="absolute w-5 h-5 -left-[4px] -top-[4px] z-[61]"
-            style={{ cursor: 'nwse-resize' }}
-            onMouseDown={(e) => { e.stopPropagation(); handleresizestart(e, 'top-left'); }}
-          />
-          <div
-            className="absolute w-5 h-5 -right-[4px] -top-[4px] z-[61]"
-            style={{ cursor: 'nesw-resize' }}
-            onMouseDown={(e) => { e.stopPropagation(); handleresizestart(e, 'top-right'); }}
-          />
-          <div
-            className="absolute w-5 h-5 -left-[4px] -bottom-[4px] z-[61]"
-            style={{ cursor: 'nesw-resize' }}
-            onMouseDown={(e) => { e.stopPropagation(); handleresizestart(e, 'bottom-left'); }}
-          />
-          <div
-            className="absolute w-5 h-5 -right-[4px] -bottom-[4px] z-[61]"
-            style={{ cursor: 'nwse-resize' }}
-            onMouseDown={(e) => { e.stopPropagation(); handleresizestart(e, 'bottom-right'); }}
-          />
+          <div className="absolute w-full h-[8px] -top-[4px] left-0 z-[60]" style={{ cursor: 'ns-resize' }} onMouseDown={(e) => { e.stopPropagation(); handleresizestart(e, 'top'); }} />
+          <div className="absolute w-full h-[8px] -bottom-[4px] left-0 z-[60]" style={{ cursor: 'ns-resize' }} onMouseDown={(e) => { e.stopPropagation(); handleresizestart(e, 'bottom'); }} />
+          <div className="absolute top-0 -left-[4px] w-[8px] h-full z-[60]" style={{ cursor: 'ew-resize' }} onMouseDown={(e) => { e.stopPropagation(); handleresizestart(e, 'left'); }} />
+          <div className="absolute top-0 -right-[4px] w-[8px] h-full z-[60]" style={{ cursor: 'ew-resize' }} onMouseDown={(e) => { e.stopPropagation(); handleresizestart(e, 'right'); }} />
+          <div className="absolute w-5 h-5 -left-[4px] -top-[4px] z-[61]" style={{ cursor: 'nwse-resize' }} onMouseDown={(e) => { e.stopPropagation(); handleresizestart(e, 'top-left'); }} />
+          <div className="absolute w-5 h-5 -right-[4px] -top-[4px] z-[61]" style={{ cursor: 'nesw-resize' }} onMouseDown={(e) => { e.stopPropagation(); handleresizestart(e, 'top-right'); }} />
+          <div className="absolute w-5 h-5 -left-[4px] -bottom-[4px] z-[61]" style={{ cursor: 'nesw-resize' }} onMouseDown={(e) => { e.stopPropagation(); handleresizestart(e, 'bottom-left'); }} />
+          <div className="absolute w-5 h-5 -right-[4px] -bottom-[4px] z-[61]" style={{ cursor: 'nwse-resize' }} onMouseDown={(e) => { e.stopPropagation(); handleresizestart(e, 'bottom-right'); }} />
         </>
       )}
-    </motion.div >
+    </motion.div>
   );
 
   const snapOverlay = snappreview && isdragging ? (
     <motion.div
       key={snappreview}
-      className="fixed z-[198] pointer-events-none border-2 border-accent/50 backdrop-blur-md overflow-hidden"
+      className="fixed z-[198] pointer-events-none overflow-hidden rounded-[20px]"
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.15, ease: 'easeOut' }}
       style={{
-        top: snappreview === 'top' ? panelheight : panelheight + 4,
-        left: snappreview === 'right' ? 'calc(50% + 2px)' : (snappreview === 'top' ? 0 : 4),
-        width: snappreview === 'top' ? '100%' : 'calc(50% - 6px)',
-        height: snappreview === 'top' ? `calc(100vh - ${panelheight}px - ${dockheight}px)` : `calc(100vh - ${panelheight}px - ${dockheight}px - 8px)`,
-        background: 'rgba(237, 135, 150, 0.08)',
-        boxShadow: 'inset 0 0 40px rgba(237, 135, 150, 0.06), 0 0 20px rgba(237, 135, 150, 0.1)',
+        top: snappreview === 'top' ? panelheight : panelheight + 8,
+        left: snappreview === 'right' ? 'calc(50% + 4px)' : (snappreview === 'top' ? 8 : 8),
+        width: snappreview === 'top' ? 'calc(100% - 16px)' : 'calc(50% - 12px)',
+        height: snappreview === 'top' ? `calc(100vh - ${panelheight}px - ${dockheight}px - 16px)` : `calc(100vh - ${panelheight}px - ${dockheight}px - 16px)`,
+        background: 'color-mix(in srgb, var(--accent-color) 8%, transparent)',
+        boxShadow: 'var(--shadow-inset)',
       }}
     />
   ) : null;
