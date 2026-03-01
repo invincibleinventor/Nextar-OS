@@ -7,6 +7,8 @@ import { useWindows } from '../WindowContext';
 import { useAppPreferences } from '../AppPreferencesContext';
 import { useMenuAction } from '../hooks/useMenuAction';
 import { useMusic } from '../MusicContext';
+import { useIsClay } from '../hooks/useIsClay';
+import { glassSidebar, glassCard, glassInput, glassButton, clayClasses } from '../hooks/useClayStyles';
 
 const formattime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
@@ -73,6 +75,7 @@ export default function Music({ windowId }: { windowId?: string }) {
     const { ismobile } = useDevice();
     const { activewindow } = useWindows();
     const { getPreference, setPreference } = useAppPreferences();
+    const clay = useIsClay();
 
     const {
         playlist,
@@ -144,7 +147,7 @@ export default function Music({ windowId }: { windowId?: string }) {
     const progress = duration > 0 ? (currenttime / duration) * 100 : 0;
 
     return (
-        <div className="h-full w-full flex flex-col bg-[--bg-base] text-[--text-color] font-mono overflow-hidden">
+        <div className={`h-full w-full flex flex-col ${clay ? 'bg-[--bg-base]' : 'bg-[--bg-base] font-mono'} text-[--text-color] overflow-hidden`}>
             {ismobile ? (
                 <AnimatePresence mode="wait">
                     {showplaylist ? (
@@ -159,30 +162,39 @@ export default function Music({ windowId }: { windowId?: string }) {
                                 <h1 className="text-2xl font-bold">Library</h1>
                                 <button
                                     onClick={() => setshowplaylist(false)}
-                                    className="p-2 bg-overlay"
+                                    className={`p-2 ${clay ? 'rounded-[10px]' : 'bg-overlay'}`}
+                                    style={clay ? glassButton : undefined}
                                 >
                                     <IoMusicalNotes size={20} />
                                 </button>
                             </div>
                             <div className="flex-1 overflow-auto px-4 pb-32">
-                                {playlist.map((track, idx) => (
+                                {playlist.map((track, idx) => {
+                                    const mobileActive = currenttrackindex === idx;
+                                    return (
                                     <div
                                         key={track.id}
                                         onClick={() => { settrackindex(idx); setshowplaylist(false); }}
-                                        className={`flex items-center gap-3 p-3 ${currenttrackindex === idx ? 'bg-overlay' : 'hover:bg-overlay'}`}
+                                        className={`flex items-center gap-3 p-3 ${clay
+                                            ? `rounded-[12px] active:scale-[0.98] ${mobileActive ? 'text-white' : 'hover:bg-[--bg-glass-hover]'}`
+                                            : mobileActive ? 'bg-overlay' : 'hover:bg-overlay'
+                                        }`}
+                                        style={clay && mobileActive ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                                     >
-                                        <div className="w-12 h-12 bg-overlay flex items-center justify-center shrink-0">
-                                            <IoMusicalNotes className="text-pastel-pink" size={20} />
+                                        <div className={`flex items-center justify-center shrink-0 ${clay ? 'w-10 h-10 rounded-[10px]' : 'w-12 h-12'}`}
+                                            style={{ backgroundColor: clay && mobileActive ? 'rgba(255,255,255,0.25)' : 'var(--pastel-pink)' }}>
+                                            <IoMusicalNotes className="text-white" size={20} />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <div className={`font-medium truncate ${currenttrackindex === idx ? 'text-accent' : ''}`}>{track.title}</div>
-                                            <div className="text-[13px] text-[--text-muted] truncate">{track.artist}</div>
+                                            <div className={`font-medium truncate ${mobileActive && !clay ? 'text-accent' : ''}`}>{track.title}</div>
+                                            <div className={`text-[13px] truncate ${clay && mobileActive ? 'text-white/70' : 'text-[--text-muted]'}`}>{track.artist}</div>
                                         </div>
                                         <button onClick={(e) => { e.stopPropagation(); togglefavorite(track.id); }} className="p-2">
-                                            {favorites.includes(track.id) ? <IoHeart className="text-pastel-red" /> : <IoHeartOutline className="text-[--text-muted]" />}
+                                            {favorites.includes(track.id) ? <IoHeart className="text-pastel-red" /> : <IoHeartOutline className={clay && mobileActive ? 'text-white/70' : 'text-[--text-muted]'} />}
                                         </button>
                                     </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </motion.div>
                     ) : (
@@ -199,22 +211,24 @@ export default function Music({ windowId }: { windowId?: string }) {
                             </button>
 
                             <div className="flex-1 flex flex-col items-center justify-center">
-                                <div className="relative w-64 h-64 mb-8">
+                                <div className={`relative w-64 h-64 mb-8 ${clay ? 'rounded-[16px] overflow-hidden' : ''}`}>
                                     <Visualizer isplaying={isplaying} size={256} />
-                                    <div className="absolute inset-0 bg-overlay shadow-pastel-pink flex items-center justify-center anime-glow-lg">
-                                        <IoMusicalNotes className="text-pastel-pink" size={80} />
+                                    <div className={`absolute inset-0 flex items-center justify-center ${clay ? 'rounded-[16px]' : 'bg-overlay shadow-pastel-pink anime-glow-lg'}`}
+                                        style={clay ? { ...glassCard, borderRadius: 16 } : undefined}>
+                                        <IoMusicalNotes className={clay ? 'text-[--text-muted]' : 'text-pastel-pink'} size={80} />
                                     </div>
                                 </div>
 
                                 <div className="text-center mb-8">
-                                    <h2 className="text-2xl font-bold">{currenttrack.title}</h2>
+                                    <h2 className="text-2xl font-bold text-[--text-color]">{currenttrack.title}</h2>
                                     <p className="text-[--text-muted]">{currenttrack.artist}</p>
                                     <p className="text-[11px] text-[--text-muted] mt-1">{currenttrackindex + 1} of {playlist.length}</p>
                                 </div>
 
                                 <div className="w-full mb-4" ref={progressref} onClick={handleseek}>
-                                    <div className="h-1 bg-[--border-color] cursor-pointer">
-                                        <div className="h-full bg-pastel-pink" style={{ width: `${progress}%` }} />
+                                    <div className={`h-1 cursor-pointer ${clay ? 'rounded-full bg-[--bg-glass-active]' : 'bg-[--border-color]'}`}>
+                                        <div className={`h-full transition-all ${clay ? 'rounded-full' : 'bg-pastel-pink'}`}
+                                            style={clay ? { width: `${progress}%`, background: 'var(--accent-gradient)' } : { width: `${progress}%` }} />
                                     </div>
                                     <div className="flex justify-between text-xs text-[--text-muted] mt-1">
                                         <span>{formattime(currenttime)}</span>
@@ -223,14 +237,15 @@ export default function Music({ windowId }: { windowId?: string }) {
                                 </div>
 
                                 <div className="flex items-center gap-8">
-                                    <button onClick={prev} className="p-3 text-[--text-color] hover:text-pastel-pink transition-colors"><IoPlaySkipBack size={28} /></button>
+                                    <button onClick={prev} className={`p-3 text-[--text-color] transition-colors ${clay ? 'hover:text-accent active:scale-[0.97]' : 'hover:text-pastel-pink'}`}><IoPlaySkipBack size={28} /></button>
                                     <button
                                         onClick={toggle}
-                                        className="w-16 h-16 bg-surface text-[--text-color] hover:text-pastel-pink flex items-center justify-center transition-colors"
+                                        className={`w-16 h-16 flex items-center justify-center transition-all ${clay ? 'rounded-full active:scale-[0.97] text-white' : 'bg-surface text-[--text-color] hover:text-pastel-pink'}`}
+                                        style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                                     >
                                         {isplaying ? <IoPause size={32} /> : <IoPlay size={32} className="ml-1" />}
                                     </button>
-                                    <button onClick={next} className="p-3 text-[--text-color] hover:text-pastel-pink transition-colors"><IoPlaySkipForward size={28} /></button>
+                                    <button onClick={next} className={`p-3 text-[--text-color] transition-colors ${clay ? 'hover:text-accent active:scale-[0.97]' : 'hover:text-pastel-pink'}`}><IoPlaySkipForward size={28} /></button>
                                 </div>
                             </div>
                         </motion.div>
@@ -238,56 +253,71 @@ export default function Music({ windowId }: { windowId?: string }) {
                 </AnimatePresence>
             ) : (
                 <div className="flex h-full">
-                    <div className="w-64 border-r border-[--border-color] flex flex-col bg-surface anime-gradient-top">
-                        <div className="p-4">
-                            <div className="relative">
-                                <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[--text-muted]" />
+                    <div className={`${clay ? 'w-[230px]' : 'w-64 border-r border-[--border-color]'} flex flex-col shrink-0 ${clay ? '' : 'bg-surface anime-gradient-top'}`}
+                        style={clay ? glassSidebar : undefined}>
+                        <div className={`${clay ? 'p-3' : 'p-4'}`}>
+                            <div className={`relative ${clay ? 'rounded-full' : ''}`}
+                                style={clay ? glassInput : undefined}>
+                                <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[--text-muted]" size={14} />
                                 <input
                                     placeholder="Search"
-                                    className="w-full bg-overlay pl-10 pr-3 py-2 text-[13px] outline-none placeholder:text-[--text-muted] text-[--text-color] border border-[--border-color] focus:border-accent transition-colors"
+                                    className={`w-full pl-10 pr-3 py-2 text-[13px] outline-none placeholder:text-[--text-muted] text-[--text-color] transition-colors ${clay ? 'bg-transparent' : 'bg-overlay border border-[--border-color] focus:border-accent'}`}
                                 />
                             </div>
                         </div>
                         <div className="flex-1 overflow-auto px-2">
-                            <div className="text-xs font-semibold text-[--text-muted] px-2 mb-2">LIBRARY</div>
-                            {playlist.map((track, idx) => (
-                                <div
-                                    key={track.id}
-                                    onClick={() => settrackindex(idx)}
-                                    className={`flex items-center gap-3 p-2 cursor-pointer transition-colors ${currenttrackindex === idx ? 'bg-overlay' : 'hover:bg-overlay'}`}
-                                >
-                                    <div className="w-10 h-10 bg-overlay flex items-center justify-center shrink-0">
-                                        <IoMusicalNotes className="text-pastel-pink" size={16} />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className={`text-[13px] font-medium truncate ${currenttrackindex === idx ? 'text-accent' : ''}`}>{track.title}</div>
-                                        <div className="text-xs text-[--text-muted] truncate">{track.artist}</div>
-                                    </div>
-                                </div>
-                            ))}
+                            <div className={`font-bold text-[--text-muted] uppercase tracking-wide px-3 mb-2 ${clay ? 'text-[11px]' : 'text-xs font-semibold'}`}>LIBRARY</div>
+                            <div className={clay ? 'space-y-1' : ''}>
+                                {playlist.map((track, idx) => {
+                                    const active = currenttrackindex === idx;
+                                    return (
+                                        <div
+                                            key={track.id}
+                                            onClick={() => settrackindex(idx)}
+                                            className={`flex items-center cursor-pointer transition-all ${
+                                                clay
+                                                    ? `gap-3 px-3 py-2.5 rounded-[12px] active:scale-[0.98] ${active ? 'text-white' : 'text-[--text-color] hover:bg-[--bg-glass-hover]'}`
+                                                    : `gap-3 p-2 ${active ? 'bg-overlay' : 'hover:bg-overlay'}`
+                                            }`}
+                                            style={clay && active ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
+                                        >
+                                            <div className={`flex items-center justify-center shrink-0 ${clay ? 'w-6 h-6 rounded-[7px]' : 'w-10 h-10'}`}
+                                                style={{ backgroundColor: active && clay ? 'rgba(255,255,255,0.25)' : 'var(--pastel-pink)' }}>
+                                                <IoMusicalNotes className="text-white" size={clay ? 14 : 16} />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className={`font-medium truncate ${clay ? 'text-[14px]' : 'text-[13px]'} ${active && !clay ? 'text-accent' : ''}`}>{track.title}</div>
+                                                <div className={`text-xs truncate ${active && clay ? 'text-white/70' : 'text-[--text-muted]'}`}>{track.artist}</div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         </div>
                     </div>
 
-                    <div className="flex-1 flex flex-col">
+                    <div className={`flex-1 flex flex-col ${clay ? 'bg-[--bg-base]' : ''}`}>
                         <div className="flex-1 flex items-center justify-center p-8">
                             <div className="text-center">
-                                <div className="relative w-48 h-48 mx-auto mb-6">
+                                <div className={`relative w-48 h-48 mx-auto mb-6 ${clay ? 'rounded-[16px] overflow-hidden' : ''}`}>
                                     <Visualizer isplaying={isplaying} size={192} />
-                                    <div className="absolute inset-0 bg-overlay shadow-pastel-pink flex items-center justify-center anime-glow-lg">
-                                        <IoMusicalNotes className="text-pastel-pink" size={60} />
+                                    <div className={`absolute inset-0 flex items-center justify-center ${clay ? 'rounded-[16px]' : 'bg-overlay shadow-pastel-pink anime-glow-lg'}`}
+                                        style={clay ? { ...glassCard, borderRadius: 16 } : undefined}>
+                                        <IoMusicalNotes className={clay ? 'text-[--text-muted]' : 'text-pastel-pink'} size={60} />
                                     </div>
                                 </div>
-                                <h2 className="text-xl font-bold">{currenttrack.title}</h2>
+                                <h2 className="text-xl font-bold text-[--text-color]">{currenttrack.title}</h2>
                                 <p className="text-[--text-muted]">{currenttrack.artist} — {currenttrack.album}</p>
                                 <p className="text-[11px] text-[--text-muted] mt-1">{currenttrackindex + 1} of {playlist.length}</p>
                             </div>
                         </div>
 
-                        <div className="p-6 border-t border-[--border-color] bg-surface">
+                        <div className={`p-6 border-t ${clay ? 'border-[--glass-border]' : 'border-[--border-color] bg-surface'}`}>
                             <div className="max-w-xl mx-auto">
                                 <div className="mb-4" ref={progressref} onClick={handleseek}>
-                                    <div className="h-1 bg-[--border-color] cursor-pointer">
-                                        <div className="h-full bg-pastel-pink transition-all" style={{ width: `${progress}%` }} />
+                                    <div className={`h-1 cursor-pointer ${clay ? 'rounded-full bg-[--bg-glass-active]' : 'bg-[--border-color]'}`}>
+                                        <div className={`h-full transition-all ${clay ? 'rounded-full' : 'bg-pastel-pink'}`}
+                                            style={clay ? { width: `${progress}%`, background: 'var(--accent-gradient)' } : { width: `${progress}%` }} />
                                     </div>
                                     <div className="flex justify-between text-xs text-[--text-muted] mt-1">
                                         <span>{formattime(currenttime)}</span>
@@ -296,20 +326,21 @@ export default function Music({ windowId }: { windowId?: string }) {
                                 </div>
 
                                 <div className="flex items-center justify-between">
-                                    <button onClick={toggleshuffle} className={`p-2 transition-colors ${isshuffle ? 'text-pastel-pink' : 'text-[--text-muted]'}`}>
+                                    <button onClick={toggleshuffle} className={`p-2 transition-colors ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : ''} ${isshuffle ? (clay ? 'text-accent' : 'text-pastel-pink') : 'text-[--text-muted]'}`}>
                                         <IoShuffle size={20} />
                                     </button>
                                     <div className="flex items-center gap-6">
-                                        <button onClick={prev} className="text-[--text-color] hover:text-pastel-pink transition-colors"><IoPlaySkipBack size={24} /></button>
+                                        <button onClick={prev} className={`text-[--text-color] transition-colors ${clay ? 'hover:text-accent active:scale-[0.97]' : 'hover:text-pastel-pink'}`}><IoPlaySkipBack size={24} /></button>
                                         <button
                                             onClick={toggle}
-                                            className="w-12 h-12 bg-overlay text-[--text-color] hover:text-pastel-pink flex items-center justify-center transition-colors anime-hover"
+                                            className={`w-12 h-12 flex items-center justify-center transition-all ${clay ? 'rounded-full active:scale-[0.97] text-white' : 'bg-overlay text-[--text-color] hover:text-pastel-pink anime-hover'}`}
+                                            style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                                         >
                                             {isplaying ? <IoPause size={24} /> : <IoPlay size={24} className="ml-0.5" />}
                                         </button>
-                                        <button onClick={next} className="text-[--text-color] hover:text-pastel-pink transition-colors"><IoPlaySkipForward size={24} /></button>
+                                        <button onClick={next} className={`text-[--text-color] transition-colors ${clay ? 'hover:text-accent active:scale-[0.97]' : 'hover:text-pastel-pink'}`}><IoPlaySkipForward size={24} /></button>
                                     </div>
-                                    <button onClick={togglerepeat} className={`p-2 transition-colors ${isrepeat ? 'text-pastel-pink' : 'text-[--text-muted]'}`}>
+                                    <button onClick={togglerepeat} className={`p-2 transition-colors ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : ''} ${isrepeat ? (clay ? 'text-accent' : 'text-pastel-pink') : 'text-[--text-muted]'}`}>
                                         <IoRepeat size={20} />
                                     </button>
                                 </div>
@@ -322,7 +353,7 @@ export default function Music({ windowId }: { windowId?: string }) {
                                         max="100"
                                         value={volume}
                                         onChange={(e) => setvolume(Number(e.target.value))}
-                                        className="w-24 accent-pastel-blue"
+                                        className={`w-24 ${clay ? 'accent-[--accent-color]' : 'accent-pastel-blue'}`}
                                     />
                                 </div>
                             </div>

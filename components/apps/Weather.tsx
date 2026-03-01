@@ -3,6 +3,8 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useMenuAction } from '../hooks/useMenuAction';
 import { useMenuRegistration } from '../AppMenuContext';
 import { useWindows } from '../WindowContext';
+import { useIsClay } from '../hooks/useIsClay';
+import { glassCard, glassInput, glassButton, clayClasses } from '../hooks/useClayStyles';
 
 interface GeoResult { name: string; country: string; latitude: number; longitude: number }
 interface CurrentWeather { temp: number; feelsLike: number; humidity: number; wind: number; pressure: number; uv: number; code: number }
@@ -29,6 +31,7 @@ function fmtTime(iso: string) {
 export default function Weather({ appId = 'weather', id }: { appId?: string; id?: string }) {
     const { activewindow } = useWindows();
     const isActiveWindow = activewindow === id;
+    const clay = useIsClay();
 
     const [query, setQuery] = useState('');
     const [suggestions, setSuggestions] = useState<GeoResult[]>([]);
@@ -128,18 +131,31 @@ export default function Weather({ appId = 'weather', id }: { appId?: string; id?
     const [desc, emoji] = current ? weatherInfo(current.code) : ['--', '\u2601\uFE0F'];
 
     return (
-        <div className="h-full flex flex-col bg-[--bg-base] text-[--text-color] overflow-hidden select-none font-mono">
-            <div className="relative px-4 pt-3 pb-2">
+        <div className={`h-full flex flex-col text-[--text-color] overflow-hidden select-none ${clay ? 'bg-[--bg-base]' : 'bg-[--bg-base] font-mono'}`}>
+            {/* Search toolbar */}
+            <div className={`relative px-4 pt-3 pb-2 ${clay ? 'border-b border-[--glass-border]' : ''}`}>
                 <input
-                    className="w-full bg-overlay border border-[--border-color] px-3 py-2 text-[13px] outline-none text-[--text-color] placeholder-[--text-muted] focus:border-accent"
+                    className={`w-full px-4 py-2.5 text-[13px] outline-none text-[--text-color] placeholder-[--text-muted] ${clay
+                        ? 'rounded-full border-none'
+                        : 'bg-overlay border border-[--border-color] focus:border-accent'
+                    }`}
+                    style={clay ? glassInput : undefined}
                     placeholder="Search city..."
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                 />
                 {suggestions.length > 0 && (
-                    <div className="absolute left-4 right-4 top-full mt-1 z-50 bg-overlay border border-[--border-color] overflow-hidden">
+                    <div className={`absolute left-4 right-4 top-full mt-1 z-50 overflow-hidden ${clay
+                        ? 'rounded-[14px]'
+                        : 'bg-overlay border border-[--border-color]'
+                    }`}
+                        style={clay ? { ...glassCard, boxShadow: 'var(--shadow-md)' } : undefined}
+                    >
                         {suggestions.map((s, i) => (
-                            <button key={i} className="w-full text-left px-3 py-2 text-[13px] hover:bg-surface transition-colors truncate" onClick={() => selectCity(s)}>
+                            <button key={i} className={`w-full text-left px-4 py-2.5 text-[13px] transition-all truncate text-[--text-color] ${clay
+                                ? `hover:bg-[--bg-glass-hover] ${clayClasses.interactivePress}`
+                                : 'hover:bg-surface transition-colors'
+                            }`} onClick={() => selectCity(s)}>
                                 {s.name}, {s.country}
                             </button>
                         ))}
@@ -153,16 +169,26 @@ export default function Weather({ appId = 'weather', id }: { appId?: string; id?
                 <div className="flex-1 flex items-center justify-center text-pastel-red text-[13px]">{error}</div>
             ) : current ? (
                 <div className="flex-1 overflow-y-auto px-4 pb-4">
-                    <div className="max-w-[640px] mx-auto">
-                        <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Current Weather</div>
-                        <div className="bg-overlay border border-[--border-color] overflow-hidden mb-6">
+                    <div className="max-w-[640px] mx-auto pt-2">
+                        {/* Current Weather */}
+                        <div className={`text-[11px] uppercase font-semibold text-[--text-muted] mb-2 ${clay ? 'pl-1 tracking-wider' : 'pl-3'}`}>Current Weather</div>
+                        <div
+                            className={`overflow-hidden mb-5 ${clay ? 'rounded-[16px]' : 'bg-overlay border border-[--border-color]'}`}
+                            style={clay ? glassCard : undefined}
+                        >
                             <div className="p-5">
                                 <div className="flex items-start justify-between">
                                     <div>
                                         <p className="text-[11px] text-[--text-muted] uppercase tracking-wide">{city?.name}{city?.country ? `, ${city.country}` : ''}</p>
                                         <div className="flex items-baseline gap-2 mt-1">
                                             <span className="text-5xl font-extralight tracking-tight text-[--text-color]">{toUnit(current.temp)}{unitLabel}</span>
-                                            <button onClick={() => setUseFahrenheit(!useFahrenheit)} className="text-[11px] text-pastel-blue hover:underline cursor-pointer">
+                                            <button
+                                                onClick={() => setUseFahrenheit(!useFahrenheit)}
+                                                className={`text-[11px] cursor-pointer ${clay
+                                                    ? `font-medium px-2 py-0.5 rounded-[8px] text-[--text-muted] hover:bg-[--bg-glass-hover] ${clayClasses.interactivePress}`
+                                                    : 'text-pastel-blue hover:underline'
+                                                }`}
+                                            >
                                                 {useFahrenheit ? '\u00B0C' : '\u00B0F'}
                                             </button>
                                         </div>
@@ -171,73 +197,100 @@ export default function Weather({ appId = 'weather', id }: { appId?: string; id?
                                     <span className="text-6xl mt-1">{emoji}</span>
                                 </div>
                             </div>
-                            <div className="border-t border-[--border-color]">
-                                <div className="grid grid-cols-4">
+                            <div className={clay ? '' : 'border-t border-[--border-color]'}>
+                                {clay && <div className="h-[1px] mx-4 bg-[--text-muted] opacity-10" />}
+                                <div className={`grid grid-cols-4 ${clay ? 'py-1' : ''}`}>
                                     {[
-                                        ['Feels Like', `${toUnit(current.feelsLike)}${unitLabel}`, 'text-pastel-peach'],
-                                        ['Humidity', `${current.humidity}%`, 'text-pastel-blue'],
-                                        ['Wind', `${Math.round(current.wind)} km/h`, 'text-pastel-teal'],
-                                        ['UV Index', `${Math.round(current.uv)}`, 'text-pastel-red'],
-                                    ].map(([label, val, color], i) => (
-                                        <div key={label as string} className={`text-center py-3 ${i < 3 ? 'border-r border-[--border-color]' : ''}`}>
+                                        ['Feels Like', `${toUnit(current.feelsLike)}${unitLabel}`],
+                                        ['Humidity', `${current.humidity}%`],
+                                        ['Wind', `${Math.round(current.wind)} km/h`],
+                                        ['UV Index', `${Math.round(current.uv)}`],
+                                    ].map(([label, val], i) => (
+                                        <div key={label as string} className={`text-center py-3 ${clay
+                                            ? ''
+                                            : i < 3 ? 'border-r border-[--border-color]' : ''
+                                        }`}>
                                             <p className="text-[10px] text-[--text-muted] uppercase tracking-wider">{label}</p>
-                                            <p className={`text-[13px] font-medium mt-0.5 ${color}`}>{val}</p>
+                                            <p className="text-[13px] font-semibold mt-0.5 text-[--text-color]">{val}</p>
                                         </div>
                                     ))}
                                 </div>
                             </div>
                         </div>
 
-                        <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Hourly Forecast</div>
-                        <div className="bg-overlay border border-[--border-color] overflow-hidden mb-6">
-                            <div className="flex gap-3 overflow-x-auto p-4 scrollbar-none">
+                        {/* Hourly Forecast */}
+                        <div className={`text-[11px] uppercase font-semibold text-[--text-muted] mb-2 ${clay ? 'pl-1 tracking-wider' : 'pl-3'}`}>Hourly Forecast</div>
+                        <div
+                            className={`overflow-hidden mb-5 ${clay ? 'rounded-[16px]' : 'bg-overlay border border-[--border-color]'}`}
+                            style={clay ? glassCard : undefined}
+                        >
+                            <div className={`flex gap-3 overflow-x-auto p-4 scrollbar-none ${clay ? 'gap-4' : ''}`}>
                                 {hourly.map((h, i) => {
                                     const [, hEmoji] = weatherInfo(h.code);
                                     return (
-                                        <div key={i} className="flex flex-col items-center gap-1 min-w-[3.5rem]">
-                                            <span className="text-[10px] text-[--text-muted]">{i === 0 ? 'Now' : fmtTime(h.time)}</span>
+                                        <div key={i} className={`flex flex-col items-center gap-1.5 min-w-[3.5rem] ${clay ? 'py-1' : ''}`}>
+                                            <span className="text-[10px] text-[--text-muted] font-medium">{i === 0 ? 'Now' : fmtTime(h.time)}</span>
                                             <span className="text-lg">{hEmoji}</span>
-                                            <span className="text-[11px] font-medium text-[--text-color]">{toUnit(h.temp)}°</span>
+                                            <span className="text-[11px] font-semibold text-[--text-color]">{toUnit(h.temp)}°</span>
                                         </div>
                                     );
                                 })}
                             </div>
                         </div>
 
-                        <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">5-Day Forecast</div>
-                        <div className="bg-overlay border border-[--border-color] overflow-hidden mb-6">
+                        {/* 5-Day Forecast */}
+                        <div className={`text-[11px] uppercase font-semibold text-[--text-muted] mb-2 ${clay ? 'pl-1 tracking-wider' : 'pl-3'}`}>5-Day Forecast</div>
+                        <div
+                            className={`overflow-hidden mb-5 ${clay ? 'rounded-[16px]' : 'bg-overlay border border-[--border-color]'}`}
+                            style={clay ? glassCard : undefined}
+                        >
                             {daily.map((d, i) => {
                                 const [, dEmoji] = weatherInfo(d.code);
                                 const range = daily.reduce((a, c) => [Math.min(a[0], c.low), Math.max(a[1], c.high)], [Infinity, -Infinity]);
                                 const pct = (v: number) => ((v - range[0]) / (range[1] - range[0])) * 100;
                                 return (
-                                    <div key={i} className={`flex items-center gap-3 px-4 py-2.5 ${i < daily.length - 1 ? 'border-b border-[--border-color]' : ''}`}>
+                                    <div key={i} className={`flex items-center gap-3 px-4 py-3 ${clay
+                                        ? i < daily.length - 1 ? 'border-b border-[--text-muted]/10' : ''
+                                        : i < daily.length - 1 ? 'border-b border-[--border-color]' : ''
+                                    }`}>
                                         <span className="text-[13px] w-10 text-[--text-muted] font-medium">{i === 0 ? 'Today' : d.day}</span>
                                         <span className="text-base w-6 text-center">{dEmoji}</span>
-                                        <span className="text-[13px] text-pastel-blue w-10 text-right">{toUnit(d.low)}°</span>
-                                        <div className="flex-1 h-1 bg-[--border-color] relative overflow-hidden">
+                                        <span className="text-[13px] text-[--text-muted] w-10 text-right font-medium">{toUnit(d.low)}°</span>
+                                        <div className={`flex-1 h-[5px] relative overflow-hidden ${clay ? 'rounded-full' : ''}`}
+                                            style={clay ? { boxShadow: 'var(--shadow-inset)', background: 'var(--bg-overlay)' } : { background: 'var(--border-color)' }}
+                                        >
                                             <div
-                                                className="absolute h-full bg-accent"
-                                                style={{ left: `${pct(d.low)}%`, right: `${100 - pct(d.high)}%` }}
+                                                className={`absolute h-full ${clay ? 'rounded-full' : ''}`}
+                                                style={clay
+                                                    ? { left: `${pct(d.low)}%`, right: `${100 - pct(d.high)}%`, background: 'var(--accent-color)' }
+                                                    : { left: `${pct(d.low)}%`, right: `${100 - pct(d.high)}%`, background: 'var(--accent-color)' }
+                                                }
                                             />
                                         </div>
-                                        <span className="text-[13px] text-pastel-peach w-10">{toUnit(d.high)}°</span>
+                                        <span className="text-[13px] text-[--text-color] w-10 font-medium">{toUnit(d.high)}°</span>
                                     </div>
                                 );
                             })}
                         </div>
 
+                        {/* Details */}
                         {daily.length > 0 && (
                             <>
-                                <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Details</div>
-                                <div className="bg-overlay border border-[--border-color] overflow-hidden mb-6">
+                                <div className={`text-[11px] uppercase font-semibold text-[--text-muted] mb-2 ${clay ? 'pl-1 tracking-wider' : 'pl-3'}`}>Details</div>
+                                <div
+                                    className={`overflow-hidden mb-5 ${clay ? 'rounded-[16px]' : 'bg-overlay border border-[--border-color]'}`}
+                                    style={clay ? glassCard : undefined}
+                                >
                                     {[
                                         ['Sunrise', fmtTime(daily[0].sunrise), '\uD83C\uDF05'],
                                         ['Sunset', fmtTime(daily[0].sunset), '\uD83C\uDF07'],
                                         ['Pressure', `${Math.round(current.pressure)} hPa`, '\uD83D\uDCCA'],
                                         ['Visibility', 'Good', '\uD83D\uDC41\uFE0F'],
                                     ].map(([label, val, icon], i, arr) => (
-                                        <div key={label as string} className={`flex items-center justify-between px-4 py-2.5 ${i < arr.length - 1 ? 'border-b border-[--border-color]' : ''}`}>
+                                        <div key={label as string} className={`flex items-center justify-between px-4 py-3 ${clay
+                                            ? i < arr.length - 1 ? 'border-b border-[--text-muted]/10' : ''
+                                            : i < arr.length - 1 ? 'border-b border-[--border-color]' : ''
+                                        }`}>
                                             <span className="text-[13px] font-medium text-[--text-color] flex items-center gap-2">
                                                 <span>{icon}</span> {label}
                                             </span>

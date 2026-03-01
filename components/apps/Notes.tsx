@@ -6,6 +6,8 @@ import { useAppPreferences } from '../AppPreferencesContext';
 import { IoAdd, IoTrashOutline, IoSearchOutline, IoPin, IoListOutline } from 'react-icons/io5';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMenuAction } from '../hooks/useMenuAction';
+import { useIsClay } from '../hooks/useIsClay';
+import { glassSidebar, glassCard, glassButton, glassInput, clayClasses } from '../hooks/useClayStyles';
 
 const NOTE_COLORS = [
     { id: 'default', label: 'Default', bg: 'transparent', dot: 'bg-[--text-muted]' },
@@ -33,7 +35,7 @@ function getInnerText(html: string): string {
     return tmp.innerText || '';
 }
 
-function FormatToolbar({ onExecCommand, contentRef }: { onExecCommand: (cmd: string, value?: string) => void, contentRef: React.RefObject<HTMLDivElement | null> }) {
+function FormatToolbar({ onExecCommand, contentRef, clay }: { onExecCommand: (cmd: string, value?: string) => void, contentRef: React.RefObject<HTMLDivElement | null>, clay?: boolean }) {
     const [activeFormats, setActiveFormats] = useState<Set<string>>(new Set());
 
     const checkFormats = useCallback(() => {
@@ -55,10 +57,11 @@ function FormatToolbar({ onExecCommand, contentRef }: { onExecCommand: (cmd: str
     }, [checkFormats]);
 
     const btnClass = (key: string) =>
-        `p-1 text-[11px] font-semibold transition-colors hover:bg-overlay ${activeFormats.has(key) ? 'text-accent' : 'text-[--text-muted]'}`;
+        `p-1.5 text-[11px] font-semibold transition-colors ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'} ${activeFormats.has(key) ? 'text-accent' : 'text-[--text-muted]'}`;
 
     return (
-        <div className="flex items-center gap-0.5 px-2 py-1 border-b border-[--border-color] bg-transparent select-none shrink-0">
+        <div className={`flex items-center gap-0.5 px-2 py-1 border-b bg-transparent select-none shrink-0 ${clay ? 'rounded-[12px] mx-1 my-1 border-[--glass-border]' : 'border-[--border-color]'}`}
+            style={clay ? glassCard : undefined}>
             <button onClick={() => onExecCommand('bold')} className={btnClass('bold')} title="Bold">
                 <span className="font-bold">B</span>
             </button>
@@ -68,7 +71,7 @@ function FormatToolbar({ onExecCommand, contentRef }: { onExecCommand: (cmd: str
             <button onClick={() => onExecCommand('underline')} className={btnClass('underline')} title="Underline">
                 <span className="underline">U</span>
             </button>
-            <div className="w-[1px] h-3 bg-[--border-color] mx-1" />
+            <div className={`w-[1px] h-3 mx-1 ${clay ? 'bg-[--glass-border]' : 'bg-[--border-color]'}`} />
             <button
                 onClick={() => {
                     const block = document.queryCommandValue('formatBlock');
@@ -94,6 +97,7 @@ export default function Notes({ isFocused = true, appId = 'notes', windowId }: {
     const { ismobile } = useDevice();
     const { activewindow } = useWindows();
     const { getPreference, setPreference } = useAppPreferences();
+    const clay = useIsClay();
 
     const [notes, setNotes] = useState<Note[]>([]);
     const [selectedNote, setSelectedNote] = useState<Note | null>(null);
@@ -270,7 +274,7 @@ export default function Notes({ isFocused = true, appId = 'notes', windowId }: {
 
     if (ismobile) {
         return (
-            <div className="flex flex-col h-full w-full bg-[--bg-base] text-[--text-color] font-mono">
+            <div className={`flex flex-col h-full w-full ${clay ? 'bg-[--bg-base]' : 'bg-[--bg-base] font-mono'} text-[--text-color]`}>
                 <AnimatePresence mode="wait">
                     {!selectedNote ? (
                         <motion.div
@@ -282,7 +286,8 @@ export default function Notes({ isFocused = true, appId = 'notes', windowId }: {
                         >
                             <div className="p-4 pb-2">
                                 <h1 className="text-3xl font-bold mb-3">Notes</h1>
-                                <div className="flex items-center gap-2 bg-overlay border border-[--border-color] px-3 py-2">
+                                <div className={`flex items-center gap-2 px-3 py-2 ${clay ? 'rounded-full' : 'bg-overlay border border-[--border-color]'}`}
+                                    style={clay ? glassInput : undefined}>
                                     <IoSearchOutline className="text-[--text-muted]" />
                                     <input
                                         type="text"
@@ -298,7 +303,8 @@ export default function Notes({ isFocused = true, appId = 'notes', windowId }: {
                                     <div
                                         key={note.id}
                                         onClick={() => setSelectedNote(note)}
-                                        className="bg-surface p-4 mb-2 active:scale-[0.98] transition-transform"
+                                        className={`p-4 mb-2 active:scale-[0.98] transition-transform ${clay ? 'rounded-[12px]' : 'bg-surface'}`}
+                                        style={clay ? glassCard : undefined}
                                     >
                                         <div className="font-semibold truncate">{note.title || 'Untitled'}</div>
                                         <div className="text-xs text-[--text-muted] mt-1 flex items-center gap-2">
@@ -308,10 +314,11 @@ export default function Notes({ isFocused = true, appId = 'notes', windowId }: {
                                     </div>
                                 ))}
                             </div>
-                            <div className="p-4 border-t border-[--border-color]">
+                            <div className={`p-4 border-t ${clay ? 'border-[--glass-border]' : 'border-[--border-color]'}`}>
                                 <button
                                     onClick={createNote}
-                                    className="w-full py-3 bg-accent text-[--bg-base] font-medium flex items-center justify-center gap-2"
+                                    className={`w-full py-3 font-medium flex items-center justify-center gap-2 ${clay ? 'rounded-[12px] text-white active:scale-[0.97]' : 'bg-accent text-[--bg-base]'}`}
+                                    style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                                 >
                                     <IoAdd size={20} />
                                     New Note
@@ -327,7 +334,7 @@ export default function Notes({ isFocused = true, appId = 'notes', windowId }: {
                             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
                             className="flex flex-col h-full"
                         >
-                            <div className="flex items-center justify-between p-4 border-b border-[--border-color]">
+                            <div className={`flex items-center justify-between p-4 border-b ${clay ? 'border-[--glass-border]' : 'border-[--border-color]'}`}>
                                 <button
                                     onClick={() => setSelectedNote(null)}
                                     className="text-accent font-medium"
@@ -348,10 +355,10 @@ export default function Notes({ isFocused = true, appId = 'notes', windowId }: {
                                         value={selectedNote.title}
                                         onChange={e => updateNote(selectedNote.id, { title: e.target.value })}
                                         placeholder="Title"
-                                        className="text-2xl font-bold bg-transparent outline-none w-full"
+                                        className="text-2xl font-bold bg-transparent outline-none w-full text-[--text-color] placeholder:text-[--text-muted]"
                                     />
                                 </div>
-                                <FormatToolbar onExecCommand={execCommand} contentRef={mobileContentRef} />
+                                <FormatToolbar onExecCommand={execCommand} contentRef={mobileContentRef} clay={clay} />
                                 <div className="flex-1 overflow-y-auto px-4 py-2">
                                     <div
                                         ref={mobileContentRef}
@@ -372,56 +379,70 @@ export default function Notes({ isFocused = true, appId = 'notes', windowId }: {
     }
 
     return (
-        <div ref={containerRef} className="flex h-full w-full bg-[--bg-base] text-[--text-color] font-mono overflow-hidden">
+        <div ref={containerRef} className={`flex h-full w-full ${clay ? 'bg-[--bg-base]' : 'bg-[--bg-base] font-mono'} text-[--text-color] overflow-hidden`}>
             <AnimatePresence mode="popLayout">
                 {showSidebar && (
                     <motion.div
                         initial={{ width: 0, opacity: 0 }}
-                        animate={{ width: 256, opacity: 1 }}
+                        animate={{ width: clay ? 230 : 256, opacity: 1 }}
                         exit={{ width: 0, opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="border-r border-[--border-color] flex flex-col bg-surface shrink-0 overflow-hidden anime-gradient-top"
+                        className={`flex flex-col shrink-0 overflow-hidden ${clay ? '' : 'border-r border-[--border-color] bg-surface anime-gradient-top'}`}
+                        style={clay ? glassSidebar : undefined}
                     >
-                        <div className="w-64 flex flex-col h-full">
-                            <div className="h-[52px] border-b border-[--border-color] flex items-center gap-2 draggable-region px-3 pt-1">
-                                <div className="flex-1 flex items-center gap-2 bg-overlay border border-[--border-color] px-2 py-1 transition-colors anime-focus">
+                        <div className={`${clay ? 'w-[230px]' : 'w-64'} flex flex-col h-full`}>
+                            <div className={`h-[52px] border-b flex items-center gap-2 draggable-region px-3 pt-1 ${clay ? 'border-[--glass-border]' : 'border-[--border-color]'}`}>
+                                <div className={`flex-1 flex items-center gap-2 px-2 py-1.5 transition-colors ${clay ? 'rounded-[12px]' : 'bg-overlay border border-[--border-color] anime-focus'}`}
+                                    style={clay ? glassInput : undefined}>
                                     <IoSearchOutline className="text-[--text-muted]" size={14} />
                                     <input
                                         type="text"
                                         placeholder="Search"
                                         value={searchQuery}
                                         onChange={e => setSearchQuery(e.target.value)}
-                                        className="flex-1 bg-transparent outline-none text-xs w-full"
+                                        className="flex-1 bg-transparent outline-none text-xs w-full text-[--text-color] placeholder:text-[--text-muted]"
                                     />
                                 </div>
                             </div>
-                            <div className="flex-1 overflow-auto bg-transparent">
-                                {filteredNotes.map(note => {
-                                    const noteColor = NOTE_COLORS.find(c => c.id === note.color) || NOTE_COLORS[0];
-                                    return (
-                                        <div
-                                            key={note.id}
-                                            onClick={() => setSelectedNote(note)}
-                                            className={`mx-2 my-1 px-3 py-2.5 cursor-pointer transition-all ${selectedNote?.id === note.id
-                                                ? 'bg-accent text-[--bg-base]'
-                                                : 'hover:bg-overlay'
+                            <div className="flex-1 overflow-auto bg-transparent px-2 py-1">
+                                <div className={clay ? 'space-y-1' : ''}>
+                                    {filteredNotes.map(note => {
+                                        const noteColor = NOTE_COLORS.find(c => c.id === note.color) || NOTE_COLORS[0];
+                                        const active = selectedNote?.id === note.id;
+                                        return (
+                                            <div
+                                                key={note.id}
+                                                onClick={() => setSelectedNote(note)}
+                                                className={`px-3 py-2.5 cursor-pointer transition-all ${
+                                                    clay
+                                                        ? `rounded-[12px] active:scale-[0.98] ${active ? 'text-white' : 'text-[--text-color] hover:bg-[--bg-glass-hover]'}`
+                                                        : `mx-0 my-1 ${active ? 'bg-accent text-[--bg-base]' : 'hover:bg-overlay'}`
                                                 }`}
-                                            style={selectedNote?.id !== note.id && note.color && note.color !== 'default' ? { background: noteColor.bg } : {}}
-                                        >
-                                            <div className="flex items-center gap-1.5">
-                                                {note.pinned && <IoPin size={11} className="shrink-0 opacity-60" />}
-                                                {note.color && note.color !== 'default' && <span className={`w-2 h-2 rounded-full shrink-0 ${noteColor.dot}`} />}
-                                                <span className="font-semibold text-[13px] truncate">{note.title || 'New Note'}</span>
+                                                style={
+                                                    clay && active
+                                                        ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' }
+                                                        : clay && !active && note.color && note.color !== 'default'
+                                                            ? { background: noteColor.bg }
+                                                            : !clay && !active && note.color && note.color !== 'default'
+                                                                ? { background: noteColor.bg }
+                                                                : undefined
+                                                }
+                                            >
+                                                <div className="flex items-center gap-1.5">
+                                                    {note.pinned && <IoPin size={11} className={`shrink-0 ${active && clay ? 'text-white/70' : 'opacity-60'}`} />}
+                                                    {note.color && note.color !== 'default' && !active && <span className={`w-2 h-2 rounded-full shrink-0 ${noteColor.dot}`} />}
+                                                    <span className={`font-semibold truncate ${clay ? 'text-[14px]' : 'text-[13px]'}`}>{note.title || 'New Note'}</span>
+                                                </div>
+                                                <div className={`text-xs mt-0.5 flex gap-2 ${active ? (clay ? 'text-white/70' : 'text-[--bg-base]/80') : 'text-[--text-muted]'}`}>
+                                                    <span className="shrink-0">{formatDate(note.updatedAt)}</span>
+                                                    <span className="truncate opacity-80">{getPreviewText(note.content).slice(0, 30) || 'No additional text'}</span>
+                                                </div>
                                             </div>
-                                            <div className={`text-xs mt-0.5 flex gap-2 ${selectedNote?.id === note.id ? 'text-[--bg-base]/80' : 'text-[--text-muted]'}`}>
-                                                <span className="shrink-0">{formatDate(note.updatedAt)}</span>
-                                                <span className="truncate opacity-80">{getPreviewText(note.content).slice(0, 30) || 'No additional text'}</span>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
+                                        );
+                                    })}
+                                </div>
                                 {filteredNotes.length === 0 && (
-                                    <div className="p-4 text-center text-[--text-muted] text-xs">
+                                    <div className={`p-4 text-center text-[--text-muted] ${clay ? 'text-[13px]' : 'text-xs'}`}>
                                         {notes.length === 0 ? 'No notes' : 'No results'}
                                     </div>
                                 )}
@@ -431,14 +452,14 @@ export default function Notes({ isFocused = true, appId = 'notes', windowId }: {
                 )}
             </AnimatePresence>
 
-            <div className="flex-1 flex flex-col min-w-0 bg-[--bg-base]">
+            <div className={`flex-1 flex flex-col min-w-0 ${clay ? 'bg-[--bg-base]' : 'bg-[--bg-base]'}`}>
                 {selectedNote ? (
                     <>
-                        <div className="h-[52px] flex items-center justify-between px-6 bg-transparent draggable-region shrink-0">
+                        <div className={`h-[52px] flex items-center justify-between px-6 bg-transparent draggable-region shrink-0 border-b ${clay ? 'border-[--glass-border]' : 'border-transparent'}`}>
                             <div className="flex items-center gap-3">
                                 <button
                                     onClick={() => setShowSidebar(!showSidebar)}
-                                    className="text-[--text-muted] hover:text-[--text-color] transition-colors p-1 hover:bg-overlay"
+                                    className={`text-[--text-muted] hover:text-[--text-color] transition-colors p-1.5 ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'}`}
                                 >
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2" />
@@ -462,21 +483,21 @@ export default function Notes({ isFocused = true, appId = 'notes', windowId }: {
                                 </div>
                                 <button
                                     onClick={() => togglePin(selectedNote.id)}
-                                    className={`p-1.5 transition-colors hover:bg-overlay ${selectedNote.pinned ? 'text-accent' : 'text-[--text-muted] hover:text-accent'}`}
+                                    className={`p-1.5 transition-colors ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'} ${selectedNote.pinned ? 'text-accent' : 'text-[--text-muted] hover:text-accent'}`}
                                     title={selectedNote.pinned ? 'Unpin' : 'Pin'}
                                 >
                                     <IoPin size={16} />
                                 </button>
                                 <button
                                     onClick={createNote}
-                                    className="p-1.5 text-[--text-muted] hover:text-accent transition-colors hover:bg-overlay"
+                                    className={`p-1.5 text-[--text-muted] hover:text-accent transition-colors ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'}`}
                                     title="New Note"
                                 >
                                     <IoAdd size={20} />
                                 </button>
                                 <button
                                     onClick={() => deleteNote(selectedNote.id)}
-                                    className="p-1.5 text-[--text-muted] hover:text-pastel-red transition-colors hover:bg-overlay"
+                                    className={`p-1.5 text-[--text-muted] hover:text-pastel-red transition-colors ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'}`}
                                     title="Delete Note"
                                 >
                                     <IoTrashOutline size={18} />
@@ -494,7 +515,7 @@ export default function Notes({ isFocused = true, appId = 'notes', windowId }: {
                                 />
                             </div>
                             <div className="max-w-3xl mx-auto px-8">
-                                <FormatToolbar onExecCommand={execCommand} contentRef={contentRef} />
+                                <FormatToolbar onExecCommand={execCommand} contentRef={contentRef} clay={clay} />
                             </div>
                             <div className="max-w-3xl mx-auto px-8 pb-8">
                                 <div
@@ -509,11 +530,11 @@ export default function Notes({ isFocused = true, appId = 'notes', windowId }: {
                         </div>
                     </>
                 ) : (
-                    <div className="flex-1 flex flex-col items-center justify-center text-[--text-muted]">
-                        <div className="w-full h-10 border-b border-[--border-color] flex items-center px-4 bg-surface draggable-region">
+                    <div className={`flex-1 flex flex-col items-center justify-center text-[--text-muted] ${clay ? 'bg-[--bg-base]' : ''}`}>
+                        <div className={`w-full h-10 border-b flex items-center px-4 draggable-region ${clay ? 'border-[--glass-border] bg-transparent' : 'border-[--border-color] bg-surface'}`}>
                             <button
                                 onClick={() => setShowSidebar(!showSidebar)}
-                                className="text-[--text-muted] hover:text-[--text-color] transition-colors"
+                                className={`text-[--text-muted] hover:text-[--text-color] transition-colors ${clay ? 'p-1.5 rounded-[8px] hover:bg-[--bg-glass-hover]' : ''}`}
                             >
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2" />
@@ -522,10 +543,11 @@ export default function Notes({ isFocused = true, appId = 'notes', windowId }: {
                             </button>
                         </div>
                         <div className="flex-1 flex flex-col items-center justify-center">
-                            <div className="text-lg mb-4 opacity-50">No Note Selected</div>
+                            <div className={`mb-4 ${clay ? 'text-lg font-semibold text-[--text-muted]' : 'text-lg opacity-50'}`}>No Note Selected</div>
                             <button
                                 onClick={createNote}
-                                className="px-4 py-2 bg-accent text-[--bg-base] text-[13px] font-medium hover:bg-accent/90 transition"
+                                className={`px-5 py-2.5 text-white text-[13px] font-medium hover:opacity-90 transition-all ${clay ? 'rounded-[12px] active:scale-[0.97]' : ''}`}
+                                style={{ background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' }}
                             >
                                 Create New Note
                             </button>

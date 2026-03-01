@@ -2,6 +2,8 @@
 import React, { useState, useCallback } from 'react';
 import { VscSend, VscAdd, VscTrash, VscSave, VscHistory } from 'react-icons/vsc';
 import { IoCodeOutline } from 'react-icons/io5';
+import { useIsClay } from '../hooks/useIsClay';
+import { glassCard, glassButton, glassInput, glassSidebar } from '../hooks/useClayStyles';
 
 interface Header { key: string; value: string; enabled: boolean }
 interface SavedRequest { id: string; name: string; method: string; url: string; headers: Header[]; body: string }
@@ -15,6 +17,7 @@ const METHOD_COLORS: Record<string, string> = {
 };
 
 export default function ApiPlayground() {
+    const clay = useIsClay();
     const [method, setMethod] = useState<string>('GET');
     const [url, setUrl] = useState('');
     const [headers, setHeaders] = useState<Header[]>([{ key: 'Content-Type', value: 'application/json', enabled: true }]);
@@ -76,13 +79,16 @@ export default function ApiPlayground() {
     const statusColor = response ? (response.status >= 200 && response.status < 300 ? 'text-pastel-green' : response.status >= 400 ? 'text-pastel-red' : 'text-pastel-yellow') : '';
 
     return (
-        <div className="flex h-full bg-[--bg-base] text-[--text-color]">
-            <div className="w-56 border-r border-[--border-color] bg-surface flex flex-col">
+        <div className={`flex h-full bg-[--bg-base] text-[--text-color] ${clay ? 'font-sans' : ''}`}>
+            <div
+                className={`w-56 flex flex-col ${clay ? 'border-r border-[--glass-border]' : 'border-r border-[--border-color] bg-surface'}`}
+                style={clay ? glassSidebar : undefined}
+            >
                 <div className="p-2 text-xs font-medium text-[--text-muted] uppercase tracking-wider">Saved</div>
                 <div className="flex-1 overflow-y-auto">
                     {saved.map(req => (
                         <button key={req.id} onClick={() => loadRequest(req)}
-                            className="w-full text-left px-3 py-1.5 text-xs hover:bg-overlay truncate transition-colors">
+                            className={`w-full text-left px-3 py-1.5 text-xs truncate transition-colors ${clay ? 'rounded-[8px] mx-1 hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`}>
                             <span className={`font-mono font-bold mr-1 ${METHOD_COLORS[req.method] || ''}`}>{req.method}</span>
                             <span className="text-[--text-muted]">{req.url.replace(/^https?:\/\//, '')}</span>
                         </button>
@@ -95,7 +101,7 @@ export default function ApiPlayground() {
                 <div className="flex-1 overflow-y-auto max-h-40">
                     {history.slice(0, 20).map(req => (
                         <button key={req.id} onClick={() => loadRequest(req)}
-                            className="w-full text-left px-3 py-1 text-xs hover:bg-overlay truncate transition-colors text-[--text-muted]">
+                            className={`w-full text-left px-3 py-1 text-xs truncate transition-colors text-[--text-muted] ${clay ? 'rounded-[8px] mx-1 hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`}>
                             <span className={`font-mono font-bold mr-1 ${METHOD_COLORS[req.method] || ''}`}>{req.method}</span>
                             {req.url.replace(/^https?:\/\//, '').slice(0, 30)}
                         </button>
@@ -104,27 +110,30 @@ export default function ApiPlayground() {
             </div>
 
             <div className="flex-1 flex flex-col min-w-0">
-                <div className="flex items-center gap-2 p-3 border-b border-[--border-color] bg-surface">
+                <div className={`flex items-center gap-2 p-3 border-b ${clay ? 'border-[--glass-border]' : 'border-[--border-color] bg-surface'}`}>
                     <select value={method} onChange={e => setMethod(e.target.value)}
-                        className={`bg-overlay border border-[--border-color] px-2 py-1.5 text-xs font-mono font-bold ${METHOD_COLORS[method] || ''}`}>
+                        className={`px-2 py-1.5 text-xs font-mono font-bold ${METHOD_COLORS[method] || ''} ${clay ? 'rounded-[10px] border border-[--glass-border] outline-none' : 'bg-overlay border border-[--border-color]'}`}
+                        style={clay ? glassInput : undefined}>
                         {METHODS.map(m => <option key={m} value={m}>{m}</option>)}
                     </select>
                     <input value={url} onChange={e => setUrl(e.target.value)} placeholder="https://api.example.com/endpoint"
                         onKeyDown={e => e.key === 'Enter' && send()}
-                        className="flex-1 bg-overlay border border-[--border-color] px-3 py-1.5 text-[13px] font-mono placeholder:text-[--text-muted] focus:outline-none focus:border-pastel-blue" />
+                        className={`flex-1 px-3 py-1.5 text-[13px] font-mono placeholder:text-[--text-muted] focus:outline-none focus:border-pastel-blue ${clay ? 'rounded-[12px]' : 'bg-overlay border border-[--border-color]'}`}
+                        style={clay ? glassInput : undefined} />
                     <button onClick={send} disabled={loading}
-                        className="flex items-center gap-1 px-3 py-1.5 bg-pastel-blue text-white text-xs font-medium hover:opacity-90 disabled:opacity-50 transition-opacity">
+                        className={`flex items-center gap-1 px-3 py-1.5 bg-pastel-blue text-white text-xs font-medium hover:opacity-90 disabled:opacity-50 transition-opacity ${clay ? 'rounded-[10px] active:scale-[0.97]' : ''}`}>
                         <VscSend className="w-3 h-3" /> {loading ? 'Sending...' : 'Send'}
                     </button>
-                    <button onClick={saveRequest} className="p-1.5 hover:bg-overlay" title="Save">
+                    <button onClick={saveRequest} className={`p-1.5 ${clay ? 'rounded-[8px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'}`} title="Save">
                         <VscSave className="w-4 h-4 text-[--text-muted]" />
                     </button>
                 </div>
 
-                <div className="flex border-b border-[--border-color] bg-surface">
+                <div className={`flex border-b ${clay ? 'border-[--glass-border]' : 'border-[--border-color] bg-surface'}`}>
                     {(['headers', 'body', 'response'] as const).map(tab => (
                         <button key={tab} onClick={() => setActiveTab(tab)}
-                            className={`px-4 py-2 text-xs font-medium capitalize ${activeTab === tab ? 'border-b-2 border-pastel-blue text-pastel-blue' : 'text-[--text-muted] hover:text-[--text-color]'}`}>
+                            className={`px-4 py-2 text-xs font-medium capitalize transition-colors ${clay ? 'rounded-t-[8px]' : ''} ${activeTab === tab ? (clay ? 'text-[--text-color] border-b-2' : 'border-b-2 border-pastel-blue text-pastel-blue') : 'text-[--text-muted] hover:text-[--text-color]'}`}
+                            style={activeTab === tab && clay ? { borderBottomColor: 'var(--accent-color)' } : undefined}>
                             {tab} {tab === 'response' && response ? `(${response.status})` : ''}
                         </button>
                     ))}
@@ -145,10 +154,12 @@ export default function ApiPlayground() {
                                     <input type="checkbox" checked={h.enabled} onChange={e => updateHeader(i, 'enabled', e.target.checked)}
                                         className="accent-pastel-blue" />
                                     <input value={h.key} onChange={e => updateHeader(i, 'key', e.target.value)} placeholder="Key"
-                                        className="flex-1 bg-overlay border border-[--border-color] px-2 py-1 text-xs font-mono" />
+                                        className={`flex-1 px-2 py-1 text-xs font-mono outline-none ${clay ? 'rounded-[8px]' : 'bg-overlay border border-[--border-color]'}`}
+                                        style={clay ? glassInput : undefined} />
                                     <input value={h.value} onChange={e => updateHeader(i, 'value', e.target.value)} placeholder="Value"
-                                        className="flex-1 bg-overlay border border-[--border-color] px-2 py-1 text-xs font-mono" />
-                                    <button onClick={() => removeHeader(i)} className="p-1 hover:bg-overlay text-[--text-muted]">
+                                        className={`flex-1 px-2 py-1 text-xs font-mono outline-none ${clay ? 'rounded-[8px]' : 'bg-overlay border border-[--border-color]'}`}
+                                        style={clay ? glassInput : undefined} />
+                                    <button onClick={() => removeHeader(i)} className={`p-1 text-[--text-muted] ${clay ? 'rounded-[6px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`}>
                                         <VscTrash className="w-3 h-3" />
                                     </button>
                                 </div>
@@ -161,14 +172,18 @@ export default function ApiPlayground() {
 
                     {activeTab === 'body' && (
                         <textarea value={body} onChange={e => setBody(e.target.value)} placeholder='{"key": "value"}'
-                            className="w-full h-full bg-overlay border border-[--border-color] p-3 text-xs font-mono resize-none focus:outline-none" />
+                            className={`w-full h-full p-3 text-xs font-mono resize-none focus:outline-none ${clay ? 'rounded-[12px]' : 'bg-overlay border border-[--border-color]'}`}
+                            style={clay ? { background: 'var(--bg-glass-active)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-inset)' } : undefined} />
                     )}
 
                     {activeTab === 'response' && response && (
                         <div className="space-y-3">
                             <div className="text-xs text-[--text-muted]">
                                 Response Headers:
-                                <div className="mt-1 bg-overlay p-2 font-mono space-y-0.5">
+                                <div
+                                    className={`mt-1 p-2 font-mono space-y-0.5 ${clay ? 'rounded-[12px]' : 'bg-overlay'}`}
+                                    style={clay ? { background: 'var(--bg-glass)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-xs)' } : undefined}
+                                >
                                     {Object.entries(response.headers).map(([k, v]) => (
                                         <div key={k}><span className="text-pastel-blue">{k}</span>: {v}</div>
                                     ))}
@@ -176,7 +191,10 @@ export default function ApiPlayground() {
                             </div>
                             <div className="text-xs text-[--text-muted]">
                                 Body:
-                                <pre className="mt-1 bg-overlay p-3 font-mono text-[--text-color] overflow-auto max-h-[60vh] whitespace-pre-wrap">
+                                <pre
+                                    className={`mt-1 p-3 font-mono text-[--text-color] overflow-auto max-h-[60vh] whitespace-pre-wrap ${clay ? 'rounded-[12px]' : 'bg-overlay'}`}
+                                    style={clay ? { background: 'var(--bg-glass)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-xs)' } : undefined}
+                                >
                                     {(() => { try { return JSON.stringify(JSON.parse(response.body), null, 2); } catch { return response.body; } })()}
                                 </pre>
                             </div>

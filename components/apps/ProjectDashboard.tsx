@@ -13,6 +13,8 @@ import { useMenuAction } from '../hooks/useMenuAction';
 import { useMenuRegistration } from '../AppMenuContext';
 import { templates } from '../../utils/templates';
 import { ProjectTemplate } from '../../types/project';
+import { useIsClay } from '../hooks/useIsClay';
+import { glassCard, glassButton, glassInput } from '../hooks/useClayStyles';
 
 const categoryIcons: Record<string, React.ReactNode> = {
     'frontend': <IoGlobeOutline size={14} />,
@@ -34,10 +36,12 @@ const TemplateCard: React.FC<{
     template: ProjectTemplate;
     onSelect: (template: ProjectTemplate) => void;
 }> = ({ template, onSelect }) => {
+    const clay = useIsClay();
     return (
         <div
             onClick={() => onSelect(template)}
-            className="border border-[--border-color] bg-overlay p-4 cursor-pointer hover:bg-surface transition-all group"
+            className={`p-4 cursor-pointer transition-all group ${clay ? 'rounded-[16px] active:scale-[0.97]' : 'border border-[--border-color] bg-overlay hover:bg-surface'}`}
+            style={clay ? { background: 'var(--bg-glass)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-xs)' } : undefined}
         >
             <div className="flex items-start justify-between mb-3">
                 <div className="text-2xl">{template.icon}</div>
@@ -49,7 +53,7 @@ const TemplateCard: React.FC<{
             <p className="text-[11px] text-[--text-muted] mb-3 line-clamp-2">{template.description}</p>
             <div className="flex flex-wrap gap-1">
                 {template.stack.map(s => (
-                    <span key={s} className="px-1.5 py-0.5 bg-[--border-color] text-[10px] text-[--text-muted]">{s}</span>
+                    <span key={s} className={`px-1.5 py-0.5 text-[10px] text-[--text-muted] ${clay ? 'rounded-[6px] bg-[--bg-glass-active]' : 'bg-[--border-color]'}`}>{s}</span>
                 ))}
             </div>
         </div>
@@ -61,17 +65,21 @@ const ProjectCard: React.FC<{
     onOpen: (id: string) => void;
     onDelete: (id: string) => void;
 }> = ({ project, onOpen, onDelete }) => {
+    const clay = useIsClay();
     const template = templates.find(t => t.id === project.templateId);
     const timeAgo = getTimeAgo(project.updatedAt);
 
     return (
-        <div className="border border-[--border-color] bg-surface p-4 hover:bg-overlay transition-all group">
+        <div
+            className={`p-4 transition-all group ${clay ? 'rounded-[16px] active:scale-[0.97]' : 'border border-[--border-color] bg-surface hover:bg-overlay'}`}
+            style={clay ? { background: 'var(--bg-glass)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-xs)' } : undefined}
+        >
             <div className="flex items-start justify-between mb-2">
                 <div className="text-xl">{template?.icon || '📁'}</div>
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
                         onClick={(e) => { e.stopPropagation(); onDelete(project.id); }}
-                        className="p-1 hover:bg-overlay text-pastel-red"
+                        className={`p-1 text-pastel-red ${clay ? 'rounded-[6px] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`}
                         title="Delete project"
                     >
                         <IoTrashOutline size={12} />
@@ -86,20 +94,21 @@ const ProjectCard: React.FC<{
                 <span className="text-[10px] text-[--text-muted] flex items-center gap-0.5">
                     <IoTimeOutline size={10} /> {timeAgo}
                 </span>
-                <span className={`text-[10px] px-1.5 py-0.5 ${project.status === 'active' ? 'bg-pastel-green/20 text-pastel-green' : 'bg-[--border-color] text-[--text-muted]'}`}>
+                <span className={`text-[10px] px-1.5 py-0.5 ${clay ? 'rounded-[6px]' : ''} ${project.status === 'active' ? (clay ? 'bg-[--bg-glass-active] text-pastel-green' : 'bg-pastel-green/20 text-pastel-green') : (clay ? 'bg-[--bg-glass-active] text-[--text-muted]' : 'bg-[--border-color] text-[--text-muted]')}`}>
                     {project.status}
                 </span>
             </div>
             {project.stack && (
                 <div className="flex flex-wrap gap-1 mb-3">
                     {project.stack.slice(0, 3).map(s => (
-                        <span key={s} className="px-1.5 py-0.5 bg-[--border-color] text-[10px] text-[--text-muted]">{s}</span>
+                        <span key={s} className={`px-1.5 py-0.5 text-[10px] text-[--text-muted] ${clay ? 'rounded-[6px] bg-[--bg-glass-active]' : 'bg-[--border-color]'}`}>{s}</span>
                     ))}
                 </div>
             )}
             <button
                 onClick={() => onOpen(project.id)}
-                className="w-full py-1.5 bg-accent text-[--bg-base] text-xs font-medium flex items-center justify-center gap-1.5 transition hover:opacity-90"
+                className={`py-1.5 text-xs font-medium flex items-center justify-center gap-1.5 transition hover:opacity-90 ${clay ? 'rounded-[12px] px-5 text-white active:scale-[0.97]' : 'w-full bg-accent text-[--bg-base]'}`}
+                style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
             >
                 <IoFolderOpenOutline size={12} /> Open Project
             </button>
@@ -123,12 +132,17 @@ const CreateProjectDialog: React.FC<{
     onClose: () => void;
     onCreate: (name: string, description: string) => void;
 }> = ({ template, onClose, onCreate }) => {
+    const clay = useIsClay();
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
 
     return (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[999]" onClick={onClose}>
-            <div className="bg-surface border border-[--border-color] p-6 w-[420px]" onClick={e => e.stopPropagation()}>
+        <div className={`fixed inset-0 flex items-center justify-center z-[999] ${clay ? 'bg-black/30 backdrop-blur-sm' : 'bg-black/60'}`} onClick={onClose}>
+            <div
+                className={`p-6 w-[420px] ${clay ? 'rounded-[28px]' : 'bg-surface border border-[--border-color]'}`}
+                style={clay ? { background: 'var(--bg-glass)', backdropFilter: 'blur(var(--glass-blur-heavy))', WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-xl)' } : undefined}
+                onClick={e => e.stopPropagation()}
+            >
                 <div className="flex items-center gap-3 mb-4">
                     <div className="text-3xl">{template.icon}</div>
                     <div>
@@ -144,7 +158,8 @@ const CreateProjectDialog: React.FC<{
                             value={name}
                             onChange={e => setName(e.target.value)}
                             placeholder="my-project"
-                            className="w-full bg-overlay border border-transparent px-3 py-2 text-[13px] text-[--text-color] outline-none focus:border-accent"
+                            className={`w-full px-3 py-2 text-[13px] text-[--text-color] outline-none ${clay ? 'rounded-[12px]' : 'bg-overlay border border-transparent focus:border-accent'}`}
+                            style={clay ? glassInput : undefined}
                             autoFocus
                         />
                     </div>
@@ -154,7 +169,8 @@ const CreateProjectDialog: React.FC<{
                             value={description}
                             onChange={e => setDescription(e.target.value)}
                             placeholder="What are you building?"
-                            className="w-full bg-overlay border border-transparent px-3 py-2 text-[13px] text-[--text-color] outline-none focus:border-accent"
+                            className={`w-full px-3 py-2 text-[13px] text-[--text-color] outline-none ${clay ? 'rounded-[12px]' : 'bg-overlay border border-transparent focus:border-accent'}`}
+                            style={clay ? glassInput : undefined}
                         />
                     </div>
                 </div>
@@ -162,18 +178,22 @@ const CreateProjectDialog: React.FC<{
                 <div className="flex items-center gap-2 mb-3">
                     <span className="text-[10px] text-[--text-muted]">Stack:</span>
                     {template.stack.map(s => (
-                        <span key={s} className="px-1.5 py-0.5 bg-[--border-color] text-[10px] text-[--text-muted]">{s}</span>
+                        <span key={s} className={`px-1.5 py-0.5 text-[10px] text-[--text-muted] ${clay ? 'rounded-[6px] bg-[--bg-glass-active]' : 'bg-[--border-color]'}`}>{s}</span>
                     ))}
                 </div>
 
                 <div className="flex gap-2">
-                    <button onClick={onClose} className="flex-1 py-2 bg-overlay hover:bg-[--border-color] text-[--text-muted] text-[13px] transition">
+                    <button onClick={onClose}
+                        className={`flex-1 py-2 text-[--text-muted] text-[13px] transition ${clay ? 'rounded-[12px] active:scale-[0.97] hover:bg-[--bg-glass-hover]' : 'bg-overlay hover:bg-[--border-color]'}`}
+                        style={clay ? glassButton : undefined}
+                    >
                         Cancel
                     </button>
                     <button
                         onClick={() => { if (name.trim()) onCreate(name.trim(), description.trim()); }}
                         disabled={!name.trim()}
-                        className="flex-1 py-2 bg-accent hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-[--bg-base] text-[13px] font-medium flex items-center justify-center gap-1.5 transition"
+                        className={`flex-1 py-2 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-[13px] font-medium flex items-center justify-center gap-1.5 transition ${clay ? 'rounded-[12px] active:scale-[0.97] text-white' : 'bg-accent text-[--bg-base]'}`}
+                        style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                     >
                         <IoRocketOutline size={14} /> Create Project
                     </button>
@@ -187,6 +207,7 @@ export default function ProjectDashboard({ windowId, appId = 'projectdashboard',
     const { projects, createProject, deleteProjectById, openProject, isLoading } = useProjects();
     const { addwindow, activewindow } = useWindows();
     const { addToast } = useNotifications();
+    const clay = useIsClay();
     const isActiveWindow = activewindow === (id || windowId);
     const [selectedTemplate, setSelectedTemplate] = useState<ProjectTemplate | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
@@ -264,8 +285,8 @@ export default function ProjectDashboard({ windowId, appId = 'projectdashboard',
     const categories = ['all', 'frontend', 'fullstack', 'api', 'static'];
 
     return (
-        <div className="flex flex-col h-full bg-[--bg-base] text-[--text-color] overflow-hidden font-mono">
-            <div className="px-6 pt-5 pb-4 border-b border-[--border-color] shrink-0">
+        <div className={`flex flex-col h-full bg-[--bg-base] text-[--text-color] overflow-hidden ${clay ? 'font-sans' : 'font-mono'}`}>
+            <div className={`px-6 pt-5 pb-4 border-b shrink-0 ${clay ? 'border-[--glass-border]' : 'border-[--border-color]'}`}>
                 <div className="flex items-center justify-between mb-4">
                     <div>
                         <h1 className="text-xl font-bold flex items-center gap-2">
@@ -273,16 +294,18 @@ export default function ProjectDashboard({ windowId, appId = 'projectdashboard',
                         </h1>
                         <p className="text-xs text-[--text-muted] mt-0.5">Build, code, and ship</p>
                     </div>
-                    <div className="flex items-center gap-0 border border-[--border-color]">
+                    <div className={`flex items-center gap-0 ${clay ? 'rounded-[12px] overflow-hidden border border-[--glass-border]' : 'border border-[--border-color]'}`} style={clay ? { background: 'var(--bg-glass)' } : undefined}>
                         <button
                             onClick={() => setView('projects')}
-                            className={`px-3 py-1.5 text-xs transition ${view === 'projects' ? 'bg-accent text-[--bg-base]' : 'text-[--text-muted] hover:text-[--text-color] hover:bg-overlay'}`}
+                            className={`px-3 py-1.5 text-xs transition ${clay ? 'rounded-[10px] active:scale-[0.97]' : ''} ${view === 'projects' ? (clay ? 'text-white' : 'bg-accent text-[--bg-base]') : 'text-[--text-muted] hover:text-[--text-color] hover:bg-overlay'}`}
+                            style={view === 'projects' && clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                         >
                             My Projects
                         </button>
                         <button
                             onClick={() => setView('templates')}
-                            className={`px-3 py-1.5 text-xs transition ${view === 'templates' ? 'bg-accent text-[--bg-base]' : 'text-[--text-muted] hover:text-[--text-color] hover:bg-overlay'}`}
+                            className={`px-3 py-1.5 text-xs transition ${clay ? 'rounded-[10px] active:scale-[0.97]' : ''} ${view === 'templates' ? (clay ? 'text-white' : 'bg-accent text-[--bg-base]') : 'text-[--text-muted] hover:text-[--text-color] hover:bg-overlay'}`}
+                            style={view === 'templates' && clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                         >
                             Templates
                         </button>
@@ -295,7 +318,8 @@ export default function ProjectDashboard({ windowId, appId = 'projectdashboard',
                         value={searchQuery}
                         onChange={e => setSearchQuery(e.target.value)}
                         placeholder={view === 'projects' ? 'Search projects...' : 'Search templates...'}
-                        className="w-full bg-overlay border border-transparent pl-9 pr-3 py-2 text-[13px] text-[--text-color] outline-none focus:border-accent placeholder:text-[--text-muted]"
+                        className={`w-full pl-9 pr-3 py-2 text-[13px] text-[--text-color] outline-none focus:border-accent placeholder:text-[--text-muted] ${clay ? 'rounded-full' : 'bg-overlay border border-transparent'}`}
+                        style={clay ? { background: 'var(--bg-glass-active)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-inset)' } : undefined}
                     />
                 </div>
 
@@ -305,7 +329,8 @@ export default function ProjectDashboard({ windowId, appId = 'projectdashboard',
                             <button
                                 key={cat}
                                 onClick={() => setActiveCategory(cat)}
-                                className={`px-2.5 py-1 text-[11px] transition capitalize ${activeCategory === cat ? 'bg-accent text-[--bg-base]' : 'bg-overlay text-[--text-muted] hover:text-[--text-color]'}`}
+                                className={`px-2.5 py-1 text-[11px] transition capitalize ${clay ? 'rounded-[8px] active:scale-[0.97]' : ''} ${activeCategory === cat ? (clay ? 'text-white' : 'bg-accent text-[--bg-base]') : (clay ? 'text-[--text-muted] hover:text-[--text-color] hover:bg-[--bg-glass-hover]' : 'bg-overlay text-[--text-muted] hover:text-[--text-color]')}`}
+                                style={activeCategory === cat && clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                             >
                                 {cat}
                             </button>
@@ -328,7 +353,8 @@ export default function ProjectDashboard({ windowId, appId = 'projectdashboard',
                                 <div className="text-xs text-[--text-muted] opacity-60 mb-4">Create your first project from a template</div>
                                 <button
                                     onClick={() => setView('templates')}
-                                    className="px-4 py-2 bg-accent text-[--bg-base] text-[13px] font-medium flex items-center gap-1.5 transition hover:opacity-90"
+                                    className={`px-4 py-2 text-[13px] font-medium flex items-center gap-1.5 transition hover:opacity-90 ${clay ? 'rounded-[12px] active:scale-[0.97] text-white' : 'bg-accent text-[--bg-base]'}`}
+                                    style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                                 >
                                     <IoAddOutline size={14} /> New Project
                                 </button>
@@ -339,7 +365,8 @@ export default function ProjectDashboard({ windowId, appId = 'projectdashboard',
                                     <span className="text-[13px] text-[--text-muted]">{filteredProjects.length} project{filteredProjects.length !== 1 ? 's' : ''}</span>
                                     <button
                                         onClick={() => setView('templates')}
-                                        className="px-3 py-1.5 bg-accent text-[--bg-base] text-xs font-medium flex items-center gap-1 transition hover:opacity-90"
+                                        className={`px-3 py-1.5 text-xs font-medium flex items-center gap-1 transition hover:opacity-90 ${clay ? 'rounded-[12px] active:scale-[0.97] text-white' : 'bg-accent text-[--bg-base]'}`}
+                                        style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                                     >
                                         <IoAddOutline size={12} /> New Project
                                     </button>

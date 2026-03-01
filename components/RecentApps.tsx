@@ -9,6 +9,8 @@ import { useSettings } from './SettingsContext';
 import TintedAppIcon from './ui/TintedAppIcon';
 import { IoSearch, IoClose, IoFolderOutline, IoDocumentTextOutline } from 'react-icons/io5';
 import { useFileSystem } from './FileSystemContext';
+import { useIsClay } from './hooks/useIsClay';
+import { glassPanel } from './hooks/useClayStyles';
 
 
 
@@ -19,6 +21,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
     const { wallpaperurl, islightbackground } = useSettings();
     const { ismobile } = useDevice();
     const { files } = useFileSystem();
+    const clay = useIsClay();
     const [searchquery, setsearchquery] = useState('');
     const searchinputref = useRef<HTMLInputElement>(null);
 
@@ -77,8 +80,10 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="relative pt-16 px-6 flex flex-col items-center pointer-events-auto">
-                            <div className="w-full max-w-lg bg-surface border border-[--border-color] shadow-pastel overflow-hidden">
-                                <div className="flex items-center gap-3 px-4 py-3 border-b border-[--border-color]">
+                            <div className={`w-full max-w-lg overflow-hidden ${clay ? 'rounded-[16px]' : 'bg-surface border border-[--border-color] shadow-pastel'}`}
+                                style={clay ? glassPanel : undefined}
+                            >
+                                <div className={`flex items-center gap-3 px-4 py-3 ${clay ? 'border-b border-[--glass-border]' : 'border-b border-[--border-color]'}`}>
                                     <IoSearch className="text-[--text-muted] text-xl shrink-0" />
                                     <input
                                         ref={searchinputref}
@@ -161,7 +166,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
 
                     {windows.length === 0 && !searchquery && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
-                            <div className={`text-lg font-medium tracking-wide ${islightbackground ? 'text-black/60' : 'text-white/60'}`}
+                            <div className={`text-lg font-medium tracking-wide text-[--text-muted]`}
                                 style={{ textShadow: islightbackground ? 'none' : '0 1px 4px rgba(0,0,0,0.5)' }}>No Recent Apps</div>
                         </div>
                     )}
@@ -187,6 +192,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                                             win={win}
                                             appdata={appdata}
                                             islightbackground={islightbackground}
+                                            clay={clay}
                                             onclose={onclose}
                                             onkill={() => {
                                                 ignoreclickref.current = true;
@@ -211,7 +217,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
 });
 
 
-const AppCard = ({ win, appdata, onkill, onopen, islightbackground }: any) => {
+const AppCard = ({ win, appdata, onkill, onopen, islightbackground, clay }: any) => {
     const isdragging = useRef(false);
 
     return (
@@ -267,7 +273,9 @@ const AppCard = ({ win, appdata, onkill, onopen, islightbackground }: any) => {
                     style={{ textShadow: islightbackground ? 'none' : '0 1px 3px rgba(0,0,0,0.6)' }}>{win.title}</span>
             </div>
 
-            <div className="flex-1 w-full border-2 border-[--border-color] shadow-pastel overflow-hidden relative group anime-accent-top">
+            <div className={`flex-1 w-full overflow-hidden relative group ${clay ? 'rounded-[16px] border border-[--glass-border]' : 'border-2 border-[--border-color] shadow-pastel anime-accent-top'}`}
+                style={clay ? { boxShadow: 'var(--shadow-xs)' } : undefined}
+            >
                 <div className="absolute inset-0 z-[500] bg-transparent cursor-grab active:cursor-grabbing" />
                 {appdata?.hidePreview ? (
                     <div className="w-full h-full flex flex-col items-center justify-center gap-4 bg-[--bg-base]">

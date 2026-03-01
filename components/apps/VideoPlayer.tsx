@@ -6,6 +6,8 @@ import { useWindows } from '../WindowContext';
 import { useFileSystem } from '../FileSystemContext';
 import { useAuth } from '../AuthContext';
 import { IoVideocamOutline, IoCloudUploadOutline, IoPlayOutline, IoTrashOutline } from 'react-icons/io5';
+import { useIsClay } from '../hooks/useIsClay';
+import { glassCard } from '../hooks/useClayStyles';
 
 const SPEEDS = [0.5, 1, 1.25, 1.5, 2];
 const VIDEO_MIMETYPES = ['video/mp4', 'video/webm', 'video/ogg'];
@@ -21,6 +23,7 @@ export default function VideoPlayer({ appId = 'videoplayer', id, fileUrl }: { ap
     const { user } = useAuth();
     const isActiveWindow = activewindow === id;
 
+    const clay = useIsClay();
     const [src, setSrc] = useState<string | null>(fileUrl || null);
     const [currentVideoName, setCurrentVideoName] = useState<string>('');
     const [playing, setPlaying] = useState(false);
@@ -205,18 +208,21 @@ export default function VideoPlayer({ appId = 'videoplayer', id, fileUrl }: { ap
         return (
             <div
                 ref={containerRef}
-                className="flex flex-col h-full w-full bg-[--bg-base] text-[--text-color] font-mono overflow-hidden select-none"
+                className={`flex flex-col h-full w-full text-[--text-color] overflow-hidden select-none ${clay ? 'bg-[--bg-base] font-sans' : 'bg-[--bg-base] font-mono'}`}
                 onDragOver={e => { e.preventDefault(); setDragOver(true); }}
                 onDragLeave={() => setDragOver(false)}
                 onDrop={onDrop}
             >
                 <input ref={fileInputRef} type="file" accept="video/mp4,video/webm,video/ogg" className="hidden" onChange={onFileInput} />
 
-                <div className="h-[50px] flex items-center justify-between px-4 border-b border-[--border-color] bg-surface shrink-0">
+                <div
+                    className={`h-[40px] flex items-center justify-between px-4 shrink-0 ${clay ? 'border-b border-[--glass-border]' : 'border-b border-[--border-color] bg-surface'}`}
+                >
                     <span className="text-[13px] font-semibold">Video Library</span>
                     <button
                         onClick={() => fileInputRef.current?.click()}
-                        className="flex items-center gap-1.5 px-3 py-1 text-[12px] font-medium bg-accent text-[--bg-base] hover:opacity-90 transition-opacity"
+                        className={`flex items-center gap-1.5 px-3 py-1 text-[12px] font-medium text-white hover:opacity-90 transition-opacity ${clay ? 'rounded-[10px] active:scale-[0.97]' : ''}`}
+                        style={clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : { background: 'var(--accent-color)' }}
                     >
                         <IoCloudUploadOutline size={14} />
                         Upload
@@ -227,15 +233,18 @@ export default function VideoPlayer({ appId = 'videoplayer', id, fileUrl }: { ap
                     <div className="max-w-[640px] mx-auto">
                         {vfsVideos.length > 0 && (
                             <>
-                                <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Your Videos</div>
-                                <div className="bg-overlay border border-[--border-color] overflow-hidden mb-6">
+                                <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2 tracking-wide">Your Videos</div>
+                                <div
+                                    className={`overflow-hidden mb-6 ${clay ? 'rounded-[16px]' : 'bg-overlay border border-[--border-color]'}`}
+                                    style={clay ? glassCard : undefined}
+                                >
                                     {vfsVideos.map((video, i) => (
                                         <div
                                             key={video.id}
-                                            className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-surface transition-colors ${i < vfsVideos.length - 1 ? 'border-b border-[--border-color]' : ''}`}
+                                            className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-colors group ${clay ? 'hover:bg-[--bg-glass-hover]' : 'hover:bg-surface'} ${i < vfsVideos.length - 1 ? (clay ? 'border-b border-[--text-muted]/10' : 'border-b border-[--border-color]') : ''}`}
                                             onClick={() => playFromVFS(video)}
                                         >
-                                            <div className="w-5 h-5 flex items-center justify-center text-[--bg-base] shrink-0" style={{ backgroundColor: '#c6a0f6' }}>
+                                            <div className={`w-5 h-5 flex items-center justify-center text-white shrink-0 ${clay ? 'rounded-[6px]' : ''}`} style={clay ? { background: 'var(--accent-gradient)' } : { backgroundColor: '#c6a0f6' }}>
                                                 <IoPlayOutline size={12} />
                                             </div>
                                             <div className="flex-1 min-w-0">
@@ -245,7 +254,7 @@ export default function VideoPlayer({ appId = 'videoplayer', id, fileUrl }: { ap
                                             <span className="text-[12px] text-[--text-muted]">{video.date}</span>
                                             <button
                                                 onClick={(e) => { e.stopPropagation(); deleteItem(video.id); }}
-                                                className="p-1 text-[--text-muted] hover:text-pastel-red transition-colors opacity-0 group-hover:opacity-100"
+                                                className={`p-1 text-[--text-muted] hover:text-pastel-red transition-colors opacity-0 group-hover:opacity-100 ${clay ? 'rounded-[6px]' : ''}`}
                                             >
                                                 <IoTrashOutline size={14} />
                                             </button>
@@ -255,7 +264,7 @@ export default function VideoPlayer({ appId = 'videoplayer', id, fileUrl }: { ap
                             </>
                         )}
 
-                        <div className={`flex flex-col items-center justify-center py-16 border-2 border-dashed transition-colors ${dragOver ? 'border-accent bg-accent/5' : 'border-[--border-color]'}`}>
+                        <div className={`flex flex-col items-center justify-center py-16 border-2 border-dashed transition-colors ${clay ? 'rounded-[16px]' : ''} ${dragOver ? (clay ? 'border-[--glass-border]' : 'border-accent') : (clay ? 'border-[--glass-border]' : 'border-[--border-color]')}`} style={dragOver && clay ? { background: 'var(--bg-glass-hover)' } : undefined}>
                             <IoVideocamOutline size={48} className="text-[--text-muted] opacity-30 mb-4" />
                             <p className="text-[13px] font-medium text-[--text-muted]">
                                 {vfsVideos.length === 0 ? 'No videos yet' : 'Add more videos'}
@@ -295,21 +304,21 @@ export default function VideoPlayer({ appId = 'videoplayer', id, fileUrl }: { ap
             >
                 <div className="bg-gradient-to-t from-black/80 to-transparent pt-12 pb-3 px-4">
                     <div
-                        className="group relative h-1.5 cursor-pointer mb-3 hover:h-2.5 transition-all"
+                        className={`group relative h-1.5 cursor-pointer mb-3 hover:h-2.5 transition-all ${clay ? 'rounded-full' : ''}`}
                         style={{ background: 'rgba(255,255,255,0.2)' }}
                         onClick={seekTo}
                         onMouseDown={() => setDragging(true)}
                         onMouseUp={() => setDragging(false)}
                     >
-                        <div className="h-full bg-pastel-blue transition-all" style={{ width: `${progress}%` }} />
+                        <div className={`h-full bg-pastel-blue transition-all ${clay ? 'rounded-full' : ''}`} style={{ width: `${progress}%` }} />
                         <div
-                            className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-white shadow opacity-0 group-hover:opacity-100 transition-opacity"
+                            className={`absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-white shadow opacity-0 group-hover:opacity-100 transition-opacity ${clay ? 'rounded-full' : ''}`}
                             style={{ left: `${progress}%`, transform: `translate(-50%, -50%)` }}
                         />
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <button className="text-white/70 hover:text-white transition-colors text-xs font-mono" onClick={(e) => { e.stopPropagation(); goToLibrary(); }}>
+                        <button className={`text-white/70 hover:text-white transition-colors text-xs ${clay ? 'font-sans rounded-[8px] px-2 py-0.5 hover:bg-white/10' : 'font-mono'}`} onClick={(e) => { e.stopPropagation(); goToLibrary(); }}>
                             Library
                         </button>
 
@@ -323,12 +332,12 @@ export default function VideoPlayer({ appId = 'videoplayer', id, fileUrl }: { ap
                             )}
                         </button>
 
-                        <span className="text-xs text-white/70 tabular-nums min-w-[80px] font-mono">
+                        <span className={`text-xs text-white/70 tabular-nums min-w-[80px] ${clay ? 'font-sans' : 'font-mono'}`}>
                             {fmt(currentTime)} / {fmt(duration)}
                         </span>
 
                         {currentVideoName && (
-                            <span className="text-xs text-white/50 truncate max-w-[200px] font-mono">{currentVideoName}</span>
+                            <span className={`text-xs text-white/50 truncate max-w-[200px] ${clay ? 'font-sans' : 'font-mono'}`}>{currentVideoName}</span>
                         )}
 
                         <div className="flex-1" />
@@ -349,13 +358,13 @@ export default function VideoPlayer({ appId = 'videoplayer', id, fileUrl }: { ap
                         />
 
                         <div className="relative">
-                            <button className="text-xs text-white/70 hover:text-pastel-green transition-colors px-1.5 py-0.5 font-mono" onClick={() => setShowSpeed(!showSpeed)}>
+                            <button className={`text-xs text-white/70 hover:text-pastel-green transition-colors px-1.5 py-0.5 ${clay ? 'font-sans rounded-[8px] hover:bg-white/10' : 'font-mono'}`} onClick={() => setShowSpeed(!showSpeed)}>
                                 {speed}x
                             </button>
                             {showSpeed && (
-                                <div className="absolute bottom-8 right-0 py-1 min-w-[60px] text-center" style={{ background: 'rgba(30,30,30,0.95)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                <div className={`absolute bottom-8 right-0 py-1 min-w-[60px] text-center ${clay ? 'rounded-[12px] overflow-hidden' : ''}`} style={{ background: 'rgba(30,30,30,0.95)', border: '1px solid rgba(255,255,255,0.1)' }}>
                                     {SPEEDS.map(s => (
-                                        <button key={s} className={`block w-full px-3 py-1 text-xs font-mono transition-colors ${s === speed ? 'text-pastel-green' : 'text-white/70 hover:text-white'}`}
+                                        <button key={s} className={`block w-full px-3 py-1 text-xs transition-colors ${clay ? 'font-sans rounded-[8px]' : 'font-mono'} ${s === speed ? 'text-pastel-green' : 'text-white/70 hover:text-white'}`}
                                             onClick={() => { setSpeed(s); if (vid) vid.playbackRate = s; setShowSpeed(false); }}
                                         >{s}x</button>
                                     ))}
@@ -382,7 +391,7 @@ export default function VideoPlayer({ appId = 'videoplayer', id, fileUrl }: { ap
 
             {!playing && showControls && (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="w-16 h-16 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.5)' }}>
+                    <div className={`w-16 h-16 flex items-center justify-center ${clay ? 'rounded-[16px]' : ''}`} style={{ background: 'rgba(0,0,0,0.5)' }}>
                         <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><polygon points="8,5 19,12 8,19" /></svg>
                     </div>
                 </div>

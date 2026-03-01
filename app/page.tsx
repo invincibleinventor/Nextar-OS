@@ -204,6 +204,7 @@ const Desktop = () => {
       }
     };
     const handleToggleDesktopEffects = () => setshowdesktopeffects((prev: boolean) => !prev);
+    const handleToggleNotifications = () => setshownotificationcenter((prev: boolean) => !prev);
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('start-tour', handleStartTour);
     window.addEventListener('toggle-next', handleToggleNext);
@@ -212,6 +213,7 @@ const Desktop = () => {
     window.addEventListener('close-about', handleCloseAbout);
     window.addEventListener('tour-ended', handleTourEnded);
     window.addEventListener('toggle-desktop-effects', handleToggleDesktopEffects);
+    window.addEventListener('toggle-notifications', handleToggleNotifications);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('start-tour', handleStartTour);
@@ -221,6 +223,7 @@ const Desktop = () => {
       window.removeEventListener('close-about', handleCloseAbout);
       window.removeEventListener('tour-ended', handleTourEnded);
       window.removeEventListener('toggle-desktop-effects', handleToggleDesktopEffects);
+      window.removeEventListener('toggle-notifications', handleToggleNotifications);
     };
   }, [showappswitcher, addwindow, updatewindow, setactivewindow]);
 
@@ -358,7 +361,7 @@ const Desktop = () => {
               id: `settings-${Date.now()}`,
               appname: 'Settings',
               component: 'apps/Settings',
-              props: { initialPage: 'wallpaper' },
+              props: { initialPage: 'appearance' },
               isminimized: false,
               ismaximized: false,
             });
@@ -464,7 +467,7 @@ const Desktop = () => {
             : osstate === 'booting' ? 'opacity-0 scale-100' : 'opacity-0 scale-[0.98] pointer-events-none'}`}
         style={{ backgroundImage: `url('${wallpaperurl}')` }}
       >
-        {!ismobile && <DesktopEffects active={showdesktopeffects} />}
+        <DesktopEffects active={showdesktopeffects} />
         {!ismobile && (
           <>
             <FileModal

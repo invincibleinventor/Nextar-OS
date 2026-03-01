@@ -1,6 +1,8 @@
 'use client';
 import React, { useState } from 'react';
 import { IoRefreshOutline, IoAlertCircleOutline } from 'react-icons/io5';
+import { useIsClay } from '../hooks/useIsClay';
+import { glassPanel } from '../hooks/useClayStyles';
 
 interface ExternalAppLoaderProps {
     externalUrl: string;
@@ -9,6 +11,7 @@ interface ExternalAppLoaderProps {
 }
 
 export default function ExternalAppLoader({ externalUrl, appname, icon }: ExternalAppLoaderProps) {
+    const clay = useIsClay();
     const [loading, setloading] = useState(true);
     const [error, seterror] = useState(false);
 
@@ -30,7 +33,7 @@ export default function ExternalAppLoader({ externalUrl, appname, icon }: Extern
 
     if (error) {
         return (
-            <div className="flex flex-col items-center justify-center h-full w-full bg-[--bg-base] font-mono">
+            <div className={`flex flex-col items-center justify-center h-full w-full bg-[--bg-base] ${clay ? '' : 'font-mono'} ${clay ? 'rounded-[16px]' : ''}`} style={clay ? glassPanel : undefined}>
                 <IoAlertCircleOutline size={48} className="text-pastel-red mb-4" />
                 <h3 className="text-lg font-semibold mb-2">Failed to Load App</h3>
                 <p className="text-[13px] text-[--text-muted] mb-4 text-center max-w-xs">
@@ -38,7 +41,7 @@ export default function ExternalAppLoader({ externalUrl, appname, icon }: Extern
                 </p>
                 <button
                     onClick={reload}
-                    className="flex items-center gap-2 px-4 py-2 bg-accent text-[--text-color] text-[13px] font-medium hover:opacity-90 transition-opacity"
+                    className={`flex items-center gap-2 px-4 py-2 bg-accent text-[--text-color] text-[13px] font-medium hover:opacity-90 transition-opacity ${clay ? 'rounded-[10px]' : ''}`}
                 >
                     <IoRefreshOutline size={16} />
                     Try Again
@@ -50,9 +53,9 @@ export default function ExternalAppLoader({ externalUrl, appname, icon }: Extern
     return (
         <div className="relative w-full h-full">
             {loading && (
-                <div className="absolute inset-0 flex items-center justify-center bg-[--bg-base] z-10">
+                <div className={`absolute inset-0 flex items-center justify-center bg-[--bg-base] z-10 ${clay ? 'rounded-[16px]' : ''}`} style={clay ? glassPanel : undefined}>
                     <div className="flex flex-col items-center gap-3">
-                        <div className="w-12 h-12 bg-overlay flex items-center justify-center animate-pulse">
+                        <div className={`w-12 h-12 ${clay ? 'bg-[--bg-glass-active] rounded-[12px]' : 'bg-overlay'} flex items-center justify-center animate-pulse`}>
                             <img src={icon} alt={appname} className="w-8 h-8" />
                         </div>
                         <span className="text-[13px] text-[--text-muted]">Loading {appname}...</span>

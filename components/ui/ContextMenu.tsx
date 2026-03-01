@@ -3,6 +3,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDevice } from '../DeviceContext';
+import { useIsClay } from '../hooks/useIsClay';
+import { glassPanel, glassButton } from '../hooks/useClayStyles';
 
 interface ContextMenuProps {
     x: number;
@@ -23,6 +25,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose, classNa
     const [mounted, setMounted] = useState(false);
     const [closeable, setCloseable] = useState(false);
     const { ismobile } = useDevice();
+    const clay = useIsClay();
 
     useEffect(() => {
         setMounted(true);
@@ -91,7 +94,8 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose, classNa
                 <motion.div
                     key="context-sheet"
                     ref={menuRef}
-                    className={`fixed bottom-0 left-0 right-0 z-[600] bg-surface border-t-2 border-[--border-color] p-2 pb-8 font-mono ${className}`}
+                    className={`fixed bottom-0 left-0 right-0 z-[600] p-2 pb-8 ${clay ? 'rounded-t-[20px]' : 'bg-surface border-t-2 border-[--border-color] font-mono'} ${className}`}
+                    style={clay ? glassPanel : undefined}
                     initial={{ y: '100%' }}
                     animate={{ y: 0 }}
                     exit={{ y: '100%' }}
@@ -117,11 +121,14 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose, classNa
                                     disabled={item.disabled}
                                     className={`
                                         w-full text-left px-4 py-3 text-[17px] font-medium transition-colors
+                                        ${clay ? 'rounded-[11px] active:scale-[0.97]' : ''}
                                         ${item.disabled
                                             ? 'opacity-40 text-[--text-muted]'
                                             : item.danger
-                                                ? 'text-pastel-red active:bg-pastel-red/10'
-                                                : 'text-[--text-color] active:bg-overlay'
+                                                ? 'text-pastel-red active:bg-[--bg-glass-hover]'
+                                                : clay
+                                                    ? 'text-[--text-color] active:bg-[--bg-glass-hover]'
+                                                    : 'text-[--text-color] active:bg-overlay'
                                         }
                                     `}
                                 >
@@ -132,7 +139,8 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose, classNa
                     </div>
                     <button
                         onClick={onClose}
-                        className="w-full mt-2 py-3.5 bg-overlay border border-[--border-color] text-[17px] font-semibold text-accent active:bg-[--border-color] transition-colors"
+                        className={`w-full mt-2 py-3.5 text-[17px] font-semibold text-accent transition-colors active:scale-[0.97] ${clay ? 'rounded-[12px]' : 'bg-overlay border border-[--border-color] active:bg-[--border-color]'}`}
+                        style={clay ? glassButton : undefined}
                     >
                         Cancel
                     </button>
@@ -142,7 +150,13 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose, classNa
         );
     }
 
-    const style = {
+    const neoStyle = clay ? {
+        top: position.top,
+        left: position.left,
+        ...glassPanel,
+        backdropFilter: 'blur(var(--glass-blur-heavy))',
+        WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
+    } : {
         top: position.top,
         left: position.left,
     };
@@ -150,14 +164,17 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose, classNa
     return createPortal(
         <div
             ref={menuRef}
-            className={`fixed z-[600] min-w-[200px] bg-overlay border border-[--border-color] p-[5px] flex flex-col animate-in fade-in zoom-in-95 duration-100 font-mono anime-glow-sm ${className}`}
-            style={style}
+            className={`fixed z-[600] min-w-[210px] flex flex-col animate-in fade-in zoom-in-95 duration-100 ${clay
+                ? 'rounded-[12px] p-[5px]'
+                : 'bg-overlay border border-[--border-color] font-mono anime-glow-sm p-[5px]'
+            } ${className}`}
+            style={neoStyle}
             onClick={(e) => e.stopPropagation()}
             onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); }}
         >
             {items.map((item, index) => {
                 if (item.separator) {
-                    return <div key={`sep-${index}`} className="h-[1px] bg-[--border-color] my-1 mx-2" />;
+                    return <div key={`sep-${index}`} className={`h-[1px] mx-2.5 ${clay ? 'my-[5px] bg-[--glass-border]' : 'my-1 bg-[--border-color]'}`} />;
                 }
 
                 return (
@@ -171,12 +188,17 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose, classNa
                         }}
                         disabled={item.disabled}
                         className={`
-                            w-full text-left px-3 py-1 text-[13px] font-medium transition-colors
+                            w-full text-left text-[13px] font-medium transition-all duration-150
+                            ${clay ? 'rounded-[8px] px-3 py-[7px]' : 'px-3 py-1.5'}
                             ${item.disabled
                                 ? 'opacity-50 cursor-not-allowed text-[--text-muted]'
                                 : item.danger
-                                    ? 'text-[--text-color] hover:bg-pastel-red hover:text-[--bg-base]'
-                                    : 'text-[--text-color] hover:bg-accent hover:text-[--bg-base]'
+                                    ? clay
+                                        ? 'text-pastel-red hover:bg-pastel-red hover:text-white active:scale-[0.97]'
+                                        : 'text-[--text-color] hover:bg-pastel-red hover:text-[--bg-base]'
+                                    : clay
+                                        ? 'text-[--text-color] hover:bg-[--bg-glass-hover] active:bg-[--bg-glass-active] active:scale-[0.97]'
+                                        : 'text-[--text-color] hover:bg-accent hover:text-[--bg-base]'
                             }
                         `}
                     >

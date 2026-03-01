@@ -11,6 +11,8 @@ import { useNotifications } from '../NotificationContext';
 import { useWindows } from '../WindowContext';
 import { useMenuAction } from '../hooks/useMenuAction';
 import { useMenuRegistration } from '../AppMenuContext';
+import { useIsClay } from '../hooks/useIsClay';
+import { glassPanel, glassCard } from '../hooks/useClayStyles';
 
 interface ChecklistItem {
     id: string;
@@ -88,6 +90,7 @@ export default function ShipChecklist({ windowId, appId = 'shipchecklist', id }:
     const { currentProject, currentFiles } = useProjects();
     const { addToast } = useNotifications();
     const { activewindow } = useWindows();
+    const clay = useIsClay();
     const isActiveWindow = activewindow === (id || windowId);
     const storageKey = currentProject ? `${STORAGE_PREFIX}${currentProject.id}` : null;
 
@@ -155,10 +158,11 @@ export default function ShipChecklist({ windowId, appId = 'shipchecklist', id }:
 
     if (!currentProject) {
         return (
-            <div className="flex items-center justify-center h-full bg-[--bg-base] text-[--text-color] font-mono">
+            <div className={`flex items-center justify-center h-full text-[--text-color] ${clay ? 'bg-[--bg-base]' : 'bg-[--bg-base] font-mono'}`}>
                 <div className="text-center space-y-2">
-                    <IoRocketOutline size={32} className="mx-auto text-[--text-muted] opacity-50" />
-                    <div className="text-[13px] text-[--text-muted]">Open a project to use the Ship Checklist</div>
+                    <IoRocketOutline size={48} className="mx-auto text-[--text-muted] mb-4" />
+                    <div className="text-lg font-semibold text-[--text-color]">No Project Open</div>
+                    <div className="text-[13px] text-[--text-muted] max-w-[300px]">Open a project to use the Ship Checklist</div>
                 </div>
             </div>
         );
@@ -176,8 +180,8 @@ export default function ShipChecklist({ windowId, appId = 'shipchecklist', id }:
     }, {} as Record<string, ChecklistItem[]>);
 
     return (
-        <div className="flex flex-col h-full bg-[--bg-base] text-[--text-color] overflow-hidden font-mono">
-            <div className="px-5 pt-4 pb-3 border-b border-[--border-color] shrink-0">
+        <div className={`flex flex-col h-full text-[--text-color] overflow-hidden ${clay ? 'bg-[--bg-base]' : 'bg-[--bg-base] font-mono'}`}>
+            <div className={`px-5 pt-4 pb-3 border-b shrink-0 ${clay ? 'border-[--text-muted]/10' : 'border-[--border-color]'}`}>
                 <div className="flex items-center justify-between mb-3">
                     <div>
                         <h2 className="text-[13px] font-semibold flex items-center gap-2">
@@ -193,14 +197,15 @@ export default function ShipChecklist({ windowId, appId = 'shipchecklist', id }:
                         <div className="text-[10px] text-[--text-muted]">{done}/{total} complete</div>
                     </div>
                 </div>
-                <div className="w-full h-2 bg-overlay overflow-hidden">
+                <div className={`w-full h-2 overflow-hidden ${clay ? 'rounded-full' : 'bg-overlay'}`} style={clay ? { background: 'var(--bg-glass-active)', boxShadow: 'var(--shadow-inset)' } : undefined}>
                     <div
-                        className={`h-full transition-all duration-500 ${isReady ? 'bg-pastel-green' : progress > 50 ? 'bg-pastel-peach' : 'bg-accent'}`}
+                        className={`h-full transition-all duration-500 ${clay ? 'rounded-full' : ''} ${isReady ? 'bg-pastel-green' : progress > 50 ? 'bg-pastel-peach' : 'bg-accent'}`}
                         style={{ width: `${progress}%` }}
                     />
                 </div>
                 {isReady && (
-                    <div className="mt-2 p-2 bg-pastel-green/10 border border-pastel-green/20 text-center">
+                    <div className={`mt-2 p-2 text-center ${clay ? 'rounded-[12px]' : ''}`}
+                        style={clay ? { ...glassCard } : { background: 'color-mix(in srgb, var(--pastel-green) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--pastel-green) 20%, transparent)' }}>
                         <span className="text-xs text-pastel-green font-medium">Ready to ship! All checks passed.</span>
                     </div>
                 )}
@@ -213,7 +218,7 @@ export default function ShipChecklist({ windowId, appId = 'shipchecklist', id }:
                     return (
                         <div key={category}>
                             <div className="flex items-center gap-2 mb-2">
-                                <div className="w-2 h-2" style={{ backgroundColor: catInfo.color }} />
+                                <div className={`w-2 h-2 ${clay ? 'rounded-full' : ''}`} style={{ backgroundColor: catInfo.color }} />
                                 <span className="text-xs font-medium text-[--text-muted]">{catInfo.label}</span>
                                 <span className="text-[10px] text-[--text-muted] opacity-60">{catDone}/{items.length}</span>
                             </div>
@@ -224,7 +229,8 @@ export default function ShipChecklist({ windowId, appId = 'shipchecklist', id }:
                                         <div
                                             key={item.id}
                                             onClick={() => toggleCheck(item.id)}
-                                            className={`flex items-center gap-3 px-3 py-2.5 cursor-pointer transition ${isChecked ? 'bg-overlay' : 'hover:bg-overlay'}`}
+                                            className={`flex items-center gap-3 px-3 py-2.5 cursor-pointer transition ${clay ? 'rounded-[12px] active:scale-[0.97] mb-1 hover:bg-[--bg-glass-hover]' : isChecked ? 'bg-overlay' : 'hover:bg-overlay'}`}
+                                            style={clay ? (isChecked ? glassCard : { border: '1px solid transparent' }) : undefined}
                                         >
                                             {isChecked ? (
                                                 <IoCheckmarkCircle size={18} className="text-pastel-green shrink-0" />

@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useAuth } from '../AuthContext';
 import { personal } from '../data';
 import { IoInformationCircleOutline, IoHelpCircleOutline } from 'react-icons/io5';
+import { useIsClay } from '../hooks/useIsClay';
 
 type Tab = 'about' | 'help';
 
@@ -86,35 +87,34 @@ const HELP_SECTIONS = [
 
 export default function AboutNextarOS() {
     const { user } = useAuth();
+    const clay = useIsClay();
     const [activeTab, setActiveTab] = useState<Tab>('about');
     const [expandedSection, setExpandedSection] = useState<string | null>('google-client-id');
 
     return (
-        <div className="h-full w-full bg-[--bg-base] font-mono overflow-hidden flex flex-col">
-            <div className="flex border-b border-[--border-color] shrink-0">
-                <button
-                    onClick={() => setActiveTab('about')}
-                    className={`flex items-center gap-1.5 px-4 py-2 text-xs font-medium transition-colors ${
-                        activeTab === 'about'
-                            ? 'text-[--text-color] border-b-2 border-accent'
-                            : 'text-[--text-muted] hover:text-[--text-color]'
-                    }`}
-                >
-                    <IoInformationCircleOutline size={14} />
-                    About
-                </button>
-                <button
-                    onClick={() => setActiveTab('help')}
-                    className={`flex items-center gap-1.5 px-4 py-2 text-xs font-medium transition-colors ${
-                        activeTab === 'help'
-                            ? 'text-[--text-color] border-b-2 border-accent'
-                            : 'text-[--text-muted] hover:text-[--text-color]'
-                    }`}
-                >
-                    <IoHelpCircleOutline size={14} />
-                    Help
-                </button>
+        <div className={`h-full w-full bg-[--bg-base] overflow-hidden flex flex-col ${clay ? 'font-sans' : 'font-mono'}`}>
+            <div className={`flex shrink-0 ${clay ? 'gap-1 px-3 pt-2 pb-0' : 'border-b border-[--border-color]'}`}>
+                {(['about', 'help'] as const).map(tab => (
+                    <button
+                        key={tab}
+                        onClick={() => setActiveTab(tab)}
+                        className={`flex items-center gap-1.5 px-4 py-2 text-[13px] font-medium transition-all ${
+                            clay
+                                ? activeTab === tab
+                                    ? 'text-white rounded-t-[10px] rounded-b-none'
+                                    : 'text-[--text-muted] hover:text-[--text-color] rounded-[10px] hover:bg-[--bg-glass-hover]'
+                                : activeTab === tab
+                                    ? 'text-[--text-color] border-b-2 border-accent'
+                                    : 'text-[--text-muted] hover:text-[--text-color]'
+                        }`}
+                        style={clay && activeTab === tab ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
+                    >
+                        {tab === 'about' ? <IoInformationCircleOutline size={14} /> : <IoHelpCircleOutline size={14} />}
+                        {tab === 'about' ? 'About' : 'Help'}
+                    </button>
+                ))}
             </div>
+            {clay && <div className="h-px mx-3" style={{ background: 'var(--glass-border)' }} />}
 
             <div className="flex-1 overflow-y-auto">
                 {activeTab === 'about' && (
@@ -133,7 +133,10 @@ export default function AboutNextarOS() {
                         <p className="text-xs text-[--text-muted] mb-1">Version 1.0</p>
                         <p className="text-xs text-[--text-muted] mb-4">Your personal cloud OS.</p>
 
-                        <div className="w-full max-w-[250px] space-y-2 text-[13px] text-left mb-4">
+                        <div
+                            className={`w-full max-w-[250px] space-y-2 text-[13px] text-left mb-4 ${clay ? 'p-4 rounded-[16px]' : ''}`}
+                            style={clay ? { background: 'var(--bg-glass)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-xs)' } : undefined}
+                        >
                             <div className="flex justify-between">
                                 <span className="text-[--text-muted]">User</span>
                                 <span className="text-[--text-color] font-medium">{user?.name || 'Guest'}</span>
@@ -152,7 +155,7 @@ export default function AboutNextarOS() {
                             </div>
                         </div>
 
-                        <div className="w-full pt-3 border-t border-[--border-color]">
+                        <div className={`w-full pt-3 border-t ${clay ? 'border-[--glass-border]' : 'border-[--border-color]'}`}>
                             <a
                                 href={personal.personal.socials.github}
                                 target="_blank"
@@ -168,16 +171,20 @@ export default function AboutNextarOS() {
                 {activeTab === 'help' && (
                     <div className="p-4 space-y-2">
                         {HELP_SECTIONS.map(section => (
-                            <div key={section.id} className="border border-[--border-color]">
+                            <div
+                                key={section.id}
+                                className={clay ? 'rounded-[16px] overflow-hidden' : ''}
+                                style={clay ? { background: 'var(--bg-glass)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-xs)' } : { border: '1px solid var(--border-color)' }}
+                            >
                                 <button
                                     onClick={() => setExpandedSection(expandedSection === section.id ? null : section.id)}
-                                    className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-overlay transition-colors"
+                                    className={`w-full flex items-center justify-between px-4 py-3 text-left transition-colors ${clay ? 'hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'}`}
                                 >
                                     <span className="text-[13px] font-medium text-[--text-color]">{section.title}</span>
                                     <span className="text-[--text-muted] text-xs">{expandedSection === section.id ? '\u25B2' : '\u25BC'}</span>
                                 </button>
                                 {expandedSection === section.id && (
-                                    <div className="px-4 pb-4 border-t border-[--border-color]">
+                                    <div className={`px-4 pb-4 border-t ${clay ? 'border-[--glass-border]' : 'border-[--border-color]'}`}>
                                         <pre className="text-[12px] text-[--text-color] leading-relaxed whitespace-pre-wrap font-mono mt-3">
                                             {section.content.join('\n')}
                                         </pre>

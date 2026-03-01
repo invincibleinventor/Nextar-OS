@@ -3,11 +3,14 @@ import React, { useState, useMemo } from 'react';
 import { useMenuAction } from '../hooks/useMenuAction';
 import { useMenuRegistration } from '../AppMenuContext';
 import { useWindows } from '../WindowContext';
+import { useIsClay } from '../hooks/useIsClay';
+import { glassCard, glassButton, clayClasses } from '../hooks/useClayStyles';
 
 export default function Calculator({ appId = 'calculator', id }: { appId?: string, id?: string }) {
     const [display, setdisplay] = useState('0');
     const { activewindow } = useWindows();
     const isActiveWindow = activewindow === id;
+    const clay = useIsClay();
 
     const calculatorMenus = useMemo(() => ({
         View: [
@@ -72,6 +75,92 @@ export default function Calculator({ appId = 'calculator', id }: { appId?: strin
         setoperation(null);
         setwaitingfornewvalue(false);
     };
+
+    if (clay) {
+        const neoBtn = `h-14 w-14 flex items-center justify-center text-2xl font-medium transition-all ${clayClasses.interactivePress} rounded-[12px]`;
+        const numNeo = `${neoBtn} text-[--text-color]`;
+        const opNeo = `${neoBtn} text-white`;
+        const eqNeo = `${neoBtn} text-white`;
+        const fnNeo = `${neoBtn} text-[--text-color]`;
+
+        const numBtnStyle: React.CSSProperties = {
+            ...glassCard,
+        };
+        const fnBtnStyle: React.CSSProperties = {
+            ...glassButton,
+            background: 'var(--bg-glass-hover)',
+        };
+        const opBtnStyle: React.CSSProperties = {
+            background: 'var(--pastel-peach)',
+            boxShadow: 'var(--shadow-xs)',
+            border: '1px solid var(--glass-border)',
+        };
+        const eqBtnStyle: React.CSSProperties = {
+            background: 'var(--accent-color)',
+            boxShadow: 'var(--shadow-xs)',
+            border: '1px solid var(--glass-border)',
+        };
+
+        return (
+            <div className="w-full h-full flex flex-col p-4 select-none bg-[--bg-base]">
+                {/* Display -- font-mono is OK for calculator digits */}
+                <div className="flex-1 flex items-end justify-end px-2 mb-2">
+                    <div className="text-[--text-color] text-6xl font-light tracking-tight truncate font-mono">{display}</div>
+                </div>
+                <div className="grid grid-cols-4 gap-3">
+                    <button onClick={clear} className={fnNeo} style={fnBtnStyle}>
+                        {display === '0' ? 'AC' : 'C'}
+                    </button>
+                    <button onClick={() => { setdisplay((parseFloat(display) * -1).toString()) }} className={fnNeo} style={fnBtnStyle}>
+                        +/-
+                    </button>
+                    <button onClick={() => { setdisplay((parseFloat(display) / 100).toString()) }} className={fnNeo} style={fnBtnStyle}>
+                        %
+                    </button>
+                    <button onClick={() => handleop('÷')} className={opNeo} style={opBtnStyle}>
+                        ÷
+                    </button>
+
+                    {['7','8','9'].map(n => (
+                        <button key={n} onClick={() => handlenum(n)} className={numNeo} style={numBtnStyle}>
+                            {n}
+                        </button>
+                    ))}
+                    <button onClick={() => handleop('×')} className={opNeo} style={opBtnStyle}>
+                        ×
+                    </button>
+
+                    {['4','5','6'].map(n => (
+                        <button key={n} onClick={() => handlenum(n)} className={numNeo} style={numBtnStyle}>
+                            {n}
+                        </button>
+                    ))}
+                    <button onClick={() => handleop('-')} className={opNeo} style={opBtnStyle}>
+                        -
+                    </button>
+
+                    {['1','2','3'].map(n => (
+                        <button key={n} onClick={() => handlenum(n)} className={numNeo} style={numBtnStyle}>
+                            {n}
+                        </button>
+                    ))}
+                    <button onClick={() => handleop('+')} className={opNeo} style={opBtnStyle}>
+                        +
+                    </button>
+
+                    <button onClick={() => handlenum('0')} className={`${numNeo} col-span-2 w-auto rounded-[12px] pl-6 justify-start`} style={numBtnStyle}>
+                        0
+                    </button>
+                    <button onClick={() => !display.includes('.') && setdisplay(display + '.')} className={numNeo} style={numBtnStyle}>
+                        .
+                    </button>
+                    <button onClick={calculate} className={eqNeo} style={eqBtnStyle}>
+                        =
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     const btnstyle = "h-14 w-14  flex items-center justify-center text-2xl font-medium transition active:opacity-70";
     const numbtn = `${btnstyle} bg-overlay text-[--text-color] hover:bg-[--border-color]`;
