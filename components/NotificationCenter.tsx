@@ -105,7 +105,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                         <div
                             className="flex flex-col w-full h-full"
                             style={{
-                                background: 'var(--bg-glass)',
+                                background: 'color-mix(in srgb, var(--bg-glass) 70%, transparent)',
                                 backdropFilter: 'blur(var(--glass-blur-heavy))',
                                 WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
                                 borderRadius: '0 0 28px 28px',
@@ -115,7 +115,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                             <div className="px-5 pt-14 pb-3 shrink-0 cursor-grab active:cursor-grabbing" onPointerDown={(e) => dragControls.start(e)}>
                                 <div className="flex items-end justify-between">
                                     <div>
-                                        <h1 className="text-5xl font-light text-[--text-color] tracking-tight leading-none">{time.split(' ')[0]}</h1>
+                                        <h1 className="text-5xl font-semibold text-[--text-color] tracking-tight leading-none">{time.split(' ')[0]}</h1>
                                         <div className="text-[14px] text-[--text-muted] font-medium mt-1.5">{date}</div>
                                     </div>
                                     {notifications.length > 0 && (
@@ -395,17 +395,15 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                 </AnimatePresence>
             </div>
 
+            {/* Backdrops — non-animated to prevent DOM leak */}
+            {isopen && clay && (
+                <div className="fixed inset-0 w-screen h-screen z-[699]" onClick={onclose} />
+            )}
+            {isopen && !clay && (
+                <div className="fixed inset-0 w-screen h-screen z-[699] bg-black/30" onClick={onclose} />
+            )}
+
             <AnimatePresence>
-                {isopen && clay && (
-                    <motion.div
-                        key="clay-backdrop"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 w-screen h-screen z-[699] pointer-events-auto"
-                        onClick={onclose}
-                    />
-                )}
                 {isopen && clay && (
                     <motion.div
                         key="clay-panel"
@@ -424,7 +422,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                     >
                             {/* Date & Time header */}
                             <div className="px-5 pt-5 pb-3 text-center shrink-0">
-                                <div className="text-[42px] font-light text-[--text-color] leading-none tracking-tight">
+                                <div className="text-[42px] font-semibold text-[--text-color] leading-none tracking-tight">
                                     {new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
                                 </div>
                                 <div className="text-[14px] text-[--text-muted] font-medium mt-1">
@@ -501,16 +499,6 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                         </motion.div>
                     )}
 
-                {isopen && !clay && (
-                    <motion.div
-                        key="classic-backdrop"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 0.3 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 w-screen h-screen z-[699] pointer-events-auto bg-black"
-                        onClick={onclose}
-                    />
-                )}
                 {isopen && !clay && (
                     <motion.div
                         key="classic-panel"

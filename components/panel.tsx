@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Menu from './menu';
 import { useWindows } from './WindowContext';
 import { apps, openSystemItem } from './data';
@@ -20,6 +20,20 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
     const { activewindow, windows, updatewindow, removewindow, setactivewindow, addwindow } = useWindows();
     const { setappmode, setosstate } = useDevice();
     const clay = useIsClay();
+
+    // Auto-hide panel when a window is maximized/tiled
+    const [panelhovered, setpanelhovered] = useState(false);
+    const panelhidetimer = useRef<NodeJS.Timeout | null>(null);
+    const shouldautohide = windows.some((w: any) => !w.isminimized && w.ismaximized);
+
+    const handlepanelenter = useCallback(() => {
+        if (panelhidetimer.current) { clearTimeout(panelhidetimer.current); panelhidetimer.current = null; }
+        setpanelhovered(true);
+    }, []);
+    const handlepanelleave = useCallback(() => {
+        panelhidetimer.current = setTimeout(() => setpanelhovered(false), 300);
+    }, []);
+    const panelvisible = !shouldautohide || panelhovered;
 
     const activeappname =
         windows.find((window: any) => window.id === activewindow)?.appname || 'Explorer';
@@ -187,8 +201,18 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
        ═══════════════════════════════════════════════════ */
     if (clay) {
         return (
-            <div data-tour="menubar">
-                <div className="fixed z-[300] top-0 left-0 right-0 flex items-center justify-center pointer-events-none">
+            <>
+                {/* Hover trigger zone — outside animated wrapper so it stays at viewport top */}
+                {shouldautohide && !panelhovered && (
+                    <div className="fixed z-[401] top-0 left-0 right-0 h-2" onMouseEnter={handlepanelenter} />
+                )}
+                <div
+                    data-tour="menubar"
+                    className="fixed z-[400] top-0 left-0 right-0 flex items-center justify-center pointer-events-none"
+                    onMouseEnter={handlepanelenter}
+                    onMouseLeave={handlepanelleave}
+                    style={{ transition: 'opacity 0.25s ease, transform 0.25s ease', opacity: panelvisible ? 1 : 0, transform: panelvisible ? 'translateY(0)' : 'translateY(-100%)', pointerEvents: panelvisible ? undefined : 'none' }}
+                >
                     <div
                         className="h-[38px] mt-[4px] px-2 flex items-center space-x-0.5 pointer-events-auto rounded-[16px]"
                         style={{
@@ -209,7 +233,7 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
                         </div>
                     </div>
                 </div>
-            </div>
+            </>
         );
     }
 
@@ -217,10 +241,16 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
        CLASSIC MODE — Full-width bar with status tray
        ═══════════════════════════════════════════════════ */
     return (
-        <div>
+        <>
+            {shouldautohide && !panelhovered && (
+                <div className="fixed z-[401] top-0 left-0 right-0 h-2" onMouseEnter={handlepanelenter} />
+            )}
             <div
                 data-tour="menubar"
-                className={`fixed h-[35px] z-[300] top-0 w-screen py-[6px] flex px-4 justify-between items-center content-center bg-[--bg-surface] border-b border-[--border-color] ${!clay ? 'anime-gradient-top' : ''}`}
+                className={`fixed h-[35px] z-[400] top-0 w-screen py-[6px] flex px-4 justify-between items-center content-center bg-[--bg-surface] border-b border-[--border-color] ${!clay ? 'anime-gradient-top' : ''}`}
+                onMouseEnter={handlepanelenter}
+                onMouseLeave={handlepanelleave}
+                style={{ transition: 'opacity 0.25s ease, transform 0.25s ease', opacity: panelvisible ? 1 : 0, transform: panelvisible ? 'translateY(0)' : 'translateY(-100%)', pointerEvents: panelvisible ? undefined : 'none' }}
             >
                 <div className="relative flex flex-row items-center content-center space-x-0">
                     <div className="flex items-center justify-center h-full mr-2" data-tour="dynamic-main-menu">
@@ -279,7 +309,7 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
                         {showcontrolcenter && (
                             <>
                                 <div className="fixed inset-0 z-[499]" onClick={() => setshowcontrolcenter(false)} />
-                                <div className="absolute top-8 right-0 z-[500]">
+                                <div className="absolute top-10 right-0 z-[500]">
                                     <Control isopen={showcontrolcenter} onclose={() => setshowcontrolcenter(false)} ismobile={false} />
                                 </div>
                             </>
@@ -291,6 +321,6 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
                     </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 }

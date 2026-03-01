@@ -412,6 +412,7 @@ const Desktop = () => {
 
   const StatusBar = () => {
     const [timestr, settimestr] = useState('');
+    const clay = typeof document !== 'undefined' && document.documentElement.classList.contains('clay');
 
     useEffect(() => {
       const update = () => {
@@ -426,7 +427,12 @@ const Desktop = () => {
     return (
       <motion.div
         data-tour="ios-statusbar"
-        className="absolute top-0 left-0 right-0 h-11 z-[300] flex items-center justify-between px-6 cursor-pointer bg-[--bg-surface] border-b border-[--border-color]"
+        className={`absolute top-0 left-0 right-0 h-11 z-[300] flex items-center justify-between px-6 cursor-pointer ${clay ? '' : 'bg-[--bg-surface] border-b border-[--border-color]'}`}
+        style={clay ? {
+          background: 'var(--bg-glass)',
+          backdropFilter: 'blur(var(--glass-blur-heavy))',
+          WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
+        } : undefined}
         drag="y"
         dragConstraints={{ top: 0, bottom: 0 }}
         onDragEnd={(_, info) => {
