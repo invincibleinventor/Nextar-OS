@@ -93,6 +93,21 @@ const shadeGradientsDark: Record<number, { from: string; to: string }> = {
     },
 };
 
+/* Clay-friendly saturated colors for coloured icon mode (not washed-out pastels) */
+const clayColorMap: Record<string, string> = {
+    'var(--pastel-blue)': '#4A90D9',
+    'var(--pastel-green)': '#3DA66B',
+    'var(--pastel-red)': '#D9534F',
+    'var(--pastel-yellow)': '#D4A843',
+    'var(--pastel-peach)': '#D97B4A',
+    'var(--pastel-pink)': '#C964A0',
+    'var(--pastel-teal)': '#3AA89E',
+    'var(--pastel-mauve)': '#9B6ABF',
+    'var(--pastel-lavender)': '#7B82CC',
+    'var(--text-muted)': '#6E6E80',
+    'var(--bg-overlay)': '#3A3A42',
+};
+
 const excludedApps: string[] = ['portfolio'];
 
 export default function TintedAppIcon({ appId, appName, originalIcon, size = 40, className = '', useFill = true }: TintedAppIconProps) {
@@ -132,17 +147,17 @@ export default function TintedAppIcon({ appId, appName, originalIcon, size = 40,
     if (!clay) {
         bg = entry.bg;
     } else if (isColoured) {
-        // Per-app individual color gradients
-        const appColor = entry.bg;
-        const mixTarget = useDarkGradients ? '#2a2a32' : 'white';
+        // Per-app individual color gradients — use saturated colors for clay
+        const appColor = clayColorMap[entry.bg] || entry.bg;
+        const mixTarget = useDarkGradients ? '#1a1a22' : '#f0f0f4';
         const strengths = useDarkGradients
-            ? [[75, 88], [82, 94], [90, 100]] as const
-            : [[62, 78], [72, 88], [85, 100]] as const;
+            ? [[80, 92], [86, 96], [92, 100]] as const
+            : [[70, 85], [78, 92], [88, 100]] as const;
         const [fromStr, toStr] = strengths[entry.shade] || strengths[0];
         const from = `color-mix(in srgb, ${appColor} ${fromStr}%, ${mixTarget})`;
         const to = toStr === 100 ? appColor : `color-mix(in srgb, ${appColor} ${toStr}%, ${mixTarget})`;
         bg = `linear-gradient(135deg, ${from}, ${to})`;
-        shadow = `0 1px 4px color-mix(in srgb, ${appColor} 15%, rgba(0,0,0,0.08))`;
+        shadow = `0 2px 6px color-mix(in srgb, ${appColor} 25%, rgba(0,0,0,0.12))`;
     } else {
         // Monochrome --icon-tint gradients
         const gradients = useDarkGradients ? shadeGradientsDark : shadeGradientsLight;
