@@ -240,7 +240,7 @@ export default function Launchpad({ onclose }: { onclose: () => void }) {
                         </div>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto p-5">
+                    <div className="flex-1 overflow-y-auto p-5 scrollbar-hide [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                         <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-x-4 gap-y-6">
                             {filteredapps.map(app => (
                                 <div
@@ -362,7 +362,7 @@ export default function Launchpad({ onclose }: { onclose: () => void }) {
                     </motion.div>
 
                     {/* ── App Grid ── */}
-                    <div className="flex-1 w-full overflow-y-auto overflow-x-hidden pr-1" style={{ scrollbarWidth: 'thin' }}>
+                    <div className="flex-1 w-full overflow-y-auto overflow-x-hidden scrollbar-hide [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                         <AnimatePresence mode="wait">
                             <motion.div
                                 key={`${searchterm}-${activeCategory}`}

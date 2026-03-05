@@ -4,31 +4,41 @@ import Image from 'next/image';
 import { createPortal } from 'react-dom';
 import { useNotifications } from './NotificationContext';
 import { useDevice } from './DeviceContext';
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { IoClose, IoNotificationsOutline, IoTrashOutline } from 'react-icons/io5';
 import { useIsClay } from './hooks/useIsClay';
 import { glassPanel, glassCard, glassButton } from './hooks/useClayStyles';
+import { useWindows } from './WindowContext';
 import MiniCalendar from './ui/MiniCalendar';
 
 export default function NotificationCenter({ isopen, onclose }: { isopen: boolean; onclose: () => void }) {
     const { handlenotificationclick, handleactionclick, notifications, clearnotification, clearallnotifications, markasviewed, version } = useNotifications();
     const { ismobile, osstate } = useDevice();
     const clay = useIsClay();
+    const { windows } = useWindows();
+    const hasOpenApp = windows.some((w: any) => !w.isminimized);
     const [mounted, setmounted] = useState(false);
-    const [tick, setTick] = useState(0);
 
     useEffect(() => {
         setmounted(true);
-        const timer = setTimeout(() => setTick(t => t + 1), 500);
-        return () => { setmounted(false); clearTimeout(timer); }
+        return () => { setmounted(false); }
     }, []);
 
-    useEffect(() => {
-        if (!notifications) return;
-        setTick(v => v + 1);
-    }, [version, notifications]);
-
     const unviewednotifications = notifications.filter(n => !n.viewed);
+
+    // Group notifications by app for desktop panel
+    const groupednotifications = useMemo(() => {
+        const groups: { appname: string; icon: string; items: typeof notifications }[] = [];
+        const map = new Map<string, typeof notifications>();
+        for (const n of notifications) {
+            if (!map.has(n.appname)) map.set(n.appname, []);
+            map.get(n.appname)!.push(n);
+        }
+        for (const [appname, items] of map) {
+            groups.push({ appname, icon: items[0].icon, items });
+        }
+        return groups;
+    }, [notifications]);
 
     useEffect(() => {
         if (osstate !== 'unlocked' || unviewednotifications.length === 0) return;
@@ -77,7 +87,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
                         style={{ zIndex: 700 }}
-                        className={`fixed inset-0 ${clay ? 'bg-black/20 backdrop-blur-sm' : 'bg-black'}`}
+                        className={`fixed inset-0 ${clay ? (hasOpenApp ? 'bg-black/30' : 'bg-black/20 backdrop-blur-sm') : 'bg-black'}`}
                         onClick={onclose}
                         onPointerDown={(e) => dragControls.start(e)}
                     />
@@ -99,110 +109,140 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                             }
                         }}
                         style={{ zIndex: 700 }}
-                        className={`fixed top-0 left-0 right-0 flex flex-col w-full pointer-events-auto ${clay ? 'max-h-[85vh]' : 'min-h-[70vh] max-h-[80vh]'}`}
+                        className={`fixed top-0 left-0 right-0 flex flex-col w-full pointer-events-auto max-h-[85vh]`}
                     >
-                        {clay ? (
                         <div
                             className="flex flex-col w-full h-full"
-                            style={{
-                                background: 'color-mix(in srgb, var(--bg-glass) 70%, transparent)',
-                                backdropFilter: 'blur(var(--glass-blur-heavy))',
-                                WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
+                            style={clay ? {
+                                background: hasOpenApp ? 'var(--bg-base)' : 'color-mix(in srgb, var(--bg-glass) 70%, transparent)',
+                                ...(!hasOpenApp ? { backdropFilter: 'blur(var(--glass-blur-heavy))', WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))' } : {}),
+                                borderRadius: '0 0 28px 28px',
+                            } : {
+                                background: 'var(--bg-surface)',
                                 borderRadius: '0 0 28px 28px',
                             }}
                         >
-                            {/* Compact header: time + date + clear all */}
-                            <div className="px-5 pt-14 pb-3 shrink-0 cursor-grab active:cursor-grabbing" onPointerDown={(e) => dragControls.start(e)}>
-                                <div className="flex items-end justify-between">
-                                    <div>
-                                        <h1 className="text-5xl font-semibold text-[--text-color] tracking-tight leading-none">{time.split(' ')[0]}</h1>
-                                        <div className="text-[14px] text-[--text-muted] font-medium mt-1.5">{date}</div>
-                                    </div>
+                            {/* Header */}
+                            <div className="px-5 pt-14 pb-2 shrink-0 cursor-grab active:cursor-grabbing" onPointerDown={(e) => dragControls.start(e)}>
+                                <div className="flex items-baseline justify-between mb-0.5">
+                                    <h1 className={`font-semibold text-[--text-color] tracking-tight leading-none ${clay ? 'text-4xl' : 'text-5xl'}`}>{time.split(' ')[0]}</h1>
                                     {notifications.length > 0 && (
                                         <button
                                             onClick={() => clearallnotifications()}
-                                            className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium text-[--text-muted] hover:text-[--text-color] active:scale-95 transition-all rounded-full"
-                                            style={{ background: 'var(--bg-glass-active)', border: '1px solid var(--glass-border)' }}
+                                            className={`flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium text-[--text-muted] active:scale-95 transition-all ${clay ? 'rounded-full' : ''}`}
+                                            style={clay
+                                                ? { background: 'var(--bg-glass-active)', border: '1px solid var(--glass-border)' }
+                                                : { background: 'var(--bg-overlay)', border: '1px solid var(--border-color)' }
+                                            }
                                         >
-                                            <IoTrashOutline size={13} />
+                                            <IoTrashOutline size={12} />
                                             Clear All
                                         </button>
                                     )}
                                 </div>
+                                <span className="text-[13px] text-[--text-muted] font-medium">{date}</span>
                             </div>
 
-                            {/* Notifications section label */}
-                            <div className="px-5 pb-2 pt-2 shrink-0">
-                                <span className="text-[11px] font-semibold text-[--text-muted] uppercase tracking-wider">Notifications</span>
-                            </div>
-
-                            {/* Scrollable notifications list */}
+                            {/* Notification list — grouped by app */}
                             <div
                                 ref={contentscrollref}
                                 onPointerDown={handlecontentpointerdown}
-                                className="w-full px-4 flex-1 min-h-0 overflow-y-auto"
-                                style={{ touchAction: 'pan-y', overscrollBehavior: 'contain' }}
+                                className="w-full px-4 flex-1 min-h-0 overflow-y-auto pt-3 scrollbar-hide [&::-webkit-scrollbar]:hidden"
+                                style={{ touchAction: 'pan-y', overscrollBehavior: 'contain', scrollbarWidth: 'none' as any }}
                             >
                                 {notifications.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                                    <div className="flex flex-col items-center justify-center py-16 text-center">
                                         <div
-                                            className="w-14 h-14 rounded-[14px] flex items-center justify-center mb-3"
-                                            style={{ boxShadow: 'var(--shadow-inset)', background: 'var(--bg-glass-active)' }}
+                                            className={`w-12 h-12 flex items-center justify-center mb-3 ${clay ? 'rounded-full' : ''}`}
+                                            style={clay
+                                                ? { background: 'var(--bg-glass-active)', border: '1px solid var(--glass-border)' }
+                                                : { background: 'var(--bg-overlay)' }
+                                            }
                                         >
-                                            <IoNotificationsOutline size={24} className="text-[--text-muted]" />
+                                            <IoNotificationsOutline size={20} className="text-[--text-muted]" />
                                         </div>
-                                        <p className="text-[15px] font-semibold text-[--text-color] mb-0.5">All Caught Up</p>
-                                        <p className="text-[13px] text-[--text-muted]">No new notifications</p>
+                                        <p className="text-[14px] font-medium text-[--text-color] mb-0.5">No Notifications</p>
+                                        <p className="text-[12px] text-[--text-muted]">You&apos;re all caught up</p>
                                     </div>
                                 ) : (
-                                    <div className="flex flex-col gap-2.5 sm:max-w-md sm:mx-auto pb-6">
-                                        <AnimatePresence mode='popLayout'>
-                                            {notifications.map((n) => (
-                                                <motion.div
-                                                    key={n.id}
-                                                    layout
-                                                    initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                                                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                                                    exit={{ opacity: 0, scale: 0.95, height: 0 }}
-                                                    transition={{ duration: 0.2 }}
-                                                    drag="x"
-                                                    dragConstraints={{ left: -1000, right: 1000 }}
-                                                    onDragEnd={(_, info) => {
-                                                        if (Math.abs(info.offset.x) > 80) {
-                                                            clearnotification(n.id);
-                                                        }
-                                                    }}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handlenotificationclick(n);
-                                                        onclose();
-                                                    }}
-                                                    className="w-full p-3.5 active:scale-[0.98] transition-transform relative overflow-hidden rounded-[16px]"
-                                                    style={{
-                                                        background: 'var(--bg-glass-active)',
-                                                        border: '1px solid var(--glass-border)',
-                                                        boxShadow: 'var(--shadow-xs)',
-                                                    }}
-                                                >
-                                                    <div className="flex items-start gap-3">
-                                                        <div
-                                                            className="w-[38px] h-[38px] overflow-hidden shrink-0 rounded-[10px]"
-                                                            style={{ boxShadow: '0 2px 8px -2px rgba(0,0,0,0.12)' }}
+                                    <div className="flex flex-col gap-3 sm:max-w-md sm:mx-auto pb-6">
+                                        {groupednotifications.map(group => (
+                                            <div
+                                                key={group.appname}
+                                                className={`overflow-hidden ${clay ? 'rounded-[16px]' : ''}`}
+                                                style={clay
+                                                    ? { background: 'var(--bg-glass-active)', border: '1px solid var(--glass-border)' }
+                                                    : { background: 'var(--bg-overlay)', border: '1px solid var(--border-color)' }
+                                                }
+                                            >
+                                                {/* Group header */}
+                                                <div className="flex items-center gap-2.5 px-3.5 pt-3 pb-1">
+                                                    <Image src={group.icon} width={20} height={20} className="w-5 h-5 rounded-[5px] shrink-0" alt={group.appname} />
+                                                    <span className={`text-[12px] font-semibold flex-1 ${clay ? 'text-[--text-muted] uppercase tracking-wide text-[11px]' : 'text-[--text-color]'}`}>{group.appname}</span>
+                                                    {group.items.length > 1 && (
+                                                        <span className="text-[10px] font-bold text-[--text-muted] px-1.5 py-0.5 rounded-full"
+                                                            style={{ background: clay ? 'var(--bg-glass)' : 'var(--bg-surface)' }}>
+                                                            {group.items.length}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                {/* Notifications in this group */}
+                                                <AnimatePresence mode="popLayout">
+                                                    {group.items.map((n, idx) => (
+                                                        <motion.div
+                                                            key={n.id}
+                                                            layout
+                                                            initial={{ opacity: 0, height: 0 }}
+                                                            animate={{ opacity: 1, height: 'auto' }}
+                                                            exit={{ opacity: 0, height: 0 }}
+                                                            transition={{ duration: 0.15 }}
+                                                            drag="x"
+                                                            dragConstraints={{ left: 0, right: 0 }}
+                                                            dragElastic={0.4}
+                                                            onDragEnd={(_, info) => {
+                                                                if (Math.abs(info.offset.x) > 80) {
+                                                                    clearnotification(n.id);
+                                                                }
+                                                            }}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handlenotificationclick(n);
+                                                                onclose();
+                                                            }}
+                                                            className="active:bg-[--bg-glass-hover] transition-colors cursor-pointer"
                                                         >
-                                                            <Image src={n.icon} width={38} height={38} className="w-full h-full object-cover" alt={n.appname} />
-                                                        </div>
-                                                        <div className="flex-1 min-w-0">
-                                                            <div className="flex justify-between items-center mb-0.5">
-                                                                <span className="text-[12px] font-semibold text-[--text-muted] uppercase tracking-wide">{n.appname}</span>
-                                                                <span className="text-[11px] text-[--text-muted]">{n.time}</span>
+                                                            {idx > 0 && (
+                                                                <div className="mx-3.5" style={{ borderTop: `1px solid ${clay ? 'var(--glass-border)' : 'var(--border-color)'}` }} />
+                                                            )}
+                                                            <div className="px-3.5 py-2.5">
+                                                                <div className="flex justify-between items-center mb-0.5">
+                                                                    <h3 className="text-[13px] font-semibold text-[--text-color] leading-tight truncate flex-1 mr-2">{n.title}</h3>
+                                                                    <span className="text-[10px] text-[--text-muted] shrink-0">{n.time}</span>
+                                                                </div>
+                                                                <p className="text-[12px] text-[--text-muted] leading-snug line-clamp-2">{n.description}</p>
+                                                                {n.actions && n.actions.length > 0 && (
+                                                                    <div className="flex gap-2 mt-2">
+                                                                        {n.actions.slice(0, 3).map(a => (
+                                                                            <button
+                                                                                key={a.actionId}
+                                                                                onClick={(e) => { e.stopPropagation(); handleactionclick(n, a.actionId); }}
+                                                                                className={`px-3 py-1 text-[11px] font-semibold transition-colors ${clay
+                                                                                    ? 'rounded-full border border-[--glass-border]'
+                                                                                    : 'border border-[--border-color]'
+                                                                                }`}
+                                                                                style={{ color: clay ? 'var(--accent-color)' : 'var(--pastel-blue)' }}
+                                                                            >
+                                                                                {a.label}
+                                                                            </button>
+                                                                        ))}
+                                                                    </div>
+                                                                )}
                                                             </div>
-                                                            <h3 className="text-[14px] font-semibold text-[--text-color] leading-tight mb-0.5">{n.title}</h3>
-                                                            <p className="text-[13px] text-[--text-muted] leading-snug line-clamp-3">{n.description}</p>
-                                                        </div>
-                                                    </div>
-                                                </motion.div>
-                                            ))}
-                                        </AnimatePresence>
+                                                        </motion.div>
+                                                    ))}
+                                                </AnimatePresence>
+                                            </div>
+                                        ))}
                                     </div>
                                 )}
                             </div>
@@ -215,75 +255,6 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                 <div className="w-12 h-1.5 mx-auto rounded-full" style={{ background: 'color-mix(in srgb, var(--text-muted) 35%, transparent)' }} />
                             </div>
                         </div>
-                        ) : (
-                        <div
-                            className="flex flex-col w-full h-full"
-                            style={{ backgroundColor: 'var(--bg-surface)' }}
-                        >
-                            <div
-                                className="flex flex-col items-center mt-16 mb-6 shrink-0 cursor-grab active:cursor-grabbing"
-                                onPointerDown={(e) => dragControls.start(e)}
-                            >
-                                <h1 className="text-7xl font-medium text-[--text-color] tracking-tight">{time.split(' ')[0]}</h1>
-                                <div className="text-xl text-[--text-muted] font-medium mt-1">{date}</div>
-                            </div>
-
-                            <div ref={contentscrollref} onPointerDown={handlecontentpointerdown} className="w-full px-4 flex-1 min-h-0 overflow-y-auto cursor-grab active:cursor-grabbing" style={{ touchAction: 'pan-y', overscrollBehavior: 'contain' }}>
-                                {notifications.length === 0 ? (
-                                    <div className="text-center text-[--text-muted] mt-8 mb-4 text-lg font-medium">No Notifications</div>
-                                ) : (
-                                    <div className="flex flex-col gap-3 max-w-md mx-auto pt-2 pb-8">
-                                        <AnimatePresence mode='popLayout'>
-                                            {notifications.map((n) => (
-                                                <motion.div
-                                                    key={n.id}
-                                                    layout
-                                                    initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                                                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                                                    exit={{ opacity: 0, scale: 0.95, height: 0 }}
-                                                    transition={{ duration: 0.2 }}
-                                                    drag="x"
-                                                    dragConstraints={{ left: -1000, right: 1000 }}
-                                                    onDragEnd={(_, info) => {
-                                                        if (Math.abs(info.offset.x) > 80) {
-                                                            clearnotification(n.id);
-                                                        }
-                                                    }}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handlenotificationclick(n);
-                                                        onclose();
-                                                    }}
-                                                    className="w-full p-4 active:scale-[0.98] transition-transform relative overflow-hidden bg-overlay border border-[--border-color] anime-accent-left"
-                                                >
-                                                    <div className="flex items-start gap-4">
-                                                        <div className="w-[42px] h-[42px] overflow-hidden shrink-0">
-                                                            <Image src={n.icon} width={42} height={42} className="w-full h-full object-cover" alt={n.appname} />
-                                                        </div>
-                                                        <div className="flex-1 min-w-0 pt-0.5">
-                                                            <div className="flex justify-between items-baseline mb-0.5">
-                                                                <span className="text-[15px] font-semibold text-[--text-color] truncate">{n.appname}</span>
-                                                                <span className="text-[13px] text-[--text-muted]">{n.time}</span>
-                                                            </div>
-                                                            <h3 className="text-[15px] font-semibold text-[--text-color] leading-tight mb-0.5">{n.title}</h3>
-                                                            <p className="text-[15px] text-[--text-color] opacity-80 leading-snug line-clamp-3">{n.description}</p>
-                                                        </div>
-                                                    </div>
-                                                </motion.div>
-                                            ))}
-                                        </AnimatePresence>
-                                    </div>
-                                )}
-                            </div>
-
-                            <div
-                                className="py-3 pb-4 shrink-0 cursor-grab active:cursor-grabbing"
-                                onPointerDown={(e) => dragControls.start(e)}
-                            >
-                                <div className="w-12 h-1.5 mx-auto rounded-full" style={{ background: 'color-mix(in srgb, var(--text-muted) 40%, transparent)' }} />
-                            </div>
-                        </div>
-                        )}
                     </motion.div>
                 </>,
                 document.body
@@ -421,79 +392,111 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                         onClick={(e) => e.stopPropagation()}
                     >
                             {/* Date & Time header */}
-                            <div className="px-5 pt-5 pb-3 text-center shrink-0">
-                                <div className="text-[42px] font-semibold text-[--text-color] leading-none tracking-tight">
-                                    {new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                            <div className="px-5 pt-5 pb-2 shrink-0">
+                                <div className="flex items-baseline justify-between">
+                                    <div className="text-[36px] font-semibold text-[--text-color] leading-none tracking-tight">
+                                        {new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                                    </div>
+                                    {notifications.length > 0 && (
+                                        <button
+                                            onClick={() => clearallnotifications()}
+                                            className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-[--text-muted] hover:text-[--text-color] active:scale-95 transition-all rounded-full"
+                                            style={{ background: 'var(--bg-glass-active)' }}
+                                        >
+                                            <IoTrashOutline size={11} />
+                                            Clear
+                                        </button>
+                                    )}
                                 </div>
-                                <div className="text-[14px] text-[--text-muted] font-medium mt-1">
+                                <div className="text-[13px] text-[--text-muted] font-medium mt-0.5">
                                     {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
                                 </div>
                             </div>
 
                             {/* Mini calendar */}
-                            <div className="mx-4 mb-3 p-3 rounded-[14px]"
+                            <div className="mx-4 mb-2 p-2.5 rounded-[14px]"
                                 style={glassCard}
                             >
                                 <MiniCalendar />
                             </div>
 
-                            {/* Notifications section */}
-                            <div className="px-4 pb-2 shrink-0">
-                                <div className="flex justify-between items-center">
-                                    <span className="text-[12px] font-semibold text-[--text-muted] uppercase tracking-wide">Notifications</span>
-                                    {notifications.length > 0 && (
-                                        <button
-                                            onClick={() => clearallnotifications()}
-                                            className="text-[11px] font-medium text-[--text-muted] hover:text-[--text-color] active:scale-95 transition-all"
-                                        >
-                                            Clear All
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-2">
+                            {/* Notifications — grouped by app */}
+                            <div className="flex-1 overflow-y-auto px-4 pb-4 scrollbar-hide [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none' }}>
                                 {notifications.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center py-8 text-center">
-                                        <div className="w-12 h-12 rounded-[12px] flex items-center justify-center mb-3"
-                                            style={{ boxShadow: 'var(--shadow-inset)', background: 'var(--bg-overlay)' }}
+                                    <div className="flex flex-col items-center justify-center py-10 text-center">
+                                        <div
+                                            className="w-11 h-11 rounded-full flex items-center justify-center mb-2.5"
+                                            style={{ background: 'var(--bg-glass-active)', border: '1px solid var(--glass-border)' }}
                                         >
-                                            <IoNotificationsOutline size={22} className="text-[--text-muted]" />
+                                            <IoNotificationsOutline size={20} className="text-[--text-muted]" />
                                         </div>
-                                        <p className="text-[--text-muted] text-[13px] font-medium">No Notifications</p>
+                                        <p className="text-[13px] font-medium text-[--text-color]">No Notifications</p>
+                                        <p className="text-[11px] text-[--text-muted] mt-0.5">You&apos;re all caught up</p>
                                     </div>
                                 ) : (
-                                    notifications.map(n => (
-                                        <motion.div
-                                            key={n.id}
-                                            layout
-                                            initial={{ opacity: 0, y: 8 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, scale: 0.95 }}
-                                            className="group relative w-full p-3 rounded-[16px] transition-all cursor-pointer active:scale-[0.98]"
-                                            style={glassCard}
-                                            onClick={() => handlenotificationclick(n)}
-                                        >
-                                            <button
-                                                onClick={(e) => { e.stopPropagation(); clearnotification(n.id); }}
-                                                className="absolute top-2 right-2 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-all"
-                                                style={{ background: 'var(--bg-glass-active)', boxShadow: 'var(--shadow-xs)' }}
-                                            >
-                                                <IoClose size={12} className="text-[--text-muted]" />
-                                            </button>
-                                            <div className="flex items-start gap-2.5">
-                                                <Image src={n.icon} width={32} height={32} className="w-8 h-8 shrink-0 rounded-[8px]" alt={n.appname} />
-                                                <div className="flex-1 min-w-0 text-left pr-5">
-                                                    <div className="flex justify-between items-center mb-0.5">
-                                                        <span className="font-semibold text-[10px] uppercase tracking-wide text-[--text-muted]">{n.appname}</span>
-                                                        <span className="text-[10px] text-[--text-muted]">{n.time}</span>
-                                                    </div>
-                                                    <h4 className="font-semibold text-[13px] text-[--text-color] leading-tight">{n.title}</h4>
-                                                    <p className="text-[12px] text-[--text-muted] leading-snug mt-0.5 line-clamp-2">{n.description}</p>
+                                    <div className="flex flex-col gap-2.5">
+                                        {groupednotifications.map(group => (
+                                            <div key={group.appname} className="rounded-[16px] overflow-hidden" style={glassCard}>
+                                                {/* App group header */}
+                                                <div className="flex items-center gap-2 px-3 pt-2.5 pb-1">
+                                                    <Image src={group.icon} width={16} height={16} className="w-4 h-4 rounded-[4px]" alt={group.appname} />
+                                                    <span className="text-[11px] font-semibold text-[--text-muted] uppercase tracking-wide flex-1">{group.appname}</span>
+                                                    {group.items.length > 1 && (
+                                                        <span className="text-[10px] font-semibold text-[--text-muted] px-1.5 py-0.5 rounded-full" style={{ background: 'var(--bg-glass-active)' }}>
+                                                            {group.items.length}
+                                                        </span>
+                                                    )}
                                                 </div>
+                                                {/* Notifications in group */}
+                                                <AnimatePresence mode="popLayout">
+                                                    {group.items.map((n, idx) => (
+                                                        <motion.div
+                                                            key={n.id}
+                                                            layout
+                                                            initial={{ opacity: 0, height: 0 }}
+                                                            animate={{ opacity: 1, height: 'auto' }}
+                                                            exit={{ opacity: 0, height: 0 }}
+                                                            transition={{ duration: 0.15 }}
+                                                            className="group relative cursor-pointer"
+                                                            onClick={() => handlenotificationclick(n)}
+                                                        >
+                                                            {idx > 0 && (
+                                                                <div className="mx-3 border-t" style={{ borderColor: 'var(--glass-border)' }} />
+                                                            )}
+                                                            <div className="px-3 py-2.5 hover:bg-[--bg-glass-hover] transition-colors relative">
+                                                                <button
+                                                                    onClick={(e) => { e.stopPropagation(); clearnotification(n.id); }}
+                                                                    className="absolute top-2 right-2 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-all"
+                                                                    style={{ background: 'var(--bg-glass-active)' }}
+                                                                >
+                                                                    <IoClose size={11} className="text-[--text-muted]" />
+                                                                </button>
+                                                                <div className="flex justify-between items-center mb-0.5 pr-5">
+                                                                    <h4 className="font-semibold text-[13px] text-[--text-color] leading-tight truncate">{n.title}</h4>
+                                                                    <span className="text-[10px] text-[--text-muted] shrink-0 ml-2">{n.time}</span>
+                                                                </div>
+                                                                <p className="text-[12px] text-[--text-muted] leading-snug line-clamp-2">{n.description}</p>
+                                                                {n.actions && n.actions.length > 0 && (
+                                                                    <div className="flex gap-1.5 mt-2">
+                                                                        {n.actions.slice(0, 3).map(a => (
+                                                                            <button
+                                                                                key={a.actionId}
+                                                                                onClick={(e) => { e.stopPropagation(); handleactionclick(n, a.actionId); }}
+                                                                                className="px-2.5 py-1 text-[10px] font-semibold rounded-full border border-[--glass-border] hover:bg-[--bg-glass-active] transition-colors"
+                                                                                style={{ color: 'var(--accent-color)' }}
+                                                                            >
+                                                                                {a.label}
+                                                                            </button>
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </motion.div>
+                                                    ))}
+                                                </AnimatePresence>
                                             </div>
-                                        </motion.div>
-                                    ))
+                                        ))}
+                                    </div>
                                 )}
                             </div>
                         </motion.div>
@@ -533,48 +536,53 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                         <p className="text-[--text-muted] text-[13px] mt-1">You&apos;re all caught up!</p>
                                     </div>
                                 ) : (
-                                    notifications.map(n => (
-                                        <motion.div
-                                            key={n.id}
-                                            layout
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, x: 50 }}
-                                            className="group relative w-full bg-overlay border border-[--border-color] anime-accent-left p-4 transition-all cursor-pointer"
-                                            onClick={() => handlenotificationclick(n)}
-                                        >
-                                            <button
-                                                onClick={(e) => { e.stopPropagation(); clearnotification(n.id); }}
-                                                className="absolute top-3 right-3 p-1.5 opacity-0 group-hover:opacity-100 hover:bg-overlay transition-all"
-                                            >
-                                                <IoClose size={14} className="text-[--text-muted]" />
-                                            </button>
-
-                                            <div className="flex items-start gap-3">
-                                                <Image src={n.icon} width={40} height={40} className="w-10 h-10 shrink-0" alt={n.appname} />
-                                                <div className="flex-1 min-w-0 text-left pr-6">
-                                                    <div className="flex justify-between items-center mb-1">
-                                                        <span className="font-semibold text-[11px] uppercase tracking-wide text-[--text-muted]">{n.appname}</span>
-                                                        <span className="text-[10px] text-[--text-muted]">{n.time}</span>
-                                                    </div>
-                                                    <h4 className="font-semibold text-[14px] text-[--text-color] leading-tight">{n.title}</h4>
-                                                    <p className="text-[13px] text-[--text-color] leading-snug mt-1">{n.description}</p>
-                                                </div>
+                                    groupednotifications.map(group => (
+                                        <div key={group.appname}>
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <Image src={group.icon} width={18} height={18} className="w-[18px] h-[18px]" alt={group.appname} />
+                                                <span className="text-[11px] font-semibold text-[--text-muted] uppercase tracking-wide">{group.appname}</span>
                                             </div>
-                                            {n.actions && n.actions.length > 0 && (
-                                                <div className="flex gap-2 mt-2 pt-2 border-t border-[--border-color]">
-                                                    {n.actions.slice(0, 3).map(a => (
+                                            <AnimatePresence mode="popLayout">
+                                                {group.items.map(n => (
+                                                    <motion.div
+                                                        key={n.id}
+                                                        layout
+                                                        initial={{ opacity: 0, y: 10 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        exit={{ opacity: 0, x: 50 }}
+                                                        className="group relative w-full bg-overlay border border-[--border-color] anime-accent-left p-4 mb-2 cursor-pointer"
+                                                        onClick={() => handlenotificationclick(n)}
+                                                    >
                                                         <button
-                                                            key={a.actionId}
-                                                            onClick={(e) => { e.stopPropagation(); handleactionclick(n, a.actionId); }}
-                                                            className="flex-1 px-2 py-1 text-[11px] font-medium text-pastel-blue hover:bg-[--bg-overlay] transition-colors border border-[--border-color]"
+                                                            onClick={(e) => { e.stopPropagation(); clearnotification(n.id); }}
+                                                            className="absolute top-3 right-3 p-1.5 opacity-0 group-hover:opacity-100 hover:bg-overlay transition-all"
                                                         >
-                                                            {a.label}
+                                                            <IoClose size={14} className="text-[--text-muted]" />
                                                         </button>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </motion.div>
+                                                        <div className="pr-6">
+                                                            <div className="flex justify-between items-center mb-0.5">
+                                                                <h4 className="font-semibold text-[14px] text-[--text-color] leading-tight">{n.title}</h4>
+                                                                <span className="text-[10px] text-[--text-muted] shrink-0 ml-2">{n.time}</span>
+                                                            </div>
+                                                            <p className="text-[13px] text-[--text-color] opacity-80 leading-snug mt-0.5 line-clamp-2">{n.description}</p>
+                                                        </div>
+                                                        {n.actions && n.actions.length > 0 && (
+                                                            <div className="flex gap-2 mt-2 pt-2 border-t border-[--border-color]">
+                                                                {n.actions.slice(0, 3).map(a => (
+                                                                    <button
+                                                                        key={a.actionId}
+                                                                        onClick={(e) => { e.stopPropagation(); handleactionclick(n, a.actionId); }}
+                                                                        className="flex-1 px-2 py-1 text-[11px] font-medium text-pastel-blue hover:bg-[--bg-overlay] transition-colors border border-[--border-color]"
+                                                                    >
+                                                                        {a.label}
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </motion.div>
+                                                ))}
+                                            </AnimatePresence>
+                                        </div>
                                     ))
                                 )}
                             </div>

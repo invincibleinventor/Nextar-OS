@@ -1129,7 +1129,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
 
 
             <Sidebar
-                currentPath={currentpath}
+                currentPath={isTrashView ? [] : currentpath}
                 onNavigate={(path: string[]) => handlesidebarclick(path[path.length - 1], path)}
                 show={showsidebar}
                 isOverlay={isnarrow}

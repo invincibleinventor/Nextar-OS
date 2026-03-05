@@ -119,10 +119,17 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
 
   useEffect(() => {
     if (ismobile && mounted) {
-      const desktop = document.getElementById('mobile-desktop');
-      if (desktop) setportaltarget(desktop);
+      if (isRecentAppView) {
+        // Portal directly into the slot element — no rAF tracking needed
+        const slot = document.getElementById(`recent-app-slot-${id}`);
+        if (slot) setportaltarget(slot);
+        else setportaltarget(document.getElementById('mobile-desktop'));
+      } else {
+        const desktop = document.getElementById('mobile-desktop');
+        if (desktop) setportaltarget(desktop);
+      }
     }
-  }, [ismobile, mounted]);
+  }, [ismobile, mounted, isRecentAppView, id]);
 
   const [position, setposition] = useState(() => {
     if (initialposition) return initialposition;
@@ -198,6 +205,7 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
       if (ismobile && windowref.current) {
         const el = windowref.current as HTMLElement;
         el.style.visibility = '';
+        el.style.position = 'absolute';
         el.style.top = '44px';
         el.style.left = '0px';
         el.style.width = '100%';
@@ -209,50 +217,18 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
       return;
     }
 
-    const windowElement = windowref.current as HTMLElement | null;
-    if (windowElement) {
-      windowElement.style.visibility = 'hidden';
+    // When in recent app view and portaled into the slot, just fill the slot
+    const el = windowref.current as HTMLElement | null;
+    if (el) {
+      el.style.position = 'relative';
+      el.style.top = '0';
+      el.style.left = '0';
+      el.style.width = '100%';
+      el.style.height = '100%';
+      el.style.borderRadius = '0px';
+      el.style.transform = 'none';
+      el.style.visibility = 'visible';
     }
-
-    let animationFrameId: number;
-    let lastUpdate = 0;
-    const throttleMs = 16;
-
-    const trackLayout = (timestamp: number) => {
-      if (timestamp - lastUpdate < throttleMs) {
-        animationFrameId = requestAnimationFrame(trackLayout);
-        return;
-      }
-      lastUpdate = timestamp;
-
-      const slotId = `recent-app-slot-${id}`;
-      const slotElement = document.getElementById(slotId);
-      const el = windowref.current as HTMLElement | null;
-
-      if (el) {
-        if (slotElement) {
-          const rect = slotElement.getBoundingClientRect();
-          el.style.top = `${rect.top}px`;
-          el.style.left = `${rect.left}px`;
-          el.style.width = `${rect.width}px`;
-          el.style.height = `${rect.height}px`;
-          el.style.borderRadius = '0px';
-          el.style.transform = 'none';
-          el.style.visibility = 'visible';
-        } else {
-          el.style.visibility = 'hidden';
-          el.style.pointerEvents = 'none';
-        }
-      }
-
-      animationFrameId = requestAnimationFrame(trackLayout);
-    };
-
-    animationFrameId = requestAnimationFrame(trackLayout);
-
-    return () => {
-      cancelAnimationFrame(animationFrameId);
-    };
   }, [ismobile, isRecentAppView, id]);
 
 

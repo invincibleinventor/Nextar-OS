@@ -14,8 +14,7 @@ import { iselectron, battery, wifi as wifiApi } from '@/utils/platform';
 import { useIsClay } from './hooks/useIsClay';
 import { glassPill } from './hooks/useClayStyles';
 import Control from './controlcenter';
-import { IoWifi } from 'react-icons/io5';
-import { BsFillVolumeUpFill } from 'react-icons/bs';
+import { LuWifi, LuSignal, LuBatteryFull } from 'react-icons/lu';
 import { useAuth } from './AuthContext';
 import { useNotifications } from './NotificationContext';
 
@@ -197,7 +196,7 @@ const Dock = () => {
         <div className="fixed bottom-[14px] left-3 z-[200] flex items-center gap-2">
           {/* App Launcher pill */}
           <div
-            className="flex items-center justify-center h-[44px] px-3 rounded-full cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.97]"
+            className="flex items-center justify-center h-[44px] px-3 rounded-[22px] cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.97]"
             style={glassStyle}
             onClick={() => setlaunch(!launchpad)}
           >
@@ -209,19 +208,16 @@ const Dock = () => {
             </svg>
           </div>
 
-          {/* Ask Genie pill */}
+          {/* Search pill */}
           <div
-            className="flex items-center gap-2.5 h-[44px] px-4 rounded-full cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.97]"
+            className="flex items-center gap-2.5 h-[44px] px-4 rounded-[22px] cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.97]"
             style={glassStyle}
             onClick={() => window.dispatchEvent(new CustomEvent('toggle-next'))}
           >
-            <svg className="w-[16px] h-[16px] shrink-0" viewBox="0 0 16 16" fill="var(--accent-color)">
-              <path d="M8 0L6.4 6.4 0 8l6.4 1.6L8 16l1.6-6.4L16 8 9.6 6.4z" />
+            <svg className="w-[15px] h-[15px] text-[--text-muted] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+              <circle cx="11" cy="11" r="8" /><path strokeLinecap="round" d="M21 21l-4.35-4.35" />
             </svg>
-            <span className="text-[14px] text-[--text-muted] font-medium whitespace-nowrap">Ask Genie</span>
-            <svg className="w-[16px] h-[16px] text-[--text-muted] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-            </svg>
+            <span className="text-[14px] text-[--text-muted] font-medium whitespace-nowrap">Search</span>
           </div>
         </div>
 
@@ -287,21 +283,19 @@ const Dock = () => {
         <div className="fixed bottom-[14px] right-3 z-[200] flex items-center gap-1">
           {/* Section 1: Status icons */}
           <div
-            className="hidden md:flex items-center gap-2 h-[44px] px-3 rounded-[14px] cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.97]"
+            className="hidden md:flex items-center gap-2 h-[44px] px-3 rounded-[22px] cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.97]"
             style={glassStyle}
             onClick={() => setshowcontrolcenter(!showcontrolcenter)}
           >
             {!isOnline && <span className="text-[9px] font-bold text-pastel-red px-1.5 py-0.5 rounded-full" style={{ background: 'color-mix(in srgb, var(--pastel-red) 15%, transparent)' }}>OFFLINE</span>}
-            <IoWifi className={`w-[15px] h-[15px] ${!isOnline ? 'text-pastel-red' : wifistatus.connected ? 'text-[--text-color]' : 'text-[--text-muted]'}`} />
-            <BsFillVolumeUpFill className="w-[15px] h-[15px] text-[--text-muted]" />
-            <svg className="w-[15px] h-[15px] text-[--text-muted]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-              <rect x="2" y="3" width="20" height="14" rx="2" /><path d="M8 21h8M12 17v4" />
-            </svg>
+            <LuSignal className={`w-[14px] h-[14px] ${!isOnline ? 'text-pastel-red' : 'text-[--text-color]'}`} />
+            <LuWifi className={`w-[14px] h-[14px] ${!isOnline ? 'text-pastel-red' : wifistatus.connected ? 'text-[--text-color]' : 'text-[--text-muted]'}`} />
+            <LuBatteryFull className="w-[18px] h-[18px] text-[--text-color]" />
           </div>
 
           {/* Section 2: Date */}
           <div
-            className="hidden md:flex items-center h-[44px] px-3 rounded-[14px] cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.97]"
+            className="hidden md:flex items-center h-[44px] px-3 rounded-[22px] cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.97]"
             style={glassStyle}
             onClick={() => window.dispatchEvent(new CustomEvent('toggle-notifications'))}
           >
@@ -310,7 +304,7 @@ const Dock = () => {
 
           {/* Section 3: Time + notification badge */}
           <div
-            className="flex items-center gap-2 h-[44px] px-3 rounded-[14px] cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.97]"
+            className="flex items-center gap-2 h-[44px] px-3 rounded-[22px] cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.97]"
             style={glassStyle}
             onClick={() => window.dispatchEvent(new CustomEvent('toggle-notifications'))}
           >
