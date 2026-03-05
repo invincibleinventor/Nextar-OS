@@ -53,7 +53,6 @@ export default function Panel({ ontogglenotifications, ontogglecalendar }: { ont
     // ─── Status tray state ───
     const [currentdate, setcurrentdate] = useState<string>('');
     const [currenttime, setcurrenttime] = useState<string>('');
-    const [claytime, setclaytime] = useState<string>('');
     const [showcontrolcenter, setshowcontrolcenter] = useState(false);
     const [batterystatus, setbatterystatus] = useState({ percentage: 100, charging: false, available: false });
     const [wifistatus, setwifistatus] = useState({ connected: false, ssid: null as string | null, available: false });
@@ -85,14 +84,11 @@ export default function Panel({ ontogglenotifications, ontogglecalendar }: { ont
     }, [clay]);
 
     useEffect(() => {
+        if (clay) return;
         const update = () => {
             const now = new Date();
-            if (clay) {
-                setclaytime(now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }));
-            } else {
-                setcurrentdate(now.toLocaleDateString('en-IN', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }).replace(',', '').replace(',', ''));
-                setcurrenttime(now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }).toUpperCase());
-            }
+            setcurrentdate(now.toLocaleDateString('en-IN', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }).replace(',', '').replace(',', ''));
+            setcurrenttime(now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }).toUpperCase());
         };
         update();
         const interval = setInterval(update, 1000);
@@ -240,37 +236,6 @@ export default function Panel({ ontogglenotifications, ontogglecalendar }: { ont
                                 return <Menu key={menukey} id={menukey} title={menukey.charAt(0).toUpperCase() + menukey.slice(1)} data={menuitems as any} visible={activemenu === menukey} ontoggle={handletogglemenu} onhover={handlehovermenu} onaction={handleMenuAction} clay={clay} />;
                             })}
                         </div>
-                    </div>
-
-                    {/* Right-side pills: calendar + notifications */}
-                    <div className="absolute right-3 mt-[4px] h-[38px] flex items-center gap-1.5 pointer-events-auto">
-                        <button
-                            onClick={ontogglecalendar}
-                            className="h-[38px] px-3 flex items-center rounded-[16px] text-[13px] font-semibold text-[--text-color] hover:brightness-110 active:scale-95 transition-all"
-                            style={{
-                                ...glassPanel,
-                                backdropFilter: 'blur(var(--glass-blur-heavy))',
-                                WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
-                            }}
-                        >
-                            {claytime}
-                        </button>
-                        <button
-                            onClick={ontogglenotifications}
-                            className="relative h-[38px] w-[38px] flex items-center justify-center rounded-[16px] text-[--text-color] hover:brightness-110 active:scale-95 transition-all"
-                            style={{
-                                ...glassPanel,
-                                backdropFilter: 'blur(var(--glass-blur-heavy))',
-                                WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
-                            }}
-                        >
-                            <IoNotificationsOutline size={17} />
-                            {unreadcount > 0 && (
-                                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] flex items-center justify-center rounded-full text-[9px] font-bold text-white bg-red-500 px-1">
-                                    {unreadcount}
-                                </span>
-                            )}
-                        </button>
                     </div>
                 </div>
             </>

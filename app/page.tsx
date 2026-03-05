@@ -210,6 +210,7 @@ const Desktop = () => {
     const handleToggleDesktopEffects = () => setshowdesktopeffects((prev: boolean) => !prev);
     const handleToggleNotifications = () => { setshownotificationcenter((prev: boolean) => { if (!prev) setshowcalendar(false); return !prev; }); };
     const handleOpenNotifications = () => { setshownotificationcenter(true); setshowcalendar(false); };
+    const handleToggleCalendar = () => { setshowcalendar((prev: boolean) => { if (!prev) setshownotificationcenter(false); return !prev; }); };
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('start-tour', handleStartTour);
     window.addEventListener('toggle-next', handleToggleNext);
@@ -218,6 +219,7 @@ const Desktop = () => {
     window.addEventListener('close-about', handleCloseAbout);
     window.addEventListener('tour-ended', handleTourEnded);
     window.addEventListener('toggle-desktop-effects', handleToggleDesktopEffects);
+    window.addEventListener('toggle-calendar', handleToggleCalendar);
     window.addEventListener('toggle-notifications', handleToggleNotifications);
     window.addEventListener('open-notifications', handleOpenNotifications);
     return () => {
@@ -231,6 +233,7 @@ const Desktop = () => {
       window.removeEventListener('toggle-desktop-effects', handleToggleDesktopEffects);
       window.removeEventListener('toggle-notifications', handleToggleNotifications);
       window.removeEventListener('open-notifications', handleOpenNotifications);
+      window.removeEventListener('toggle-calendar', handleToggleCalendar);
     };
   }, [showappswitcher, addwindow, updatewindow, setactivewindow]);
 

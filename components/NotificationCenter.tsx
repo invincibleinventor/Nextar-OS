@@ -377,11 +377,11 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                 {isopen && clay && (
                     <motion.div
                         key="clay-panel"
-                        initial={{ opacity: 0, y: -10, scale: 0.96 }}
+                        initial={{ opacity: 0, y: 10, scale: 0.96 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -10, scale: 0.96 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.96 }}
                         transition={{ type: "spring", stiffness: 400, damping: 28 }}
-                        className="fixed z-[700] top-[46px] right-3 w-[360px] max-h-[70vh] overflow-hidden flex flex-col rounded-[22px]"
+                        className="fixed z-[700] bottom-[72px] right-3 w-[360px] max-h-[70vh] overflow-hidden flex flex-col rounded-[22px]"
                         style={{
                             ...glassPanel,
                             backdropFilter: 'blur(var(--glass-blur-heavy))',

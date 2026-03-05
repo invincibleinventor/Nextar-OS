@@ -293,16 +293,16 @@ const Dock = () => {
             <LuBatteryFull className="w-[18px] h-[18px] text-[--text-color]" />
           </div>
 
-          {/* Section 2: Date */}
+          {/* Section 2: Date — opens calendar */}
           <div
             className="hidden md:flex items-center h-[44px] px-3 rounded-[22px] cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.97]"
             style={glassStyle}
-            onClick={() => window.dispatchEvent(new CustomEvent('toggle-notifications'))}
+            onClick={() => window.dispatchEvent(new CustomEvent('toggle-calendar'))}
           >
             <span className="text-[13px] font-medium text-[--text-color] tabular-nums">{currentdate}</span>
           </div>
 
-          {/* Section 3: Time + notification badge */}
+          {/* Section 3: Time + notification badge — opens notifications */}
           <div
             className="flex items-center gap-2 h-[44px] px-3 rounded-[22px] cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.97]"
             style={glassStyle}
