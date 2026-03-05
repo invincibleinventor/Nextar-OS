@@ -9,7 +9,6 @@ import { IoClose, IoNotificationsOutline, IoTrashOutline } from 'react-icons/io5
 import { useIsClay } from './hooks/useIsClay';
 import { glassPanel, glassCard, glassButton } from './hooks/useClayStyles';
 import { useWindows } from './WindowContext';
-import MiniCalendar from './ui/MiniCalendar';
 
 export default function NotificationCenter({ isopen, onclose }: { isopen: boolean; onclose: () => void }) {
     const { handlenotificationclick, handleactionclick, notifications, clearnotification, clearallnotifications, markasviewed, version } = useNotifications();
@@ -378,11 +377,11 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                 {isopen && clay && (
                     <motion.div
                         key="clay-panel"
-                        initial={{ opacity: 0, y: 10, scale: 0.96 }}
+                        initial={{ opacity: 0, y: -10, scale: 0.96 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 10, scale: 0.96 }}
+                        exit={{ opacity: 0, y: -10, scale: 0.96 }}
                         transition={{ type: "spring", stiffness: 400, damping: 28 }}
-                        className="fixed z-[700] bottom-[72px] right-3 w-[360px] max-h-[70vh] overflow-hidden flex flex-col rounded-[22px]"
+                        className="fixed z-[700] top-[46px] right-3 w-[360px] max-h-[70vh] overflow-hidden flex flex-col rounded-[22px]"
                         style={{
                             ...glassPanel,
                             backdropFilter: 'blur(var(--glass-blur-heavy))',
@@ -391,33 +390,19 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                         }}
                         onClick={(e) => e.stopPropagation()}
                     >
-                            {/* Date & Time header */}
-                            <div className="px-5 pt-5 pb-2 shrink-0">
-                                <div className="flex items-baseline justify-between">
-                                    <div className="text-[36px] font-semibold text-[--text-color] leading-none tracking-tight">
-                                        {new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
-                                    </div>
-                                    {notifications.length > 0 && (
-                                        <button
-                                            onClick={() => clearallnotifications()}
-                                            className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-[--text-muted] hover:text-[--text-color] active:scale-95 transition-all rounded-full"
-                                            style={{ background: 'var(--bg-glass-active)' }}
-                                        >
-                                            <IoTrashOutline size={11} />
-                                            Clear
-                                        </button>
-                                    )}
-                                </div>
-                                <div className="text-[13px] text-[--text-muted] font-medium mt-0.5">
-                                    {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-                                </div>
-                            </div>
-
-                            {/* Mini calendar */}
-                            <div className="mx-4 mb-2 p-2.5 rounded-[14px]"
-                                style={glassCard}
-                            >
-                                <MiniCalendar />
+                            {/* Header */}
+                            <div className="px-5 pt-4 pb-2 shrink-0 flex items-center justify-between">
+                                <h3 className="text-[15px] font-semibold text-[--text-color]">Notifications</h3>
+                                {notifications.length > 0 && (
+                                    <button
+                                        onClick={() => clearallnotifications()}
+                                        className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-[--text-muted] hover:text-[--text-color] active:scale-95 transition-all rounded-full"
+                                        style={{ background: 'var(--bg-glass-active)' }}
+                                    >
+                                        <IoTrashOutline size={11} />
+                                        Clear
+                                    </button>
+                                )}
                             </div>
 
                             {/* Notifications — grouped by app */}

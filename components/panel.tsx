@@ -7,7 +7,7 @@ import { apps, openSystemItem } from './data';
 import Control from './controlcenter';
 import Logo from './mainlogo';
 import { useAppMenus } from './AppMenuContext';
-import { IoSparkles } from 'react-icons/io5';
+import { IoSparkles, IoNotificationsOutline } from 'react-icons/io5';
 import { LuWifi, LuBatteryFull, LuBatteryMedium, LuBatteryLow, LuBatteryCharging } from 'react-icons/lu';
 import { useDevice } from './DeviceContext';
 import { useAuth } from './AuthContext';
@@ -16,7 +16,7 @@ import { iselectron, power, battery, wifi } from '@/utils/platform';
 import { useIsClay } from './hooks/useIsClay';
 import { glassPanel } from './hooks/useClayStyles';
 
-export default function Panel({ ontogglenotifications }: { ontogglenotifications?: () => void }) {
+export default function Panel({ ontogglenotifications, ontogglecalendar }: { ontogglenotifications?: () => void; ontogglecalendar?: () => void }) {
     const { activewindow, windows, updatewindow, removewindow, setactivewindow, addwindow } = useWindows();
     const { setappmode, setosstate } = useDevice();
     const clay = useIsClay();
@@ -50,13 +50,15 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
     const [activemenu, setactivemenu] = useState<string | null>(null);
     const [hoverenabled, sethoverenabled] = useState(false);
 
-    // ─── Classic-mode status tray state ───
+    // ─── Status tray state ───
     const [currentdate, setcurrentdate] = useState<string>('');
     const [currenttime, setcurrenttime] = useState<string>('');
+    const [claytime, setclaytime] = useState<string>('');
     const [showcontrolcenter, setshowcontrolcenter] = useState(false);
     const [batterystatus, setbatterystatus] = useState({ percentage: 100, charging: false, available: false });
     const [wifistatus, setwifistatus] = useState({ connected: false, ssid: null as string | null, available: false });
     const [isOnline, setIsOnline] = useState(true);
+    const { notifications: panelnotifications } = useNotifications();
 
     useEffect(() => {
         setIsOnline(navigator.onLine);
@@ -83,12 +85,17 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
     }, [clay]);
 
     useEffect(() => {
-        if (clay) return; // clay mode doesn't need time in panel
-        const interval = setInterval(() => {
+        const update = () => {
             const now = new Date();
-            setcurrentdate(now.toLocaleDateString('en-IN', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }).replace(',', '').replace(',', ''));
-            setcurrenttime(now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }).toUpperCase());
-        }, 1000);
+            if (clay) {
+                setclaytime(now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }));
+            } else {
+                setcurrentdate(now.toLocaleDateString('en-IN', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }).replace(',', '').replace(',', ''));
+                setcurrenttime(now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }).toUpperCase());
+            }
+        };
+        update();
+        const interval = setInterval(update, 1000);
         return () => clearInterval(interval);
     }, [clay]);
 
@@ -199,6 +206,8 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
     /* ═══════════════════════════════════════════════════
        CLAY MODE — Floating centered glass pill
        ═══════════════════════════════════════════════════ */
+    const unreadcount = panelnotifications.filter(n => !n.viewed).length;
+
     if (clay) {
         return (
             <>
@@ -231,6 +240,37 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
                                 return <Menu key={menukey} id={menukey} title={menukey.charAt(0).toUpperCase() + menukey.slice(1)} data={menuitems as any} visible={activemenu === menukey} ontoggle={handletogglemenu} onhover={handlehovermenu} onaction={handleMenuAction} clay={clay} />;
                             })}
                         </div>
+                    </div>
+
+                    {/* Right-side pills: calendar + notifications */}
+                    <div className="absolute right-3 mt-[4px] h-[38px] flex items-center gap-1.5 pointer-events-auto">
+                        <button
+                            onClick={ontogglecalendar}
+                            className="h-[38px] px-3 flex items-center rounded-[16px] text-[13px] font-semibold text-[--text-color] hover:brightness-110 active:scale-95 transition-all"
+                            style={{
+                                ...glassPanel,
+                                backdropFilter: 'blur(var(--glass-blur-heavy))',
+                                WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
+                            }}
+                        >
+                            {claytime}
+                        </button>
+                        <button
+                            onClick={ontogglenotifications}
+                            className="relative h-[38px] w-[38px] flex items-center justify-center rounded-[16px] text-[--text-color] hover:brightness-110 active:scale-95 transition-all"
+                            style={{
+                                ...glassPanel,
+                                backdropFilter: 'blur(var(--glass-blur-heavy))',
+                                WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
+                            }}
+                        >
+                            <IoNotificationsOutline size={17} />
+                            {unreadcount > 0 && (
+                                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] flex items-center justify-center rounded-full text-[9px] font-bold text-white bg-red-500 px-1">
+                                    {unreadcount}
+                                </span>
+                            )}
+                        </button>
                     </div>
                 </div>
             </>
@@ -315,10 +355,21 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
                             </>
                         )}
                     </div>
-                    <div className='flex flex-row items-center content-center space-x-2 text-[14px] font-semibold text-[--text-color] cursor-pointer hover:opacity-70 transition-opacity font-mono' onClick={ontogglenotifications}>
+                    <div className='flex flex-row items-center content-center space-x-2 text-[14px] font-semibold text-[--text-color] cursor-pointer hover:opacity-70 transition-opacity font-mono' onClick={ontogglecalendar}>
                         <h1>{currentdate}</h1>
                         <h1>{currenttime}</h1>
                     </div>
+                    <button
+                        onClick={ontogglenotifications}
+                        className="relative p-1 cursor-pointer hover:opacity-70 transition-opacity"
+                    >
+                        <IoNotificationsOutline size={17} className="text-[--text-color]" />
+                        {unreadcount > 0 && (
+                            <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-[14px] flex items-center justify-center rounded-full text-[8px] font-bold text-white bg-red-500 px-0.5">
+                                {unreadcount}
+                            </span>
+                        )}
+                    </button>
                 </div>
             </div>
         </>
