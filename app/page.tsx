@@ -12,9 +12,8 @@ import LockScreen from '@/components/LockScreen';
 import MobileHomeScreen from '@/components/MobileHomeScreen';
 import Control from '@/components/controlcenter';
 import RecentApps from '@/components/RecentApps';
-import { IoWifi, IoBatteryFull } from "react-icons/io5";
+import { LuWifi, LuSignal, LuBatteryFull } from "react-icons/lu";
 import { motion } from 'framer-motion';
-import { BiSignal5 } from "react-icons/bi";
 
 import NotificationCenter from '@/components/NotificationCenter';
 import ContextMenu from '@/components/ui/ContextMenu';
@@ -31,6 +30,7 @@ import { useSettings } from '@/components/SettingsContext';
 import { useMenuRegistration } from '@/components/AppMenuContext';
 import Portfolio from '@/components/Portfolio';
 import DesktopEffects from '@/components/DesktopEffects';
+import { useNotifications } from '@/components/NotificationContext';
 
 const Desktop = () => {
   const { windows, addwindow, setwindows, updatewindow, setactivewindow, activewindow } = useWindows();
@@ -48,6 +48,8 @@ const Desktop = () => {
   const [showdesktopeffects, setshowdesktopeffects] = useState(true);
 
   const { user } = useAuth();
+  const { notifications } = useNotifications();
+  const hasActiveNotification = notifications.some(n => !n.viewed);
 
 
 
@@ -205,6 +207,7 @@ const Desktop = () => {
     };
     const handleToggleDesktopEffects = () => setshowdesktopeffects((prev: boolean) => !prev);
     const handleToggleNotifications = () => setshownotificationcenter((prev: boolean) => !prev);
+    const handleOpenNotifications = () => setshownotificationcenter(true);
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('start-tour', handleStartTour);
     window.addEventListener('toggle-next', handleToggleNext);
@@ -214,6 +217,7 @@ const Desktop = () => {
     window.addEventListener('tour-ended', handleTourEnded);
     window.addEventListener('toggle-desktop-effects', handleToggleDesktopEffects);
     window.addEventListener('toggle-notifications', handleToggleNotifications);
+    window.addEventListener('open-notifications', handleOpenNotifications);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('start-tour', handleStartTour);
@@ -224,6 +228,7 @@ const Desktop = () => {
       window.removeEventListener('tour-ended', handleTourEnded);
       window.removeEventListener('toggle-desktop-effects', handleToggleDesktopEffects);
       window.removeEventListener('toggle-notifications', handleToggleNotifications);
+      window.removeEventListener('open-notifications', handleOpenNotifications);
     };
   }, [showappswitcher, addwindow, updatewindow, setactivewindow]);
 
@@ -449,11 +454,11 @@ const Desktop = () => {
           {timestr}
         </div>
         <div className="flex text-[--text-color] items-center gap-2 pr-6">
-          <BiSignal5 size={18} />
-          <IoWifi size={18} />
+          <LuSignal size={16} />
+          <LuWifi size={16} />
           <div className="flex items-center">
             <span className="text-[12px] font-medium mr-1">100%</span>
-            <IoBatteryFull size={24} />
+            <LuBatteryFull size={22} />
           </div>
         </div>
       </motion.div>
@@ -473,7 +478,7 @@ const Desktop = () => {
             : osstate === 'booting' ? 'opacity-0 scale-100' : 'opacity-0 scale-[0.98] pointer-events-none'}`}
         style={{ backgroundImage: `url('${wallpaperurl}')` }}
       >
-        <DesktopEffects active={showdesktopeffects} />
+        <DesktopEffects active={showdesktopeffects} paused={showcontrolcenter || shownotificationcenter || hasActiveNotification} />
         {!ismobile && (
           <>
             <FileModal
@@ -583,7 +588,7 @@ const Desktop = () => {
                         </div>
                       </div>
                       <span
-                        className={`text-[11px] w-full font-semibold text-center break-words leading-tight line-clamp-1 px-1  ${isSelected ? 'bg-accent' : ''} ${inverselabelcolor && islightbackground ? 'text-black' : 'text-white'}`}
+                        className={`text-[11px] w-full font-medium text-center break-words leading-tight line-clamp-1 px-1  ${isSelected ? 'bg-accent' : ''} ${inverselabelcolor && islightbackground ? 'text-black' : 'text-white'}`}
                       >{item.name}</span>
                     </div>
                   )

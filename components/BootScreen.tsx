@@ -4,38 +4,39 @@ import { useDevice } from './DeviceContext';
 import { useIsClay } from './hooks/useIsClay';
 import { useSettings } from './SettingsContext';
 
-/* ── SVG stroke-drawing "welcome" text ── */
+/* ── CSS-animated stroke-drawing "welcome" text ── */
 function WelcomeText({ onComplete }: { onComplete: () => void }) {
-    const textRef = useRef<SVGTextElement>(null);
     const [showFill, setShowFill] = useState(false);
+    const [startDraw, setStartDraw] = useState(false);
+    const completedRef = useRef(false);
 
     useEffect(() => {
-        const el = textRef.current;
-        if (!el) return;
+        // Wait for the component to be painted before starting the stroke animation.
+        // requestAnimationFrame fires before the next paint, the second rAF ensures
+        // the first frame has actually been committed to screen.
+        let raf1: number, raf2: number;
+        raf1 = requestAnimationFrame(() => {
+            raf2 = requestAnimationFrame(() => {
+                setStartDraw(true);
+            });
+        });
+        return () => { cancelAnimationFrame(raf1); cancelAnimationFrame(raf2); };
+    }, []);
 
-        const totalLength = 4000;
-        el.style.strokeDasharray = `${totalLength}`;
-        el.style.strokeDashoffset = `${totalLength}`;
-
-        const start = performance.now();
-        const duration = 2400;
-
-        const tick = (now: number) => {
-            const t = Math.min((now - start) / duration, 1);
-            const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-            el.style.strokeDashoffset = `${totalLength * (1 - eased)}`;
-
-            if (t < 1) requestAnimationFrame(tick);
-            else {
-                setTimeout(() => {
-                    setShowFill(true);
-                    setTimeout(onComplete, 600);
-                }, 150);
+    useEffect(() => {
+        if (!startDraw) return;
+        const drawDuration = 2200; // matches CSS animation-duration
+        const timer1 = setTimeout(() => {
+            setShowFill(true);
+        }, drawDuration + 100);
+        const timer2 = setTimeout(() => {
+            if (!completedRef.current) {
+                completedRef.current = true;
+                onComplete();
             }
-        };
-
-        requestAnimationFrame(tick);
-    }, [onComplete]);
+        }, drawDuration + 700);
+        return () => { clearTimeout(timer1); clearTimeout(timer2); };
+    }, [startDraw, onComplete]);
 
     return (
         <motion.div
@@ -43,12 +44,28 @@ function WelcomeText({ onComplete }: { onComplete: () => void }) {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         >
+            <style>{`
+                @keyframes strokeDraw {
+                    from { stroke-dashoffset: 4000; }
+                    to { stroke-dashoffset: 0; }
+                }
+                .welcome-stroke-active {
+                    stroke-dasharray: 4000;
+                    stroke-dashoffset: 4000;
+                    animation: strokeDraw 2.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+                    will-change: stroke-dashoffset;
+                }
+                .welcome-stroke-idle {
+                    stroke-dasharray: 4000;
+                    stroke-dashoffset: 4000;
+                }
+            `}</style>
             <svg
                 viewBox="0 0 900 250"
-                style={{ width: 'clamp(320px, 80vw, 650px)', overflow: 'visible' }}
+                style={{ width: 'clamp(280px, 70vw, 650px)', overflow: 'visible' }}
             >
                 <text
-                    ref={textRef}
+                    className={startDraw ? 'welcome-stroke-active' : 'welcome-stroke-idle'}
                     x="450"
                     y="185"
                     textAnchor="middle"
@@ -77,6 +94,7 @@ export default function BootScreen() {
     const osstateref = useRef(osstate);
     const clay = useIsClay();
     const { wallpaperurl } = useSettings();
+    const { ismobile } = useDevice();
 
     useEffect(() => {
         osstateref.current = osstate;
@@ -113,14 +131,28 @@ export default function BootScreen() {
                                         backgroundImage: `url(${wallpaperurl})`,
                                         backgroundSize: 'cover',
                                         backgroundPosition: 'center',
-                                        filter: 'blur(40px) saturate(1.3)',
+                                        filter: ismobile ? 'blur(24px) saturate(1.2)' : 'blur(40px) saturate(1.3)',
                                         transform: 'scale(1.15)',
                                     }}
                                 />
                                 <div className="absolute inset-0" style={{ background: 'rgba(0, 0, 0, 0.35)' }} />
                             </>
                         ) : (
-                            <div className="absolute inset-0" style={{ background: 'linear-gradient(145deg, #0a0a0f 0%, #141420 50%, #0d0d16 100%)' }} />
+                            <>
+                                <div className="absolute inset-0" style={{ background: 'linear-gradient(145deg, #0a0a0f 0%, #141420 50%, #0d0d16 100%)' }} />
+                                {wallpaperurl && (
+                                    <div
+                                        className="absolute inset-0"
+                                        style={{
+                                            backgroundImage: `url(${wallpaperurl})`,
+                                            backgroundSize: 'cover',
+                                            backgroundPosition: 'center',
+                                            filter: 'blur(30px) saturate(1.1) brightness(0.3)',
+                                            transform: 'scale(1.15)',
+                                        }}
+                                    />
+                                )}
+                            </>
                         )}
 
                         {/* Welcome text */}

@@ -173,6 +173,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
 
                     <motion.div
                         ref={containerref}
+                        data-recent-scroll
                         className={`${searchquery == '' ? '' : 'hidden'} relative w-full h-full flex items-center overflow-x-auto scrollbar-hide px-[10vw] py-8 z-[491]`}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}

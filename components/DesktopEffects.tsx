@@ -11,7 +11,7 @@ const seededrandom = (seed: number) => {
     return x - Math.floor(x);
 };
 
-export default function DesktopEffects({ active }: { active: boolean }) {
+export default function DesktopEffects({ active, paused = false }: { active: boolean; paused?: boolean }) {
     const [mounted, setmounted] = useState(false);
     useEffect(() => { setmounted(true); }, []);
 
@@ -45,9 +45,10 @@ export default function DesktopEffects({ active }: { active: boolean }) {
         <AnimatePresence>
             {active && (
                 <motion.div
-                    className="absolute inset-0 pointer-events-none overflow-hidden z-[1]"
+                    className="absolute pointer-events-none overflow-hidden z-[1]"
+                    style={{ top: 0, left: 0, right: 0, bottom: 80, ...(paused ? { animationPlayState: 'paused' as const } : {}) }}
                     initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
+                    animate={{ opacity: paused ? 0.3 : 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.5 }}
                 >
@@ -63,8 +64,9 @@ export default function DesktopEffects({ active }: { active: boolean }) {
                                 borderRadius: '50% 0 50% 0',
                                 background: `linear-gradient(135deg, ${p.color}dd, ${p.color}50)`,
                                 boxShadow: `0 0 4px ${p.color}40`,
+                                animationPlayState: paused ? 'paused' : 'running',
                             }}
-                            animate={{
+                            animate={paused ? undefined : {
                                 y: ['-5vh', '108vh'],
                                 x: [0, p.drift],
                                 rotate: [p.rotation, p.rotation + 360],
@@ -85,8 +87,9 @@ export default function DesktopEffects({ active }: { active: boolean }) {
                                 bottom: `${Math.round(e.r3 * 60)}%`,
                                 background: e.color,
                                 boxShadow: `0 0 8px ${e.color}, 0 0 16px ${e.color}60, 0 0 24px ${e.color}20`,
+                                animationPlayState: paused ? 'paused' : 'running',
                             }}
-                            animate={{
+                            animate={paused ? undefined : {
                                 y: [0, -200 - e.r4 * 300],
                                 x: [0, (e.r5 - 0.5) * 120],
                                 opacity: [0, 0.9, 0],

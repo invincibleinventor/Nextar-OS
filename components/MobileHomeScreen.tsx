@@ -22,7 +22,7 @@ import { useIsClay } from './hooks/useIsClay';
 import { glassPanel, glassInput } from './hooks/useClayStyles';
 
 const GRID_COLS = 4;
-const GRID_ROWS = 5;
+const GRID_ROWS = 4;
 const ITEMS_PER_PAGE = GRID_COLS * GRID_ROWS;
 
 export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayopen?: boolean }) {
@@ -32,6 +32,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
     const { ismobile } = useDevice();
     const { files, moveToTrash, createFolder, createFile, renameItem, currentUserDesktopId, copyItem, cutItem, pasteItem, clipboard } = useFileSystem();
     const [page, setpage] = useState(0);
+    const [showAppLibrary, setShowAppLibrary] = useState(false);
     const [editmode, seteditmode] = useState(false);
     const [contextmenu, setcontextmenu] = useState<{ x: number; y: number; item?: filesystemitem } | null>(null);
     const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
@@ -42,6 +43,9 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
     const scrollcontainerref = useRef<HTMLDivElement>(null);
     const [iconorder, seticonorder] = useState<string[]>([]);
     const [hiddenAppIds, setHiddenAppIds] = useState<string[]>([]);
+    const homeContainerRef = useRef<HTMLDivElement>(null);
+    const showAppLibraryRef = useRef(false);
+    showAppLibraryRef.current = showAppLibrary;
 
     const desktopItems = files.filter(item => item.parent === currentUserDesktopId && !item.isTrash);
 
@@ -63,6 +67,12 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
             }
         };
         const handleAppBack = (e: Event) => {
+            // Close app library on back gesture
+            if (showAppLibraryRef.current) {
+                e.preventDefault();
+                setShowAppLibrary(false);
+                return;
+            }
             const currentScroll = scrollcontainerref.current?.scrollLeft || 0;
             const pageWidth = scrollcontainerref.current?.offsetWidth || 1;
             const currentPage = Math.round(currentScroll / pageWidth);
@@ -71,7 +81,10 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                 scrollcontainerref.current?.scrollTo({ left: (currentPage - 1) * pageWidth, behavior: 'smooth' });
             }
         };
-        const handleHomePressed = () => scrollToHome();
+        const handleHomePressed = () => {
+            setShowAppLibrary(false);
+            scrollToHome();
+        };
 
         window.addEventListener('app-back', handleAppBack);
         window.addEventListener('home-pressed', handleHomePressed);
@@ -315,6 +328,19 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                 label: 'Edit Home Screen',
                 action: () => seteditmode(true)
             });
+            items.push({
+                label: 'Change Wallpaper',
+                action: () => {
+                    addwindow({
+                        id: `settings-${Date.now()}`,
+                        appname: 'Settings',
+                        component: 'apps/Settings',
+                        props: { initialPage: 'appearance' },
+                        isminimized: false,
+                        ismaximized: false,
+                    });
+                }
+            });
 
             return items;
         }
@@ -451,7 +477,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                                     onChange={(e) => setRenameValue(e.target.value)}
                                     onBlur={submitRename}
                                     onKeyDown={(e) => { if (e.key === 'Enter') submitRename(); if (e.key === 'Escape') { setRenameTarget(null); setRenameValue(''); } }}
-                                    className={`text-[11px] font-semibold text-center leading-tight w-full tracking-tight px-1 outline-none ${
+                                    className={`text-[11px] font-medium text-center leading-tight w-full tracking-tight px-1 outline-none ${
                                         clay
                                             ? 'font-sans rounded-[8px] text-[--text-color]'
                                             : 'font-mono bg-[--bg-overlay] text-[--text-color] border border-pastel-red/50'
@@ -461,7 +487,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                                 />
                             ) : (
                                 <span
-                                    className={`text-[11px] font-semibold text-center leading-tight truncate w-full tracking-tight px-1 ${
+                                    className={`text-[11px] font-medium text-center leading-tight truncate w-full tracking-tight px-1 ${
                                         clay
                                             ? 'font-sans text-[--text-color]'
                                             : `font-mono ${inverselabelcolor && islightbackground ? 'text-black' : 'text-white'}`
@@ -481,13 +507,55 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
         </div>
     );
 
+    // Document-level capture listeners — fires before ANY element's touch handling,
+    // including before browser gesture recognition for touchAction
+    useEffect(() => {
+        let startY = 0, startX = 0, triggered = false;
+
+        const onStart = (e: TouchEvent) => {
+            if (showAppLibraryRef.current) return;
+            const el = homeContainerRef.current;
+            if (!el || !el.contains(e.target as Node)) return;
+            startY = e.touches[0].clientY;
+            startX = e.touches[0].clientX;
+            triggered = false;
+        };
+
+        const onMove = (e: TouchEvent) => {
+            if (triggered || !startY || showAppLibraryRef.current) return;
+            const dy = e.touches[0].clientY - startY;
+            const dx = Math.abs(e.touches[0].clientX - startX);
+            if (Math.abs(dy) > 40 && Math.abs(dy) > dx) {
+                triggered = true;
+                if (dy < 0) setShowAppLibrary(true);
+                else window.dispatchEvent(new CustomEvent('open-notifications'));
+            }
+        };
+
+        const onEnd = () => { triggered = false; startY = 0; };
+
+        document.addEventListener('touchstart', onStart, { capture: true, passive: true });
+        document.addEventListener('touchmove', onMove, { capture: true, passive: true });
+        document.addEventListener('touchend', onEnd, { capture: true, passive: true });
+        document.addEventListener('touchcancel', onEnd, { capture: true, passive: true });
+
+        return () => {
+            document.removeEventListener('touchstart', onStart, { capture: true });
+            document.removeEventListener('touchmove', onMove, { capture: true });
+            document.removeEventListener('touchend', onEnd, { capture: true });
+            document.removeEventListener('touchcancel', onEnd, { capture: true });
+        };
+    }, []);
+
     return (
         <div
+            ref={homeContainerRef}
             className="relative w-full h-full overflow-hidden"
             onClick={() => editmode && seteditmode(false)}
             onTouchStart={(e) => {
-                if ((e.target as HTMLElement).closest('.app-icon')) return;
-                handlelongpressstart(null, e);
+                if (!(e.target as HTMLElement).closest('.app-icon')) {
+                    handlelongpressstart(null, e);
+                }
             }}
             onTouchMove={handlelongpressmove}
             onTouchEnd={handlelongpressend}
@@ -586,7 +654,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
             <div
                 ref={scrollcontainerref}
                 className="flex w-full h-full overflow-x-auto snap-x snap-mandatory scrollbar-hide [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-                style={{ scrollBehavior: 'smooth', WebkitOverflowScrolling: 'touch', touchAction: 'pan-x pan-y', overscrollBehaviorX: 'contain' }}
+                style={{ scrollBehavior: 'smooth', WebkitOverflowScrolling: 'touch', overscrollBehaviorX: 'contain' }}
                 onScroll={(e) => {
                     const scrollLeft = e.currentTarget.scrollLeft;
                     const width = e.currentTarget.offsetWidth;
@@ -625,17 +693,14 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                     </div>
                 ))}
 
-                {/* App Library page */}
-                <div className="w-[100vw] h-full pt-0 snap-start flex-shrink-0 [scroll-snap-stop:always]">
-                    <AppLibrary />
-                </div>
+                {/* App Library removed from scroll — accessed via swipe-up */}
             </div>
 
             {/* ── Dock ── */}
             <div
                 data-tour="ios-dock"
                 className={`absolute bottom-0 left-0 right-0 z-20 flex justify-center pb-7 pointer-events-auto transition-all duration-300 ${
-                    page >= gridPages.length ? 'opacity-0 pointer-events-none' : 'opacity-100'
+                    showAppLibrary ? 'opacity-0 pointer-events-none' : 'opacity-100'
                 }`}
             >
                 <div
@@ -682,29 +747,89 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
 
             {/* ── Page indicator dots ── */}
             <div
-                className={`absolute left-0 right-0 flex justify-center items-center gap-2 z-20 pointer-events-none transition-opacity duration-300 ${
-                    clay ? 'bottom-[145px]' : 'bottom-[140px]'
-                } ${isoverlayopen || page >= gridPages.length ? 'opacity-0' : 'opacity-100'}`}
+                className={`absolute left-0 right-0 flex justify-center items-center z-20 pointer-events-none transition-opacity duration-300 ${
+                    clay ? 'bottom-[168px]' : 'bottom-[164px]'
+                } ${isoverlayopen || showAppLibrary ? 'opacity-0' : 'opacity-100'}`}
             >
-                {gridPages.map((_, i) => (
-                    <div
-                        key={`dot-${i}`}
-                        className={`transition-all duration-300 ${
-                            clay
-                                ? `rounded-full ${page === i ? 'w-[8px] h-[8px] bg-accent scale-110' : 'w-[7px] h-[7px] bg-[--text-muted]/50'}`
-                                : `w-[6px] h-[6px] rounded-none ${page === i ? 'bg-pastel-red scale-110' : 'bg-[--text-muted]'}`
-                        }`}
-                    />
-                ))}
-                {/* App Library dot */}
-                <div
-                    className={`transition-all duration-300 ${
-                        clay
-                            ? `rounded-full ${page >= gridPages.length ? 'w-[8px] h-[8px] bg-accent scale-110' : 'w-[7px] h-[7px] bg-[--text-muted]/50'}`
-                            : `w-[6px] h-[6px] rounded-none ${page >= gridPages.length ? 'bg-pastel-red scale-110' : 'bg-[--text-muted]'}`
-                    }`}
-                />
+                <div className={`flex items-center gap-1.5 px-3 py-1.5 ${clay ? 'rounded-full' : 'rounded-sm'}`}
+                    style={{
+                        background: clay ? 'rgba(0,0,0,0.15)' : 'rgba(0,0,0,0.2)',
+                        backdropFilter: 'blur(12px)',
+                        WebkitBackdropFilter: 'blur(12px)',
+                    }}
+                >
+                    {gridPages.map((_, i) => (
+                        <div
+                            key={`dot-${i}`}
+                            className={`transition-all duration-300 rounded-full ${
+                                page === i
+                                    ? `w-[7px] h-[7px] ${clay ? 'bg-white' : 'bg-white'}`
+                                    : `w-[6px] h-[6px] ${clay ? 'bg-white/35' : 'bg-white/30'}`
+                            }`}
+                        />
+                    ))}
+                </div>
             </div>
+
+            {/* ── App Library swipe-up indicator (below dots, above dock) ── */}
+            <motion.div
+                className={`absolute left-0 right-0 flex justify-center items-center z-20 transition-opacity duration-500 ${
+                    clay ? 'bottom-[128px]' : 'bottom-[124px]'
+                } ${isoverlayopen || showAppLibrary ? 'opacity-0 pointer-events-none' : 'opacity-40 pointer-events-auto'}`}
+                drag="y"
+                dragConstraints={{ top: 0, bottom: 0 }}
+                dragElastic={0.2}
+                onDragEnd={(_, info) => {
+                    if (info.offset.y < -30 || info.velocity.y < -200) {
+                        setShowAppLibrary(true);
+                    }
+                }}
+                onClick={() => setShowAppLibrary(true)}
+                whileTap={{ scale: 1.3, opacity: 0.8 }}
+                style={{ cursor: 'grab', touchAction: 'none' }}
+            >
+                <div className="px-8 py-5">
+                    <svg width="16" height="8" viewBox="0 0 16 8" fill="none" className="text-white">
+                        <path d="M1 7L8 1.5L15 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                </div>
+            </motion.div>
+
+            {/* ── App Library overlay ── */}
+            <AnimatePresence>
+                {showAppLibrary && (
+                    <motion.div
+                        key="app-library-overlay"
+                        className="absolute inset-0 z-30 flex flex-col"
+                        initial={{ y: '100%' }}
+                        animate={{ y: 0 }}
+                        exit={{ y: '100%' }}
+                        transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+                        style={{
+                            background: clay ? 'var(--bg-base)' : 'var(--bg-surface)',
+                        }}
+                    >
+                        {/* Drag handle — only this is draggable to dismiss */}
+                        <motion.div
+                            className="flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing shrink-0"
+                            drag="y"
+                            dragConstraints={{ top: 0, bottom: 0 }}
+                            dragElastic={0.3}
+                            onDragEnd={(_, info) => {
+                                if (info.offset.y > 80 || info.velocity.y > 300) {
+                                    setShowAppLibrary(false);
+                                }
+                            }}
+                            style={{ touchAction: 'none' }}
+                        >
+                            <div className="w-10 h-1 rounded-full" style={{ background: 'var(--text-muted)', opacity: 0.3 }} />
+                        </motion.div>
+                        <div className="flex-1 min-h-0 overflow-hidden">
+                            <AppLibrary />
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
