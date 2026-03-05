@@ -16,6 +16,7 @@ import { LuWifi, LuSignal, LuBatteryFull } from "react-icons/lu";
 import { motion } from 'framer-motion';
 
 import NotificationCenter from '@/components/NotificationCenter';
+import CalendarPanel from '@/components/CalendarPanel';
 import ContextMenu from '@/components/ui/ContextMenu';
 import { SelectionArea } from '@/components/ui/SelectionArea';
 import FileModal from '@/components/ui/FileModal';
@@ -38,6 +39,7 @@ const Desktop = () => {
   const { wallpaperurl, islightbackground, inverselabelcolor } = useSettings();
   const [showcontrolcenter, setshowcontrolcenter] = useState(false);
   const [shownotificationcenter, setshownotificationcenter] = useState(false);
+  const [showcalendar, setshowcalendar] = useState(false);
   const [showrecentapps, setshowrecentapps] = useState(false);
   const [shownext, setshownext] = useState(false);
   const [showappswitcher, setshowappswitcher] = useState(false);
@@ -62,8 +64,8 @@ const Desktop = () => {
   windowsref.current = windows;
   const activewindowref = useRef(activewindow);
   activewindowref.current = activewindow;
-  const overlayref = useRef({ showcontrolcenter, shownotificationcenter, showrecentapps, shownext, showforcequit, showaboutmac, showappswitcher });
-  overlayref.current = { showcontrolcenter, shownotificationcenter, showrecentapps, shownext, showforcequit, showaboutmac, showappswitcher };
+  const overlayref = useRef({ showcontrolcenter, shownotificationcenter, showcalendar, showrecentapps, shownext, showforcequit, showaboutmac, showappswitcher });
+  overlayref.current = { showcontrolcenter, shownotificationcenter, showcalendar, showrecentapps, shownext, showforcequit, showaboutmac, showappswitcher };
   const containerRef = useRef<HTMLDivElement>(null);
 
 
@@ -206,8 +208,8 @@ const Desktop = () => {
       }
     };
     const handleToggleDesktopEffects = () => setshowdesktopeffects((prev: boolean) => !prev);
-    const handleToggleNotifications = () => setshownotificationcenter((prev: boolean) => !prev);
-    const handleOpenNotifications = () => setshownotificationcenter(true);
+    const handleToggleNotifications = () => { setshownotificationcenter((prev: boolean) => { if (!prev) setshowcalendar(false); return !prev; }); };
+    const handleOpenNotifications = () => { setshownotificationcenter(true); setshowcalendar(false); };
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('start-tour', handleStartTour);
     window.addEventListener('toggle-next', handleToggleNext);
@@ -242,6 +244,7 @@ const Desktop = () => {
 
       const s = overlayref.current;
       if (s.shownotificationcenter) { setshownotificationcenter(false); return; }
+      if (s.showcalendar) { setshowcalendar(false); return; }
       if (s.showcontrolcenter) { setshowcontrolcenter(false); return; }
       if (s.shownext) { setshownext(false); return; }
       if (s.showforcequit) { setshowforcequit(false); return; }
@@ -308,6 +311,7 @@ const Desktop = () => {
 
   const handleDesktopClick = () => {
     if (shownotificationcenter) setshownotificationcenter(false);
+    if (showcalendar) setshowcalendar(false);
     setContextMenu(null);
     setactivewindow('explorer-desktop');
   };
@@ -478,7 +482,7 @@ const Desktop = () => {
             : osstate === 'booting' ? 'opacity-0 scale-100' : 'opacity-0 scale-[0.98] pointer-events-none'}`}
         style={{ backgroundImage: `url('${wallpaperurl}')` }}
       >
-        <DesktopEffects active={showdesktopeffects} paused={showcontrolcenter || shownotificationcenter || hasActiveNotification} />
+        <DesktopEffects active={showdesktopeffects} paused={showcontrolcenter || shownotificationcenter || showcalendar || hasActiveNotification} />
         {!ismobile && (
           <>
             <FileModal
@@ -602,7 +606,10 @@ const Desktop = () => {
               </div>
             </main>
 
-            <Panel ontogglenotifications={() => setshownotificationcenter(prev => !prev)} />
+            <Panel
+              ontogglenotifications={() => { setshownotificationcenter(prev => { if (!prev) setshowcalendar(false); return !prev; }); }}
+              ontogglecalendar={() => { setshowcalendar(prev => { if (!prev) setshownotificationcenter(false); return !prev; }); }}
+            />
 
             <Dock />
           </>
@@ -704,6 +711,7 @@ const Desktop = () => {
         )}
       </div>
       <NotificationCenter isopen={shownotificationcenter} onclose={() => setshownotificationcenter(false)} />
+      <CalendarPanel isopen={showcalendar} onclose={() => setshowcalendar(false)} />
       <Next isOpen={shownext} onClose={() => setshownext(false)} />
       <AppSwitcher isOpen={showappswitcher} onClose={() => setshowappswitcher(false)} />
       <TourGuide isOpen={showtour} onClose={() => setshowtour(false)} />

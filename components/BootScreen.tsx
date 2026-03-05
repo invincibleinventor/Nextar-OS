@@ -15,6 +15,7 @@ function WelcomeText({ onComplete }: { onComplete: () => void }) {
         // requestAnimationFrame fires before the next paint, the second rAF ensures
         // the first frame has actually been committed to screen.
         let raf1: number, raf2: number;
+        raf1 = 0;
         raf1 = requestAnimationFrame(() => {
             raf2 = requestAnimationFrame(() => {
                 setStartDraw(true);
