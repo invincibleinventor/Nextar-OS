@@ -33,15 +33,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [reducemotion, setreducemotion] = useState(false);
     const [reducetransparency, setreducetransparency] = useState(false);
     const [soundeffects, setsoundeffects] = useState(false);
-    const [wallpaperurl, setwallpaperurl] = useState(() => {
-        if (typeof window === 'undefined') return '/bg.jpg';
-        const stored = localStorage.getItem('wallpaperUrl');
-        if (stored) return stored;
-        const storedTheme = localStorage.getItem('theme');
-        const isMobile = window.innerWidth < 768;
-        const isDark = storedTheme === 'dark' || (!storedTheme && isMobile);
-        return isDark ? '/bg-dark.jpg' : '/bg.jpg';
-    });
+    const [wallpaperurl, setwallpaperurl] = useState('/bg.jpg');
     const [accentcolor, setaccentcolor] = useState('#e78284');
     const [islightbackground, setislightbackground] = useState(false);
     const [inverselabelcolor, setinverselabelcolor] = useState(false);

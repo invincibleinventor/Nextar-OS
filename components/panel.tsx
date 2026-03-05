@@ -7,9 +7,9 @@ import { apps, openSystemItem } from './data';
 import Control from './controlcenter';
 import Logo from './mainlogo';
 import { useAppMenus } from './AppMenuContext';
-import { IoWifi, IoBatteryFull, IoBatteryHalf, IoBatteryDead, IoSparkles } from 'react-icons/io5';
+import { IoSparkles } from 'react-icons/io5';
+import { LuWifi, LuBatteryFull, LuBatteryMedium, LuBatteryLow, LuBatteryCharging } from 'react-icons/lu';
 import { useDevice } from './DeviceContext';
-import { IoIosBatteryCharging } from 'react-icons/io';
 import { useAuth } from './AuthContext';
 import { useNotifications } from './NotificationContext';
 import { iselectron, power, battery, wifi } from '@/utils/platform';
@@ -277,7 +277,7 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
                         </button>
                         {!isOnline && <span className={`text-[9px] font-bold px-1 py-0.5 ${clay ? 'text-red-500 bg-red-500/10' : 'text-pastel-red bg-pastel-red/15'}`}>OFFLINE</span>}
                         <div className="relative group">
-                            <IoWifi className={`w-[18px] h-[18px] ${clay ? (!isOnline ? 'text-red-500' : wifistatus.connected ? 'text-[--text-color]' : 'text-[--text-muted]') : (!isOnline ? 'text-pastel-red' : wifistatus.connected ? 'text-pastel-blue' : 'text-pastel-lavender')}`} />
+                            <LuWifi className={`w-[16px] h-[16px] ${clay ? (!isOnline ? 'text-red-500' : wifistatus.connected ? 'text-[--text-color]' : 'text-[--text-muted]') : (!isOnline ? 'text-pastel-red' : wifistatus.connected ? 'text-pastel-blue' : 'text-pastel-lavender')}`} />
                             {wifistatus.connected && wifistatus.ssid && (
                                 <div className="absolute top-full mt-1 right-0 bg-overlay text-[--text-color] text-[10px] px-2 py-1 border border-[--border-color] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-[600]">{wifistatus.ssid}</div>
                             )}
@@ -285,13 +285,13 @@ export default function Panel({ ontogglenotifications }: { ontogglenotifications
                         <div className='flex items-center space-x-1'>
                             {batterystatus.available && <span className="text-[11px] font-medium text-[--text-color]">{batterystatus.percentage}%</span>}
                             {batterystatus.charging ? (
-                                <IoIosBatteryCharging className={`w-[24px] h-[24px] ${clay ? 'text-[--text-color]' : 'text-pastel-green'}`} />
+                                <LuBatteryCharging className={`w-[22px] h-[22px] ${clay ? 'text-[--text-color]' : 'text-pastel-green'}`} />
                             ) : batterystatus.percentage > 60 ? (
-                                <IoBatteryFull className={`w-[22px] h-[22px] ${clay ? 'text-[--text-color]' : 'text-pastel-green'}`} />
+                                <LuBatteryFull className={`w-[20px] h-[20px] ${clay ? 'text-[--text-color]' : 'text-pastel-green'}`} />
                             ) : batterystatus.percentage > 20 ? (
-                                <IoBatteryHalf className={`w-[22px] h-[22px] ${clay ? 'text-[--text-muted]' : 'text-pastel-yellow'}`} />
+                                <LuBatteryMedium className={`w-[20px] h-[20px] ${clay ? 'text-[--text-muted]' : 'text-pastel-yellow'}`} />
                             ) : (
-                                <IoBatteryDead className={`w-[22px] h-[22px] ${clay ? 'text-[--text-muted]' : 'text-pastel-red'}`} />
+                                <LuBatteryLow className={`w-[20px] h-[20px] ${clay ? 'text-[--text-muted]' : 'text-pastel-red'}`} />
                             )}
                         </div>
                     </div>

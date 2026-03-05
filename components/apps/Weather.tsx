@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useMenuAction } from '../hooks/useMenuAction';
 import { useMenuRegistration } from '../AppMenuContext';
 import { useWindows } from '../WindowContext';
+import { useDevice } from '../DeviceContext';
 import { useIsClay } from '../hooks/useIsClay';
 import { glassCard, glassInput, glassButton, clayClasses } from '../hooks/useClayStyles';
 

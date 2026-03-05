@@ -13,7 +13,7 @@ export const WindowProvider = ({ children }: any) => {
     setwindows((prevwindows) => {
       const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
-      if (newwindow.multiwindow === false) {
+      if (newwindow.multiwindow === false || isMobile) {
         const existing = prevwindows.find(w => w.appname === newwindow.appname);
         if (existing) {
           setactivewindow(existing.id);

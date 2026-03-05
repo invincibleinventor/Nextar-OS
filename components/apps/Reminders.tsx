@@ -7,10 +7,12 @@ import {
     IoStar, IoClose,
 } from 'react-icons/io5';
 import { useWindows } from '../WindowContext';
+import { useDevice } from '../DeviceContext';
 import { useMenuAction } from '../hooks/useMenuAction';
 import { useMenuRegistration } from '../AppMenuContext';
 import { useIsClay } from '../hooks/useIsClay';
 import { glassSidebar, glassCard, glassInput, glassButton } from '../hooks/useClayStyles';
+import { AnimatePresence, motion } from 'framer-motion';
 
 interface Reminder {
     id: string;
@@ -62,6 +64,8 @@ export default function Reminders({ appId = 'reminders', id }: { appId?: string;
     const { activewindow } = useWindows();
     const isActiveWindow = activewindow === id;
     const clay = useIsClay();
+    const { ismobile } = useDevice();
+    const [mobileView, setMobileView] = useState<'sidebar' | 'list'>('sidebar');
 
     const [reminders, setReminders] = useState<Reminder[]>([]);
     const [lists, setLists] = useState<ReminderList[]>([]);
@@ -182,6 +186,141 @@ export default function Reminders({ appId = 'reminders', id }: { appId?: string;
     const selected = reminders.find(r => r.id === selectedId);
 
     const viewTitle = smartLists.find(s => s.id === selectedView)?.name || lists.find(l => l.id === selectedView)?.name || 'Reminders';
+
+    if (ismobile) {
+        return (
+            <div className={`flex flex-col h-full ${clay ? 'bg-[--bg-base]' : 'bg-[--bg-base] font-mono'} text-[--text-color] text-xs overflow-hidden`} tabIndex={0}>
+                <AnimatePresence mode="wait" initial={false}>
+                    {mobileView === 'sidebar' ? (
+                        <motion.div key="sidebar" className="flex flex-col h-full"
+                            initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -20, opacity: 0 }} transition={{ duration: 0.15 }}>
+                            {/* Header */}
+                            <div className={`h-[48px] flex items-center px-4 shrink-0 ${clay ? 'border-b border-[--text-muted]/10' : 'border-b border-[--border-color]'}`}>
+                                <span className="text-[16px] font-semibold text-[--text-color]">Reminders</span>
+                            </div>
+                            {/* Smart lists + custom lists */}
+                            <div className="flex-1 overflow-y-auto p-3 space-y-0.5">
+                                <div className={`uppercase font-bold text-[--text-muted] pl-3 mb-2 ${clay ? 'text-[11px] tracking-wide' : 'text-[11px]'}`}>Smart Lists</div>
+                                {smartLists.map(sl => {
+                                    const Icon = sl.icon;
+                                    return (
+                                        <div key={sl.id} onClick={() => { setSelectedView(sl.id); setMobileView('list'); }}
+                                            className={`flex items-center gap-3 px-3 py-3 cursor-pointer mx-1 transition-all ${clay ? 'rounded-[14px] active:scale-[0.98] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`}>
+                                            <div className={`flex items-center justify-center shrink-0 ${clay ? 'w-8 h-8 rounded-[10px]' : 'w-7 h-7'}`}
+                                                style={{ backgroundColor: sl.color }}>
+                                                <Icon size={16} className="text-white" />
+                                            </div>
+                                            <span className={`flex-1 ${clay ? 'text-[15px] font-medium' : 'text-[14px]'} text-[--text-color]`}>{sl.name}</span>
+                                            {counts[sl.id] > 0 && <span className="text-[13px] text-[--text-muted]">{counts[sl.id]}</span>}
+                                            <IoChevronForward size={14} className="text-[--text-muted]" />
+                                        </div>
+                                    );
+                                })}
+                                {lists.length > 0 && (
+                                    <>
+                                        <div className={`my-3 ${clay ? 'border-t border-[--text-muted]/10' : 'border-t border-[--border-color]'}`} />
+                                        <div className={`uppercase font-bold text-[--text-muted] pl-3 mb-2 ${clay ? 'text-[11px] tracking-wide' : 'text-[11px]'}`}>My Lists</div>
+                                    </>
+                                )}
+                                {lists.map(l => (
+                                    <div key={l.id} onClick={() => { setSelectedView(l.id); setMobileView('list'); }}
+                                        className={`flex items-center gap-3 px-3 py-3 cursor-pointer mx-1 transition-all ${clay ? 'rounded-[14px] active:scale-[0.98] hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay'}`}>
+                                        <div className={`flex items-center justify-center shrink-0 ${clay ? 'w-8 h-8 rounded-[10px]' : 'w-7 h-7'}`}
+                                            style={{ backgroundColor: l.color }}>
+                                            <IoListOutline size={16} className="text-white" />
+                                        </div>
+                                        <span className={`flex-1 truncate ${clay ? 'text-[15px] font-medium' : 'text-[14px]'} text-[--text-color]`}>{l.name}</span>
+                                        {counts[l.id] > 0 && <span className="text-[13px] text-[--text-muted]">{counts[l.id]}</span>}
+                                        <IoChevronForward size={14} className="text-[--text-muted]" />
+                                    </div>
+                                ))}
+                            </div>
+                            {/* Add list button */}
+                            <div className={`p-3 ${clay ? 'border-t border-[--text-muted]/10' : 'border-t border-[--border-color]'}`}>
+                                <button onClick={() => setShowNewList(true)}
+                                    className={`w-full flex items-center gap-2 px-3 py-2.5 text-[--text-muted] transition-colors ${clay ? 'rounded-[12px] hover:bg-[--bg-glass-hover] active:scale-[0.97]' : 'hover:bg-overlay'}`}>
+                                    <IoAddOutline size={16} /> <span className="text-[13px]">Add List</span>
+                                </button>
+                            </div>
+                        </motion.div>
+                    ) : (
+                        <motion.div key="list" className="flex flex-col h-full"
+                            initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 20, opacity: 0 }} transition={{ duration: 0.15 }}>
+                            {/* Header with back */}
+                            <div className={`h-[48px] flex items-center px-3 gap-2 shrink-0 ${clay ? 'border-b border-[--text-muted]/10' : 'border-b border-[--border-color]'}`}>
+                                <button onClick={() => setMobileView('sidebar')} className="text-accent text-[14px] flex items-center gap-0.5">
+                                    <IoChevronDown size={16} className="rotate-90" /> Back
+                                </button>
+                                <span className="flex-1 text-center text-[15px] font-semibold text-[--text-color] -ml-8">{viewTitle}</span>
+                            </div>
+                            {/* Reminder list */}
+                            <div className="flex-1 overflow-y-auto px-2 py-1">
+                                {filtered.length === 0 && (
+                                    <div className="flex flex-col items-center justify-center h-full text-[--text-muted] gap-2">
+                                        <IoListOutline size={40} className="text-[--text-muted]" style={{ opacity: 0.3 }} />
+                                        <span className="text-[14px] font-medium text-[--text-color]">No Reminders</span>
+                                    </div>
+                                )}
+                                {filtered.map(r => {
+                                    const expanded = selectedId === r.id;
+                                    const overdue = isOverdue(r.dueDate) && !r.completed;
+                                    return (
+                                        <div key={r.id}
+                                            className={`mx-1 my-0.5 transition-all cursor-pointer ${clay ? 'rounded-[14px]' : ''} ${
+                                                expanded ? (clay ? 'rounded-[16px] mb-1' : 'border border-[--border-color] bg-overlay')
+                                                    : (clay ? 'hover:bg-[--bg-glass-hover]' : 'hover:bg-overlay/40')
+                                            }`}
+                                            style={expanded && clay ? { ...glassCard, borderRadius: '16px' } : undefined}
+                                            onClick={() => setSelectedId(expanded ? null : r.id)}>
+                                            <div className="flex items-center gap-3 px-3 py-3">
+                                                <button onClick={e => { e.stopPropagation(); updateReminder(r.id, { completed: !r.completed }); }}
+                                                    className={`shrink-0 ${r.completed ? 'text-pastel-green' : 'text-[--text-muted]'}`}>
+                                                    {r.completed ? <IoCheckmarkCircle size={22} /> : <IoEllipseOutline size={22} />}
+                                                </button>
+                                                <div className="flex-1 min-w-0">
+                                                    <span className={`block text-[14px] ${r.completed ? 'line-through text-[--text-muted]' : 'text-[--text-color]'}`}>{r.title}</span>
+                                                    {r.dueDate && <span className={`text-[11px] ${overdue ? 'text-pastel-red' : 'text-[--text-muted]'}`}>
+                                                        <IoCalendarOutline size={11} className="inline mr-0.5 -mt-px" />{new Date(r.dueDate).toLocaleDateString()}
+                                                    </span>}
+                                                </div>
+                                                {r.flagged && <IoFlag size={16} className="text-pastel-peach shrink-0" />}
+                                            </div>
+                                            {expanded && (
+                                                <div className={`px-3 pb-3 pt-1 space-y-2 ${clay ? 'border-t border-[--text-muted]/10' : 'border-t border-[--border-color]'}`} onClick={e => e.stopPropagation()}>
+                                                    <textarea value={r.notes} onChange={e => updateReminder(r.id, { notes: e.target.value })} placeholder="Add notes..."
+                                                        className={`w-full px-3 py-2 text-[13px] outline-none resize-none h-16 text-[--text-color] placeholder:text-[--text-muted] ${clay ? 'rounded-[12px]' : 'bg-overlay border border-[--border-color]'}`}
+                                                        style={clay ? glassInput : undefined} />
+                                                    <div className="flex justify-end">
+                                                        <button onClick={() => deleteReminder(r.id)}
+                                                            className="flex items-center gap-1 text-[12px] text-pastel-red px-2 py-1 rounded-[8px]">
+                                                            <IoTrashOutline size={14} /> Delete
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                            {/* Add reminder */}
+                            {selectedView !== 'completed' && (
+                                <div className={`px-3 py-2.5 shrink-0 ${clay ? 'border-t border-[--text-muted]/10' : 'border-t border-[--border-color]'}`}>
+                                    <div className={`flex items-center gap-2 ${clay ? 'px-3 py-2 rounded-[14px]' : ''}`}
+                                        style={clay ? glassInput : undefined}>
+                                        <IoAddOutline size={18} className="shrink-0" style={{ color: 'var(--accent-color)' }} />
+                                        <input value={newTitle} onChange={e => setNewTitle(e.target.value)}
+                                            onKeyDown={e => { if (e.key === 'Enter' && newTitle.trim()) { e.preventDefault(); addReminder(); } }}
+                                            placeholder="Add a reminder..." className="flex-1 bg-transparent text-[14px] outline-none placeholder:text-[--text-muted] text-[--text-color]"
+                                            style={{ fontSize: '16px' }} />
+                                    </div>
+                                </div>
+                            )}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+        );
+    }
 
     return (
         <div className={`flex h-full ${clay ? 'bg-[--bg-base]' : 'bg-[--bg-base] font-mono'} text-[--text-color] text-xs overflow-hidden`} tabIndex={0} onKeyDown={handleKeyDown}>

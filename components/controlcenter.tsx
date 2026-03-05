@@ -9,7 +9,7 @@ import { MdAirplanemodeActive } from 'react-icons/md'
 import { HiSparkles } from 'react-icons/hi2'
 import { FaPlane } from 'react-icons/fa'
 import { BsFillGridFill } from 'react-icons/bs'
-import { BiSignal5 } from 'react-icons/bi'
+import { LuSignal } from 'react-icons/lu'
 import { useSettings } from './SettingsContext'
 import { useCheerpXSafe } from './CheerpXContext'
 import { useTheme } from './ThemeContext'
@@ -35,7 +35,8 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
   const { user, logout } = useAuth()
   const { currenttrack, isplaying, toggle, next, prev, currenttime, duration } = useMusic()
   const clay = useIsClay()
-  const { addwindow } = useWindows()
+  const { addwindow, windows } = useWindows()
+  const hasOpenApp = windows.some((w: any) => !w.isminimized)
 
   const cheerpx = useCheerpXSafe();
   const tailscalestate = cheerpx?.networkState || 'disconnected';
@@ -117,9 +118,13 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
     setTimeout(fetchsystemstatus, 1000);
   };
 
-  const handlevolume = async (val: number) => {
+  const volumetimeout = useRef<ReturnType<typeof setTimeout>>(null);
+  const handlevolume = (val: number) => {
     setvolumeval(val);
-    if (iselectron) await audio.setvolume(val);
+    if (iselectron) {
+      if (volumetimeout.current) clearTimeout(volumetimeout.current);
+      volumetimeout.current = setTimeout(() => { audio.setvolume(val); }, 80);
+    }
   };
 
   const togglemute = async () => {
@@ -128,9 +133,13 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
     if (iselectron) await audio.setmuted(newmuted);
   };
 
-  const handlebrightness = async (val: number) => {
+  const brightnesstimeout = useRef<ReturnType<typeof setTimeout>>(null);
+  const handlebrightness = (val: number) => {
     setbrightnessval(val);
-    if (iselectron && brightnessavailable) await brightnessapi.set(val);
+    if (iselectron && brightnessavailable) {
+      if (brightnesstimeout.current) clearTimeout(brightnesstimeout.current);
+      brightnesstimeout.current = setTimeout(() => { brightnessapi.set(val); }, 80);
+    }
   };
 
   const handlelockscreen = async () => {
@@ -350,7 +359,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
           </div>
           <div className="flex-1 relative flex items-center">
             <div className="w-full h-[8px] rounded-full overflow-hidden" style={{ background: 'var(--bg-glass)' }}>
-              <div className="h-full rounded-full transition-all duration-100" style={{ width: `${brightnessval}%`, background: 'var(--accent-gradient)' }} />
+              <div className="h-full rounded-full" style={{ width: `${brightnessval}%`, background: 'var(--accent-gradient)' }} />
             </div>
             <input
               type="range" min="0" max="100" value={brightnessval}
@@ -374,7 +383,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
           </button>
           <div className="flex-1 relative flex items-center">
             <div className="w-full h-[8px] rounded-full overflow-hidden" style={{ background: 'var(--bg-glass)' }}>
-              <div className="h-full rounded-full transition-all duration-100" style={{
+              <div className="h-full rounded-full" style={{
                 width: `${ismuted ? 0 : volumeval}%`,
                 background: ismuted ? 'var(--pastel-red)' : 'var(--accent-gradient)',
               }} />
@@ -498,7 +507,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
               <FaPlane className="text-[--bg-base]" size={18} />
             </div>
             <div className="flex items-center justify-center bg-pastel-green aspect-square">
-              <BiSignal5 className="text-[--bg-base]" size={18} />
+              <LuSignal className="text-[--bg-base]" size={16} />
             </div>
             <div onClick={togglewifi} className={`flex items-center justify-center aspect-square cursor-pointer active:scale-95 transition-all ${wifienabled ? 'bg-pastel-blue' : wificonnecting ? 'bg-pastel-yellow' : 'bg-[--border-color]'}`}>
               <FaWifi className={wifienabled ? 'text-[--bg-base]' : wificonnecting ? 'text-[--bg-base]' : 'text-[--text-color]'} size={18} />
@@ -710,16 +719,14 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
               maxHeight: ismobile ? '85vh' : 'calc(100vh - 80px)',
               ...(ismobile ? {} : { overflowY: 'auto' }),
               ...(clay ? {
-                background: ismobile ? 'color-mix(in srgb, var(--bg-glass) 70%, transparent)' : 'var(--bg-glass)',
-                backdropFilter: 'blur(var(--glass-blur-heavy))',
-                WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
+                background: ismobile && hasOpenApp ? 'var(--bg-base)' : ismobile ? 'color-mix(in srgb, var(--bg-glass) 70%, transparent)' : 'var(--bg-glass)',
+                ...((!ismobile || !hasOpenApp) ? { backdropFilter: 'blur(var(--glass-blur-heavy))', WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))' } : {}),
                 border: ismobile ? 'none' : '1px solid var(--glass-border)',
                 boxShadow: 'var(--glass-shadow)',
                 ...(ismobile ? { borderRadius: '0 0 28px 28px' } : {}),
               } : ismobile ? {
-                background: 'rgba(var(--bg-surface-rgb, 255,255,255), 0.75)',
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
+                background: hasOpenApp ? 'var(--bg-surface)' : 'rgba(var(--bg-surface-rgb, 255,255,255), 0.75)',
+                ...(!hasOpenApp ? { backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' } : {}),
                 borderRadius: '0 0 28px 28px',
               } : {
                 background: 'var(--bg-surface)',
@@ -736,23 +743,23 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
               if ((info.offset.y < -100 || info.velocity.y < -500) && onclose) onclose();
             }}
           >
-            {/* Drag handle for mobile */}
-            {ismobile && (
-              <div
-                className="flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing shrink-0"
-                onPointerDown={(e) => dragControls.start(e)}
-              >
-                <div className="w-[36px] h-[4px] rounded-full" style={{ background: 'var(--text-muted)', opacity: 0.3 }} />
-              </div>
-            )}
             <div
               ref={contentscrollref}
               onPointerDown={ismobile ? handlecontentpointerdown : undefined}
-              className={ismobile ? 'flex-1 min-h-0 overflow-y-auto' : ''}
+              className={ismobile ? 'flex-1 min-h-0 overflow-y-auto pt-2' : ''}
               style={ismobile ? { touchAction: 'pan-y', overscrollBehavior: 'contain' } : undefined}
             >
               {content}
             </div>
+            {/* Drag handle for mobile — at the bottom like notification center */}
+            {ismobile && (
+              <div
+                className="flex justify-center py-3 pb-4 cursor-grab active:cursor-grabbing shrink-0"
+                onPointerDown={(e) => dragControls.start(e)}
+              >
+                <div className="w-12 h-1.5 rounded-full" style={{ background: 'var(--text-muted)', opacity: 0.3 }} />
+              </div>
+            )}
           </motion.div>
         </>
       )}
