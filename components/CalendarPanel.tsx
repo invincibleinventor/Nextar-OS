@@ -40,11 +40,11 @@ export default function CalendarPanel({ isopen, onclose }: { isopen: boolean; on
                 {isopen && clay && (
                     <motion.div
                         key="calendar-panel"
-                        initial={{ opacity: 0, y: -10, scale: 0.96 }}
+                        initial={{ opacity: 0, y: 10, scale: 0.96 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -10, scale: 0.96 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.96 }}
                         transition={{ type: "spring", stiffness: 400, damping: 28 }}
-                        className="fixed z-[700] top-[46px] right-3 w-[300px] overflow-hidden flex flex-col rounded-[18px]"
+                        className="fixed z-[700] bottom-[72px] right-3 w-[300px] overflow-hidden flex flex-col rounded-[18px]"
                         style={{
                             ...glassPanel,
                             backdropFilter: 'blur(var(--glass-blur-heavy))',
@@ -75,6 +75,7 @@ export default function CalendarPanel({ isopen, onclose }: { isopen: boolean; on
                         exit={{ opacity: 0, y: -10, scale: 0.96 }}
                         transition={{ type: "spring", stiffness: 400, damping: 28 }}
                         className="fixed z-[700] top-[40px] right-3 w-[280px] overflow-hidden flex flex-col bg-surface border border-[--border-color]"
+                        /* classic mode: dropdown from top bar date is fine */
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="px-4 pt-4 pb-2">
