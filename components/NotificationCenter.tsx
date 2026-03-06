@@ -113,7 +113,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                         <div
                             className="flex flex-col w-full h-full"
                             style={clay ? {
-                                background: hasOpenApp ? 'var(--bg-base)' : 'color-mix(in srgb, var(--bg-glass) 70%, transparent)',
+                                background: hasOpenApp ? 'var(--bg-base)' : 'var(--bg-glass)',
                                 ...(!hasOpenApp ? { backdropFilter: 'blur(var(--glass-blur-heavy))', WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))' } : {}),
                                 borderRadius: '0 0 28px 28px',
                             } : {
@@ -281,6 +281,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                             }`}
                             style={clay ? {
                                 ...glassPanel,
+                                background: 'color-mix(in srgb, var(--accent-source) 12%, var(--bg-glass))',
                                 backdropFilter: 'blur(var(--glass-blur-heavy))',
                                 WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
                             } : undefined}
@@ -324,7 +325,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                 ? 'rounded-[16px]'
                                 : 'bg-overlay border border-[--border-color] anime-accent-left anime-glow-sm'
                             }`}
-                            style={clay ? glassPanel : undefined}
+                            style={clay ? { ...glassPanel, background: 'color-mix(in srgb, var(--accent-source) 12%, var(--bg-glass))', backdropFilter: 'blur(var(--glass-blur-heavy))', WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))' } : undefined}
                             onClick={() => { handlenotificationclick(n); markasviewed(n.id); }}
                             whileHover={{ scale: 1.01 }}
                         >

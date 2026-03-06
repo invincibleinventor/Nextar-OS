@@ -122,19 +122,19 @@ export default function LockScreen() {
         const isDark = !islightbackground;
 
         // Adaptive text colors for wallpaper readability
-        const primaryText = islightbackground ? 'text-gray-900' : 'text-white';
+        const primaryText = islightbackground ? 'text-gray-800' : 'text-white';
         const secondaryText = islightbackground ? 'text-gray-600' : 'text-white/70';
-        const tertiaryText = islightbackground ? 'text-gray-400' : 'text-white/40';
+        const tertiaryText = islightbackground ? 'text-gray-500' : 'text-white/50';
 
         // Strong text shadows for wallpaper legibility
         const clockShadow = islightbackground
-            ? '0 2px 12px rgba(0,0,0,0.06)'
+            ? '0 1px 8px rgba(255,255,255,0.3)'
             : '0 2px 24px rgba(0,0,0,0.7), 0 0 60px rgba(0,0,0,0.3)';
         const dateShadow = islightbackground
-            ? '0 1px 4px rgba(0,0,0,0.04)'
+            ? '0 1px 4px rgba(255,255,255,0.2)'
             : '0 1px 12px rgba(0,0,0,0.5)';
         const subtleShadow = islightbackground
-            ? 'none'
+            ? '0 1px 4px rgba(255,255,255,0.15)'
             : '0 1px 6px rgba(0,0,0,0.4)';
 
         // Avatar ring
@@ -270,13 +270,13 @@ export default function LockScreen() {
                                                 value={password}
                                                 onChange={(e) => setPassword(e.target.value)}
                                                 placeholder="Password"
-                                                className={`w-full h-11 outline-none rounded-full text-[13px] pl-5 pr-12 font-sans ${islightbackground ? 'text-gray-900 placeholder-gray-400/80' : 'text-white placeholder-white/40'}`}
+                                                className={`w-full h-11 outline-none rounded-full text-[13px] pl-5 pr-12 font-sans ${isDark ? 'text-white placeholder-white/40' : 'text-gray-900 placeholder-gray-700/50'}`}
                                                 style={{
                                                     background: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)',
                                                     backdropFilter: 'blur(40px) saturate(1.4)',
                                                     WebkitBackdropFilter: 'blur(40px) saturate(1.4)',
-                                                    border: isDark ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(0,0,0,0.08)',
-                                                    caretColor: islightbackground ? '#333' : '#fff',
+                                                    border: isDark ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(0,0,0,0.1)',
+                                                    caretColor: isDark ? '#fff' : '#333',
                                                 }}
                                             />
                                             <button
@@ -450,13 +450,13 @@ export default function LockScreen() {
                                         name="search"
                                         onChange={(e) => setPassword(e.target.value)}
                                         placeholder="Enter Password"
-                                        className={`w-full h-[46px] outline-none rounded-full text-[14px] pl-6 pr-14 appearance-none font-sans ${islightbackground ? 'text-gray-900 placeholder-gray-400/80' : 'text-white placeholder-white/40'}`}
+                                        className={`w-full h-[46px] outline-none rounded-full text-[14px] pl-6 pr-14 appearance-none font-sans ${isDark ? 'text-white placeholder-white/40' : 'text-gray-900 placeholder-gray-700/50'}`}
                                         style={{
                                             background: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)',
                                             backdropFilter: 'blur(40px) saturate(1.4)',
                                             WebkitBackdropFilter: 'blur(40px) saturate(1.4)',
-                                            border: isDark ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(0,0,0,0.08)',
-                                            caretColor: islightbackground ? '#333' : '#fff',
+                                            border: isDark ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(0,0,0,0.1)',
+                                            caretColor: isDark ? '#fff' : '#333',
                                         }}
                                         autoFocus
                                     />
