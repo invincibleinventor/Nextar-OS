@@ -113,24 +113,24 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
         {
             title: 'Favorites',
             items: [
-                { name: 'Desktop', icon: IoDesktopOutline, path: ['Disk Drive', 'Users', userhome, 'Desktop'] },
-                { name: 'Documents', icon: IoDocumentTextOutline, path: ['Disk Drive', 'Users', userhome, 'Documents'] },
-                { name: 'Downloads', icon: IoDownloadOutline, path: ['Disk Drive', 'Users', userhome, 'Downloads'] },
-                { name: 'Projects', icon: IoFolderOutline, path: ['Disk Drive', 'Users', userhome, 'Projects'] },
-                { name: 'Applications', icon: IoAppsOutline, path: ['Disk Drive', 'Applications'] },
+                { name: 'Desktop', icon: IoDesktopOutline, path: ['Disk Drive', 'Users', userhome, 'Desktop'], color: 'var(--pastel-blue)' },
+                { name: 'Documents', icon: IoDocumentTextOutline, path: ['Disk Drive', 'Users', userhome, 'Documents'], color: 'var(--pastel-green)' },
+                { name: 'Downloads', icon: IoDownloadOutline, path: ['Disk Drive', 'Users', userhome, 'Downloads'], color: 'var(--pastel-peach)' },
+                { name: 'Projects', icon: IoFolderOutline, path: ['Disk Drive', 'Users', userhome, 'Projects'], color: 'var(--pastel-mauve)' },
+                { name: 'Applications', icon: IoAppsOutline, path: ['Disk Drive', 'Applications'], color: 'var(--pastel-red)' },
             ]
         },
         ...(iselectron ? [{
             title: 'Host System',
             items: [
-                { name: 'Home', icon: IoHomeOutline, path: ['_native_', '/home'] },
-                { name: 'Root (/)', icon: IoServerOutline, path: ['_native_', '/'] },
+                { name: 'Home', icon: IoHomeOutline, path: ['_native_', '/home'], color: 'var(--pastel-teal)' },
+                { name: 'Root (/)', icon: IoServerOutline, path: ['_native_', '/'], color: 'var(--text-muted)' },
             ]
         }] : []),
         {
             title: 'Locations',
             items: [
-                { name: 'Disk Drive', icon: IoAppsOutline, path: ['Disk Drive'] },
+                { name: 'Disk Drive', icon: IoAppsOutline, path: ['Disk Drive'], color: 'var(--text-muted)' },
             ]
         },
     ], [userhome, isGuest]);

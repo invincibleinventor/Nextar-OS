@@ -705,14 +705,6 @@ export const sidebaritems = [
             { name: 'Disk Drive', icon: IoAppsOutline, path: ['Disk Drive'], color: 'var(--text-muted)' },
         ]
     },
-    {
-        title: 'Linux',
-        items: [
-            { name: 'Root (/)', icon: IoFolderOutline, path: ['Linux', '/'], color: 'var(--pastel-teal)' },
-            { name: 'Home', icon: IoFolderOutline, path: ['Linux', '/home/user'], color: 'var(--pastel-teal)' },
-            { name: 'Shared', icon: IoFolderOutline, path: ['Linux', '/shared'], color: 'var(--pastel-teal)' },
-        ]
-    }
 ];
 
 export interface MailItem {

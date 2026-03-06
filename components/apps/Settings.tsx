@@ -47,7 +47,7 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
     const [showsidebar, setshowsidebar] = useState(true);
     const { reducemotion, setreducemotion, reducetransparency, setreducetransparency, soundeffects, setsoundeffects, wallpaperurl, setwallpaperurl, accentcolor, setaccentcolor, inverselabelcolor, setinverselabelcolor, icontintmode, seticontintmode, accentmode, setaccentmode, wallpaperdominantcolor } = useSettings();
     const { theme, toggletheme } = useTheme();
-    const { addwindow, windows, updatewindow, setactivewindow, activewindow } = useWindows();
+    const { activewindow } = useWindows();
     const { ismobile } = useDevice();
     const { user } = useAuth();
     const containerref = useRef<HTMLDivElement>(null);
@@ -70,8 +70,6 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
     const [volume, setvolume] = useState(50);
     const [muted, setmuted] = useState(false);
 
-    const [wallpaperinput, setwallpaperinput] = useState(wallpaperurl);
-    useEffect(() => { setwallpaperinput(wallpaperurl); }, [wallpaperurl]);
 
     const [kbLayout, setKbLayout] = useState('');
     const [kbLayouts, setKbLayouts] = useState<string[]>([]);
@@ -232,11 +230,15 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
 
     useEffect(() => {
         if (!containerref.current) return;
+        let prevNarrow: boolean | null = null;
         const observer = new ResizeObserver((entries) => {
             const width = entries[0].contentRect.width;
             const narrow = width < 600;
-            setisnarrow(narrow);
-            if (!narrow) setshowsidebar(true);
+            if (narrow !== prevNarrow) {
+                prevNarrow = narrow;
+                setisnarrow(narrow);
+                if (!narrow) setshowsidebar(true);
+            }
         });
         observer.observe(containerref.current);
         return () => observer.disconnect();
@@ -269,6 +271,38 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
             />
         </button>
     );
+
+    const WALLPAPERS = ['/bg.jpg', '/bg-dark.jpg', '/wallpaper-1.jpg', '/wallpaper-2.jpg', '/wallpaper-3.jpg', '/wallpaper-4.jpg'];
+    const WallpaperGrid = React.memo(function WallpaperGrid({ wallpaperurl, setwallpaperurl, clay }: { wallpaperurl: string; setwallpaperurl: (v: string) => void; clay: boolean }) {
+        return (
+            <div className="p-4 grid grid-cols-3 gap-3">
+                {WALLPAPERS.map((wp) => (
+                    <button
+                        key={wp}
+                        onClick={() => setwallpaperurl(wp)}
+                        className={`aspect-video bg-cover bg-center border-2 transition-all ${clay ? 'rounded-[10px]' : ''} ${wallpaperurl === wp ? 'border-accent ring-2' : 'border-[--border-color] hover:border-[--text-muted]'}`}
+                        style={{ backgroundImage: `url('${wp}')`, ...(wallpaperurl === wp && clay ? { boxShadow: '0 0 0 3px color-mix(in srgb, var(--accent-color) 30%, transparent)' } : {}) }}
+                    />
+                ))}
+            </div>
+        );
+    });
+
+    const WallpaperUrlInput = React.memo(function WallpaperUrlInput({ wallpaperurl, setwallpaperurl, clay }: { wallpaperurl: string; setwallpaperurl: (v: string) => void; clay: boolean }) {
+        const [val, setVal] = useState(wallpaperurl);
+        useEffect(() => { setVal(wallpaperurl); }, [wallpaperurl]);
+        return (
+            <input
+                type="text"
+                value={val}
+                onChange={(e) => setVal(e.target.value)}
+                onBlur={() => { if (val !== wallpaperurl) setwallpaperurl(val); }}
+                onKeyDown={(e) => { if (e.key === 'Enter') setwallpaperurl(val); }}
+                placeholder="Custom wallpaper URL..."
+                className={`w-full px-3 py-2 bg-overlay outline-none text-[13px] text-[--text-color] border border-[--border-color] focus:border-accent ${clay ? 'rounded-[8px] border-[--glass-border] bg-[--bg-glass-active] focus:border-accent' : ''}`}
+            />
+        );
+    });
 
     const SettingsGroup = ({ children }: { children: React.ReactNode }) => (
         <div className={`overflow-hidden mb-6 ${clay ? `${clayClasses.card}` : 'bg-overlay border border-[--border-color]'}`}
@@ -545,26 +579,9 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                         <>
                             <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Wallpaper</div>
                             <SettingsGroup>
-                                <div className="p-4 grid grid-cols-3 gap-3">
-                                    {['/bg.jpg', '/bg-dark.jpg', '/wallpaper-1.jpg', '/wallpaper-2.jpg', '/wallpaper-3.jpg', '/wallpaper-4.jpg'].map((wp) => (
-                                        <button
-                                            key={wp}
-                                            onClick={() => setwallpaperurl(wp)}
-                                            className={`aspect-video bg-cover bg-center border-2 transition-all ${clay ? 'rounded-[10px]' : ''} ${wallpaperurl === wp ? 'border-accent ring-2' : 'border-[--border-color] hover:border-[--text-muted]'}`}
-                                            style={{ backgroundImage: `url('${wp}')`, ...(wallpaperurl === wp && clay ? { boxShadow: '0 0 0 3px color-mix(in srgb, var(--accent-color) 30%, transparent)' } : {}) }}
-                                        />
-                                    ))}
-                                </div>
+                                <WallpaperGrid wallpaperurl={wallpaperurl} setwallpaperurl={setwallpaperurl} clay={clay} />
                                 <div className="px-4 pb-3">
-                                    <input
-                                        type="text"
-                                        value={wallpaperinput}
-                                        onChange={(e) => setwallpaperinput(e.target.value)}
-                                        onBlur={() => setwallpaperurl(wallpaperinput)}
-                                        onKeyDown={(e) => { if (e.key === 'Enter') setwallpaperurl(wallpaperinput); }}
-                                        placeholder="Custom wallpaper URL..."
-                                        className={`w-full px-3 py-2 bg-overlay outline-none text-[13px] text-[--text-color] border border-[--border-color] focus:border-accent ${clay ? 'rounded-[8px] border-[--glass-border] bg-[--bg-glass-active] focus:border-accent' : ''}`}
-                                    />
+                                    <WallpaperUrlInput wallpaperurl={wallpaperurl} setwallpaperurl={setwallpaperurl} clay={clay} />
                                 </div>
                             </SettingsGroup>
 

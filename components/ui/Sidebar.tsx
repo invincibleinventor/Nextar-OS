@@ -70,7 +70,7 @@ export default function Sidebar({ currentPath, onNavigate, className = '', show 
                                         `}
                                         style={active && clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                                     >
-                                        <div className={`${clay ? 'w-6 h-6 rounded-[7px]' : 'w-5 h-5'} flex items-center justify-center shrink-0`} style={{ backgroundColor: active ? 'rgba(255,255,255,0.25)' : (item.color || 'var(--pastel-blue)') }}>
+                                        <div className={`${clay ? 'w-6 h-6 rounded-[7px]' : 'w-5 h-5'} flex items-center justify-center shrink-0`} style={{ backgroundColor: active ? 'rgba(255,255,255,0.25)' : (clay ? 'var(--accent-color)' : (item.color || 'var(--pastel-blue)')) }}>
                                             <item.icon size={clay ? 14 : 12} className="text-white" />
                                         </div>
                                         <span className={`${clay ? 'text-[14px]' : 'text-[13px]'} font-medium leading-none`}>{item.name}</span>
