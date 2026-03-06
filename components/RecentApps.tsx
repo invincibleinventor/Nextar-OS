@@ -81,7 +81,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                     >
                         <div className="relative pt-16 px-6 flex flex-col items-center pointer-events-auto" style={{ maxWidth: '100vw', boxSizing: 'border-box' }}>
                             <div className={`w-full max-w-lg overflow-hidden ${clay ? 'rounded-[16px]' : 'bg-surface border border-[--border-color] shadow-pastel'}`}
-                                style={clay ? glassPanel : undefined}
+                                style={clay ? { ...glassPanel, boxShadow: 'none' } : undefined}
                             >
                                 <div className={`flex items-center gap-3 px-4 py-3 ${clay ? 'border-b border-[--glass-border]' : 'border-b border-[--border-color]'}`}>
                                     <IoSearch className="text-[--text-muted] text-xl shrink-0" />
