@@ -28,6 +28,7 @@ const Dock = () => {
   const { notifications } = useNotifications();
   const glassStyle: React.CSSProperties = {
     ...glassPill,
+    background: 'color-mix(in srgb, var(--accent-source) 12%, var(--bg-glass))',
     backdropFilter: 'blur(var(--glass-blur-heavy))',
     WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
   };

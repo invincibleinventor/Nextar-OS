@@ -477,15 +477,16 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                                 />
                             ) : (
                                 <span
-                                    className={`text-[11px] font-medium text-center leading-tight truncate w-full tracking-tight px-1 ${
+                                    className={`text-[11px] font-semibold text-center leading-tight truncate w-full tracking-tight px-1 ${
                                         clay
-                                            ? 'font-sans text-[--text-color]'
+                                            ? `font-sans ${islightbackground ? 'text-black/80' : 'text-white'}`
                                             : `font-mono ${inverselabelcolor && islightbackground ? 'text-black' : 'text-white'}`
                                     }`}
-                                    style={clay
-                                        ? undefined
-                                        : { textShadow: (inverselabelcolor && islightbackground) ? 'none' : '0 1px 3px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.3)' }
-                                    }
+                                    style={{
+                                        textShadow: (clay ? islightbackground : (inverselabelcolor && islightbackground))
+                                            ? 'none'
+                                            : '0 1px 3px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.3)'
+                                    }}
                                 >
                                     {item.name}
                                 </span>
@@ -704,7 +705,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                             ? { backgroundColor: 'transparent' }
                             : clay
                                 ? {
-                                    background: 'color-mix(in srgb, var(--bg-glass) 60%, transparent)',
+                                    background: 'var(--bg-glass)',
                                     backdropFilter: 'blur(var(--glass-blur-heavy))',
                                     WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
                                     border: '1px solid var(--glass-border)',
@@ -723,7 +724,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                             whileTap={{ scale: clay ? 0.88 : 0.85 }}
                             transition={{ duration: 0.15 }}
                             className={`aspect-square overflow-hidden relative ${clay ? 'w-[68px] h-[68px]' : 'w-[65px] h-[65px]'}`}
-                            style={{ willChange: 'transform', transform: 'translateZ(0)' }}
+                            style={{ willChange: 'transform', transform: 'translateZ(0)', ...(clay ? squircleClip : {}) }}
                         >
                             <TintedAppIcon
                                 appId={app.id}
@@ -745,7 +746,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
             >
                 <div className={`flex items-center gap-1.5 px-3 py-1.5 ${clay ? 'rounded-full' : 'rounded-sm'}`}
                     style={{
-                        background: clay ? 'rgba(0,0,0,0.15)' : 'rgba(0,0,0,0.2)',
+                        background: islightbackground ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.2)',
                         backdropFilter: 'blur(12px)',
                         WebkitBackdropFilter: 'blur(12px)',
                     }}
@@ -755,8 +756,8 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                             key={`dot-${i}`}
                             className={`transition-all duration-300 rounded-full ${
                                 page === i
-                                    ? `w-[7px] h-[7px] ${clay ? 'bg-white' : 'bg-white'}`
-                                    : `w-[6px] h-[6px] ${clay ? 'bg-white/35' : 'bg-white/30'}`
+                                    ? `w-[7px] h-[7px] ${islightbackground ? 'bg-black/60' : 'bg-white'}`
+                                    : `w-[6px] h-[6px] ${islightbackground ? 'bg-black/25' : 'bg-white/30'}`
                             }`}
                         />
                     ))}
@@ -781,7 +782,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                 style={{ cursor: 'grab', touchAction: 'none' }}
             >
                 <div className="px-8 py-5">
-                    <svg width="16" height="8" viewBox="0 0 16 8" fill="none" className="text-white">
+                    <svg width="16" height="8" viewBox="0 0 16 8" fill="none" className={islightbackground ? 'text-black/50' : 'text-white'}>
                         <path d="M1 7L8 1.5L15 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                 </div>
