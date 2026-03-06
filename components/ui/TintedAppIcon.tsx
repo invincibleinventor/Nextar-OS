@@ -110,6 +110,23 @@ const clayColorMap: Record<string, string> = {
 
 const excludedApps: string[] = ['portfolio'];
 
+/* iOS-style squircle (superellipse) mask — continuous curvature corners
+   The path uses 2 cubic bezier segments per corner for smooth continuous curvature.
+   Curves start at ~32% from each edge, corner peaks at ~8% from actual corner. */
+const SQUIRCLE_SVG = encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path fill="black" d="M0 32C0 18 0 9 5 5C9 0 18 0 32 0H68C82 0 91 0 95 5C100 9 100 18 100 32V68C100 82 100 91 95 95C91 100 82 100 68 100H32C18 100 9 100 5 95C0 91 0 82 0 68Z"/></svg>'
+);
+const SQUIRCLE_MASK = `url("data:image/svg+xml,${SQUIRCLE_SVG}")`;
+export const squircleClip: React.CSSProperties = {
+    WebkitMaskImage: SQUIRCLE_MASK,
+    maskImage: SQUIRCLE_MASK,
+    WebkitMaskSize: '100% 100%',
+    maskSize: '100% 100%',
+    WebkitMaskRepeat: 'no-repeat',
+    maskRepeat: 'no-repeat',
+    borderRadius: '24%', /* fallback */
+};
+
 export default function TintedAppIcon({ appId, appName, originalIcon, size = 40, className = '', useFill = true }: TintedAppIconProps) {
     const clay = useIsClay();
     const { icontintmode } = useSettings();
@@ -134,7 +151,6 @@ export default function TintedAppIcon({ appId, appName, originalIcon, size = 40,
     }
 
     const Icon = entry.icon;
-    const borderRadius = Math.round(size * 0.22);
 
     /* Clay: accent-tinted gradient. Classic: individual pastel color.
        Modes: light/dark/twilight/adaptive = monochrome (--icon-tint)
@@ -168,21 +184,25 @@ export default function TintedAppIcon({ appId, appName, originalIcon, size = 40,
 
     if (useFill) {
         return (
-            <div className={`absolute inset-0 overflow-hidden ${className}`} style={{ borderRadius: clay ? borderRadius : undefined, boxShadow: shadow }}>
+            <div className={`absolute inset-0 overflow-hidden ${className}`} style={clay ? { ...squircleClip } : undefined}>
                 <div className="absolute inset-0" style={{ background: bg }} />
                 {clay && <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.18) 0%, transparent 50%)' }} />}
                 <div className="absolute inset-0 flex items-center justify-center">
-                    <Icon className="text-white drop-shadow-sm w-[50%] h-[50%]" />
+                    <Icon className="text-white w-[50%] h-[50%]" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.25)) drop-shadow(0 2px 4px rgba(0,0,0,0.15))' }} />
                 </div>
             </div>
         );
     }
 
     return (
-        <div style={{ width: size, height: size, borderRadius: clay ? borderRadius : undefined, boxShadow: shadow }} className={`relative flex items-center justify-center overflow-hidden ${clay ? '' : 'shadow-pastel-lg'} ${className}`}>
-            <div className="absolute inset-0" style={{ background: bg }} />
-            {clay && <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.18) 0%, transparent 50%)' }} />}
-            <Icon className="text-white drop-shadow-sm w-[50%] h-[50%] relative z-10" />
+        <div style={{ width: size, height: size, filter: clay && shadow ? `drop-shadow(${shadow})` : undefined }} className={`relative ${clay ? '' : 'shadow-pastel-lg'} ${className}`}>
+            <div className="absolute inset-0 overflow-hidden" style={clay ? { ...squircleClip } : undefined}>
+                <div className="absolute inset-0" style={{ background: bg }} />
+                {clay && <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.18) 0%, transparent 50%)' }} />}
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <Icon className="text-white w-[50%] h-[50%] relative z-10" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.25)) drop-shadow(0 2px 4px rgba(0,0,0,0.15))' }} />
+                </div>
+            </div>
         </div>
     );
 }

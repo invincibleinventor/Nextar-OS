@@ -17,7 +17,7 @@ import AppLibrary from './AppLibrary';
 import { useWindows } from './WindowContext';
 import { useFileSystem } from './FileSystemContext';
 import ContextMenu from './ui/ContextMenu';
-import TintedAppIcon from './ui/TintedAppIcon';
+import TintedAppIcon, { squircleClip } from './ui/TintedAppIcon';
 import { useIsClay } from './hooks/useIsClay';
 import { glassPanel, glassInput } from './hooks/useClayStyles';
 
@@ -443,8 +443,8 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                                 )}
                                 {/* App icon container */}
                                 <div
-                                    className={`overflow-hidden shadow-sm relative ${clay ? 'rounded-[16px]' : ''}`}
-                                    style={{ width: iconSize, height: iconSize }}
+                                    className={`overflow-hidden shadow-sm relative`}
+                                    style={{ width: iconSize, height: iconSize, ...(clay ? squircleClip : {}) }}
                                 >
                                     {item.mimetype === 'application/x-executable' ? (() => {
                                         const appId = extractAppId(item.id);
@@ -525,7 +525,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
             if (triggered || !startY || showAppLibraryRef.current) return;
             const dy = e.touches[0].clientY - startY;
             const dx = Math.abs(e.touches[0].clientX - startX);
-            if (Math.abs(dy) > 40 && Math.abs(dy) > dx) {
+            if (Math.abs(dy) > 25 && Math.abs(dy) > dx) {
                 triggered = true;
                 if (dy < 0) setShowAppLibrary(true);
                 else window.dispatchEvent(new CustomEvent('open-notifications'));
