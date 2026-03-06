@@ -184,6 +184,7 @@
     "@isomorphic-git/lightning-fs": "^4.6.2",
     "@leaningtech/cheerpx": "^1.2.6",
     "@monaco-editor/react": "^4.7.0",
+    "@phosphor-icons/react": "^2.1.10",
     "@splinetool/react-spline": "^4.1.0",
     "@splinetool/runtime": "^1.12.48",
     "@vercel/analytics": "^1.6.1",

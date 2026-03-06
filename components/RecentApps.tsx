@@ -51,7 +51,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0, pointerEvents: 'none' }}
-                    transition={{ duration: 0.15 }}
+                    transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
                 >
                     <style>{`
                         .scrollbar-hide::-webkit-scrollbar {
@@ -73,10 +73,10 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
 
                     <motion.div
                         className="fixed left-0 top-0 w-full z-[492] pointer-events-none overflow-hidden"
-                        initial={{ opacity: 0, y: -20 }}
+                        initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ delay: 0.1 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="relative pt-16 px-6 flex flex-col items-center pointer-events-auto" style={{ maxWidth: '100vw', boxSizing: 'border-box' }}>
@@ -224,10 +224,10 @@ const AppCard = ({ win, appdata, onkill, onopen, islightbackground, clay }: any)
     return (
         <motion.div
             className="relative flex-shrink-0 w-[75vw] md:w-[45vw] lg:w-[350px] h-full flex flex-col"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.7, y: -300, transition: { duration: 0.3, ease: "easeOut" } }}
-            transition={{ duration: 0.2 }}
+            initial={{ opacity: 0, y: 300, scale: 1.15 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.6, y: -400, transition: { duration: 0.35, ease: [0.4, 0, 0.2, 1] } }}
+            transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
             layout={false}
             drag="y"
             dragConstraints={{ top: 0, bottom: 0 }}
