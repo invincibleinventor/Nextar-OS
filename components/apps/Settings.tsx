@@ -45,7 +45,7 @@ const sidebaritems = [
 export default function Settings({ initialPage, windowId }: { initialPage?: string, windowId?: string }) {
     const [activetab, setactivetab] = useState(initialPage || "general");
     const [showsidebar, setshowsidebar] = useState(true);
-    const { reducemotion, setreducemotion, reducetransparency, setreducetransparency, soundeffects, setsoundeffects, wallpaperurl, setwallpaperurl, accentcolor, setaccentcolor, inverselabelcolor, setinverselabelcolor, icontintmode, seticontintmode, accentmode, setaccentmode, wallpaperdominantcolor } = useSettings();
+    const { reducemotion, setreducemotion, reducetransparency, setreducetransparency, soundeffects, setsoundeffects, wallpaperurl, setwallpaperurl, accentcolor, setaccentcolor, inverselabelcolor, setinverselabelcolor, icontintmode, seticontintmode, iconpack, seticonpack, accentmode, setaccentmode, wallpaperdominantcolor } = useSettings();
     const { theme, toggletheme } = useTheme();
     const { activewindow } = useWindows();
     const { ismobile } = useDevice();
@@ -633,6 +633,26 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                                     </SettingsGroup>
                                 </>
                             )}
+
+                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2 mt-4">Icon Pack</div>
+                            <SettingsGroup>
+                                <div className="p-3 flex gap-2">
+                                    {([
+                                        { id: 'phosphor' as const, label: 'Phosphor', desc: 'Minimal symbols' },
+                                        { id: 'papirus' as const, label: 'Papirus', desc: 'Full-color icons' },
+                                    ]).map((pack) => (
+                                        <button
+                                            key={pack.id}
+                                            onClick={() => seticonpack(pack.id)}
+                                            className={`flex-1 flex flex-col items-center gap-1 py-2.5 px-2 rounded-[10px] transition-all text-center active:scale-[0.97] ${iconpack === pack.id ? 'text-white shadow-sm' : 'bg-[--bg-glass-active] text-[--text-color] hover:bg-[--bg-glass-hover]'}`}
+                                            style={iconpack === pack.id ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
+                                        >
+                                            <span className="text-[12px] font-semibold">{pack.label}</span>
+                                            <span className={`text-[10px] leading-tight ${iconpack === pack.id ? 'text-white/70' : 'text-[--text-muted]'}`}>{pack.desc}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </SettingsGroup>
 
                             {clay && (
                                 <>

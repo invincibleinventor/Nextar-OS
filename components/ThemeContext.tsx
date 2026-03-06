@@ -22,9 +22,7 @@ export const ThemeProvider = ({ children }: Props) => {
     if (storedtheme) {
       settheme(storedtheme);
     } else {
-      // Default: dark for mobile, light for desktop
-      const isMobileDevice = typeof window !== 'undefined' && window.innerWidth < 768;
-      settheme(isMobileDevice ? 'dark' : 'light');
+      settheme('dark');
     }
     setmounted(true);
   }, []);

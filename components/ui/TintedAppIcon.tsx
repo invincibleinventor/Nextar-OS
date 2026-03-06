@@ -10,7 +10,7 @@ import {
     SquaresFourIcon, TrashIcon, QuestionIcon, InfoIcon,
     RocketLaunchIcon, LaptopIcon, LightbulbFilamentIcon, ListChecksIcon,
     PlugsConnectedIcon, LayoutIcon, ClockIcon, CloudRainIcon,
-    BellRingingIcon, FilmSlateIcon, PaintBrushIcon, UserCircleIcon,
+    BellRingingIcon, PaintBrushIcon, UserCircleIcon,
     MonitorPlayIcon
 } from '@phosphor-icons/react';
 import { useIsClay } from '../hooks/useIsClay';
@@ -25,7 +25,7 @@ interface TintedAppIconProps {
     useFill?: boolean;
 }
 
-/* App icon map — Phosphor Icons with fill weight for professional launcher look */
+/* ── Phosphor icon map ── */
 const appIconMap: Record<string, { icon: PhosphorIcon; bg: string; shade: number }> = {
     'explorer': { icon: FolderIcon, bg: 'var(--pastel-blue)', shade: 0 },
     'settings': { icon: GearSixIcon, bg: 'var(--text-muted)', shade: 2 },
@@ -62,39 +62,28 @@ const appIconMap: Record<string, { icon: PhosphorIcon; bg: string; shade: number
     'contacts': { icon: UserCircleIcon, bg: 'var(--pastel-teal)', shade: 1 },
 };
 
-/* Clay mode: accent-tinted monochrome gradients (3 shade levels)
-   Light: lighter shades (mixed with white)
-   Dark: darker shades (mixed with black) */
+/* ── Papirus icon set ── */
+const papirusApps = new Set([
+    'explorer', 'settings', 'terminal', 'systemmonitor', 'browser', 'mail',
+    'calendar', 'textedit', 'notes', 'reminders', 'ideaboard', 'shipchecklist',
+    'music', 'photos', 'videoplayer', 'paint', 'hackathonworkspace', 'apidocs',
+    'apiplayground', 'templatesmanager', 'projectdashboard', 'contacts',
+    'calculator', 'clock', 'weather', 'appstore', 'welcome', 'fileviewer',
+    'getinfo', 'aboutnextaros', 'trash',
+]);
+
+/* ── Clay tint gradients ── */
 const shadeGradientsLight: Record<number, { from: string; to: string }> = {
-    0: {
-        from: 'color-mix(in srgb, var(--icon-tint) 62%, white)',
-        to: 'color-mix(in srgb, var(--icon-tint) 78%, white)',
-    },
-    1: {
-        from: 'color-mix(in srgb, var(--icon-tint) 72%, white)',
-        to: 'color-mix(in srgb, var(--icon-tint) 88%, white)',
-    },
-    2: {
-        from: 'color-mix(in srgb, var(--icon-tint) 85%, white)',
-        to: 'var(--icon-tint)',
-    },
+    0: { from: 'color-mix(in srgb, var(--icon-tint) 62%, white)', to: 'color-mix(in srgb, var(--icon-tint) 78%, white)' },
+    1: { from: 'color-mix(in srgb, var(--icon-tint) 72%, white)', to: 'color-mix(in srgb, var(--icon-tint) 88%, white)' },
+    2: { from: 'color-mix(in srgb, var(--icon-tint) 85%, white)', to: 'var(--icon-tint)' },
 };
 const shadeGradientsDark: Record<number, { from: string; to: string }> = {
-    0: {
-        from: 'color-mix(in srgb, var(--icon-tint) 75%, #2a2a32)',
-        to: 'color-mix(in srgb, var(--icon-tint) 88%, #2a2a32)',
-    },
-    1: {
-        from: 'color-mix(in srgb, var(--icon-tint) 82%, #2a2a32)',
-        to: 'color-mix(in srgb, var(--icon-tint) 94%, #2a2a32)',
-    },
-    2: {
-        from: 'color-mix(in srgb, var(--icon-tint) 90%, #2a2a32)',
-        to: 'var(--icon-tint)',
-    },
+    0: { from: 'color-mix(in srgb, var(--icon-tint) 75%, #2a2a32)', to: 'color-mix(in srgb, var(--icon-tint) 88%, #2a2a32)' },
+    1: { from: 'color-mix(in srgb, var(--icon-tint) 82%, #2a2a32)', to: 'color-mix(in srgb, var(--icon-tint) 94%, #2a2a32)' },
+    2: { from: 'color-mix(in srgb, var(--icon-tint) 90%, #2a2a32)', to: 'var(--icon-tint)' },
 };
 
-/* Clay-friendly saturated colors for coloured icon mode (not washed-out pastels) */
 const clayColorMap: Record<string, string> = {
     'var(--pastel-blue)': '#4A90D9',
     'var(--pastel-green)': '#3DA66B',
@@ -111,7 +100,7 @@ const clayColorMap: Record<string, string> = {
 
 const excludedApps: string[] = ['portfolio'];
 
-/* iOS-style squircle (superellipse) mask — continuous curvature corners */
+/* iOS-style squircle mask */
 const SQUIRCLE_SVG = encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path fill="black" d="M0 32C0 18 0 9 5 5C9 0 18 0 32 0H68C82 0 91 0 95 5C100 9 100 18 100 32V68C100 82 100 91 95 95C91 100 82 100 68 100H32C18 100 9 100 5 95C0 91 0 82 0 68Z"/></svg>'
 );
@@ -123,37 +112,29 @@ export const squircleClip: React.CSSProperties = {
     maskSize: '100% 100%',
     WebkitMaskRepeat: 'no-repeat',
     maskRepeat: 'no-repeat',
-    borderRadius: '24%', /* fallback */
+    borderRadius: '24%',
 };
 
-export default function TintedAppIcon({ appId, appName, originalIcon, size = 40, className = '', useFill = true }: TintedAppIconProps) {
-    const clay = useIsClay();
-    const { icontintmode } = useSettings();
-    const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+/* ── Fallback image renderer ── */
+function FallbackIcon({ originalIcon, appName, size, className, useFill }: { originalIcon: string; appName: string; size: number; className: string; useFill: boolean }) {
+    return useFill ? (
+        <Image src={originalIcon} alt={appName} fill sizes="96px" className={`ease-in-out transition-all duration-200 object-cover ${className}`} draggable={false} />
+    ) : (
+        <Image src={originalIcon} alt={appName} width={size} height={size} className={`ease-in-out transition-all duration-200 object-cover ${className}`} draggable={false} />
+    );
+}
 
-    if (excludedApps.includes(appId)) {
-        return useFill ? (
-            <Image src={originalIcon} alt={appName} fill sizes="96px" className={`ease-in-out transition-all duration-200 object-cover ${className}`} draggable={false} />
-        ) : (
-            <Image src={originalIcon} alt={appName} width={size} height={size} className={`ease-in-out transition-all duration-200 object-cover ${className}`} draggable={false} />
-        );
-    }
-
+/* ══════════════════════════════════════════════
+   Phosphor renderer — SVG symbol on colored bg
+   ══════════════════════════════════════════════ */
+function PhosphorRenderer({ appId, appName, originalIcon, size, className, useFill, clay, icontintmode, isDark }: {
+    appId: string; appName: string; originalIcon: string; size: number; className: string; useFill: boolean;
+    clay: boolean; icontintmode: string; isDark: boolean;
+}) {
     const entry = appIconMap[appId];
-
-    if (!entry) {
-        return useFill ? (
-            <Image src={originalIcon} alt={appName} fill sizes="96px" className={`ease-in-out transition-all duration-200 object-cover ${className}`} draggable={false} />
-        ) : (
-            <Image src={originalIcon} alt={appName} width={size} height={size} className={`ease-in-out transition-all duration-200 object-cover ${className}`} draggable={false} />
-        );
-    }
+    if (!entry) return <FallbackIcon originalIcon={originalIcon} appName={appName} size={size} className={className} useFill={useFill} />;
 
     const Icon = entry.icon;
-
-    /* Clay: accent-tinted gradient. Classic: individual pastel color.
-       Modes: light/dark/twilight/adaptive = monochrome (--icon-tint)
-       coloured-light/coloured-dark = per-app individual colors */
     const isColoured = icontintmode === 'coloured-light' || icontintmode === 'coloured-dark';
     const useDarkGradients = icontintmode === 'dark' || icontintmode === 'coloured-dark' || (!['light', 'coloured-light'].includes(icontintmode) && isDark);
 
@@ -206,12 +187,66 @@ export default function TintedAppIcon({ appId, appName, originalIcon, size = 40,
     );
 }
 
-export function getAppIcon(appId: string): PhosphorIcon | null {
-    return appIconMap[appId]?.icon || null;
+/* ══════════════════════════════════════════════
+   Papirus renderer — full-color image icons
+   ══════════════════════════════════════════════ */
+function PapirusRenderer({ appId, appName, originalIcon, size, className, useFill, clay, icontintmode, isDark }: {
+    appId: string; appName: string; originalIcon: string; size: number; className: string; useFill: boolean;
+    clay: boolean; icontintmode: string; isDark: boolean;
+}) {
+    const hasPapirus = papirusApps.has(appId);
+    const iconSrc = hasPapirus ? `/icons/${appId}.svg` : originalIcon;
+
+    const isColoured = icontintmode === 'coloured-light' || icontintmode === 'coloured-dark';
+    const isMonochrome = clay && !isColoured;
+    const useDarkTint = icontintmode === 'dark' || icontintmode === 'coloured-dark' || (!['light', 'coloured-light'].includes(icontintmode) && isDark);
+
+    const tintFilter: React.CSSProperties | undefined = isMonochrome ? {
+        filter: useDarkTint
+            ? 'grayscale(1) brightness(0.7) sepia(1) hue-rotate(var(--icon-hue, 200deg)) saturate(1.5)'
+            : 'grayscale(1) brightness(1.1) sepia(1) hue-rotate(var(--icon-hue, 200deg)) saturate(1.2)',
+    } : undefined;
+
+    if (useFill) {
+        return (
+            <div className={`absolute inset-0 overflow-hidden ${className}`} style={clay ? { ...squircleClip } : undefined}>
+                <div className="absolute inset-0" style={tintFilter}>
+                    <Image src={iconSrc} alt={appName} fill sizes="96px" className="object-cover" draggable={false} />
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div style={{ width: size, height: size }} className={`relative ${className}`}>
+            <div className="absolute inset-0 overflow-hidden" style={clay ? { ...squircleClip } : undefined}>
+                <div className="absolute inset-0" style={tintFilter}>
+                    <Image src={iconSrc} alt={appName} fill sizes="96px" className="object-cover" draggable={false} />
+                </div>
+            </div>
+        </div>
+    );
 }
 
-export function getAppColor(appId: string): string {
-    return appIconMap[appId]?.bg || 'var(--text-muted)';
+/* ══════════════════════════════════════════════
+   Main component — switches between icon packs
+   ══════════════════════════════════════════════ */
+export default function TintedAppIcon({ appId, appName, originalIcon, size = 40, className = '', useFill = true }: TintedAppIconProps) {
+    const clay = useIsClay();
+    const { icontintmode, iconpack } = useSettings();
+    const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+
+    if (excludedApps.includes(appId)) {
+        return <FallbackIcon originalIcon={originalIcon} appName={appName} size={size} className={className} useFill={useFill} />;
+    }
+
+    const shared = { appId, appName, originalIcon, size, className, useFill, clay, icontintmode, isDark };
+
+    if (iconpack === 'papirus') {
+        return <PapirusRenderer {...shared} />;
+    }
+
+    return <PhosphorRenderer {...shared} />;
 }
 
 export function isExcludedApp(appId: string): boolean {
