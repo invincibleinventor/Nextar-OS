@@ -270,22 +270,28 @@ export default function LockScreen() {
                                                 value={password}
                                                 onChange={(e) => setPassword(e.target.value)}
                                                 placeholder="Password"
-                                                className={`w-full h-11 outline-none rounded-full text-[13px] pl-5 pr-12 font-sans ${isDark ? 'text-white placeholder-white/40' : 'text-gray-900 placeholder-gray-700/50'}`}
+                                                autoComplete="off"
+                                                data-1p-ignore
+                                                data-lpignore="true"
+                                                data-form-type="other"
+                                                className={`w-full h-11 outline-none rounded-full text-[13px] text-center px-12 font-sans ${isDark ? 'text-white placeholder-white/40' : 'text-gray-900 placeholder-gray-700/50'}`}
                                                 style={{
                                                     background: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)',
                                                     backdropFilter: 'blur(40px) saturate(1.4)',
                                                     WebkitBackdropFilter: 'blur(40px) saturate(1.4)',
                                                     border: isDark ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(0,0,0,0.1)',
                                                     caretColor: isDark ? '#fff' : '#333',
+                                                    willChange: 'backdrop-filter',
+                                                    transform: 'translateZ(0)',
                                                 }}
                                             />
                                             <button
                                                 type="submit"
                                                 disabled={!password || isSubmitting}
-                                                className="absolute right-1.5 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full transition-all duration-300"
+                                                className="absolute right-1.5 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center transition-all duration-300"
                                                 style={password
-                                                    ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)', color: '#fff' }
-                                                    : { background: 'transparent', color: 'transparent' }
+                                                    ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)', color: '#fff', borderRadius: '9999px' }
+                                                    : { background: 'transparent', color: 'transparent', borderRadius: '9999px' }
                                                 }
                                             >
                                                 {!isSubmitting && <IoArrowForward size={14} />}
@@ -315,6 +321,9 @@ export default function LockScreen() {
                                     WebkitBackdropFilter: 'blur(20px)',
                                     border: isDark ? '1px solid rgba(255,255,255,0.12)' : '1px solid rgba(0,0,0,0.06)',
                                     textShadow: subtleShadow,
+                                    borderRadius: '9999px',
+                                    willChange: 'backdrop-filter',
+                                    transform: 'translateZ(0)',
                                 }}
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
@@ -337,7 +346,7 @@ export default function LockScreen() {
                         <div onClick={async () => { if (iselectron) await power.sleep(); }} className="group cursor-pointer">
                             <div
                                 className="w-11 h-11 rounded-full flex items-center justify-center group-active:scale-90 transition-transform"
-                                style={{ background: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: isDark ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(0,0,0,0.08)' }}
+                                style={{ background: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: isDark ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(0,0,0,0.08)', borderRadius: '9999px', willChange: 'backdrop-filter', transform: 'translateZ(0)' }}
                             >
                                 <IoMoon size={16} className={isDark ? 'text-white' : 'text-black/70'} />
                             </div>
@@ -345,7 +354,7 @@ export default function LockScreen() {
                         <div onClick={async () => { if (iselectron) await power.restart(); else window.location.reload(); }} className="group cursor-pointer">
                             <div
                                 className="w-11 h-11 rounded-full flex items-center justify-center group-active:scale-90 transition-transform"
-                                style={{ background: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: isDark ? '1px solid rgba(255,255,255,0.18)' : '1px solid rgba(0,0,0,0.1)' }}
+                                style={{ background: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: isDark ? '1px solid rgba(255,255,255,0.18)' : '1px solid rgba(0,0,0,0.1)', borderRadius: '9999px', willChange: 'backdrop-filter', transform: 'translateZ(0)' }}
                             >
                                 <IoRefresh size={16} className={isDark ? 'text-white' : 'text-black/70'} />
                             </div>
@@ -447,26 +456,32 @@ export default function LockScreen() {
                                     <input
                                         type="password"
                                         value={password}
-                                        name="search"
+                                        name="lockscreen-pin"
+                                        autoComplete="off"
+                                        data-1p-ignore
+                                        data-lpignore="true"
+                                        data-form-type="other"
                                         onChange={(e) => setPassword(e.target.value)}
                                         placeholder="Enter Password"
-                                        className={`w-full h-[46px] outline-none rounded-full text-[14px] pl-6 pr-14 appearance-none font-sans ${isDark ? 'text-white placeholder-white/40' : 'text-gray-900 placeholder-gray-700/50'}`}
+                                        className={`w-full h-[46px] outline-none rounded-full text-[14px] text-center px-14 appearance-none font-sans ${isDark ? 'text-white placeholder-white/40' : 'text-gray-900 placeholder-gray-700/50'}`}
                                         style={{
                                             background: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)',
                                             backdropFilter: 'blur(40px) saturate(1.4)',
                                             WebkitBackdropFilter: 'blur(40px) saturate(1.4)',
                                             border: isDark ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(0,0,0,0.1)',
                                             caretColor: isDark ? '#fff' : '#333',
+                                            willChange: 'backdrop-filter',
+                                            transform: 'translateZ(0)',
                                         }}
                                         autoFocus
                                     />
                                     <button
                                         type="submit"
                                         disabled={!password || isSubmitting}
-                                        className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-full transition-all duration-300"
+                                        className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center transition-all duration-300"
                                         style={password
-                                            ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)', color: '#fff' }
-                                            : { background: 'transparent', color: 'transparent' }
+                                            ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)', color: '#fff', borderRadius: '9999px' }
+                                            : { background: 'transparent', color: 'transparent', borderRadius: '9999px' }
                                         }
                                     >
                                         {!isSubmitting && <IoArrowForward size={15} />}
@@ -499,6 +514,9 @@ export default function LockScreen() {
                             WebkitBackdropFilter: 'blur(20px)',
                             border: isDark ? '1px solid rgba(255,255,255,0.12)' : '1px solid rgba(0,0,0,0.06)',
                             textShadow: subtleShadow,
+                            borderRadius: '9999px',
+                            willChange: 'backdrop-filter',
+                            transform: 'translateZ(0)',
                         }}
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -520,7 +538,7 @@ export default function LockScreen() {
                     <div onClick={async () => { if (iselectron) await power.sleep(); }} className="group cursor-pointer">
                         <div
                             className="w-11 h-11 rounded-full flex items-center justify-center group-hover:scale-110 group-active:scale-95 transition-all"
-                            style={{ background: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: isDark ? '1px solid rgba(255,255,255,0.18)' : '1px solid rgba(0,0,0,0.08)' }}
+                            style={{ background: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: isDark ? '1px solid rgba(255,255,255,0.18)' : '1px solid rgba(0,0,0,0.08)', borderRadius: '9999px', willChange: 'backdrop-filter', transform: 'translateZ(0)' }}
                         >
                             <IoMoon size={16} className={isDark ? 'text-white' : 'text-black/70'} />
                         </div>
@@ -528,7 +546,7 @@ export default function LockScreen() {
                     <div onClick={async () => { if (iselectron) await power.restart(); else window.location.reload(); }} className="group cursor-pointer">
                         <div
                             className="w-11 h-11 rounded-full flex items-center justify-center group-hover:scale-110 group-active:scale-95 transition-all"
-                            style={{ background: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: isDark ? '1px solid rgba(255,255,255,0.18)' : '1px solid rgba(0,0,0,0.08)' }}
+                            style={{ background: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: isDark ? '1px solid rgba(255,255,255,0.18)' : '1px solid rgba(0,0,0,0.08)', borderRadius: '9999px', willChange: 'backdrop-filter', transform: 'translateZ(0)' }}
                         >
                             <IoRefresh size={16} className={isDark ? 'text-white' : 'text-black/70'} />
                         </div>

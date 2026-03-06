@@ -79,11 +79,15 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                         transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <div className="relative pt-16 px-6 flex flex-col items-center pointer-events-auto" style={{ maxWidth: '100vw', boxSizing: 'border-box' }}>
-                            <div className={`w-full max-w-lg overflow-hidden ${clay ? 'rounded-[16px]' : 'bg-surface border border-[--border-color] shadow-pastel'}`}
-                                style={clay ? { ...glassPanel, boxShadow: 'none' } : undefined}
+                        <div className="relative pt-8 px-6 flex flex-col items-center pointer-events-auto" style={{ maxWidth: '100vw', boxSizing: 'border-box' }}>
+                            <div className={`w-full max-w-lg overflow-hidden ${clay ? (searchquery.trim() ? 'rounded-[16px]' : 'rounded-full') : 'bg-surface border border-[--border-color] shadow-pastel'}`}
+                                style={clay ? {
+                                    background: 'color-mix(in srgb, var(--bg-glass) 65%, transparent)',
+                                    backdropFilter: 'blur(var(--glass-blur-heavy))',
+                                    WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
+                                } : undefined}
                             >
-                                <div className={`flex items-center gap-3 px-4 py-3 ${clay ? 'border-b border-[--glass-border]' : 'border-b border-[--border-color]'}`}>
+                                <div className={`flex items-center gap-3 px-4 py-3 ${clay ? (searchquery.trim() ? 'border-b border-[--glass-border]' : '') : 'border-b border-[--border-color]'}`}>
                                     <IoSearch className="text-[--text-muted] text-xl shrink-0" />
                                     <input
                                         ref={searchinputref}
@@ -96,7 +100,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                                         style={{ color: 'var(--text-color)', WebkitTextFillColor: 'var(--text-color)', caretColor: 'var(--text-color)', fontSize: '16px' }}
                                     />
                                     {searchquery && (
-                                        <button onClick={() => setsearchquery('')} className="p-1 hover:bg-overlay ">
+                                        <button onClick={() => setsearchquery('')} className="p-1">
                                             <IoClose className="text-[--text-muted] text-lg" />
                                         </button>
                                     )}
@@ -117,7 +121,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                                                         }}
                                                         className="flex items-center gap-3 px-2 py-2 hover:bg-overlay cursor-pointer transition-colors"
                                                     >
-                                                        <div className="w-8 h-8 shrink-0 shadow-md">
+                                                        <div className="w-8 h-8 shrink-0">
                                                             <TintedAppIcon appId={app.id} appName={app.appname} originalIcon={app.icon} size={32} useFill={false} />
                                                         </div>
                                                         <span className="text-[--text-color] font-medium text-[13px]">{app.appname}</span>
@@ -224,12 +228,12 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                                 onClick={() => {
                                     windows.forEach((w: any) => removewindow(w.id));
                                 }}
-                                className={`px-6 py-2.5 rounded-full text-[13px] font-semibold active:scale-95 transition-transform ${islightbackground ? 'text-black/70' : 'text-white/80'}`}
+                                className={`px-5 py-2 rounded-full text-[13px] font-semibold active:scale-95 transition-transform ${islightbackground ? 'text-black/60' : 'text-white/70'}`}
                                 style={{
-                                    background: islightbackground ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.15)',
+                                    background: islightbackground ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.12)',
                                     backdropFilter: 'blur(20px)',
                                     WebkitBackdropFilter: 'blur(20px)',
-                                    border: islightbackground ? '1px solid rgba(0,0,0,0.08)' : '1px solid rgba(255,255,255,0.12)',
+                                    borderRadius: '9999px',
                                 }}
                             >
                                 Close All
@@ -285,15 +289,13 @@ const AppCard = ({ win, appdata, onkill, onopen, islightbackground, clay }: any)
         >
             <div className="flex items-center gap-2 mb-3 px-1 pointer-events-none">
                 {appdata && (
-                    <div className="w-8 h-8 shadow-md">
-                        <TintedAppIcon
-                            appId={appdata.id}
-                            appName={appdata.appname}
-                            originalIcon={appdata.icon}
-                            size={32}
-                            useFill={false}
-                        />
-                    </div>
+                    <TintedAppIcon
+                        appId={appdata.id}
+                        appName={appdata.appname}
+                        originalIcon={appdata.icon}
+                        size={32}
+                        useFill={false}
+                    />
                 )}
                 <span className={`font-semibold text-[13px] tracking-wide ${islightbackground ? 'text-black' : 'text-white'}`}
                     style={{ textShadow: islightbackground ? 'none' : '0 1px 3px rgba(0,0,0,0.6)' }}>{win.title}</span>
@@ -305,7 +307,7 @@ const AppCard = ({ win, appdata, onkill, onopen, islightbackground, clay }: any)
                 <div className="absolute inset-0 z-[500] bg-transparent cursor-grab active:cursor-grabbing" />
                 {appdata?.hidePreview ? (
                     <div className="w-full h-full flex flex-col items-center justify-center gap-4 bg-[--bg-base]">
-                        <div className="w-16 h-16 shadow-lg">
+                        <div className="w-16 h-16">
                             <TintedAppIcon appId={appdata.id} appName={appdata.appname} originalIcon={appdata.icon} size={64} useFill={false} />
                         </div>
                         <span className="text-[13px] font-semibold text-[--text-muted]">{win.title}</span>
