@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { IoSearch } from 'react-icons/io5';
 import { useExternalApps } from '../ExternalAppsContext';
-import TintedAppIcon from '../ui/TintedAppIcon';
+import TintedAppIcon, { squircleClip } from '../ui/TintedAppIcon';
 import { iselectron, apps as nativeapps, icons as nativeicons } from '@/utils/platform';
 import { useIsClay } from '../hooks/useIsClay';
 import { glassInput, glassPanel } from '../hooks/useClayStyles';
@@ -387,13 +387,14 @@ export default function Launchpad({ onclose }: { onclose: () => void }) {
                                     >
                                         {/* Icon container */}
                                         <div
-                                            className="w-16 h-16 md:w-[72px] md:h-[72px] relative rounded-[16px] overflow-visible transition-shadow duration-200 group-hover:shadow-md"
+                                            className="w-16 h-16 md:w-[72px] md:h-[72px] relative overflow-visible transition-shadow duration-200 group-hover:shadow-md"
+                                            style={squircleClip}
                                         >
                                             {'isLinuxApp' in app && app.isLinuxApp && app.icon?.startsWith('/') ? (
                                                 <img
                                                     src={iconCache[app.icon] || '/appstore.png'}
                                                     alt={app.appname}
-                                                    className="w-full h-full object-contain rounded-[16px]"
+                                                    className="w-full h-full object-contain"
                                                     onError={(e) => { (e.target as HTMLImageElement).src = '/appstore.png'; }}
                                                 />
                                             ) : (

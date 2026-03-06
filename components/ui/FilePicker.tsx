@@ -218,7 +218,7 @@ export default function FilePicker({ mode, initialPath, onSelect, onCancel, acce
                                                 >
                                                     <div
                                                         className={`${clay ? 'w-[22px] h-[22px] rounded-[6px]' : 'w-[18px] h-[18px] rounded-[4px]'} flex items-center justify-center shrink-0`}
-                                                        style={{ backgroundColor: active ? 'rgba(255,255,255,0.25)' : item.color }}
+                                                        style={{ backgroundColor: active ? 'rgba(255,255,255,0.25)' : (clay ? 'var(--accent-color)' : item.color) }}
                                                     >
                                                         <item.icon size={clay ? 12 : 11} className="text-white" />
                                                     </div>
@@ -245,7 +245,7 @@ export default function FilePicker({ mode, initialPath, onSelect, onCancel, acce
                             >
                                 <div
                                     className={`${clay ? 'w-[22px] h-[22px] rounded-[6px]' : 'w-[18px] h-[18px] rounded-[4px]'} flex items-center justify-center shrink-0`}
-                                    style={{ backgroundColor: isTrashView ? 'rgba(255,255,255,0.25)' : 'var(--pastel-red)' }}
+                                    style={{ backgroundColor: isTrashView ? 'rgba(255,255,255,0.25)' : (clay ? 'var(--accent-color)' : 'var(--pastel-red)') }}
                                 >
                                     {trashHasItems
                                         ? <IoTrash size={clay ? 12 : 11} className="text-white" />

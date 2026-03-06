@@ -711,7 +711,7 @@ export default function Mail({ windowId, ...props }: any) {
                                 style={clay && active ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
                             >
                                 <div className={`flex items-center justify-center shrink-0 ${clay ? 'w-6 h-6 rounded-[7px]' : ''}`}
-                                    style={clay ? { backgroundColor: active ? 'rgba(255,255,255,0.25)' : 'var(--pastel-blue)' } : undefined}>
+                                    style={clay ? { backgroundColor: active ? 'rgba(255,255,255,0.25)' : 'var(--accent-color)' } : undefined}>
                                     <item.icon size={clay ? 14 : 14} className={clay ? 'text-white' : ''} />
                                 </div>
                                 <span className={`flex-1 font-medium ${clay ? 'text-[14px]' : 'text-[12px]'}`}>{item.label}</span>

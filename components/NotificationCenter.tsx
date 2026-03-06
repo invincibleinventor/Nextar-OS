@@ -108,7 +108,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                             }
                         }}
                         style={{ zIndex: 700 }}
-                        className={`fixed top-0 left-0 right-0 flex flex-col w-full pointer-events-auto max-h-[85vh]`}
+                        className="fixed top-0 left-0 right-0 flex flex-col w-full pointer-events-auto max-h-[85vh]"
                     >
                         <div
                             className="flex flex-col w-full h-full"
@@ -121,65 +121,69 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                 borderRadius: '0 0 28px 28px',
                             }}
                         >
-                            {/* Header */}
-                            <div className="px-5 pt-14 pb-2 shrink-0 cursor-grab active:cursor-grabbing" onPointerDown={(e) => dragControls.start(e)}>
-                                <div className="flex items-baseline justify-between mb-0.5">
-                                    <h1 className={`font-semibold text-[--text-color] tracking-tight leading-none ${clay ? 'text-4xl' : 'text-5xl'}`}>{time.split(' ')[0]}</h1>
-                                    {notifications.length > 0 && (
-                                        <button
-                                            onClick={() => clearallnotifications()}
-                                            className={`flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium text-[--text-muted] active:scale-95 transition-all ${clay ? 'rounded-full' : ''}`}
-                                            style={clay
-                                                ? { background: 'var(--bg-glass-active)', border: '1px solid var(--glass-border)' }
-                                                : { background: 'var(--bg-overlay)', border: '1px solid var(--border-color)' }
-                                            }
-                                        >
-                                            <IoTrashOutline size={12} />
-                                            Clear All
-                                        </button>
-                                    )}
-                                </div>
-                                <span className="text-[13px] text-[--text-muted] font-medium">{date}</span>
+                            {/* Header with time/date */}
+                            <div className="px-5 pt-14 pb-3 shrink-0 cursor-grab active:cursor-grabbing" onPointerDown={(e) => dragControls.start(e)}>
+                                <h1 className={`font-bold text-[--text-color] tracking-tight leading-none ${clay ? 'text-[42px] font-semibold' : 'text-[48px]'}`}>
+                                    {time.split(' ')[0]}
+                                </h1>
+                                <p className="text-[14px] text-[--text-muted] font-medium mt-1.5">{date}</p>
+                            </div>
+
+                            {/* Section label + clear */}
+                            <div className="px-5 pb-2 flex items-center justify-between shrink-0">
+                                <span className={`text-[13px] font-semibold ${clay ? 'text-[--text-muted]' : 'text-[--text-color]'}`}>
+                                    {notifications.length > 0 ? `${notifications.length} Notification${notifications.length > 1 ? 's' : ''}` : 'Notifications'}
+                                </span>
+                                {notifications.length > 0 && (
+                                    <button
+                                        onClick={() => clearallnotifications()}
+                                        className={`text-[12px] font-medium active:scale-95 transition-all ${clay ? 'text-accent' : 'text-pastel-blue'}`}
+                                    >
+                                        Clear All
+                                    </button>
+                                )}
                             </div>
 
                             {/* Notification list — grouped by app */}
                             <div
                                 ref={contentscrollref}
                                 onPointerDown={handlecontentpointerdown}
-                                className="w-full px-4 flex-1 min-h-0 overflow-y-auto pt-3 scrollbar-hide [&::-webkit-scrollbar]:hidden"
+                                className="w-full px-4 flex-1 min-h-0 overflow-y-auto scrollbar-hide [&::-webkit-scrollbar]:hidden"
                                 style={{ touchAction: 'pan-y', overscrollBehavior: 'contain', scrollbarWidth: 'none' as any }}
                             >
                                 {notifications.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center py-16 text-center">
+                                    <div className="flex flex-col items-center justify-center py-14 text-center">
                                         <div
-                                            className={`w-12 h-12 flex items-center justify-center mb-3 ${clay ? 'rounded-full' : ''}`}
+                                            className="w-14 h-14 flex items-center justify-center mb-3 rounded-full"
                                             style={clay
                                                 ? { background: 'var(--bg-glass-active)', border: '1px solid var(--glass-border)' }
-                                                : { background: 'var(--bg-overlay)' }
+                                                : { background: 'var(--bg-overlay)', border: '1px solid var(--border-color)' }
                                             }
                                         >
-                                            <IoNotificationsOutline size={20} className="text-[--text-muted]" />
+                                            <IoNotificationsOutline size={24} className="text-[--text-muted]" />
                                         </div>
-                                        <p className="text-[14px] font-medium text-[--text-color] mb-0.5">No Notifications</p>
-                                        <p className="text-[12px] text-[--text-muted]">You&apos;re all caught up</p>
+                                        <p className="text-[15px] font-semibold text-[--text-color] mb-1">No Notifications</p>
+                                        <p className="text-[13px] text-[--text-muted]">You&apos;re all caught up</p>
                                     </div>
                                 ) : (
-                                    <div className="flex flex-col gap-3 sm:max-w-md sm:mx-auto pb-6">
+                                    <div className="flex flex-col gap-2.5 sm:max-w-md sm:mx-auto pb-4">
                                         {groupednotifications.map(group => (
                                             <div
                                                 key={group.appname}
-                                                className={`overflow-hidden ${clay ? 'rounded-[16px]' : ''}`}
+                                                className="overflow-hidden rounded-2xl"
                                                 style={clay
                                                     ? { background: 'var(--bg-glass-active)', border: '1px solid var(--glass-border)' }
                                                     : { background: 'var(--bg-overlay)', border: '1px solid var(--border-color)' }
                                                 }
                                             >
                                                 {/* Group header */}
-                                                <div className="flex items-center gap-2.5 px-3.5 pt-3 pb-1">
-                                                    <Image src={group.icon} width={20} height={20} className="w-5 h-5 rounded-[5px] shrink-0" alt={group.appname} />
-                                                    <span className={`text-[12px] font-semibold flex-1 ${clay ? 'text-[--text-muted] uppercase tracking-wide text-[11px]' : 'text-[--text-color]'}`}>{group.appname}</span>
+                                                <div className="flex items-center gap-2.5 px-3.5 pt-3 pb-1.5">
+                                                    <Image src={group.icon} width={22} height={22} className="w-[22px] h-[22px] rounded-md shrink-0" alt={group.appname} />
+                                                    <span className={`text-[12px] font-bold flex-1 uppercase tracking-wide ${clay ? 'text-[--text-muted]' : 'text-[--text-color]'}`}>
+                                                        {group.appname}
+                                                    </span>
                                                     {group.items.length > 1 && (
-                                                        <span className="text-[10px] font-bold text-[--text-muted] px-1.5 py-0.5 rounded-full"
+                                                        <span className="text-[10px] font-bold text-[--text-muted] px-2 py-0.5 rounded-full"
                                                             style={{ background: clay ? 'var(--bg-glass)' : 'var(--bg-surface)' }}>
                                                             {group.items.length}
                                                         </span>
@@ -213,21 +217,21 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                                             {idx > 0 && (
                                                                 <div className="mx-3.5" style={{ borderTop: `1px solid ${clay ? 'var(--glass-border)' : 'var(--border-color)'}` }} />
                                                             )}
-                                                            <div className="px-3.5 py-2.5">
-                                                                <div className="flex justify-between items-center mb-0.5">
+                                                            <div className="px-3.5 py-3">
+                                                                <div className="flex justify-between items-center mb-1">
                                                                     <h3 className="text-[13px] font-semibold text-[--text-color] leading-tight truncate flex-1 mr-2">{n.title}</h3>
                                                                     <span className="text-[10px] text-[--text-muted] shrink-0">{n.time}</span>
                                                                 </div>
                                                                 <p className="text-[12px] text-[--text-muted] leading-snug line-clamp-2">{n.description}</p>
                                                                 {n.actions && n.actions.length > 0 && (
-                                                                    <div className="flex gap-2 mt-2">
+                                                                    <div className="flex gap-2 mt-2.5">
                                                                         {n.actions.slice(0, 3).map(a => (
                                                                             <button
                                                                                 key={a.actionId}
                                                                                 onClick={(e) => { e.stopPropagation(); handleactionclick(n, a.actionId); }}
-                                                                                className={`px-3 py-1 text-[11px] font-semibold transition-colors ${clay
+                                                                                className={`px-3.5 py-1.5 text-[11px] font-semibold transition-colors active:scale-[0.97] ${clay
                                                                                     ? 'rounded-full border border-[--glass-border]'
-                                                                                    : 'border border-[--border-color]'
+                                                                                    : 'rounded-lg border border-[--border-color]'
                                                                                 }`}
                                                                                 style={{ color: clay ? 'var(--accent-color)' : 'var(--pastel-blue)' }}
                                                                             >
@@ -251,7 +255,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                 className="py-3 pb-4 shrink-0 cursor-grab active:cursor-grabbing"
                                 onPointerDown={(e) => dragControls.start(e)}
                             >
-                                <div className="w-12 h-1.5 mx-auto rounded-full" style={{ background: 'color-mix(in srgb, var(--text-muted) 35%, transparent)' }} />
+                                <div className="w-10 h-1 mx-auto rounded-full" style={{ background: 'color-mix(in srgb, var(--text-muted) 30%, transparent)' }} />
                             </div>
                         </div>
                     </motion.div>
@@ -271,9 +275,9 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: -20, scale: 0.9, transition: { duration: 0.2 } }}
                             transition={{ type: "tween", ease: "easeOut", duration: 0.2 }}
-                            className={`w-full max-w-[400px] p-3 cursor-pointer select-none pointer-events-auto ${clay
-                                ? 'rounded-[16px]'
-                                : 'bg-overlay border border-[--border-color]'
+                            className={`w-full max-w-[400px] p-3.5 cursor-pointer select-none pointer-events-auto ${clay
+                                ? 'rounded-2xl'
+                                : 'rounded-2xl bg-overlay border border-[--border-color]'
                             }`}
                             style={clay ? {
                                 ...glassPanel,
@@ -286,7 +290,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                             onDragEnd={(_, info) => { if (Math.abs(info.offset.x) > 50) markasviewed(n.id); }}
                         >
                             <div className="flex items-start gap-3">
-                                <Image src={n.icon} width={36} height={36} className="w-9 h-9 object-cover" alt={n.appname} />
+                                <Image src={n.icon} width={38} height={38} className="w-[38px] h-[38px] rounded-xl object-cover shrink-0" alt={n.appname} />
                                 <div className="flex-1 min-w-0 text-left">
                                     <div className="flex justify-between items-baseline mb-0.5">
                                         <h4 className="font-bold text-[13px] text-[--text-color] leading-tight">{n.appname}</h4>
