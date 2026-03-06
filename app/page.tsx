@@ -595,8 +595,8 @@ const Desktop = () => {
                         </div>
                       </div>
                       <span
-                        className={`text-[11px] w-full font-medium text-center break-words leading-tight line-clamp-1 px-1  ${isSelected ? 'bg-accent' : ''} ${inverselabelcolor && islightbackground ? 'text-black' : 'text-white'}`}
-                        style={{ textShadow: (inverselabelcolor && islightbackground) ? 'none' : '0 1px 3px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.3)' }}
+                        className={`text-[11px] w-full font-medium text-center break-words leading-tight line-clamp-1 px-1 text-white ${isSelected ? 'bg-accent' : ''}`}
+                        style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5), 0 0 4px rgba(0,0,0,0.2)' }}
                       >{item.name}</span>
                     </div>
                   )

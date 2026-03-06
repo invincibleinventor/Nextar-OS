@@ -281,7 +281,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                             }`}
                             style={clay ? {
                                 ...glassPanel,
-                                background: 'color-mix(in srgb, var(--accent-source) 12%, var(--bg-glass))',
+                                background: 'color-mix(in srgb, var(--bg-glass) 65%, transparent)',
                                 backdropFilter: 'blur(var(--glass-blur-heavy))',
                                 WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
                             } : undefined}
