@@ -25,9 +25,14 @@ It is built for people who want a portable workspace they control. Use it as a c
 - Menu bar with app-specific menus and system controls
 - Notification center with grouped alerts
 - Spotlight-style search across apps and files
-- Customizable wallpapers, themes, and accent colors
+- Customizable wallpapers (built-in + custom URL), themes, and accent colors
 - Lock screen and boot sequence
 - Launchpad for quick app access
+- **Two UI modes**: Neo-Glass (neumorphic glassmorphism) and Classic (anime/Catppuccin)
+- iOS-style squircle app icons with 3D depth shadows
+- Accent-tinted sidebar icons across all file managers
+- Convergent design — full desktop on large screens, iOS-style UI on mobile
+- Control Center and Notification Center with mobile-optimized layouts
 
 ### Productivity
 
@@ -63,9 +68,10 @@ It is built for people who want a portable workspace they control. Use it as a c
 ### System
 
 - **Explorer** — File manager with sidebar, grid/list views, breadcrumb navigation, and trash
-- **Settings** — System preferences for appearance, wallpaper, dock, notifications, and more
+- **Settings** — System preferences for appearance, wallpaper, accent colors, icon tinting, and more
 - **System Monitor** — CPU, memory, and process monitoring
-- **App Store** — Discover and install additional apps
+- **App Store** — Discover and install apps from GitHub repositories
+- **Weather** — Weather forecasts and conditions
 - **Help** — System information and about screen
 - **Installer** — First-run setup and onboarding
 
@@ -78,7 +84,7 @@ It is built for people who want a portable workspace they control. Use it as a c
 | Framework | Next.js 15 (App Router) |
 | UI | React 19 |
 | Language | TypeScript |
-| Styling | Tailwind CSS |
+| Styling | Tailwind CSS 3.4 |
 | Terminal | WebContainers (`@webcontainer/api`) + xterm.js |
 | Code Editor | Monaco Editor (`@monaco-editor/react`) |
 | Python | Pyodide (WebAssembly) |
