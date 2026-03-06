@@ -477,15 +477,11 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                                 />
                             ) : (
                                 <span
-                                    className={`text-[11px] font-semibold text-center leading-tight truncate w-full tracking-tight px-1 ${
-                                        clay
-                                            ? `font-sans ${islightbackground ? 'text-black/80' : 'text-white'}`
-                                            : `font-mono ${inverselabelcolor && islightbackground ? 'text-black' : 'text-white'}`
+                                    className={`text-[11px] font-semibold text-center leading-tight truncate w-full tracking-tight px-1 text-white ${
+                                        clay ? 'font-sans' : 'font-mono'
                                     }`}
                                     style={{
-                                        textShadow: (clay ? islightbackground : (inverselabelcolor && islightbackground))
-                                            ? 'none'
-                                            : '0 1px 3px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.3)'
+                                        textShadow: '0 1px 2px rgba(0,0,0,0.5), 0 0 4px rgba(0,0,0,0.2)'
                                     }}
                                 >
                                     {item.name}
@@ -705,7 +701,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                             ? { backgroundColor: 'transparent' }
                             : clay
                                 ? {
-                                    background: 'var(--bg-glass)',
+                                    background: 'color-mix(in srgb, var(--bg-glass) 65%, transparent)',
                                     backdropFilter: 'blur(var(--glass-blur-heavy))',
                                     WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
                                     border: '1px solid var(--glass-border)',
@@ -799,7 +795,11 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                         exit={{ y: '100%' }}
                         transition={{ type: 'tween', duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
                         style={{
-                            background: clay ? 'var(--bg-base)' : 'var(--bg-surface)',
+                            background: clay
+                                ? 'color-mix(in srgb, var(--bg-glass) 70%, transparent)'
+                                : 'var(--bg-surface)',
+                            backdropFilter: clay ? 'blur(var(--glass-blur-heavy))' : undefined,
+                            WebkitBackdropFilter: clay ? 'blur(var(--glass-blur-heavy))' : undefined,
                         }}
                     >
                         {/* Drag handle — only this is draggable to dismiss */}

@@ -6,7 +6,7 @@ interface Props {
 }
 
 const ThemeContext = createContext({
-  theme: 'dark',
+  theme: 'light',
   toggletheme: () => { },
 });
 
@@ -22,7 +22,7 @@ export const ThemeProvider = ({ children }: Props) => {
     if (storedtheme) {
       settheme(storedtheme);
     } else {
-      settheme('dark');
+      settheme('light');
     }
     setmounted(true);
   }, []);

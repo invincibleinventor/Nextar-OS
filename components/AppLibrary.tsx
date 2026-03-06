@@ -134,7 +134,8 @@ const AppLibrary = () => {
 
     return (
         <div
-            className={`w-full h-full flex flex-col select-none ${clay ? 'bg-[--bg-base]' : 'bg-[--bg-surface]'}`}
+            className="w-full h-full flex flex-col select-none"
+            style={{ background: 'transparent' }}
             onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); }}
             onTouchMove={handlelongpressmove}
             onTouchEnd={handlelongpressend}
@@ -149,30 +150,8 @@ const AppLibrary = () => {
                 />
             )}
 
-            {/* Sticky header: title + search + categories */}
-            <div className="shrink-0 px-5 pt-8 pb-2">
-                <h1 className="text-2xl font-bold text-[--text-color] mb-4">App Library</h1>
-
-                {/* Search bar */}
-                <div className="relative w-full mb-3">
-                    <div className={`relative w-full flex items-center ${clay ? 'rounded-full py-2.5 px-4 border border-[--glass-border] bg-[--bg-glass-active]' : 'h-10 px-3 bg-overlay border border-[--border-color]'}`}>
-                        <IoSearch className="text-[--text-muted]" size={18} />
-                        <input
-                            type="text"
-                            value={searchquery}
-                            onChange={(e) => setsearchquery(e.target.value)}
-                            placeholder="Search apps..."
-                            className={`ml-2 flex-1 bg-transparent text-[--text-color] outline-none ${clay ? 'text-[15px] placeholder:text-[--text-muted]' : 'text-lg placeholder-[--text-muted]'}`}
-                        />
-                        {searchquery && (
-                            <button onClick={() => setsearchquery('')} className="p-1">
-                                <IoClose className="text-[--text-muted]" size={18} />
-                            </button>
-                        )}
-                    </div>
-                </div>
-
-                {/* Horizontal category chips */}
+            {/* Category chips at top */}
+            <div className="shrink-0 px-5 pt-4 pb-2">
                 <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none' }}>
                     <button
                         onClick={() => setselectedcategory(null)}
@@ -180,7 +159,7 @@ const AppLibrary = () => {
                         style={clay ? (
                             !selectedcategory
                                 ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)', color: 'white' }
-                                : { background: 'var(--bg-glass-active)', color: 'var(--text-color)', border: '1px solid var(--glass-border)' }
+                                : { background: 'color-mix(in srgb, var(--bg-glass) 60%, transparent)', color: 'var(--text-color)', border: '1px solid var(--glass-border)', backdropFilter: 'blur(12px)' }
                         ) : (
                             !selectedcategory
                                 ? { background: 'var(--text-color)', color: 'var(--bg-surface)' }
@@ -197,7 +176,7 @@ const AppLibrary = () => {
                             style={clay ? (
                                 selectedcategory === cat
                                     ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)', color: 'white' }
-                                    : { background: 'var(--bg-glass-active)', color: 'var(--text-color)', border: '1px solid var(--glass-border)' }
+                                    : { background: 'color-mix(in srgb, var(--bg-glass) 60%, transparent)', color: 'var(--text-color)', border: '1px solid var(--glass-border)', backdropFilter: 'blur(12px)' }
                             ) : (
                                 selectedcategory === cat
                                     ? { background: 'var(--text-color)', color: 'var(--bg-surface)' }
@@ -212,7 +191,7 @@ const AppLibrary = () => {
 
             {/* Scrollable app grid */}
             <div
-                className="flex-1 overflow-y-auto overflow-x-hidden px-5 pb-32 scrollbar-hide [&::-webkit-scrollbar]:hidden"
+                className="flex-1 overflow-y-auto overflow-x-hidden px-5 pb-24 scrollbar-hide [&::-webkit-scrollbar]:hidden"
                 style={{ touchAction: 'pan-x pan-y', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
                 {filteredApps.length > 0 ? (
@@ -237,8 +216,8 @@ const AppLibrary = () => {
                                     useFill={false}
                                 />
                                 <span
-                                    className="text-[11px] text-center font-medium leading-tight w-full truncate"
-                                    style={{ color: 'var(--text-color)' }}
+                                    className={`text-[11px] text-center font-medium leading-tight w-full truncate ${islightbackground ? 'text-black/80' : 'text-white'}`}
+                                    style={{ textShadow: islightbackground ? 'none' : '0 1px 2px rgba(0,0,0,0.5), 0 0 4px rgba(0,0,0,0.2)' }}
                                 >
                                     {app.appname}
                                 </span>
@@ -250,6 +229,33 @@ const AppLibrary = () => {
                         <div className="text-2xl mb-2" style={{ color: 'var(--text-muted)' }}>No apps found</div>
                     </div>
                 )}
+            </div>
+
+            {/* Search bar at bottom */}
+            <div className="shrink-0 px-5 pb-6 pt-2">
+                <div
+                    className={`relative w-full flex items-center ${clay ? 'rounded-full py-2.5 px-4' : 'h-10 px-3 bg-overlay border border-[--border-color]'}`}
+                    style={clay ? {
+                        background: 'color-mix(in srgb, var(--bg-glass) 65%, transparent)',
+                        backdropFilter: 'blur(var(--glass-blur-heavy))',
+                        WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
+                        border: '1px solid var(--glass-border)',
+                    } : undefined}
+                >
+                    <IoSearch className="text-[--text-muted]" size={18} />
+                    <input
+                        type="text"
+                        value={searchquery}
+                        onChange={(e) => setsearchquery(e.target.value)}
+                        placeholder="Search apps..."
+                        className={`ml-2 flex-1 bg-transparent text-[--text-color] outline-none ${clay ? 'text-[15px] placeholder:text-[--text-muted]' : 'text-lg placeholder-[--text-muted]'}`}
+                    />
+                    {searchquery && (
+                        <button onClick={() => setsearchquery('')} className="p-1">
+                            <IoClose className="text-[--text-muted]" size={18} />
+                        </button>
+                    )}
+                </div>
             </div>
         </div>
     );
