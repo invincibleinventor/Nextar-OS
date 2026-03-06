@@ -222,6 +222,7 @@ export default function Panel({ ontogglenotifications, ontogglecalendar }: { ont
                         className="h-[38px] mt-[4px] px-2 flex items-center space-x-0.5 pointer-events-auto rounded-[16px]"
                         style={{
                             ...glassPanel,
+                            background: 'color-mix(in srgb, var(--accent-source) 12%, var(--bg-glass))',
                             backdropFilter: 'blur(var(--glass-blur-heavy))',
                             WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
                         }}

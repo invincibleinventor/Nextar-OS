@@ -160,7 +160,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
       : { background: 'var(--bg-glass-active)' };
 
   /* ─── Desktop effects toggle ─── */
-  const [desktopeffects, setdesktopeffects] = useState(true);
+  const [desktopeffects, setdesktopeffects] = useState(false);
   const toggledesktopeffects = () => {
     setdesktopeffects(prev => !prev);
     window.dispatchEvent(new Event('toggle-desktop-effects'));

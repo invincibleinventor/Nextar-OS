@@ -81,7 +81,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                     >
                         <div className="relative pt-16 px-6 flex flex-col items-center pointer-events-auto" style={{ maxWidth: '100vw', boxSizing: 'border-box' }}>
                             <div className={`w-full max-w-lg overflow-hidden ${clay ? 'rounded-[16px]' : 'bg-surface border border-[--border-color] shadow-pastel'}`}
-                                style={clay ? glassPanel : undefined}
+                                style={clay ? { ...glassPanel, boxShadow: 'none' } : undefined}
                             >
                                 <div className={`flex items-center gap-3 px-4 py-3 ${clay ? 'border-b border-[--glass-border]' : 'border-b border-[--border-color]'}`}>
                                     <IoSearch className="text-[--text-muted] text-xl shrink-0" />
@@ -166,7 +166,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
 
                     {windows.length === 0 && !searchquery && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
-                            <div className={`text-lg font-medium tracking-wide text-[--text-muted]`}
+                            <div className={`text-lg font-medium tracking-wide ${islightbackground ? 'text-black/50' : 'text-white/60'}`}
                                 style={{ textShadow: islightbackground ? 'none' : '0 1px 4px rgba(0,0,0,0.5)' }}>No Recent Apps</div>
                         </div>
                     )}
@@ -211,6 +211,31 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                             </AnimatePresence>
                         </div>
                     </motion.div>
+
+                    {/* Close All button — mobile */}
+                    {ismobile && windows.length > 1 && !searchquery && (
+                        <motion.div
+                            className="absolute bottom-8 left-0 right-0 flex justify-center z-[492] pointer-events-auto"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.15, duration: 0.25 }}
+                        >
+                            <button
+                                onClick={() => {
+                                    windows.forEach((w: any) => removewindow(w.id));
+                                }}
+                                className={`px-6 py-2.5 rounded-full text-[13px] font-semibold active:scale-95 transition-transform ${islightbackground ? 'text-black/70' : 'text-white/80'}`}
+                                style={{
+                                    background: islightbackground ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.15)',
+                                    backdropFilter: 'blur(20px)',
+                                    WebkitBackdropFilter: 'blur(20px)',
+                                    border: islightbackground ? '1px solid rgba(0,0,0,0.08)' : '1px solid rgba(255,255,255,0.12)',
+                                }}
+                            >
+                                Close All
+                            </button>
+                        </motion.div>
+                    )}
                 </motion.div>
             )}
         </AnimatePresence>

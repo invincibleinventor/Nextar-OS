@@ -47,7 +47,7 @@ const Desktop = () => {
   const [showforcequit, setshowforcequit] = useState(false);
   const [showaboutmac, setshowaboutmac] = useState(false);
   const [issystemgestureactive, setissystemgestureactive] = useState(false);
-  const [showdesktopeffects, setshowdesktopeffects] = useState(true);
+  const [showdesktopeffects, setshowdesktopeffects] = useState(false);
 
   const { user } = useAuth();
   const { notifications } = useNotifications();
@@ -596,6 +596,7 @@ const Desktop = () => {
                       </div>
                       <span
                         className={`text-[11px] w-full font-medium text-center break-words leading-tight line-clamp-1 px-1  ${isSelected ? 'bg-accent' : ''} ${inverselabelcolor && islightbackground ? 'text-black' : 'text-white'}`}
+                        style={{ textShadow: (inverselabelcolor && islightbackground) ? 'none' : '0 1px 3px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.3)' }}
                       >{item.name}</span>
                     </div>
                   )

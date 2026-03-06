@@ -11,7 +11,6 @@ import { IoArrowForward, IoLockClosed, IoPerson, IoMoon, IoRefresh } from 'react
 import { iselectron, power } from '@/utils/platform';
 import { useSettings } from './SettingsContext';
 import { useIsClay } from './hooks/useIsClay';
-import { glassInput, glassPanel } from './hooks/useClayStyles';
 
 export default function LockScreen() {
     const { login, user, isLoading: authLoading, guestLogin } = useAuth();
@@ -123,47 +122,25 @@ export default function LockScreen() {
         const isDark = !islightbackground;
 
         // Adaptive text colors for wallpaper readability
-        const primaryText = islightbackground ? 'text-gray-900' : 'text-white';
+        const primaryText = islightbackground ? 'text-gray-800' : 'text-white';
         const secondaryText = islightbackground ? 'text-gray-600' : 'text-white/70';
-        const tertiaryText = islightbackground ? 'text-gray-400' : 'text-white/40';
+        const tertiaryText = islightbackground ? 'text-gray-500' : 'text-white/50';
 
         // Strong text shadows for wallpaper legibility
         const clockShadow = islightbackground
-            ? '0 2px 12px rgba(0,0,0,0.06)'
+            ? '0 1px 8px rgba(255,255,255,0.3)'
             : '0 2px 24px rgba(0,0,0,0.7), 0 0 60px rgba(0,0,0,0.3)';
         const dateShadow = islightbackground
-            ? '0 1px 4px rgba(0,0,0,0.04)'
+            ? '0 1px 4px rgba(255,255,255,0.2)'
             : '0 1px 12px rgba(0,0,0,0.5)';
         const subtleShadow = islightbackground
-            ? 'none'
+            ? '0 1px 4px rgba(255,255,255,0.15)'
             : '0 1px 6px rgba(0,0,0,0.4)';
-
-        // Glass card styling
-        const glassCardBg = isDark
-            ? 'rgba(0,0,0,0.35)'
-            : 'rgba(255,255,255,0.45)';
-        const glassCardBorder = isDark
-            ? '1px solid rgba(255,255,255,0.12)'
-            : '1px solid rgba(255,255,255,0.6)';
-        const glassCardShadow = isDark
-            ? '0 8px 32px rgba(0,0,0,0.4), 0 0 0 0.5px rgba(255,255,255,0.06) inset'
-            : '0 8px 32px rgba(0,0,0,0.08), 0 0 0 0.5px rgba(255,255,255,0.8) inset';
 
         // Avatar ring
         const avatarRing = isDark
             ? '0 0 0 3px rgba(255,255,255,0.2), 0 8px 24px rgba(0,0,0,0.35)'
             : '0 0 0 3px rgba(255,255,255,0.7), 0 8px 24px rgba(0,0,0,0.12)';
-
-        // Password input: frosted pill directly over glass card
-        const inputBg = isDark
-            ? 'rgba(255,255,255,0.1)'
-            : 'rgba(0,0,0,0.06)';
-        const inputBorder = isDark
-            ? '1px solid rgba(255,255,255,0.12)'
-            : '1px solid rgba(0,0,0,0.06)';
-        const inputFocusBorder = isDark
-            ? '1px solid rgba(255,255,255,0.25)'
-            : '1px solid rgba(0,0,0,0.12)';
 
         // User-switcher dot styles
         const dotActive = isDark
@@ -176,276 +153,199 @@ export default function LockScreen() {
         // Greeting based on time of day
         const greeting = currentTime ? (currentTime.getHours() < 12 ? 'Good Morning' : currentTime.getHours() < 17 ? 'Good Afternoon' : 'Good Evening') : '';
 
-        // Glass pill button style for guest
-        const guestPillBg = isDark
-            ? 'rgba(255,255,255,0.1)'
-            : 'rgba(0,0,0,0.06)';
-        const guestPillBorder = isDark
-            ? '1px solid rgba(255,255,255,0.15)'
-            : '1px solid rgba(0,0,0,0.08)';
-
-        // ---- MOBILE CLAY ----
+        // ---- MOBILE CLAY — iOS style ----
         if (ismobile) {
             return (
                 <div className="fixed inset-0 z-[800] flex flex-col items-center overflow-hidden font-sans select-none">
-                    {/* Wallpaper with blur */}
+                    {/* Full wallpaper — visible, not heavily blurred */}
                     <div
                         className="absolute inset-0 z-0 bg-cover bg-center"
-                        style={{ backgroundImage: `url('${wallpaperurl}')`, filter: 'blur(8px) saturate(1.2)', transform: 'scale(1.05)' }}
+                        style={{ backgroundImage: `url('${wallpaperurl}')` }}
                     />
-                    {/* Dark overlay for depth */}
-                    <div
-                        className="absolute inset-0 z-[1]"
-                        style={{ background: isDark ? 'rgba(0,0,0,0.25)' : 'rgba(0,0,0,0.05)' }}
-                    />
+                    <div className="absolute inset-0 z-[1]" style={{ background: isDark ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.08)' }} />
 
-                    {/* Clock + Date + Greeting -- top */}
+                    {/* Top: Large clock + date (iOS style) */}
                     <motion.div
-                        className="z-10 flex flex-col items-center mt-14"
-                        initial={{ opacity: 0, y: -20, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+                        className="z-10 flex flex-col items-center mt-16"
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
                     >
                         <h1
-                            className={`text-[72px] font-bold ${primaryText} leading-none`}
-                            style={{ textShadow: clockShadow, fontFamily: "'Snell Roundhand', 'Segoe Script', 'Dancing Script', cursive", fontStyle: 'italic' }}
+                            className={`text-[82px] font-bold ${primaryText} leading-none tracking-tight`}
+                            style={{ textShadow: clockShadow }}
                         >
                             {timeStr}
                         </h1>
                         <p
-                            className={`text-sm font-medium ${secondaryText} mt-1.5 tracking-wide`}
+                            className={`text-[15px] font-medium ${secondaryText} mt-1 tracking-wide`}
                             style={{ textShadow: dateShadow }}
                         >
                             {dateStr}
                         </p>
                     </motion.div>
 
-                    {/* Center: Floating avatar + compact glass card */}
-                    <div className="z-10 flex-1 flex flex-col items-center justify-center w-full px-6">
+                    {/* Center: Avatar + name + password — no glass card, direct on wallpaper */}
+                    <div className="z-10 flex-1 flex flex-col items-center justify-center w-full px-8">
                         <motion.div
-                            className="w-full max-w-[300px] flex flex-col items-center"
-                            initial={{ opacity: 0, y: 30, scale: 0.92 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            transition={{ delay: 0.15, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                            className="flex flex-col items-center w-full max-w-[300px]"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
                         >
-                            {/* Floating avatar -- ABOVE the card */}
-                            <motion.div
-                                className="relative z-20 mb-[-36px]"
-                                initial={{ opacity: 0, scale: 0.7, y: 10 }}
-                                animate={{ opacity: 1, scale: 1, y: 0 }}
-                                transition={{ delay: 0.1, type: 'spring', stiffness: 350, damping: 28 }}
-                            >
-                                <AnimatePresence mode="wait">
-                                    <motion.div
-                                        key={selectedUser?.username || 'guest'}
-                                        className="flex flex-col items-center"
-                                        initial={{ opacity: 0, scale: 0.85 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        exit={{ opacity: 0, scale: 0.85 }}
-                                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                            {/* Avatar */}
+                            <AnimatePresence mode="wait">
+                                <motion.div
+                                    key={selectedUser?.username || 'guest'}
+                                    className="flex flex-col items-center"
+                                    initial={{ opacity: 0, scale: 0.85 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.85 }}
+                                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                                >
+                                    <div
+                                        className="relative w-[72px] h-[72px] rounded-full overflow-hidden flex items-center justify-center"
+                                        style={{ boxShadow: avatarRing, background: isDark ? '#2C2C2E' : '#E5E5EA' }}
                                     >
-                                        <div
-                                            className="relative w-[72px] h-[72px] rounded-full overflow-hidden flex items-center justify-center"
+                                        {selectedUser ? (
+                                            <Image src={selectedUser.avatar || "/pfp.png"} alt={selectedUser.name} fill className="object-cover" />
+                                        ) : (
+                                            <IoPerson size={32} className={isDark ? 'text-white/50' : 'text-gray-400'} />
+                                        )}
+                                    </div>
+                                </motion.div>
+                            </AnimatePresence>
+
+                            {/* Name */}
+                            <motion.p
+                                className={`text-[17px] font-semibold ${primaryText} mt-3`}
+                                style={{ textShadow: dateShadow }}
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: 0.15 }}
+                            >
+                                {selectedUser ? selectedUser.name : greeting}
+                            </motion.p>
+
+                            {/* User switcher dots */}
+                            {users.length > 1 && (
+                                <div className="flex items-center gap-2 mt-3">
+                                    {users.map(u => (
+                                        <motion.button
+                                            key={u.username}
+                                            onClick={() => { setSelectedUser(u); setPassword(''); setError(false); }}
+                                            className="rounded-full"
                                             style={{
-                                                boxShadow: avatarRing,
-                                                background: isDark ? '#2C2C2E' : '#E5E5EA',
+                                                width: selectedUser?.username === u.username ? 20 : 8,
+                                                height: 8,
+                                                background: selectedUser?.username === u.username ? dotActive : dotInactive,
                                             }}
+                                            whileTap={{ scale: 0.85 }}
+                                            layout
+                                            transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Password — frosted pill on wallpaper */}
+                            <AnimatePresence mode="wait">
+                                {selectedUser && (
+                                    <motion.form
+                                        key={selectedUser.username}
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -8 }}
+                                        transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                                        onSubmit={handleLogin}
+                                        className="flex flex-col items-center w-full mt-4"
+                                    >
+                                        <motion.div
+                                            animate={error ? { x: [-8, 8, -6, 6, -3, 3, 0] } : {}}
+                                            transition={{ duration: 0.4 }}
+                                            className="w-full relative"
                                         >
-                                            {selectedUser ? (
-                                                <Image src={selectedUser.avatar || "/pfp.png"} alt={selectedUser.name} fill className="object-cover" />
-                                            ) : (
-                                                <IoPerson size={32} className={isDark ? 'text-white/50' : 'text-gray-400'} />
+                                            <input
+                                                type="password"
+                                                value={password}
+                                                onChange={(e) => setPassword(e.target.value)}
+                                                placeholder="Password"
+                                                className={`w-full h-11 outline-none rounded-full text-[13px] pl-5 pr-12 font-sans ${isDark ? 'text-white placeholder-white/40' : 'text-gray-900 placeholder-gray-700/50'}`}
+                                                style={{
+                                                    background: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)',
+                                                    backdropFilter: 'blur(40px) saturate(1.4)',
+                                                    WebkitBackdropFilter: 'blur(40px) saturate(1.4)',
+                                                    border: isDark ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(0,0,0,0.1)',
+                                                    caretColor: isDark ? '#fff' : '#333',
+                                                }}
+                                            />
+                                            <button
+                                                type="submit"
+                                                disabled={!password || isSubmitting}
+                                                className="absolute right-1.5 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full transition-all duration-300"
+                                                style={password
+                                                    ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)', color: '#fff' }
+                                                    : { background: 'transparent', color: 'transparent' }
+                                                }
+                                            >
+                                                {!isSubmitting && <IoArrowForward size={14} />}
+                                                {isSubmitting && <div className="w-3 h-3 border-2 border-white border-t-transparent animate-spin rounded-full" />}
+                                            </button>
+                                        </motion.div>
+
+                                        <div className="h-5 mt-2 text-center">
+                                            {error && lockoutUntil && Date.now() < lockoutUntil && (
+                                                <motion.span className="text-[11px] font-medium text-red-400" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>Too many attempts. Try again shortly.</motion.span>
+                                            )}
+                                            {error && !(lockoutUntil && Date.now() < lockoutUntil) && (
+                                                <motion.span className="text-[11px] font-medium text-red-400" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>Incorrect password</motion.span>
                                             )}
                                         </div>
-                                    </motion.div>
-                                </AnimatePresence>
-                            </motion.div>
+                                    </motion.form>
+                                )}
+                            </AnimatePresence>
 
-                            {/* Glass card -- compact */}
-                            <div
-                                className="w-full flex flex-col items-center pt-12 pb-6 px-6 rounded-[24px]"
+                            {/* Guest */}
+                            <motion.button
+                                onClick={() => guestLogin()}
+                                className={`flex items-center gap-2 mt-2 px-5 py-2 rounded-full text-[12px] font-medium ${secondaryText} active:scale-95`}
                                 style={{
-                                    background: glassCardBg,
-                                    backdropFilter: 'blur(40px) saturate(1.4)',
-                                    WebkitBackdropFilter: 'blur(40px) saturate(1.4)',
-                                    border: glassCardBorder,
-                                    boxShadow: glassCardShadow,
+                                    background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)',
+                                    backdropFilter: 'blur(20px)',
+                                    WebkitBackdropFilter: 'blur(20px)',
+                                    border: isDark ? '1px solid rgba(255,255,255,0.12)' : '1px solid rgba(0,0,0,0.06)',
+                                    textShadow: subtleShadow,
                                 }}
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: 0.4 }}
+                                whileTap={{ scale: 0.95 }}
                             >
-                                {/* Username / greeting */}
-                                <motion.p
-                                    className={`text-base font-semibold ${primaryText} mb-0.5`}
-                                    style={{ textShadow: subtleShadow }}
-                                    initial={{ opacity: 0, y: 4 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.15 }}
-                                >
-                                    {selectedUser ? selectedUser.name : greeting}
-                                </motion.p>
-                                {selectedUser && (
-                                    <motion.p
-                                        className={`text-[11px] ${tertiaryText} mb-3`}
-                                        style={{ textShadow: subtleShadow }}
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        transition={{ delay: 0.2 }}
-                                    >
-                                        {greeting}
-                                    </motion.p>
-                                )}
-
-                                {/* User switcher dots */}
-                                {users.length > 1 && (
-                                    <div className="flex items-center gap-2 mb-4">
-                                        {users.map(u => (
-                                            <motion.button
-                                                key={u.username}
-                                                onClick={() => { setSelectedUser(u); setPassword(''); setError(false); }}
-                                                className="rounded-full transition-all duration-300"
-                                                style={{
-                                                    width: selectedUser?.username === u.username ? 20 : 8,
-                                                    height: 8,
-                                                    background: selectedUser?.username === u.username ? dotActive : dotInactive,
-                                                    borderRadius: 999,
-                                                }}
-                                                whileTap={{ scale: 0.85 }}
-                                                layout
-                                                transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-                                            />
-                                        ))}
-                                    </div>
-                                )}
-
-                                {/* Password form */}
-                                <AnimatePresence mode="wait">
-                                    {selectedUser && (
-                                        <motion.form
-                                            key={selectedUser.username}
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: -8 }}
-                                            transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-                                            onSubmit={handleLogin}
-                                            className="flex flex-col items-center w-full"
-                                        >
-                                            <motion.div
-                                                animate={error ? { x: [-8, 8, -6, 6, -3, 3, 0] } : {}}
-                                                transition={{ duration: 0.4 }}
-                                                className="w-full relative"
-                                            >
-                                                <input
-                                                    type="password"
-                                                    value={password}
-                                                    onChange={(e) => setPassword(e.target.value)}
-                                                    placeholder="Password"
-                                                    className={`w-full h-11 outline-none rounded-full text-[13px] pl-5 pr-12 font-sans transition-all duration-200 ${islightbackground ? 'text-gray-900 placeholder-gray-400/80' : 'text-white placeholder-white/35'}`}
-                                                    style={{
-                                                        background: inputBg,
-                                                        backdropFilter: 'blur(20px)',
-                                                        WebkitBackdropFilter: 'blur(20px)',
-                                                        border: inputBorder,
-                                                        caretColor: islightbackground ? '#333' : '#fff',
-                                                    }}
-                                                    onFocus={(e) => { e.currentTarget.style.border = inputFocusBorder; }}
-                                                    onBlur={(e) => { e.currentTarget.style.border = inputBorder; }}
-                                                />
-                                                <button
-                                                    type="submit"
-                                                    disabled={!password || isSubmitting}
-                                                    className="absolute right-1.5 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full transition-all duration-300"
-                                                    style={password
-                                                        ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)', color: '#fff' }
-                                                        : { background: 'transparent', color: 'transparent' }
-                                                    }
-                                                >
-                                                    {!isSubmitting && <IoArrowForward size={14} />}
-                                                    {isSubmitting && <div className="w-3 h-3 border-2 border-white border-t-transparent animate-spin rounded-full" />}
-                                                </button>
-                                            </motion.div>
-
-                                            {/* Error / lockout */}
-                                            <div className="h-5 mt-2 text-center">
-                                                {error && lockoutUntil && Date.now() < lockoutUntil && (
-                                                    <motion.span
-                                                        className="text-[11px] font-medium text-red-400"
-                                                        initial={{ opacity: 0 }}
-                                                        animate={{ opacity: 1 }}
-                                                    >
-                                                        Too many attempts. Try again shortly.
-                                                    </motion.span>
-                                                )}
-                                                {error && !(lockoutUntil && Date.now() < lockoutUntil) && (
-                                                    <motion.span
-                                                        className="text-[11px] font-medium text-red-400"
-                                                        initial={{ opacity: 0 }}
-                                                        animate={{ opacity: 1 }}
-                                                    >
-                                                        Incorrect password
-                                                    </motion.span>
-                                                )}
-                                            </div>
-                                        </motion.form>
-                                    )}
-                                </AnimatePresence>
-
-                                {/* Guest login -- glass pill button */}
-                                <motion.button
-                                    onClick={() => guestLogin()}
-                                    className={`flex items-center gap-2 mt-1 px-5 py-2 rounded-full text-[12px] font-medium ${secondaryText} transition-all duration-200 active:scale-95`}
-                                    style={{
-                                        background: guestPillBg,
-                                        backdropFilter: 'blur(16px)',
-                                        WebkitBackdropFilter: 'blur(16px)',
-                                        border: guestPillBorder,
-                                        textShadow: subtleShadow,
-                                    }}
-                                    initial={{ opacity: 0, y: 6 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.4 }}
-                                    whileTap={{ scale: 0.95 }}
-                                >
-                                    <IoPerson size={13} />
-                                    <span>Continue as Guest</span>
-                                </motion.button>
-                            </div>
+                                <IoPerson size={13} />
+                                <span>Continue as Guest</span>
+                            </motion.button>
                         </motion.div>
                     </div>
 
-                    {/* Bottom: Sleep + Restart */}
+                    {/* Bottom: power buttons */}
                     <motion.div
-                        className="z-10 pb-8 shrink-0 flex items-center gap-8"
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
+                        className="z-10 pb-10 shrink-0 flex items-center gap-8"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
                         transition={{ delay: 0.5, duration: 0.5 }}
                     >
-                        <div
-                            onClick={async () => { if (iselectron) await power.sleep(); }}
-                            className="group cursor-pointer"
-                        >
+                        <div onClick={async () => { if (iselectron) await power.sleep(); }} className="group cursor-pointer">
                             <div
-                                className="w-11 h-11 rounded-full flex items-center justify-center transition-transform duration-200 group-active:scale-90"
-                                style={{
-                                    background: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)',
-                                    backdropFilter: 'blur(24px)',
-                                    WebkitBackdropFilter: 'blur(24px)',
-                                    border: isDark ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(0,0,0,0.08)',
-                                }}
+                                className="w-11 h-11 rounded-full flex items-center justify-center group-active:scale-90 transition-transform"
+                                style={{ background: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: isDark ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(0,0,0,0.08)' }}
                             >
                                 <IoMoon size={16} className={isDark ? 'text-white' : 'text-black/70'} />
                             </div>
                         </div>
-                        <div
-                            onClick={async () => { if (iselectron) await power.restart(); else window.location.reload(); }}
-                            className="group cursor-pointer"
-                        >
+                        <div onClick={async () => { if (iselectron) await power.restart(); else window.location.reload(); }} className="group cursor-pointer">
                             <div
-                                className="w-11 h-11 rounded-full flex items-center justify-center transition-transform duration-200 group-active:scale-90"
-                                style={{
-                                    background: isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.1)',
-                                    backdropFilter: 'blur(24px)',
-                                    WebkitBackdropFilter: 'blur(24px)',
-                                    border: isDark ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(0,0,0,0.1)',
-                                }}
+                                className="w-11 h-11 rounded-full flex items-center justify-center group-active:scale-90 transition-transform"
+                                style={{ background: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: isDark ? '1px solid rgba(255,255,255,0.18)' : '1px solid rgba(0,0,0,0.1)' }}
                             >
                                 <IoRefresh size={16} className={isDark ? 'text-white' : 'text-black/70'} />
                             </div>
@@ -455,64 +355,29 @@ export default function LockScreen() {
             );
         }
 
-        // ---- DESKTOP CLAY ----
+        // ---- DESKTOP CLAY — macOS style ----
         return (
             <div className="fixed inset-0 z-[800] flex flex-col items-center justify-center overflow-hidden font-sans select-none">
-                {/* Wallpaper with blur */}
-                <div
-                    className="absolute inset-0 z-0 bg-cover bg-center"
-                    style={{ backgroundImage: `url('${wallpaperurl}')`, filter: 'blur(8px) saturate(1.2)', transform: 'scale(1.05)' }}
-                />
-                {/* Cinematic dark overlay */}
-                <div
-                    className="absolute inset-0 z-[1]"
-                    style={{
-                        background: isDark
-                            ? 'linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.15) 100%)'
-                            : 'linear-gradient(to bottom, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0.06) 50%, rgba(0,0,0,0.02) 100%)',
-                    }}
-                />
+                {/* Blurred wallpaper */}
+                <div className="absolute inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: `url('${wallpaperurl}')`, filter: 'blur(60px) saturate(1.3) brightness(0.85)', transform: 'scale(1.2)' }} />
+                <div className="absolute inset-0 z-[1]" style={{ background: isDark ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.1)' }} />
 
-                {/* Main centered content */}
+                {/* Centered content — no glass card, clean macOS style */}
                 <motion.div
                     className="z-10 flex flex-col items-center"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.6 }}
                 >
-                    {/* Clock -- huge bold */}
-                    <motion.h1
-                        className={`text-[96px] font-bold ${primaryText} leading-none`}
-                        style={{ textShadow: clockShadow, fontFamily: "'Snell Roundhand', 'Segoe Script', 'Dancing Script', cursive", fontStyle: 'italic' }}
-                        initial={{ opacity: 0, y: -30, scale: 0.9 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-                    >
-                        {timeStr}
-                    </motion.h1>
-
-                    {/* Date */}
-                    <motion.p
-                        className={`text-lg font-medium ${secondaryText} mt-1 tracking-wide`}
-                        style={{ textShadow: dateShadow }}
-                        initial={{ opacity: 0, y: -15 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                    >
-                        {dateStr}
-                    </motion.p>
-
-                    {/* Floating avatar -- ABOVE the glass card */}
+                    {/* Avatar */}
                     <motion.div
-                        className="relative z-20 mt-10 mb-[-44px]"
-                        initial={{ opacity: 0, scale: 0.7, y: 16 }}
+                        initial={{ opacity: 0, scale: 0.8, y: 16 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
-                        transition={{ delay: 0.15, type: 'spring', stiffness: 350, damping: 28 }}
+                        transition={{ delay: 0.1, type: 'spring', stiffness: 350, damping: 28 }}
                     >
                         <AnimatePresence mode="wait">
                             <motion.div
                                 key={selectedUser?.username || 'guest'}
-                                className="flex flex-col items-center"
                                 initial={{ opacity: 0, scale: 0.8 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.8 }}
@@ -520,10 +385,7 @@ export default function LockScreen() {
                             >
                                 <div
                                     className="relative w-[88px] h-[88px] rounded-full overflow-hidden flex items-center justify-center"
-                                    style={{
-                                        boxShadow: avatarRing,
-                                        background: isDark ? '#2C2C2E' : '#E5E5EA',
-                                    }}
+                                    style={{ boxShadow: avatarRing, background: isDark ? '#2C2C2E' : '#E5E5EA' }}
                                 >
                                     {selectedUser ? (
                                         <Image src={selectedUser.avatar || "/pfp.png"} alt={selectedUser.name} fill className="object-cover" />
@@ -535,217 +397,138 @@ export default function LockScreen() {
                         </AnimatePresence>
                     </motion.div>
 
-                    {/* Glass login card -- compact */}
-                    <motion.div
-                        className="flex flex-col items-center pt-14 pb-7 px-10 rounded-[28px]"
-                        style={{
-                            background: glassCardBg,
-                            backdropFilter: 'blur(40px) saturate(1.5)',
-                            WebkitBackdropFilter: 'blur(40px) saturate(1.5)',
-                            border: glassCardBorder,
-                            boxShadow: glassCardShadow,
-                            minWidth: 340,
-                        }}
-                        initial={{ opacity: 0, y: 40, scale: 0.9 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        transition={{ delay: 0.2, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                    {/* Name + greeting */}
+                    <motion.p
+                        className={`text-xl font-semibold ${primaryText} mt-4`}
+                        style={{ textShadow: dateShadow }}
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
                     >
-                        {/* Username */}
-                        <motion.p
-                            className={`text-lg font-semibold ${primaryText}`}
-                            style={{ textShadow: subtleShadow }}
-                            initial={{ opacity: 0, y: 6 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.25 }}
-                        >
-                            {selectedUser ? selectedUser.name : greeting}
-                        </motion.p>
+                        {selectedUser ? selectedUser.name : greeting}
+                    </motion.p>
+
+                    {/* User switcher dots */}
+                    {users.length > 1 && (
+                        <motion.div className="flex items-center gap-2.5 mt-3" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
+                            {users.map(u => (
+                                <motion.button
+                                    key={u.username}
+                                    onClick={() => { setSelectedUser(u); setPassword(''); setError(false); }}
+                                    className="rounded-full cursor-pointer"
+                                    style={{ width: selectedUser?.username === u.username ? 24 : 8, height: 8, background: selectedUser?.username === u.username ? dotActive : dotInactive }}
+                                    whileHover={{ scale: 1.2 }}
+                                    whileTap={{ scale: 0.85 }}
+                                    layout
+                                    transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                                    title={u.name}
+                                />
+                            ))}
+                        </motion.div>
+                    )}
+
+                    {/* Password form — frosted pill */}
+                    <AnimatePresence mode="wait">
                         {selectedUser && (
-                            <motion.p
-                                className={`text-[12px] ${tertiaryText} mt-0.5`}
-                                style={{ textShadow: subtleShadow }}
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ delay: 0.3 }}
+                            <motion.form
+                                key={selectedUser.username}
+                                initial={{ opacity: 0, y: 14 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -8 }}
+                                transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                                onSubmit={handleLogin}
+                                className="flex flex-col items-center w-[280px] mt-5"
                             >
-                                {greeting}
-                            </motion.p>
-                        )}
-
-                        {/* User switcher dots -- only when multiple users */}
-                        {users.length > 1 && (
-                            <motion.div
-                                className="flex items-center gap-2.5 mt-3"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ delay: 0.3 }}
-                            >
-                                {users.map(u => {
-                                    const isActive = selectedUser?.username === u.username;
-                                    return (
-                                        <motion.button
-                                            key={u.username}
-                                            onClick={() => { setSelectedUser(u); setPassword(''); setError(false); }}
-                                            className="rounded-full cursor-pointer transition-all duration-300"
-                                            style={{
-                                                width: isActive ? 24 : 8,
-                                                height: 8,
-                                                background: isActive ? dotActive : dotInactive,
-                                            }}
-                                            whileHover={{ scale: 1.2 }}
-                                            whileTap={{ scale: 0.85 }}
-                                            layout
-                                            transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-                                            title={u.name}
-                                        />
-                                    );
-                                })}
-                            </motion.div>
-                        )}
-
-                        {/* Password form */}
-                        <AnimatePresence mode="wait">
-                            {selectedUser && (
-                                <motion.form
-                                    key={selectedUser.username}
-                                    initial={{ opacity: 0, y: 14 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -8 }}
-                                    transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-                                    onSubmit={handleLogin}
-                                    className="flex flex-col items-center w-[280px] mt-5"
+                                <motion.div
+                                    animate={error ? { x: [-8, 8, -6, 6, -3, 3, 0] } : {}}
+                                    transition={{ duration: 0.4 }}
+                                    className="w-full relative"
                                 >
-                                    <motion.div
-                                        animate={error ? { x: [-8, 8, -6, 6, -3, 3, 0] } : {}}
-                                        transition={{ duration: 0.4 }}
-                                        className="w-full relative"
+                                    <input
+                                        type="password"
+                                        value={password}
+                                        name="search"
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        placeholder="Enter Password"
+                                        className={`w-full h-[46px] outline-none rounded-full text-[14px] pl-6 pr-14 appearance-none font-sans ${isDark ? 'text-white placeholder-white/40' : 'text-gray-900 placeholder-gray-700/50'}`}
+                                        style={{
+                                            background: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)',
+                                            backdropFilter: 'blur(40px) saturate(1.4)',
+                                            WebkitBackdropFilter: 'blur(40px) saturate(1.4)',
+                                            border: isDark ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(0,0,0,0.1)',
+                                            caretColor: isDark ? '#fff' : '#333',
+                                        }}
+                                        autoFocus
+                                    />
+                                    <button
+                                        type="submit"
+                                        disabled={!password || isSubmitting}
+                                        className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-full transition-all duration-300"
+                                        style={password
+                                            ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)', color: '#fff' }
+                                            : { background: 'transparent', color: 'transparent' }
+                                        }
                                     >
-                                        <input
-                                            type="password"
-                                            value={password}
-                                            name="search"
-                                            onChange={(e) => setPassword(e.target.value)}
-                                            placeholder="Enter Password"
-                                            className={`w-full h-[46px] outline-none rounded-full text-[14px] pl-6 pr-14 appearance-none font-sans transition-all duration-200 ${islightbackground ? 'text-gray-900 placeholder-gray-400/80' : 'text-white placeholder-white/35'}`}
-                                            style={{
-                                                background: inputBg,
-                                                backdropFilter: 'blur(20px)',
-                                                WebkitBackdropFilter: 'blur(20px)',
-                                                border: inputBorder,
-                                                caretColor: islightbackground ? '#333' : '#fff',
-                                            }}
-                                            onFocus={(e) => { e.currentTarget.style.border = inputFocusBorder; }}
-                                            onBlur={(e) => { e.currentTarget.style.border = inputBorder; }}
-                                            autoFocus
-                                        />
-                                        <button
-                                            type="submit"
-                                            disabled={!password || isSubmitting}
-                                            className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-full transition-all duration-300"
-                                            style={password
-                                                ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)', color: '#fff' }
-                                                : { background: 'transparent', color: 'transparent' }
-                                            }
-                                        >
-                                            {!isSubmitting && <IoArrowForward size={15} />}
-                                            {isSubmitting && <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent animate-spin rounded-full" />}
-                                        </button>
-                                    </motion.div>
+                                        {!isSubmitting && <IoArrowForward size={15} />}
+                                        {isSubmitting && <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent animate-spin rounded-full" />}
+                                    </button>
+                                </motion.div>
 
-                                    {/* Error / lockout / hint */}
-                                    <div className="h-6 mt-3 text-center">
-                                        {error && lockoutUntil && Date.now() < lockoutUntil && (
-                                            <motion.span
-                                                className="text-xs font-medium text-red-400"
-                                                style={{ textShadow: '0 1px 6px rgba(0,0,0,0.3)' }}
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
-                                            >
-                                                Too many attempts. Try again shortly.
-                                            </motion.span>
-                                        )}
-                                        {error && !(lockoutUntil && Date.now() < lockoutUntil) && (
-                                            <motion.span
-                                                className="text-xs font-medium text-red-400"
-                                                style={{ textShadow: '0 1px 6px rgba(0,0,0,0.3)' }}
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
-                                            >
-                                                Incorrect password
-                                            </motion.span>
-                                        )}
-                                        {!error && (
-                                            <span
-                                                className={`text-[11px] ${tertiaryText}`}
-                                                style={{ textShadow: subtleShadow }}
-                                            >
-                                                Touch ID or Enter Password
-                                            </span>
-                                        )}
-                                    </div>
-                                </motion.form>
-                            )}
-                        </AnimatePresence>
+                                <div className="h-6 mt-3 text-center">
+                                    {error && lockoutUntil && Date.now() < lockoutUntil && (
+                                        <motion.span className="text-xs font-medium text-red-400" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.3)' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>Too many attempts. Try again shortly.</motion.span>
+                                    )}
+                                    {error && !(lockoutUntil && Date.now() < lockoutUntil) && (
+                                        <motion.span className="text-xs font-medium text-red-400" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.3)' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>Incorrect password</motion.span>
+                                    )}
+                                    {!error && (
+                                        <span className={`text-[11px] ${tertiaryText}`} style={{ textShadow: subtleShadow }}>Touch ID or Enter Password</span>
+                                    )}
+                                </div>
+                            </motion.form>
+                        )}
+                    </AnimatePresence>
 
-                        {/* Guest login -- glass pill button with icon */}
-                        <motion.button
-                            onClick={() => guestLogin()}
-                            className={`flex items-center gap-2 mt-2 px-6 py-2.5 rounded-full text-[13px] font-medium ${secondaryText} transition-all duration-200 hover:scale-[1.03] active:scale-[0.97]`}
-                            style={{
-                                background: guestPillBg,
-                                backdropFilter: 'blur(16px)',
-                                WebkitBackdropFilter: 'blur(16px)',
-                                border: guestPillBorder,
-                                textShadow: subtleShadow,
-                            }}
-                            initial={{ opacity: 0, y: 8 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.5 }}
-                            whileTap={{ scale: 0.97 }}
-                        >
-                            <IoPerson size={14} />
-                            <span>Continue as Guest</span>
-                        </motion.button>
-                    </motion.div>
+                    {/* Guest */}
+                    <motion.button
+                        onClick={() => guestLogin()}
+                        className={`flex items-center gap-2 mt-2 px-6 py-2.5 rounded-full text-[13px] font-medium ${secondaryText} hover:scale-[1.03] active:scale-[0.97]`}
+                        style={{
+                            background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)',
+                            backdropFilter: 'blur(20px)',
+                            WebkitBackdropFilter: 'blur(20px)',
+                            border: isDark ? '1px solid rgba(255,255,255,0.12)' : '1px solid rgba(0,0,0,0.06)',
+                            textShadow: subtleShadow,
+                        }}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5 }}
+                        whileTap={{ scale: 0.97 }}
+                    >
+                        <IoPerson size={14} />
+                        <span>Continue as Guest</span>
+                    </motion.button>
                 </motion.div>
 
-                {/* Bottom: Sleep + Restart -- glass circles */}
+                {/* Bottom power buttons */}
                 <motion.div
                     className="absolute bottom-8 z-10 flex items-center gap-8"
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.6, duration: 0.5 }}
                 >
-                    <div
-                        onClick={async () => { if (iselectron) await power.sleep(); }}
-                        className="group cursor-pointer"
-                    >
+                    <div onClick={async () => { if (iselectron) await power.sleep(); }} className="group cursor-pointer">
                         <div
-                            className="w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 group-hover:scale-110 group-active:scale-95"
-                            style={{
-                                background: isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.1)',
-                                backdropFilter: 'blur(24px)',
-                                WebkitBackdropFilter: 'blur(24px)',
-                                border: isDark ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(0,0,0,0.1)',
-                                boxShadow: isDark ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.06)',
-                            }}
+                            className="w-11 h-11 rounded-full flex items-center justify-center group-hover:scale-110 group-active:scale-95 transition-all"
+                            style={{ background: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: isDark ? '1px solid rgba(255,255,255,0.18)' : '1px solid rgba(0,0,0,0.08)' }}
                         >
                             <IoMoon size={16} className={isDark ? 'text-white' : 'text-black/70'} />
                         </div>
                     </div>
-                    <div
-                        onClick={async () => { if (iselectron) await power.restart(); else window.location.reload(); }}
-                        className="group cursor-pointer"
-                    >
+                    <div onClick={async () => { if (iselectron) await power.restart(); else window.location.reload(); }} className="group cursor-pointer">
                         <div
-                            className="w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 group-hover:scale-110 group-active:scale-95"
-                            style={{
-                                background: isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.1)',
-                                backdropFilter: 'blur(24px)',
-                                WebkitBackdropFilter: 'blur(24px)',
-                                border: isDark ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(0,0,0,0.1)',
-                                boxShadow: isDark ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.06)',
-                            }}
+                            className="w-11 h-11 rounded-full flex items-center justify-center group-hover:scale-110 group-active:scale-95 transition-all"
+                            style={{ background: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: isDark ? '1px solid rgba(255,255,255,0.18)' : '1px solid rgba(0,0,0,0.08)' }}
                         >
                             <IoRefresh size={16} className={isDark ? 'text-white' : 'text-black/70'} />
                         </div>
