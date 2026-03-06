@@ -124,9 +124,9 @@ export const personal = {
         username: "nextaros",
         email: "hello@nextaros.dev",
         socials: {
-            github: "https://github.com/nextaros",
+            github: "https://github.com/invincibleinventor",
             threads: "",
-            linkedin: ""
+            linkedin: "https://www.linkedin.com/in/balasubramaniantbr/"
         }
     },
     education: [] as { degree: string; institution: string; year: string; grade: string }[],

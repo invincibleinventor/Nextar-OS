@@ -5,6 +5,7 @@ import { useAuth } from './AuthContext';
 
 export type IconTintMode = 'light' | 'dark' | 'twilight' | 'adaptive' | 'coloured-light' | 'coloured-dark';
 export type AccentMode = 'light' | 'dark' | 'twilight' | 'adaptive';
+export type IconPack = 'phosphor' | 'papirus';
 
 interface SettingsContextType {
     reducemotion: boolean;
@@ -22,6 +23,8 @@ interface SettingsContextType {
     setinverselabelcolor: (value: boolean) => void;
     icontintmode: IconTintMode;
     seticontintmode: (value: IconTintMode) => void;
+    iconpack: IconPack;
+    seticonpack: (value: IconPack) => void;
     accentmode: AccentMode;
     setaccentmode: (value: AccentMode) => void;
     wallpaperdominantcolor: string;
@@ -33,18 +36,13 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [reducemotion, setreducemotion] = useState(false);
     const [reducetransparency, setreducetransparency] = useState(false);
     const [soundeffects, setsoundeffects] = useState(false);
-    const [wallpaperurl, setwallpaperurl] = useState('/bg.jpg');
+    const [wallpaperurl, setwallpaperurl] = useState('/wallpaper-1.jpg');
     const [accentcolor, setaccentcolor] = useState('#e78284');
     const [islightbackground, setislightbackground] = useState(false);
     const [inverselabelcolor, setinverselabelcolor] = useState(false);
     const [icontintmode, seticontintmode] = useState<IconTintMode>('coloured-dark');
-    const [accentmode, setaccentmode] = useState<AccentMode>(() => {
-        if (typeof window === 'undefined') return 'adaptive';
-        const stored = localStorage.getItem('accentMode');
-        if (stored) return stored as AccentMode;
-        const isMobile = window.innerWidth < 768;
-        return isMobile ? 'adaptive' : 'dark';
-    });
+    const [iconpack, seticonpack] = useState<IconPack>('phosphor');
+    const [accentmode, setaccentmode] = useState<AccentMode>('adaptive');
     const [wallpaperdominantcolor, setwallpaperdominantcolor] = useState('#e78284');
 
     const { isGuest } = useAuth();
@@ -271,16 +269,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     }, [wallpaperurl, analyzebrightness]);
 
     useEffect(() => {
-        const isMobileDevice = typeof window !== 'undefined' && window.innerWidth < 768;
-        const storedTheme = localStorage.getItem('theme');
-        const isDark = storedTheme === 'dark' || (!storedTheme && isMobileDevice);
-        const defaultWallpaper = isDark ? '/bg-dark.jpg' : '/bg.jpg';
-        setwallpaperurl(defaultWallpaper);
-
-        // Device-specific accent mode default: adaptive for mobile, dark for desktop
-        if (!localStorage.getItem('accentMode')) {
-            setaccentmode(isMobileDevice ? 'adaptive' : 'dark');
-        }
+        setwallpaperurl('/wallpaper-1.jpg');
 
         if (isGuest) return;
 
@@ -299,6 +288,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         if (storedInverse) setinverselabelcolor(JSON.parse(storedInverse));
         const storedTintMode = localStorage.getItem('iconTintMode');
         if (storedTintMode) seticontintmode(storedTintMode as IconTintMode);
+        const storedIconPack = localStorage.getItem('iconPack');
+        if (storedIconPack) seticonpack(storedIconPack as IconPack);
         const storedAccentMode = localStorage.getItem('accentMode');
         if (storedAccentMode) setaccentmode(storedAccentMode as AccentMode);
         const storedDomColor = localStorage.getItem('wallpaperDominantColor');
@@ -338,6 +329,11 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const updateicontintmode = (value: IconTintMode) => {
         seticontintmode(value);
         if (!isGuest) localStorage.setItem('iconTintMode', value);
+    };
+
+    const updateiconpack = (value: IconPack) => {
+        seticonpack(value);
+        if (!isGuest) localStorage.setItem('iconPack', value);
     };
 
     const updateaccentmode = (value: AccentMode) => {
@@ -396,6 +392,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             setinverselabelcolor: updateinverselabelcolor,
             icontintmode,
             seticontintmode: updateicontintmode,
+            iconpack,
+            seticonpack: updateiconpack,
             accentmode,
             setaccentmode: updateaccentmode,
             wallpaperdominantcolor

@@ -365,20 +365,12 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                     return (
                         <motion.div
                             key={item.id}
-                            layout
-                            layoutId={item.id}
                             className="app-icon flex flex-col items-center gap-2 touch-pan-x"
-                            initial={{ opacity: 0, scale: 0.8 }}
                             animate={editmode ? {
-                                opacity: 1,
-                                scale: 1,
                                 rotate: [-2, 2, -2]
                             } : {
-                                opacity: 1,
-                                scale: 1,
                                 rotate: 0
                             }}
-                            exit={{ opacity: 0, scale: 0.8 }}
                             transition={{
                                 rotate: editmode ? {
                                     repeat: Infinity,
@@ -386,8 +378,6 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                                     duration: 0.25,
                                     ease: "easeInOut"
                                 } : { duration: 0 },
-                                scale: { duration: 0.2 },
-                                default: { type: 'spring', damping: 25, stiffness: 300 }
                             } as any}
                             draggable={editmode}
                             onDragStart={() => setdraggeditem(item.id)}
@@ -731,7 +721,9 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                                 openSystemItem(app.id, { addwindow, windows, setactivewindow, updatewindow, ismobile });
                             }}
                             whileTap={{ scale: clay ? 0.88 : 0.85 }}
+                            transition={{ duration: 0.15 }}
                             className={`aspect-square overflow-hidden relative ${clay ? 'w-[68px] h-[68px]' : 'w-[65px] h-[65px]'}`}
+                            style={{ willChange: 'transform', transform: 'translateZ(0)' }}
                         >
                             <TintedAppIcon
                                 appId={app.id}
@@ -804,7 +796,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                         initial={{ y: '100%' }}
                         animate={{ y: 0 }}
                         exit={{ y: '100%' }}
-                        transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+                        transition={{ type: 'tween', duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
                         style={{
                             background: clay ? 'var(--bg-base)' : 'var(--bg-surface)',
                         }}

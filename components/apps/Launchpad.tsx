@@ -21,31 +21,30 @@ interface LinuxApp {
     path: string;
 }
 
-/* Stagger animation for the app grid icons */
+/* Stagger animation for the app grid icons — lightweight on mobile */
 const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
         opacity: 1,
         transition: {
-            staggerChildren: 0.018,
-            delayChildren: 0.08,
+            staggerChildren: 0.012,
+            delayChildren: 0.04,
         },
     },
     exit: {
         opacity: 0,
-        transition: { duration: 0.15 },
+        transition: { duration: 0.12 },
     },
 };
 
 const itemVariants = {
-    hidden: { opacity: 0, y: 16, scale: 0.92 },
+    hidden: { opacity: 0, y: 10 },
     visible: {
         opacity: 1,
         y: 0,
-        scale: 1,
-        transition: { type: 'spring', stiffness: 400, damping: 28 },
+        transition: { duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] },
     },
-    exit: { opacity: 0, scale: 0.92, transition: { duration: 0.1 } },
+    exit: { opacity: 0, transition: { duration: 0.08 } },
 };
 
 /* Pill button animation */
