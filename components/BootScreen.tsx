@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDevice } from './DeviceContext';
-import { useIsClay } from './hooks/useIsClay';
-import { useSettings } from './SettingsContext';
+
 
 /* ── CSS-animated stroke-drawing "welcome" text ── */
 function WelcomeText({ onComplete }: { onComplete: () => void }) {
@@ -63,7 +62,7 @@ function WelcomeText({ onComplete }: { onComplete: () => void }) {
             `}</style>
             <svg
                 viewBox="0 0 900 250"
-                style={{ width: 'clamp(280px, 70vw, 650px)', overflow: 'visible' }}
+                style={{ width: 'clamp(340px, 80vw, 800px)', overflow: 'visible' }}
             >
                 <text
                     className={startDraw ? 'welcome-stroke-active' : 'welcome-stroke-idle'}
@@ -93,9 +92,6 @@ function WelcomeText({ onComplete }: { onComplete: () => void }) {
 export default function BootScreen() {
     const { osstate, setosstate } = useDevice();
     const osstateref = useRef(osstate);
-    const clay = useIsClay();
-    const { wallpaperurl } = useSettings();
-    const { ismobile } = useDevice();
 
     useEffect(() => {
         osstateref.current = osstate;
@@ -122,39 +118,8 @@ export default function BootScreen() {
                         exit={{ opacity: 0, transition: { duration: 0.6, ease: [0.4, 0, 0.2, 1] } }}
                         initial={{ opacity: 1 }}
                     >
-                        {/* Background */}
-                        {clay ? (
-                            <>
-                                <div className="absolute inset-0 bg-black" />
-                                <div
-                                    className="absolute inset-0"
-                                    style={{
-                                        backgroundImage: `url(${wallpaperurl})`,
-                                        backgroundSize: 'cover',
-                                        backgroundPosition: 'center',
-                                        filter: ismobile ? 'blur(24px) saturate(1.2)' : 'blur(40px) saturate(1.3)',
-                                        transform: 'scale(1.15)',
-                                    }}
-                                />
-                                <div className="absolute inset-0" style={{ background: 'rgba(0, 0, 0, 0.35)' }} />
-                            </>
-                        ) : (
-                            <>
-                                <div className="absolute inset-0" style={{ background: 'linear-gradient(145deg, #0a0a0f 0%, #141420 50%, #0d0d16 100%)' }} />
-                                {wallpaperurl && (
-                                    <div
-                                        className="absolute inset-0"
-                                        style={{
-                                            backgroundImage: `url(${wallpaperurl})`,
-                                            backgroundSize: 'cover',
-                                            backgroundPosition: 'center',
-                                            filter: 'blur(30px) saturate(1.1) brightness(0.3)',
-                                            transform: 'scale(1.15)',
-                                        }}
-                                    />
-                                )}
-                            </>
-                        )}
+                        {/* Background — pitch black */}
+                        <div className="absolute inset-0 bg-black" />
 
                         {/* Welcome text */}
                         <div className="relative z-10">

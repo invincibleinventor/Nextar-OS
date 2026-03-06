@@ -47,8 +47,8 @@ body {
   --text-muted: #6c6f85;
 
   /* Glass tokens (used by clay mode, defaults needed for components that reference them) */
-  --bg-glass: rgba(255, 255, 255, 0.78);
-  --bg-glass-hover: rgba(255, 255, 255, 0.86);
+  --bg-glass: rgba(255, 255, 255, 0.80);
+  --bg-glass-hover: rgba(255, 255, 255, 0.87);
   --bg-glass-active: rgba(255, 255, 255, 0.94);
   --glass-border: rgba(188, 192, 204, 0.3);
   --glass-border-subtle: rgba(188, 192, 204, 0.15);
@@ -110,9 +110,9 @@ body {
   --text-color: #cad3f5;
   --text-muted: #6e738d;
 
-  --bg-glass: rgba(30, 32, 48, 0.80);
-  --bg-glass-hover: rgba(36, 38, 58, 0.86);
-  --bg-glass-active: rgba(42, 44, 64, 0.92);
+  --bg-glass: rgba(34, 36, 54, 0.76);
+  --bg-glass-hover: rgba(40, 42, 62, 0.82);
+  --bg-glass-active: rgba(48, 50, 70, 0.88);
   --glass-border: rgba(54, 58, 79, 0.3);
   --glass-border-subtle: rgba(54, 58, 79, 0.15);
   --glass-blur: 20px;
@@ -161,9 +161,9 @@ body {
   --text-color: #1A1A2E;
   --text-muted: #6E6E80;
 
-  --bg-glass: color-mix(in srgb, var(--accent-source) 6%, rgba(255, 255, 255, 0.75));
-  --bg-glass-hover: color-mix(in srgb, var(--accent-source) 8%, rgba(255, 255, 255, 0.82));
-  --bg-glass-active: color-mix(in srgb, var(--accent-source) 5%, rgba(245, 245, 250, 0.90));
+  --bg-glass: color-mix(in srgb, var(--accent-source) 6%, rgba(255, 255, 255, 0.78));
+  --bg-glass-hover: color-mix(in srgb, var(--accent-source) 8%, rgba(255, 255, 255, 0.85));
+  --bg-glass-active: color-mix(in srgb, var(--accent-source) 5%, rgba(248, 248, 252, 0.92));
   --glass-border: color-mix(in srgb, var(--accent-color) 10%, rgba(120, 120, 140, 0.22));
   --glass-border-subtle: color-mix(in srgb, var(--accent-color) 5%, rgba(120, 120, 140, 0.12));
   --glass-blur: 24px;
@@ -197,9 +197,9 @@ body {
   --text-color: #E0E0E8;
   --text-muted: #707080;
 
-  --bg-glass: color-mix(in srgb, var(--accent-source) 5%, rgba(14, 14, 20, 0.78));
-  --bg-glass-hover: color-mix(in srgb, var(--accent-source) 6%, rgba(20, 20, 28, 0.84));
-  --bg-glass-active: color-mix(in srgb, var(--accent-source) 4%, rgba(26, 26, 34, 0.90));
+  --bg-glass: color-mix(in srgb, var(--accent-source) 5%, rgba(24, 24, 34, 0.74));
+  --bg-glass-hover: color-mix(in srgb, var(--accent-source) 6%, rgba(30, 30, 42, 0.80));
+  --bg-glass-active: color-mix(in srgb, var(--accent-source) 4%, rgba(38, 38, 50, 0.86));
   --glass-border: color-mix(in srgb, var(--accent-color) 6%, rgba(255, 255, 255, 0.08));
   --glass-border-subtle: color-mix(in srgb, var(--accent-color) 4%, rgba(255, 255, 255, 0.04));
   --glass-blur: 24px;
