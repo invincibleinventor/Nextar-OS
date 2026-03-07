@@ -46,13 +46,14 @@ export default function CalendarPanel({ isopen, onclose }: { isopen: boolean; on
                         transition={{ type: "spring", stiffness: 400, damping: 28 }}
                         className={`fixed z-[700] w-[300px] overflow-hidden flex flex-col ${
                             clay
-                                ? 'bottom-[72px] right-3 rounded-[18px]'
+                                ? 'bottom-[72px] right-3 rounded-[22px]'
                                 : 'top-[40px] right-3 rounded-[8px] bg-surface border border-[--border-color]'
                         }`}
                         style={clay ? {
-                            ...glassPanel,
+                            background: 'color-mix(in srgb, var(--accent-source) 12%, var(--bg-glass))',
                             backdropFilter: 'blur(var(--glass-blur-heavy))',
                             WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
+                            border: '1px solid var(--glass-border)',
                             boxShadow: 'var(--shadow-xl)',
                         } : undefined}
                         onClick={(e) => e.stopPropagation()}

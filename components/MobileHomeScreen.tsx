@@ -20,6 +20,7 @@ import ContextMenu from './ui/ContextMenu';
 import TintedAppIcon, { squircleClip } from './ui/TintedAppIcon';
 import { useIsClay } from './hooks/useIsClay';
 import { glassPanel, glassInput } from './hooks/useClayStyles';
+import { ProfileWidget, StatsWidget, SkillsWidget, ExperienceWidget } from './Widgets';
 
 const GRID_COLS = 4;
 const GRID_ROWS = 4;
@@ -44,6 +45,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
     const [iconorder, seticonorder] = useState<string[]>([]);
     const [hiddenAppIds, setHiddenAppIds] = useState<string[]>([]);
     const homeContainerRef = useRef<HTMLDivElement>(null);
+    const gridPageRefs = useRef<(HTMLDivElement | null)[]>([]);
     const showAppLibraryRef = useRef(false);
     showAppLibraryRef.current = showAppLibrary;
 
@@ -138,19 +140,25 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
 
     const griditems = getorderedgriditems();
 
+    // Widget pages get 8 fewer icon slots (2 widgets × 2×2 = 8 cells)
+    const WIDGET_PAGE_ICONS = ITEMS_PER_PAGE - 8;
+
     const gridPages = useMemo(() => {
         const pages: filesystemitem[][] = [];
-        const firstPageCount = iconorder.length === 0 ? pinnedFirstPageIds.length : ITEMS_PER_PAGE;
-        const firstPage = griditems.slice(0, firstPageCount);
-        pages.push(firstPage);
-        const remaining = griditems.slice(firstPageCount);
-        for (let i = 0; i < remaining.length; i += ITEMS_PER_PAGE) {
-            pages.push(remaining.slice(i, i + ITEMS_PER_PAGE));
+        // Page 0: pinned icons + widgets (Profile + Stats)
+        const p0Count = iconorder.length === 0 ? pinnedFirstPageIds.length : WIDGET_PAGE_ICONS;
+        pages.push(griditems.slice(0, p0Count));
+        // Page 1: icons + widgets (Projects + Experience)
+        pages.push(griditems.slice(p0Count, p0Count + WIDGET_PAGE_ICONS));
+        // Remaining pages: icons only
+        const rest = griditems.slice(p0Count + WIDGET_PAGE_ICONS);
+        for (let i = 0; i < rest.length; i += ITEMS_PER_PAGE) {
+            pages.push(rest.slice(i, i + ITEMS_PER_PAGE));
         }
         return pages;
     }, [griditems, iconorder]);
 
-    const totalPages = gridPages.length + 1;
+    const totalPages = gridPages.length;
 
     const handleItemClick = (item: filesystemitem) => {
         if (editmode) {
@@ -352,20 +360,26 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
     const iconSize = clay ? 66 : 60;
     const gridGapClass = clay ? 'gap-x-5 gap-y-6' : 'gap-x-4 gap-y-5';
 
+    const pageWidgetComponents: React.ReactNode[][] = [
+        [<ProfileWidget key="pw" size="small" />, <SkillsWidget key="skw" />],
+        [<ExperienceWidget key="ew" />, <StatsWidget key="sw" />],
+    ];
+
     const renderGridPage = (pageItems: filesystemitem[], pageIndex: number) => (
         <div className={`flex-1 ${clay ? 'px-6' : 'px-5'}`}>
             <div
                 data-tour={pageIndex === 0 ? "ios-apps" : undefined}
                 className={`grid grid-cols-4 ${gridGapClass}`}
-                style={{ gridTemplateRows: `repeat(${GRID_ROWS}, minmax(0, 1fr))` }}
+                ref={(el) => { if (el) gridPageRefs.current[pageIndex] = el; }}
+                style={{ gridAutoFlow: 'dense' }}
             >
                 {pageItems.map((item, index) => {
-                    const globalIndex = pageIndex * ITEMS_PER_PAGE + index;
                     const isRenaming = renameTarget === item.id;
                     return (
                         <motion.div
                             key={item.id}
-                            className="app-icon flex flex-col items-center gap-2 touch-pan-x"
+                            className={`app-icon flex flex-col items-center gap-2 ${editmode ? '' : 'touch-pan-x'}`}
+                            style={editmode ? { touchAction: 'none' as const, zIndex: draggeditem === item.id ? 50 : 1 } : undefined}
                             animate={editmode ? {
                                 rotate: [-2, 2, -2]
                             } : {
@@ -379,14 +393,24 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                                     ease: "easeInOut"
                                 } : { duration: 0 },
                             } as any}
-                            draggable={editmode}
-                            onDragStart={() => setdraggeditem(item.id)}
-                            onDragEnd={() => setdraggeditem(null)}
-                            onDragOver={(e) => {
-                                e.preventDefault();
-                                if (draggeditem && draggeditem !== item.id) {
-                                    handlereorder(draggeditem, globalIndex);
-                                }
+                            drag={editmode || undefined}
+                            dragSnapToOrigin
+                            dragMomentum={false}
+                            onDragStart={() => editmode && setdraggeditem(item.id)}
+                            onDragEnd={(_: any, info: any) => {
+                                setdraggeditem(null);
+                                if (!editmode) return;
+                                const gridEl = gridPageRefs.current[pageIndex];
+                                if (!gridEl) return;
+                                const cellW = gridEl.offsetWidth / GRID_COLS;
+                                const cellH = cellW + 24;
+                                const dCols = Math.round(info.offset.x / cellW);
+                                const dRows = Math.round(info.offset.y / cellH);
+                                if (dCols === 0 && dRows === 0) return;
+                                let startIdx = 0;
+                                for (let p = 0; p < pageIndex; p++) startIdx += gridPages[p].length;
+                                const targetLocal = Math.max(0, Math.min(pageItems.length - 1, index + dRows * GRID_COLS + dCols));
+                                handlereorder(item.id, startIdx + targetLocal);
                             }}
                             onClick={() => !editmode && !isRenaming && handleItemClick(item)}
                             onTouchStart={(e) => {
@@ -490,6 +514,28 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                         </motion.div>
                     );
                 })}
+                {/* Widgets embedded in grid (pages 0 and 1) */}
+                {pageIndex < 2 && pageWidgetComponents[pageIndex]?.map((widget, i) => (
+                    <motion.div key={`widget-${pageIndex}-${i}`}
+                        className={editmode ? '' : 'touch-pan-x'}
+                        style={{ gridColumn: 'span 2', gridRow: 'span 2', aspectRatio: '1', alignSelf: 'center' }}
+                        animate={editmode ? {
+                            rotate: [-1.5, 1.5, -1.5]
+                        } : {
+                            rotate: 0
+                        }}
+                        transition={{
+                            rotate: editmode ? {
+                                repeat: Infinity,
+                                repeatType: "mirror",
+                                duration: 0.3,
+                                ease: "easeInOut"
+                            } : { duration: 0 },
+                        } as any}
+                    >
+                        {widget}
+                    </motion.div>
+                ))}
             </div>
         </div>
     );
@@ -701,7 +747,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                             ? { backgroundColor: 'transparent' }
                             : clay
                                 ? {
-                                    background: 'color-mix(in srgb, var(--bg-glass) 65%, transparent)',
+                                    background: 'color-mix(in srgb, var(--accent-source) 6%, color-mix(in srgb, var(--bg-glass) 35%, transparent))',
                                     backdropFilter: 'blur(var(--glass-blur-heavy))',
                                     WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
                                     border: '1px solid var(--glass-border)',
@@ -747,7 +793,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                         WebkitBackdropFilter: 'blur(12px)',
                     }}
                 >
-                    {gridPages.map((_, i) => (
+                    {[...Array(gridPages.length)].map((_, i) => (
                         <div
                             key={`dot-${i}`}
                             className={`transition-all duration-300 rounded-full ${

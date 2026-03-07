@@ -219,7 +219,7 @@ export default function Panel({ ontogglenotifications, ontogglecalendar }: { ont
                     style={{ transition: 'opacity 0.25s ease, transform 0.25s ease', opacity: panelvisible ? 1 : 0, transform: panelvisible ? 'translateY(0)' : 'translateY(-100%)', pointerEvents: panelvisible ? undefined : 'none' }}
                 >
                     <div
-                        className="h-[38px] mt-[4px] px-2 flex items-center space-x-0.5 pointer-events-auto rounded-[16px]"
+                        className="h-[38px] mt-[4px] px-2 flex items-center space-x-0.5 pointer-events-auto rounded-[22px]"
                         style={{
                             ...glassPanel,
                             background: 'color-mix(in srgb, var(--accent-source) 12%, var(--bg-glass))',
