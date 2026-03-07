@@ -185,11 +185,14 @@ export default function Next({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                     transition={{ type: 'spring', damping: 25, stiffness: 400 }}
                     onClick={e => e.stopPropagation()}
                     className={`w-[600px] max-w-[90vw] overflow-hidden ${clay
-                        ? 'rounded-[20px]'
+                        ? 'rounded-[22px]'
                         : 'bg-[--bg-surface] shadow-pastel-active border border-[--border-color] anime-glow-lg'
                     }`}
                     style={clay ? {
-                        ...glassPanel,
+                        background: 'color-mix(in srgb, var(--accent-source) 12%, var(--bg-glass))',
+                        backdropFilter: 'blur(var(--glass-blur-heavy))',
+                        WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
+                        border: '1px solid var(--glass-border)',
                         boxShadow: 'var(--shadow-lg)',
                     } : undefined}
                 >
