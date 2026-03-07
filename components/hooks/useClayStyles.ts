@@ -66,6 +66,15 @@ export const sidebarStyle = glassSidebar;
 
 export function neoCardActive(color: string) { return glassCardActive(color); }
 
+/** Ultra-transparent shell glass — for status bars, docks, panels, popups. Highly see-through. */
+export const glassShell: React.CSSProperties = {
+  background: 'color-mix(in srgb, var(--accent-source) 6%, color-mix(in srgb, var(--bg-glass) 35%, transparent))',
+  backdropFilter: 'blur(var(--glass-blur-heavy))',
+  WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
+  border: '1px solid var(--glass-border)',
+  boxShadow: 'var(--glass-shadow)',
+};
+
 /** Common Tailwind class fragments for clay mode */
 export const clayClasses = {
   card: 'rounded-[16px] transition-all',

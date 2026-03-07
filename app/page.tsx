@@ -13,7 +13,7 @@ import MobileHomeScreen from '@/components/MobileHomeScreen';
 import Control from '@/components/controlcenter';
 import RecentApps from '@/components/RecentApps';
 import { LuWifi, LuSignal, LuBatteryFull } from "react-icons/lu";
-import { motion } from 'framer-motion';
+import { motion, useMotionValue } from 'framer-motion';
 
 import NotificationCenter from '@/components/NotificationCenter';
 import CalendarPanel from '@/components/CalendarPanel';
@@ -32,6 +32,66 @@ import { useMenuRegistration } from '@/components/AppMenuContext';
 import Portfolio from '@/components/Portfolio';
 import DesktopEffects from '@/components/DesktopEffects';
 import { useNotifications } from '@/components/NotificationContext';
+import { ProfileWidget, StatsWidget, SkillsWidget, ExperienceWidget } from '@/components/Widgets';
+
+const GRID_CELL = 106; // 90px icon + 16px gap
+const GRID_PAD_TOP = 40; // top padding (clear panel)
+const WIDGET_IDS = ['profile', 'skills', 'experience', 'stats'] as const;
+
+const GridItem = React.memo(({ col, row, span, padX, onReposition, children, className, style, whileDrag, ...rest }: {
+  col: number; row: number; span: number; padX: number;
+  onReposition: (dCols: number, dRows: number) => void;
+  children: React.ReactNode;
+  className?: string; style?: React.CSSProperties; whileDrag?: any;
+  [key: string]: any;
+}) => {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const justDragged = React.useRef(false);
+  return (
+    <motion.div
+      drag
+      dragMomentum={false}
+      dragElastic={0}
+      data-no-selection
+      style={{
+        position: 'absolute',
+        left: col * GRID_CELL + padX,
+        top: row * GRID_CELL + GRID_PAD_TOP,
+        width: span === 1 ? 90 : span * GRID_CELL - 16,
+        height: span === 1 ? undefined : span * GRID_CELL - 16,
+        x, y,
+        ...style,
+      }}
+      whileDrag={whileDrag}
+      onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
+      onDragStart={() => { justDragged.current = true; }}
+      onDragEnd={(_: any, info: any) => {
+        const dCols = Math.round(info.offset.x / GRID_CELL);
+        const dRows = Math.round(info.offset.y / GRID_CELL);
+        x.set(0);
+        y.set(0);
+        // Any drag movement suppresses click
+        justDragged.current = true;
+        setTimeout(() => { justDragged.current = false; }, 300);
+        if (dCols !== 0 || dRows !== 0) {
+          onReposition(dCols, dRows);
+        }
+      }}
+      onClickCapture={(e: React.MouseEvent) => {
+        if (justDragged.current) {
+          e.stopPropagation();
+          e.preventDefault();
+        }
+      }}
+      className={className || ''}
+      {...rest}
+    >
+      {children}
+    </motion.div>
+  );
+});
+GridItem.displayName = 'GridItem';
 
 const Desktop = () => {
   const { windows, addwindow, setwindows, updatewindow, setactivewindow, activewindow } = useWindows();
@@ -72,6 +132,118 @@ const Desktop = () => {
   const [fileModal, setFileModal] = useState<{ isOpen: boolean, type: 'create-folder' | 'create-file' | 'rename', initialValue?: string }>({ isOpen: false, type: 'create-folder' });
   const [contextMenu, setContextMenu] = useState<{ x: number, y: number, fileId?: string } | null>(null);
   const [selectedFileIds, setSelectedFileIds] = useState<string[]>([]);
+
+  // Grid-based desktop positions — {col, row} per item, persisted in localStorage
+  const [gridPositions, setGridPositions] = useState<Record<string, { col: number; row: number }>>({});
+  const [containerSize, setContainerSize] = useState({ w: 0, h: 0 });
+
+  useEffect(() => {
+    const saved = localStorage.getItem('desktop-grid-positions');
+    if (saved) setGridPositions(JSON.parse(saved));
+  }, []);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver((entries) => {
+      const { width, height } = entries[0].contentRect;
+      setContainerSize({ w: width, h: height });
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+    // Re-run when conditions change that affect whether the container div is in the DOM
+  }, [osstate, user, ismobile]);
+
+  const gridCols = containerSize.w > 0 ? Math.floor(containerSize.w / GRID_CELL) : 0;
+  const gridRows = containerSize.h > 0 ? Math.floor((containerSize.h - GRID_PAD_TOP) / GRID_CELL) : 0;
+  // Center grid — equal padding on both sides
+  const gridPadX = containerSize.w > 0 ? Math.floor((containerSize.w - gridCols * GRID_CELL + 16) / 2) : 0;
+
+  const desktopFiles = useMemo(() =>
+    files.filter(f => f.parent === currentUserDesktopId && !f.isTrash),
+    [files, currentUserDesktopId]
+  );
+
+  // Compute effective positions: saved positions + auto-layout for unpositioned items
+  const itemPositions = useMemo(() => {
+    if (gridCols === 0 || gridRows === 0) return {};
+
+    const positions: Record<string, { col: number; row: number }> = {};
+    const occupied = new Set<string>();
+
+    const markCells = (col: number, row: number, span: number) => {
+      for (let c = 0; c < span; c++)
+        for (let r = 0; r < span; r++)
+          occupied.add(`${col + c},${row + r}`);
+    };
+
+    const isFree = (col: number, row: number, span: number) => {
+      if (col < 0 || row < 0 || col + span > gridCols || row + span > gridRows) return false;
+      for (let c = 0; c < span; c++)
+        for (let r = 0; r < span; r++)
+          if (occupied.has(`${col + c},${row + r}`)) return false;
+      return true;
+    };
+
+    const spanOf = (id: string) => id.startsWith('widget-') ? 2 : 1;
+
+    // Place items with saved positions first
+    const allIds = [...WIDGET_IDS.map(w => `widget-${w}`), ...desktopFiles.map(f => f.id)];
+    allIds.forEach(id => {
+      const saved = gridPositions[id];
+      if (saved) {
+        const span = spanOf(id);
+        const col = Math.max(0, Math.min(gridCols - span, saved.col));
+        const row = Math.max(0, Math.min(gridRows - span, saved.row));
+        positions[id] = { col, row };
+        markCells(col, row, span);
+      }
+    });
+
+    // Auto-place widgets (left side, top to bottom)
+    const unplacedWidgets = WIDGET_IDS.map(w => `widget-${w}`).filter(id => !positions[id]);
+    for (const id of unplacedWidgets) {
+      let placed = false;
+      for (let col = 0; col <= gridCols - 2 && !placed; col++) {
+        for (let row = 0; row <= gridRows - 2 && !placed; row++) {
+          if (isFree(col, row, 2)) {
+            positions[id] = { col, row };
+            markCells(col, row, 2);
+            placed = true;
+          }
+        }
+      }
+    }
+
+    // Auto-place files (right side, top to bottom, right to left)
+    const unplacedFiles = desktopFiles.map(f => f.id).filter(id => !positions[id]);
+    for (const id of unplacedFiles) {
+      let placed = false;
+      for (let col = gridCols - 1; col >= 0 && !placed; col--) {
+        for (let row = 0; row < gridRows && !placed; row++) {
+          if (isFree(col, row, 1)) {
+            positions[id] = { col, row };
+            markCells(col, row, 1);
+            placed = true;
+          }
+        }
+      }
+    }
+
+    return positions;
+  }, [gridPositions, desktopFiles, gridCols, gridRows]);
+
+  const handleReposition = (id: string, span: number, dCols: number, dRows: number) => {
+    const current = itemPositions[id];
+    if (!current) return;
+    const newCol = Math.max(0, Math.min(gridCols - span, current.col + dCols));
+    const newRow = Math.max(0, Math.min(gridRows - span, current.row + dRows));
+    setGridPositions(prev => {
+      const next = { ...prev, [id]: { col: newCol, row: newRow } };
+      localStorage.setItem('desktop-grid-positions', JSON.stringify(next));
+      return next;
+    });
+  };
 
   useEffect(() => {
     const handleGlobalMenu = (e: CustomEvent) => {
@@ -441,7 +613,7 @@ const Desktop = () => {
         data-tour="ios-statusbar"
         className={`absolute top-0 left-0 right-0 h-11 z-[300] flex items-center justify-between px-6 cursor-pointer ${clay ? '' : 'bg-[--bg-surface] border-b border-[--border-color]'}`}
         style={clay ? {
-          background: 'color-mix(in srgb, var(--bg-glass) 55%, transparent)',
+          background: 'color-mix(in srgb, var(--accent-source) 6%, color-mix(in srgb, var(--bg-glass) 35%, transparent))',
           backdropFilter: 'blur(var(--glass-blur-heavy))',
           WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
         } : undefined}
@@ -512,7 +684,7 @@ const Desktop = () => {
               onDragOver={handleDragOver}
               onDrop={(e) => handleDrop(e, currentUserDesktopId)}
             >
-              <div data-tour="desktop" className='p-4 pt-10 gap-4 flex flex-col flex-wrap-reverse content-start h-full w-full' ref={containerRef}>
+              <div data-tour="desktop" className="relative h-full w-full" ref={containerRef}>
                 <SelectionArea
                   containerRef={containerRef as React.RefObject<HTMLElement>}
                   zIndex={10}
@@ -542,51 +714,72 @@ const Desktop = () => {
                   }}
                 />
 
-                {files.filter(file => file.parent === currentUserDesktopId && !file.isTrash).map((item) => {
+                {/* Desktop Widgets — 2x2 grid cells each */}
+                {WIDGET_IDS.map((widgetId) => {
+                  const id = `widget-${widgetId}`;
+                  const pos = itemPositions[id];
+                  if (!pos) return null;
+                  return (
+                    <GridItem
+                      key={id}
+                      col={pos.col}
+                      row={pos.row}
+                      span={2}
+                      padX={gridPadX}
+                      onReposition={(dCols, dRows) => handleReposition(id, 2, dCols, dRows)}
+                      className="desktop-widget cursor-grab active:cursor-grabbing rounded-[22px]"
+                      whileDrag={{ scale: 1.02, zIndex: 50 }}
+                      data-widget={widgetId}
+                    >
+                      {widgetId === 'profile' && <ProfileWidget size="medium" />}
+                      {widgetId === 'stats' && <StatsWidget />}
+                      {widgetId === 'experience' && <ExperienceWidget />}
+                      {widgetId === 'skills' && <SkillsWidget />}
+                    </GridItem>
+                  );
+                })}
+
+                {/* Desktop file icons — 1x1 grid cell each */}
+                {desktopFiles.map((item) => {
+                  const pos = itemPositions[item.id];
+                  if (!pos) return null;
                   const isSelected = selectedFileIds.includes(item.id);
                   return (
-                    <div
+                    <GridItem
                       key={item.id}
+                      col={pos.col}
+                      row={pos.row}
+                      span={1}
+                      padX={gridPadX}
+                      onReposition={(dCols, dRows) => handleReposition(item.id, 1, dCols, dRows)}
                       data-id={item.id}
-                      onDoubleClick={(e) => {
+                      whileDrag={{ scale: 1.05, zIndex: 50 }}
+                      onDoubleClick={(e: React.MouseEvent) => {
                         e.stopPropagation();
                         openSystemItem(item, context);
                       }}
-                      onContextMenu={(e) => {
+                      onContextMenu={(e: React.MouseEvent) => {
                         handleContextMenu(e, item.id);
                         if (!isSelected) setSelectedFileIds([item.id]);
                       }}
-                      onClick={(e) => {
+                      onClick={(e: React.MouseEvent) => {
                         e.stopPropagation();
                         if (e.shiftKey) {
-                          if (selectedFileIds.includes(item.id)) {
-                            setSelectedFileIds(prev => prev.filter(id => id !== item.id));
-                          } else {
-                            setSelectedFileIds(prev => [...prev, item.id]);
-                          }
+                          setSelectedFileIds(prev => prev.includes(item.id) ? prev.filter(id => id !== item.id) : [...prev, item.id]);
                         } else {
                           setSelectedFileIds([item.id]);
                         }
                       }}
-                      className={`desktop-item p-2 flex  flex-col items-center content-center text-white cursor-default group border transition-all w-[90px]
+                      className={`desktop-item p-2 flex flex-col items-center content-center text-white cursor-default group border transition-colors
                         ${isSelected
                           ? 'bg-black/20 dark:bg-white/20 border-white/20 backdrop-blur-md'
                           : 'hover:bg-neutral-400/20 border-transparent hover:border-white/10 hover:backdrop-blur-lg'
                         }`}
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, item.id)}
-                      onDragOver={(e) => {
-                        if (item.mimetype === 'inode/directory') {
-                          e.preventDefault();
-                          e.stopPropagation();
-                        }
+                      onDragOver={(e: any) => {
+                        if (item.mimetype === 'inode/directory') { e.preventDefault(); e.stopPropagation(); }
                       }}
-                      onDrop={(e) => {
-                        if (item.mimetype === 'inode/directory') {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleDrop(e, item.id);
-                        }
+                      onDrop={(e: any) => {
+                        if (item.mimetype === 'inode/directory') { e.preventDefault(); e.stopPropagation(); handleDrop(e, item.id); }
                       }}
                     >
                       <div className="w-14 h-14 relative mb-1.5 drop-shadow-md">
@@ -598,16 +791,17 @@ const Desktop = () => {
                         className={`text-[11px] w-full font-medium text-center break-words leading-tight line-clamp-1 px-1 text-white ${isSelected ? 'bg-accent' : ''}`}
                         style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5), 0 0 4px rgba(0,0,0,0.2)' }}
                       >{item.name}</span>
-                    </div>
-                  )
+                    </GridItem>
+                  );
                 })}
-
-                {windows.map((window: any) => (
-                  <div key={window.id} onClick={(e) => e.stopPropagation()} onContextMenu={(e) => e.stopPropagation()}>
-                    <Window {...window} />
-                  </div>
-                ))}
               </div>
+
+              {/* Windows rendered outside the grid */}
+              {windows.map((window: any) => (
+                <div key={window.id} onClick={(e) => e.stopPropagation()} onContextMenu={(e) => e.stopPropagation()}>
+                  <Window {...window} />
+                </div>
+              ))}
             </main>
 
             <Panel

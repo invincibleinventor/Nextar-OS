@@ -157,7 +157,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
   const tileStyle = (active: boolean): React.CSSProperties =>
     active
       ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' }
-      : { background: 'var(--bg-glass-active)' };
+      : { background: 'color-mix(in srgb, var(--bg-glass-active) 65%, transparent)' };
 
   /* ─── Desktop effects toggle ─── */
   const [desktopeffects, setdesktopeffects] = useState(false);
@@ -199,14 +199,14 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
         <button
           onClick={(e) => { e.stopPropagation(); openSettings(); }}
           className="w-[30px] h-[30px] rounded-full flex items-center justify-center text-[--text-muted] hover:text-[--text-color] transition-all active:scale-[0.93]"
-          style={{ background: 'var(--bg-glass-active)' }}
+          style={{ background: 'color-mix(in srgb, var(--bg-glass-active) 65%, transparent)' }}
         >
           <IoSettingsSharp size={13} />
         </button>
         <button
           onClick={(e) => { e.stopPropagation(); handlelockscreen(); }}
           className="w-[30px] h-[30px] rounded-full flex items-center justify-center text-[--text-muted] hover:text-[--text-color] transition-all active:scale-[0.93]"
-          style={{ background: 'var(--bg-glass-active)' }}
+          style={{ background: 'color-mix(in srgb, var(--bg-glass-active) 65%, transparent)' }}
         >
           <IoPower size={13} />
         </button>
@@ -220,7 +220,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
           className="rounded-[16px] p-3 flex items-center gap-3 transition-all active:scale-[0.96] cursor-pointer select-none text-left"
           style={wifienabled
             ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' }
-            : { background: 'var(--bg-glass-active)' }
+            : { background: 'color-mix(in srgb, var(--bg-glass-active) 65%, transparent)' }
           }
         >
           <div className={`w-[32px] h-[32px] rounded-full flex items-center justify-center shrink-0 ${wifienabled ? 'bg-white/20' : ''}`}
@@ -242,7 +242,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
           className="rounded-[16px] p-3 flex items-center gap-3 transition-all active:scale-[0.96] cursor-pointer select-none text-left"
           style={bluetoothstatus.enabled
             ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' }
-            : { background: 'var(--bg-glass-active)' }
+            : { background: 'color-mix(in srgb, var(--bg-glass-active) 65%, transparent)' }
           }
         >
           <div className={`w-[32px] h-[32px] rounded-full flex items-center justify-center shrink-0 ${bluetoothstatus.enabled ? 'bg-white/20' : ''}`}
@@ -264,7 +264,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
           className="rounded-[16px] p-3 flex items-center gap-3 transition-all active:scale-[0.96] cursor-pointer select-none text-left"
           style={theme === 'dark'
             ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' }
-            : { background: 'var(--bg-glass-active)' }
+            : { background: 'color-mix(in srgb, var(--bg-glass-active) 65%, transparent)' }
           }
         >
           <div className={`w-[32px] h-[32px] rounded-full flex items-center justify-center shrink-0 ${theme === 'dark' ? 'bg-white/20' : ''}`}
@@ -286,7 +286,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
           className="rounded-[16px] p-3 flex items-center gap-3 transition-all active:scale-[0.96] cursor-pointer select-none text-left"
           style={isfullscreen
             ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' }
-            : { background: 'var(--bg-glass-active)' }
+            : { background: 'color-mix(in srgb, var(--bg-glass-active) 65%, transparent)' }
           }
         >
           <div className={`w-[32px] h-[32px] rounded-full flex items-center justify-center shrink-0 ${isfullscreen ? 'bg-white/20' : ''}`}
@@ -310,7 +310,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
           className="rounded-[16px] p-3 flex items-center gap-3 transition-all active:scale-[0.96] cursor-pointer select-none text-left"
           style={airplanemode
             ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' }
-            : { background: 'var(--bg-glass-active)' }
+            : { background: 'color-mix(in srgb, var(--bg-glass-active) 65%, transparent)' }
           }
         >
           <div className={`w-[32px] h-[32px] rounded-full flex items-center justify-center shrink-0 ${airplanemode ? 'bg-white/20' : ''}`}
@@ -331,7 +331,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
           className="rounded-[16px] p-3 flex items-center gap-3 transition-all active:scale-[0.96] cursor-pointer select-none text-left"
           style={desktopeffects
             ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' }
-            : { background: 'var(--bg-glass-active)' }
+            : { background: 'color-mix(in srgb, var(--bg-glass-active) 65%, transparent)' }
           }
         >
           <div className={`w-[32px] h-[32px] rounded-full flex items-center justify-center shrink-0 ${desktopeffects ? 'bg-white/20' : ''}`}
@@ -349,7 +349,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
       </div>
 
       {/* ── 3. Display & Sound sliders ── */}
-      <div className="rounded-[16px] p-3.5 flex flex-col gap-4" style={{ background: 'var(--bg-glass-active)' }} onPointerDown={(e) => e.stopPropagation()}>
+      <div className="rounded-[16px] p-3.5 flex flex-col gap-4" style={{ background: 'color-mix(in srgb, var(--bg-glass-active) 65%, transparent)' }} onPointerDown={(e) => e.stopPropagation()}>
         {/* Brightness */}
         <div className="flex items-center gap-3">
           <div className="w-[30px] h-[30px] rounded-full flex items-center justify-center shrink-0"
@@ -401,7 +401,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
       {/* ── 4. Now Playing ── */}
       <div
         className="rounded-[16px] overflow-hidden"
-        style={{ background: 'var(--bg-glass-active)' }}
+        style={{ background: 'color-mix(in srgb, var(--bg-glass-active) 65%, transparent)' }}
         onPointerDown={(e) => e.stopPropagation()}
       >
         {/* Album art banner */}
@@ -460,7 +460,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
       {/* ── 5. Battery (only if available) ── */}
       {batterystatus.available && (
         <div className="rounded-[16px] p-3 flex items-center gap-3" style={{
-          background: 'var(--bg-glass-active)',
+          background: 'color-mix(in srgb, var(--bg-glass-active) 65%, transparent)',
         }}>
           <div className="w-[30px] h-[30px] rounded-full flex items-center justify-center shrink-0"
             style={{
@@ -778,7 +778,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
             className={`${
               ismobile
                 ? 'fixed top-0 left-0 right-0 z-[500] flex flex-col w-full pointer-events-auto'
-                : `w-[340px] block ${clay ? 'rounded-[24px]' : ''}`
+                : `w-[340px] block ${clay ? 'rounded-[22px]' : ''}`
             } origin-bottom-right overflow-x-hidden z-[500]`}
             onClick={(e: React.MouseEvent) => e.stopPropagation()}
             style={{
@@ -786,7 +786,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
               maxHeight: ismobile ? '85vh' : 'calc(100vh - 80px)',
               ...(ismobile ? {} : { overflowY: 'auto' }),
               ...(clay ? {
-                background: ismobile && hasOpenApp ? 'var(--bg-base)' : ismobile ? 'color-mix(in srgb, var(--bg-glass) 70%, transparent)' : 'var(--bg-glass)',
+                background: ismobile && hasOpenApp ? 'var(--bg-base)' : ismobile ? 'color-mix(in srgb, var(--accent-source) 6%, color-mix(in srgb, var(--bg-glass) 35%, transparent))' : 'color-mix(in srgb, var(--accent-source) 12%, var(--bg-glass))',
                 ...((!ismobile || !hasOpenApp) ? { backdropFilter: 'blur(var(--glass-blur-heavy))', WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))' } : {}),
                 border: ismobile ? 'none' : '1px solid var(--glass-border)',
                 boxShadow: 'var(--glass-shadow)',

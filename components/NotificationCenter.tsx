@@ -113,7 +113,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                         <div
                             className="flex flex-col w-full h-full"
                             style={clay ? {
-                                background: hasOpenApp ? 'var(--bg-base)' : 'var(--bg-glass)',
+                                background: hasOpenApp ? 'var(--bg-base)' : 'color-mix(in srgb, var(--accent-source) 6%, color-mix(in srgb, var(--bg-glass) 35%, transparent))',
                                 ...(!hasOpenApp ? { backdropFilter: 'blur(var(--glass-blur-heavy))', WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))' } : {}),
                                 borderRadius: '0 0 28px 28px',
                             } : {
@@ -156,7 +156,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                         <div
                                             className="w-14 h-14 flex items-center justify-center mb-3 rounded-full"
                                             style={clay
-                                                ? { background: 'var(--bg-glass-active)', border: '1px solid var(--glass-border)' }
+                                                ? { background: 'color-mix(in srgb, var(--bg-glass-active) 65%, transparent)', border: '1px solid var(--glass-border)' }
                                                 : { background: 'var(--bg-overlay)', border: '1px solid var(--border-color)' }
                                             }
                                         >
@@ -172,7 +172,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                                 key={group.appname}
                                                 className="overflow-hidden rounded-2xl"
                                                 style={clay
-                                                    ? { background: 'var(--bg-glass-active)', border: '1px solid var(--glass-border)' }
+                                                    ? { background: 'color-mix(in srgb, var(--bg-glass-active) 65%, transparent)', border: '1px solid var(--glass-border)' }
                                                     : { background: 'var(--bg-overlay)', border: '1px solid var(--border-color)' }
                                                 }
                                             >
@@ -200,10 +200,10 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                                             exit={{ opacity: 0, height: 0 }}
                                                             transition={{ duration: 0.15 }}
                                                             drag="x"
-                                                            dragConstraints={{ left: 0, right: 0 }}
-                                                            dragElastic={0.4}
+                                                            dragConstraints={{ left: -200, right: 200 }}
+                                                            dragElastic={0.15}
                                                             onDragEnd={(_, info) => {
-                                                                if (Math.abs(info.offset.x) > 80) {
+                                                                if (Math.abs(info.offset.x) > 100 || Math.abs(info.velocity.x) > 500) {
                                                                     clearnotification(n.id);
                                                                 }
                                                             }}
@@ -212,7 +212,8 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                                                 handlenotificationclick(n);
                                                                 onclose();
                                                             }}
-                                                            className="active:bg-[--bg-glass-hover] transition-colors cursor-pointer"
+                                                            className="active:bg-[--bg-glass-hover] cursor-pointer"
+                                                            whileDrag={{ opacity: 0.8 }}
                                                         >
                                                             {idx > 0 && (
                                                                 <div className="mx-3.5" style={{ borderTop: `1px solid ${clay ? 'var(--glass-border)' : 'var(--border-color)'}` }} />
@@ -280,10 +281,11 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                 : 'rounded-2xl bg-overlay border border-[--border-color]'
                             }`}
                             style={clay ? {
-                                ...glassPanel,
-                                background: 'color-mix(in srgb, var(--bg-glass) 65%, transparent)',
+                                background: 'color-mix(in srgb, var(--accent-source) 4%, color-mix(in srgb, var(--bg-glass) 25%, transparent))',
                                 backdropFilter: 'blur(var(--glass-blur-heavy))',
                                 WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
+                                border: '1px solid var(--glass-border)',
+                                boxShadow: 'var(--glass-shadow)',
                             } : undefined}
                             onClick={() => { handlenotificationclick(n); markasviewed(n.id); }}
                             drag="x"
@@ -325,7 +327,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                 ? 'rounded-[16px]'
                                 : 'bg-overlay border border-[--border-color] anime-accent-left anime-glow-sm'
                             }`}
-                            style={clay ? { ...glassPanel, background: 'color-mix(in srgb, var(--accent-source) 12%, var(--bg-glass))', backdropFilter: 'blur(var(--glass-blur-heavy))', WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))' } : undefined}
+                            style={clay ? { background: 'color-mix(in srgb, var(--accent-source) 6%, color-mix(in srgb, var(--bg-glass) 55%, transparent))', backdropFilter: 'blur(var(--glass-blur-heavy))', WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))', border: '1px solid var(--glass-border)', boxShadow: 'var(--glass-shadow)' } : undefined}
                             onClick={() => { handlenotificationclick(n); markasviewed(n.id); }}
                             whileHover={{ scale: 1.01 }}
                         >
@@ -388,9 +390,10 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                         transition={{ type: "spring", stiffness: 400, damping: 28 }}
                         className="fixed z-[700] bottom-[72px] right-3 w-[360px] max-h-[70vh] overflow-hidden flex flex-col rounded-[22px]"
                         style={{
-                            ...glassPanel,
+                            background: 'color-mix(in srgb, var(--accent-source) 12%, var(--bg-glass))',
                             backdropFilter: 'blur(var(--glass-blur-heavy))',
                             WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
+                            border: '1px solid var(--glass-border)',
                             boxShadow: 'var(--shadow-xl)',
                         }}
                         onClick={(e) => e.stopPropagation()}
@@ -402,7 +405,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                     <button
                                         onClick={() => clearallnotifications()}
                                         className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-[--text-muted] hover:text-[--text-color] active:scale-95 transition-all rounded-full"
-                                        style={{ background: 'var(--bg-glass-active)' }}
+                                        style={{ background: 'color-mix(in srgb, var(--bg-glass-active) 65%, transparent)' }}
                                     >
                                         <IoTrashOutline size={11} />
                                         Clear
@@ -416,7 +419,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                     <div className="flex flex-col items-center justify-center py-10 text-center">
                                         <div
                                             className="w-11 h-11 rounded-full flex items-center justify-center mb-2.5"
-                                            style={{ background: 'var(--bg-glass-active)', border: '1px solid var(--glass-border)' }}
+                                            style={{ background: 'color-mix(in srgb, var(--bg-glass-active) 65%, transparent)', border: '1px solid var(--glass-border)' }}
                                         >
                                             <IoNotificationsOutline size={20} className="text-[--text-muted]" />
                                         </div>
@@ -432,7 +435,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                                     <Image src={group.icon} width={16} height={16} className="w-4 h-4 rounded-[4px]" alt={group.appname} />
                                                     <span className="text-[11px] font-semibold text-[--text-muted] uppercase tracking-wide flex-1">{group.appname}</span>
                                                     {group.items.length > 1 && (
-                                                        <span className="text-[10px] font-semibold text-[--text-muted] px-1.5 py-0.5 rounded-full" style={{ background: 'var(--bg-glass-active)' }}>
+                                                        <span className="text-[10px] font-semibold text-[--text-muted] px-1.5 py-0.5 rounded-full" style={{ background: 'color-mix(in srgb, var(--bg-glass-active) 65%, transparent)' }}>
                                                             {group.items.length}
                                                         </span>
                                                     )}
@@ -457,7 +460,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                                                 <button
                                                                     onClick={(e) => { e.stopPropagation(); clearnotification(n.id); }}
                                                                     className="absolute top-2 right-2 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-all"
-                                                                    style={{ background: 'var(--bg-glass-active)' }}
+                                                                    style={{ background: 'color-mix(in srgb, var(--bg-glass-active) 65%, transparent)' }}
                                                                 >
                                                                     <IoClose size={11} className="text-[--text-muted]" />
                                                                 </button>
