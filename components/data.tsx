@@ -11,7 +11,7 @@ import {
     SiMongodb, SiGnubash, SiCplusplus, SiWordpress
 } from 'react-icons/si';
 import { PiThreadsLogo } from "react-icons/pi";
-import { LuPlus, LuFolderPlus, LuFolderOpen, LuFileText, LuExternalLink, LuX, LuTrash2, LuInfo, LuPenLine, LuCopy as LuCopyIcon, LuUndo2, LuRedo2, LuScissors, LuClipboardPaste, LuMousePointerClick, LuGrid2x2, LuList, LuColumns3, LuGalleryHorizontalEnd, LuPanelLeft, LuEye, LuChevronLeft, LuChevronRight, LuFolderUp, LuClock, LuLayoutGrid, LuMonitor, LuFileDown, LuCircleHelp, LuSettings, LuStore, LuOctagonX, LuMoon, LuRotateCw, LuPower, LuLogOut } from 'react-icons/lu';
+import { LuPlus, LuFolderPlus, LuFolderOpen, LuFileText, LuExternalLink, LuX, LuTrash2, LuInfo, LuPenLine, LuCopy as LuCopyIcon, LuUndo2, LuRedo2, LuScissors, LuClipboardPaste, LuMousePointerClick, LuGrid2X2, LuList, LuColumns3, LuGalleryHorizontalEnd, LuPanelLeft, LuEye, LuChevronLeft, LuChevronRight, LuFolderUp, LuClock, LuLayoutGrid, LuMonitor, LuFileDown, LuCircleHelp, LuSettings, LuStore, LuOctagonX, LuMoon, LuRotateCw, LuPower, LuLogOut } from 'react-icons/lu';
 import {
     IoCloseOutline, IoFolderOutline, IoDocumentTextOutline, IoAppsOutline,
     IoGridOutline, IoListOutline, IoChevronBack, IoChevronForward,
@@ -629,7 +629,7 @@ export const menus = [
                 { title: "Select All", actionId: "select-all", disabled: false, icon: <LuMousePointerClick size={14} /> }
             ],
             View: [
-                { title: "As Icons", disabled: false, icon: <LuGrid2x2 size={14} /> },
+                { title: "As Icons", disabled: false, icon: <LuGrid2X2 size={14} /> },
                 { title: "As List", disabled: false, icon: <LuList size={14} /> },
                 { title: "As Columns", disabled: false, icon: <LuColumns3 size={14} /> },
                 { title: "As Gallery", disabled: false, icon: <LuGalleryHorizontalEnd size={14} /> },

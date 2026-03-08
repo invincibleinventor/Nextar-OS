@@ -164,6 +164,10 @@ export default function LockScreen() {
                     />
                     <div className="absolute inset-0 z-[1]" style={{ background: isDark ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.08)' }} />
 
+                    {/* Notch — always visible on lock screen */}
+                    <div className="absolute top-[5px] left-1/2 -translate-x-1/2 w-[100px] h-[32px] rounded-full bg-black z-[801]"
+                        style={{ boxShadow: '0 0 8px 2px rgba(0,0,0,0.4), inset 0 0 3px rgba(0,0,0,0.3)' }} />
+
                     {/* Top: Large clock + date (iOS style) */}
                     <motion.div
                         className="z-10 flex flex-col items-center mt-16"

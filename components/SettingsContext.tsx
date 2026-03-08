@@ -36,7 +36,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [reducemotion, setreducemotion] = useState(false);
     const [reducetransparency, setreducetransparency] = useState(false);
     const [soundeffects, setsoundeffects] = useState(false);
-    const [wallpaperurl, setwallpaperurl] = useState('/wallpaper-3.jpg');
+    const [wallpaperurl, setwallpaperurl] = useState('/bg.jpg');
     const [accentcolor, setaccentcolor] = useState('#e78284');
     const [islightbackground, setislightbackground] = useState(false);
     const [inverselabelcolor, setinverselabelcolor] = useState(false);
@@ -269,7 +269,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     }, [wallpaperurl, analyzebrightness]);
 
     useEffect(() => {
-        setwallpaperurl('/wallpaper-3.jpg');
+        setwallpaperurl('/bg.jpg');
 
         if (isGuest) return;
 

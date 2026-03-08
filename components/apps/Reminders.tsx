@@ -13,7 +13,7 @@ import { useMenuRegistration } from '../AppMenuContext';
 import { useIsClay } from '../hooks/useIsClay';
 import { glassSidebar, glassCard, glassInput, glassButton } from '../hooks/useClayStyles';
 import { AnimatePresence, motion } from 'framer-motion';
-import { LuPlus, LuTrash2, LuCheckSquare, LuFlag } from 'react-icons/lu';
+import { LuPlus, LuTrash2, LuSquareCheck, LuFlag } from 'react-icons/lu';
 
 interface Reminder {
     id: string;
@@ -161,7 +161,7 @@ export default function Reminders({ appId = 'reminders', id }: { appId?: string;
         Edit: [
             { title: 'Delete Reminder', actionId: 'delete-reminder', shortcut: '⌫', icon: <LuTrash2 size={14} /> },
             { separator: true },
-            { title: 'Mark Completed', actionId: 'toggle-complete', shortcut: '⌘⏎', icon: <LuCheckSquare size={14} /> },
+            { title: 'Mark Completed', actionId: 'toggle-complete', shortcut: '⌘⏎', icon: <LuSquareCheck size={14} /> },
             { title: 'Toggle Flag', actionId: 'toggle-flag', shortcut: '⇧⌘F', icon: <LuFlag size={14} /> },
         ],
     }), []);

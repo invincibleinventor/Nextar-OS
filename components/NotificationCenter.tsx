@@ -91,6 +91,10 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                         onPointerDown={(e) => dragControls.start(e)}
                     />
 
+                    {/* Notch — visible above notification center */}
+                    <div className="fixed top-[5px] left-1/2 -translate-x-1/2 w-[100px] h-[32px] rounded-full bg-black"
+                        style={{ zIndex: 702, boxShadow: '0 0 8px 2px rgba(0,0,0,0.4), inset 0 0 3px rgba(0,0,0,0.3)' }} />
+
                     <motion.div
                         key="notification-center"
                         initial={{ y: '-100%' }}
@@ -265,44 +269,81 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
             );
         }
 
+        // Dynamic Island — notifications emerge from the notch, stack vertically
+        const visibleNotifs = unviewednotifications.slice(0, 3);
+
         return createPortal(
-            <div style={{ zIndex: 700 }} className="fixed top-12 left-2 right-2 flex flex-col items-center space-y-2 pointer-events-none">
+            <div style={{ zIndex: 700 }} className="fixed top-0 left-0 right-0 flex flex-col items-center pointer-events-none">
                 <AnimatePresence>
-                    {unviewednotifications.slice(0, 3).map((n) => (
+                    {visibleNotifs.map((n, idx) => (
                         <motion.div
                             key={n.id}
-                            layout
-                            initial={{ opacity: 0, y: -50, scale: 0.9 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: -20, scale: 0.9, transition: { duration: 0.2 } }}
-                            transition={{ type: "tween", ease: "easeOut", duration: 0.2 }}
-                            className={`w-full max-w-[400px] p-3.5 cursor-pointer select-none pointer-events-auto ${clay
-                                ? 'rounded-2xl'
-                                : 'rounded-2xl bg-overlay border border-[--border-color]'
-                            }`}
-                            style={clay ? {
-                                background: 'color-mix(in srgb, var(--accent-source) 6%, color-mix(in srgb, var(--bg-glass) 45%, transparent))',
-                                backdropFilter: 'blur(var(--glass-blur-heavy))',
-                                WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
-                                border: '1px solid var(--glass-border)',
-                                boxShadow: 'var(--glass-shadow)',
-                            } : undefined}
+                            initial={{
+                                width: 100,
+                                height: 32,
+                                borderRadius: 50,
+                                opacity: 1,
+                                y: 5,
+                                marginBottom: 0,
+                            }}
+                            animate={{
+                                width: 'calc(100vw - 16px)',
+                                height: 'auto',
+                                borderRadius: 22,
+                                opacity: 1,
+                                y: idx === 0 ? 5 : 0,
+                                marginBottom: 6,
+                            }}
+                            exit={{
+                                width: 100,
+                                height: 32,
+                                borderRadius: 50,
+                                opacity: 0,
+                                y: 5,
+                                marginBottom: 0,
+                            }}
+                            transition={{
+                                type: 'spring',
+                                stiffness: 380,
+                                damping: 32,
+                                mass: 0.8,
+                            }}
+                            className="pointer-events-auto cursor-pointer select-none overflow-hidden"
+                            style={{
+                                background: '#1C1C1E',
+                                boxShadow: '0 8px 40px rgba(0,0,0,0.45), 0 0 0 0.5px rgba(255,255,255,0.08)',
+                                maxWidth: 400,
+                            }}
                             onClick={() => { handlenotificationclick(n); markasviewed(n.id); }}
-                            drag="x"
-                            dragConstraints={{ left: 0, right: 0 }}
-                            onDragEnd={(_, info) => { if (Math.abs(info.offset.x) > 50) markasviewed(n.id); }}
+                            drag
+                            dragConstraints={{ left: 0, right: 0, top: -100, bottom: 0 }}
+                            dragElastic={{ left: 0.3, right: 0.3, top: 0.5, bottom: 0 }}
+                            dragSnapToOrigin
+                            onDragEnd={(_, info) => {
+                                if (info.offset.y < -40 || info.velocity.y < -300 ||
+                                    info.offset.x > 60 || info.velocity.x > 400) {
+                                    markasviewed(n.id);
+                                }
+                            }}
+                            whileDrag={{ scale: 0.98 }}
                         >
-                            <div className="flex items-start gap-3">
-                                <Image src={n.icon} width={38} height={38} className="w-[38px] h-[38px] rounded-xl object-cover shrink-0" alt={n.appname} />
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ delay: 0.1, duration: 0.15 }}
+                                className="p-3 flex items-start gap-3"
+                            >
+                                <Image src={n.icon} width={36} height={36} className="w-[36px] h-[36px] rounded-[10px] object-cover shrink-0" alt={n.appname} />
                                 <div className="flex-1 min-w-0 text-left">
                                     <div className="flex justify-between items-baseline mb-0.5">
-                                        <h4 className="font-bold text-[13px] text-[--text-color] leading-tight">{n.appname}</h4>
-                                        <span className="text-[10px] text-[--text-color] opacity-50">{n.time}</span>
+                                        <h4 className="font-bold text-[13px] text-white/90 leading-tight">{n.appname}</h4>
+                                        <span className="text-[10px] text-white/40">{n.time}</span>
                                     </div>
-                                    <h4 className="font-semibold text-[13px] text-[--text-color] leading-tight">{n.title}</h4>
-                                    <p className="text-[12px] text-[--text-color] opacity-70 leading-snug mt-0.5 line-clamp-2">{n.description}</p>
+                                    <h4 className="font-semibold text-[13px] text-white leading-tight">{n.title}</h4>
+                                    <p className="text-[12px] text-white/60 leading-snug mt-0.5 line-clamp-2">{n.description}</p>
                                 </div>
-                            </div>
+                            </motion.div>
                         </motion.div>
                     ))}
                 </AnimatePresence>
