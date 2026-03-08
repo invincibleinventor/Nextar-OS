@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useFileSystem } from '../FileSystemContext';
 import { IoSaveOutline, IoSearchOutline, IoClose, IoFolderOpenOutline, IoListOutline, IoCodeOutline, IoEyeOutline, IoDownloadOutline, IoPrintOutline } from 'react-icons/io5';
+import { LuScissors, LuCopy, LuClipboardPaste, LuMousePointerClick, LuSearch } from 'react-icons/lu';
 
 function parseMarkdown(md: string): string {
     let html = md;
@@ -393,17 +394,17 @@ export default function TextEdit({ id, content: initialContent, title, isFocused
                     x={contextMenu.x}
                     y={contextMenu.y}
                     items={[
-                        { label: 'Cut', action: () => execCmd('cut') },
-                        { label: 'Copy', action: () => execCmd('copy') },
+                        { label: 'Cut', icon: <LuScissors size={14} />, action: () => execCmd('cut') },
+                        { label: 'Copy', icon: <LuCopy size={14} />, action: () => execCmd('copy') },
                         {
-                            label: 'Paste', action: () => {
+                            label: 'Paste', icon: <LuClipboardPaste size={14} />, action: () => {
                                 navigator.clipboard.readText().then(text => execCmd('insertText', text));
                             }
                         },
                         { separator: true },
-                        { label: 'Select All', action: () => execCmd('selectAll') },
+                        { label: 'Select All', icon: <LuMousePointerClick size={14} />, action: () => execCmd('selectAll') },
                         { separator: true },
-                        { label: 'Find & Replace', action: () => setShowFindReplace(true) },
+                        { label: 'Find & Replace', icon: <LuSearch size={14} />, action: () => setShowFindReplace(true) },
                     ]}
                     onClose={() => setContextMenu(null)}
                 />

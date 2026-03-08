@@ -8,7 +8,7 @@ import Control from './controlcenter';
 import Logo from './mainlogo';
 import { useAppMenus } from './AppMenuContext';
 import { IoSparkles, IoNotificationsOutline } from 'react-icons/io5';
-import { LuWifi, LuBatteryFull, LuBatteryMedium, LuBatteryLow, LuBatteryCharging } from 'react-icons/lu';
+import { LuWifi, LuBatteryFull, LuBatteryMedium, LuBatteryLow, LuBatteryCharging, LuCircleHelp, LuSettings, LuStore, LuOctagonX, LuMoon, LuRotateCw, LuPower, LuLogOut, LuInfo, LuX, LuMinus, LuMaximize, LuLayers } from 'react-icons/lu';
 import { useDevice } from './DeviceContext';
 import { useAuth } from './AuthContext';
 import { useNotifications } from './NotificationContext';
@@ -40,8 +40,8 @@ export default function Panel({ ontogglenotifications, ontogglecalendar }: { ont
 
     const activeapp = apps.find(a => a.appname === activeappname);
     const apptitlemenu = activeapp?.titlemenu || [
-        { title: "About " + activeappname, disabled: false, actionId: "About " + activeappname },
-        { title: "Quit " + activeappname, disabled: false, actionId: "Quit " + activeappname },
+        { title: "About " + activeappname, disabled: false, actionId: "About " + activeappname, icon: <LuInfo size={14} /> },
+        { title: "Quit " + activeappname, disabled: false, actionId: "Quit " + activeappname, icon: <LuX size={14} /> },
     ];
 
     const { activeAppMenus, triggerAction } = useAppMenus();
@@ -109,15 +109,15 @@ export default function Panel({ ontogglenotifications, ontogglecalendar }: { ont
     }, [isGuest, addToast]);
 
     const defaultWindowMenu = [
-        { title: "Minimize", actionId: "minimize", disabled: false },
-        { title: "Zoom", actionId: "zoom", disabled: false },
+        { title: "Minimize", actionId: "minimize", disabled: false, icon: <LuMinus size={14} /> },
+        { title: "Zoom", actionId: "zoom", disabled: false, icon: <LuMaximize size={14} /> },
         { separator: true },
-        { title: "Bring All to Front", disabled: false }
+        { title: "Bring All to Front", disabled: false, icon: <LuLayers size={14} /> }
     ];
 
     const defaultHelpMenu = [
-        { title: "NextarOS Help", disabled: false },
-        { title: "About " + activeappname, disabled: false }
+        { title: "NextarOS Help", disabled: false, icon: <LuCircleHelp size={14} /> },
+        { title: "About " + activeappname, disabled: false, icon: <LuInfo size={14} /> }
     ];
 
     if (!appmenus) {
@@ -137,18 +137,18 @@ export default function Panel({ ontogglenotifications, ontogglecalendar }: { ont
     };
 
     const dynamicmainmenu = [
-        { title: 'Help', actionId: 'about' },
+        { title: 'Help', actionId: 'about', icon: <LuCircleHelp size={14} /> },
         { separator: true },
-        { title: 'System Settings...', actionId: 'settings' },
-        { title: 'App Store...', actionId: 'appstore' },
+        { title: 'System Settings...', actionId: 'settings', icon: <LuSettings size={14} /> },
+        { title: 'App Store...', actionId: 'appstore', icon: <LuStore size={14} /> },
         { separator: true },
-        { title: 'Force Quit...', actionId: 'forcequit' },
+        { title: 'Force Quit...', actionId: 'forcequit', icon: <LuOctagonX size={14} /> },
         { separator: true },
-        { title: 'Sleep', actionId: 'sleep' },
-        { title: 'Restart...', actionId: 'restart' },
-        { title: 'Shut Down...', actionId: 'shutdown' },
+        { title: 'Sleep', actionId: 'sleep', icon: <LuMoon size={14} /> },
+        { title: 'Restart...', actionId: 'restart', icon: <LuRotateCw size={14} /> },
+        { title: 'Shut Down...', actionId: 'shutdown', icon: <LuPower size={14} /> },
         { separator: true },
-        { title: `Log Out ${user?.name || 'User'}...`, actionId: 'logout' }
+        { title: `Log Out ${user?.name || 'User'}...`, actionId: 'logout', icon: <LuLogOut size={14} /> }
     ];
 
     const handledynamicmainmenu = async (item: any) => {
@@ -222,7 +222,9 @@ export default function Panel({ ontogglenotifications, ontogglecalendar }: { ont
                         className="h-[38px] mt-[4px] px-2 flex items-center space-x-0.5 pointer-events-auto rounded-[22px]"
                         style={{
                             ...glassPanel,
-                            background: 'color-mix(in srgb, var(--accent-source) 12%, var(--bg-glass))',
+                            background: shouldautohide
+                                ? 'color-mix(in srgb, var(--accent-source) 12%, var(--bg-glass))'
+                                : 'color-mix(in srgb, var(--accent-source) 6%, color-mix(in srgb, var(--bg-glass) 35%, transparent))',
                             backdropFilter: 'blur(var(--glass-blur-heavy))',
                             WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
                         }}
@@ -281,9 +283,9 @@ export default function Panel({ ontogglenotifications, ontogglecalendar }: { ont
                         <button onClick={() => window.dispatchEvent(new CustomEvent('toggle-next'))} className={`transition-colors ${clay ? 'hover:bg-[--bg-glass-hover]' : 'hover:bg-pastel-lavender/10'}`} title="Next (⌘K)">
                             <svg className="w-4 h-4 text-[--text-color]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                         </button>
-                        {!isOnline && <span className={`text-[9px] font-bold px-1 py-0.5 ${clay ? 'text-red-500 bg-red-500/10' : 'text-pastel-red bg-pastel-red/15'}`}>OFFLINE</span>}
+                        {!isOnline && <span className={`text-[9px] font-bold px-1 py-0.5 ${clay ? 'text-[--text-muted] bg-[--text-muted]/10' : 'text-pastel-red bg-pastel-red/15'}`}>OFFLINE</span>}
                         <div className="relative group">
-                            <LuWifi className={`w-[16px] h-[16px] ${clay ? (!isOnline ? 'text-red-500' : wifistatus.connected ? 'text-[--text-color]' : 'text-[--text-muted]') : (!isOnline ? 'text-pastel-red' : wifistatus.connected ? 'text-pastel-blue' : 'text-pastel-lavender')}`} />
+                            <LuWifi className={`w-[16px] h-[16px] ${clay ? (!isOnline ? 'text-[--text-muted]' : wifistatus.connected ? 'text-[--text-color]' : 'text-[--text-muted]') : (!isOnline ? 'text-pastel-red' : wifistatus.connected ? 'text-pastel-blue' : 'text-pastel-lavender')}`} />
                             {wifistatus.connected && wifistatus.ssid && (
                                 <div className="absolute top-full mt-1 right-0 bg-overlay text-[--text-color] text-[10px] px-2 py-1 border border-[--border-color] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-[600]">{wifistatus.ssid}</div>
                             )}

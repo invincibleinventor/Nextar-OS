@@ -12,7 +12,7 @@ import LockScreen from '@/components/LockScreen';
 import MobileHomeScreen from '@/components/MobileHomeScreen';
 import Control from '@/components/controlcenter';
 import RecentApps from '@/components/RecentApps';
-import { LuWifi, LuSignal, LuBatteryFull } from "react-icons/lu";
+import { LuWifi, LuSignal, LuBatteryFull, LuExternalLink, LuInfo, LuFolderOpen, LuPenLine, LuCopy, LuScissors, LuTrash2, LuFolderPlus, LuFilePlus, LuClipboardPaste, LuImage, LuRefreshCw } from "react-icons/lu";
 import { motion, useMotionValue } from 'framer-motion';
 
 import NotificationCenter from '@/components/NotificationCenter';
@@ -238,6 +238,15 @@ const Desktop = () => {
     if (!current) return;
     const newCol = Math.max(0, Math.min(gridCols - span, current.col + dCols));
     const newRow = Math.max(0, Math.min(gridRows - span, current.row + dRows));
+
+    // Reject if overlapping another item
+    for (const [otherId, otherPos] of Object.entries(itemPositions)) {
+      if (otherId === id) continue;
+      const os = otherId.startsWith('widget-') ? 2 : 1;
+      if (newCol < otherPos.col + os && newCol + span > otherPos.col &&
+          newRow < otherPos.row + os && newRow + span > otherPos.row) return;
+    }
+
     setGridPositions(prev => {
       const next = { ...prev, [id]: { col: newCol, row: newRow } };
       localStorage.setItem('desktop-grid-positions', JSON.stringify(next));
@@ -382,6 +391,7 @@ const Desktop = () => {
     const handleToggleDesktopEffects = () => setshowdesktopeffects((prev: boolean) => !prev);
     const handleToggleNotifications = () => { setshownotificationcenter((prev: boolean) => { if (!prev) setshowcalendar(false); return !prev; }); };
     const handleOpenNotifications = () => { setshownotificationcenter(true); setshowcalendar(false); };
+    const handleOpenControlCenter = () => { setshowcontrolcenter(true); };
     const handleToggleCalendar = () => { setshowcalendar((prev: boolean) => { if (!prev) setshownotificationcenter(false); return !prev; }); };
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('start-tour', handleStartTour);
@@ -394,6 +404,7 @@ const Desktop = () => {
     window.addEventListener('toggle-calendar', handleToggleCalendar);
     window.addEventListener('toggle-notifications', handleToggleNotifications);
     window.addEventListener('open-notifications', handleOpenNotifications);
+    window.addEventListener('open-control-center', handleOpenControlCenter);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('start-tour', handleStartTour);
@@ -405,6 +416,7 @@ const Desktop = () => {
       window.removeEventListener('toggle-desktop-effects', handleToggleDesktopEffects);
       window.removeEventListener('toggle-notifications', handleToggleNotifications);
       window.removeEventListener('open-notifications', handleOpenNotifications);
+      window.removeEventListener('open-control-center', handleOpenControlCenter);
       window.removeEventListener('toggle-calendar', handleToggleCalendar);
     };
   }, [showappswitcher, addwindow, updatewindow, setactivewindow]);
@@ -503,6 +515,7 @@ const Desktop = () => {
       const baseItems: any[] = [
         {
           label: 'Open',
+          icon: <LuExternalLink size={14} />,
           action: () => targets.forEach(id => {
             const f = files.find(x => x.id === id);
             if (f) openSystemItem(f, context);
@@ -511,36 +524,38 @@ const Desktop = () => {
       ];
 
       if (!isMulti) {
-        baseItems.push({ label: 'Get Info', action: () => openSystemItem(activeFileItem, context, 'getinfo') });
+        baseItems.push({ label: 'Get Info', icon: <LuInfo size={14} />, action: () => openSystemItem(activeFileItem, context, 'getinfo') });
         baseItems.push({
           label: 'Show in Explorer',
+          icon: <LuFolderOpen size={14} />,
           action: () => openSystemItem('explorer', context, undefined, { openPath: activeFileItem.parent || currentUserDesktopId, selectItem: activeFileItem.id })
         });
         baseItems.push({ separator: true, label: '' });
         baseItems.push({
           label: 'Rename',
+          icon: <LuPenLine size={14} />,
           action: () => setFileModal({ isOpen: true, type: 'rename', initialValue: activeFileItem.name }),
           disabled: activeFileItem.isReadOnly
         });
       }
 
       baseItems.push({ separator: true, label: '' });
-      baseItems.push({ label: isMulti ? `Copy ${targets.length} Items` : 'Copy', action: () => copyItem(targets) });
-      baseItems.push({ label: isMulti ? `Cut ${targets.length} Items` : 'Cut', action: () => cutItem(targets), disabled: hasReadOnly });
+      baseItems.push({ label: isMulti ? `Copy ${targets.length} Items` : 'Copy', icon: <LuCopy size={14} />, action: () => copyItem(targets) });
+      baseItems.push({ label: isMulti ? `Cut ${targets.length} Items` : 'Cut', icon: <LuScissors size={14} />, action: () => cutItem(targets), disabled: hasReadOnly });
       baseItems.push({ separator: true, label: '' });
-      baseItems.push({ label: isMulti ? `Move ${targets.length} Items to Trash` : 'Move to Trash', action: () => targets.forEach(id => moveToTrash(id)), danger: true, disabled: hasReadOnly });
+      baseItems.push({ label: isMulti ? `Move ${targets.length} Items to Trash` : 'Move to Trash', icon: <LuTrash2 size={14} />, action: () => targets.forEach(id => moveToTrash(id)), danger: true, disabled: hasReadOnly });
 
       return baseItems;
     } else {
       return [
-        { label: 'New Folder', action: () => setFileModal({ isOpen: true, type: 'create-folder', initialValue: '' }) },
-        { label: 'New File', action: () => setFileModal({ isOpen: true, type: 'create-file', initialValue: '' }) },
+        { label: 'New Folder', icon: <LuFolderPlus size={14} />, action: () => setFileModal({ isOpen: true, type: 'create-folder', initialValue: '' }) },
+        { label: 'New File', icon: <LuFilePlus size={14} />, action: () => setFileModal({ isOpen: true, type: 'create-file', initialValue: '' }) },
         { separator: true, label: '' },
-        { label: 'Paste', action: () => pasteItem(currentUserDesktopId), disabled: !clipboard },
+        { label: 'Paste', icon: <LuClipboardPaste size={14} />, action: () => pasteItem(currentUserDesktopId), disabled: !clipboard },
         { separator: true, label: '' },
-        { label: 'Get Info', action: () => { }, disabled: true },
+        { label: 'Get Info', icon: <LuInfo size={14} />, action: () => { }, disabled: true },
         {
-          label: 'Change Wallpaper', action: () => {
+          label: 'Change Wallpaper', icon: <LuImage size={14} />, action: () => {
             addwindow({
               id: `settings-${Date.now()}`,
               appname: 'Settings',
@@ -552,9 +567,9 @@ const Desktop = () => {
           }
         },
         { separator: true, label: '' },
-        { label: 'Refresh', action: refreshFileSystem },
+        { label: 'Refresh', icon: <LuRefreshCw size={14} />, action: refreshFileSystem },
         { separator: true, label: '' },
-        { label: 'Empty Trash', action: emptyTrash, disabled: files.filter(f => f.isTrash).length === 0 }
+        { label: 'Empty Trash', icon: <LuTrash2 size={14} />, action: emptyTrash, disabled: files.filter(f => f.isTrash).length === 0 }
       ];
     }
   };
@@ -611,7 +626,7 @@ const Desktop = () => {
     return (
       <motion.div
         data-tour="ios-statusbar"
-        className={`absolute top-0 left-0 right-0 h-11 z-[300] flex items-center justify-between px-6 cursor-pointer ${clay ? '' : 'bg-[--bg-surface] border-b border-[--border-color]'}`}
+        className={`absolute top-0 left-0 right-0 h-11 z-[300] flex items-center justify-between px-8 cursor-pointer ${clay ? '' : 'bg-[--bg-surface] border-b border-[--border-color]'}`}
         style={clay ? {
           background: 'color-mix(in srgb, var(--accent-source) 6%, color-mix(in srgb, var(--bg-glass) 35%, transparent))',
           backdropFilter: 'blur(var(--glass-blur-heavy))',
@@ -629,10 +644,10 @@ const Desktop = () => {
           }
         }}
       >
-        <div className="text-[15px] text-[--text-color] font-semibold pl-6">
+        <div className="text-[15px] text-[--text-color] font-semibold">
           {timestr}
         </div>
-        <div className="flex text-[--text-color] items-center gap-2 pr-6">
+        <div className="flex text-[--text-color] items-center gap-2">
           <LuSignal size={16} />
           <LuWifi size={16} />
           <div className="flex items-center">
@@ -788,7 +803,7 @@ const Desktop = () => {
                         </div>
                       </div>
                       <span
-                        className={`text-[11px] w-full font-medium text-center break-words leading-tight line-clamp-1 px-1 text-white ${isSelected ? 'bg-accent' : ''}`}
+                        className={`text-[12px] w-full font-medium text-center break-words leading-tight line-clamp-1 px-1 text-white ${isSelected ? 'bg-accent' : ''}`}
                         style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5), 0 0 4px rgba(0,0,0,0.2)' }}
                       >{item.name}</span>
                     </GridItem>
@@ -821,6 +836,10 @@ const Desktop = () => {
             </div>
 
 
+
+            {/* Always-visible notch */}
+            <div className="absolute top-[5px] left-1/2 -translate-x-1/2 w-[100px] h-[32px] rounded-full bg-black z-[501]"
+              style={{ boxShadow: '0 0 8px 2px rgba(0,0,0,0.4), inset 0 0 3px rgba(0,0,0,0.3)' }} />
 
             {!showcontrolcenter && !shownotificationcenter && <StatusBar />}
 
@@ -902,7 +921,7 @@ const Desktop = () => {
                   window.dispatchEvent(new CustomEvent('home-pressed'));
                 }}
               >
-                <div className="w-full h-[6px]  cursor-pointer rounded-none bg-white mix-blend-difference" style={{ boxShadow: '0 0 8px rgba(128,128,128,0.5), 0 0 20px rgba(128,128,128,0.2)' }}></div>
+                <div className="w-full h-[6px] cursor-pointer rounded-full bg-white mix-blend-difference" style={{ boxShadow: '0 0 8px rgba(128,128,128,0.5), 0 0 20px rgba(128,128,128,0.2)' }}></div>
               </motion.div>
             </div>
           </div>

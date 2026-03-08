@@ -13,6 +13,7 @@ import TintedAppIcon, { squircleClip } from '../ui/TintedAppIcon';
 import { iselectron, apps as nativeapps, icons as nativeicons } from '@/utils/platform';
 import { useIsClay } from '../hooks/useIsClay';
 import { glassInput, glassPanel } from '../hooks/useClayStyles';
+import { useSettings } from '../SettingsContext';
 
 interface LinuxApp {
     name: string;
@@ -63,6 +64,7 @@ export default function Launchpad({ onclose }: { onclose: () => void }) {
     const { files } = useFileSystem();
     const { launchApp } = useExternalApps();
     const clay = useIsClay();
+    const { islightbackground } = useSettings();
     const [searchterm, setsearchterm] = useState('');
     const [activeCategory, setActiveCategory] = useState<string>('All');
     const [linuxapps, setlinuxapps] = useState<LinuxApp[]>([]);
@@ -264,7 +266,7 @@ export default function Launchpad({ onclose }: { onclose: () => void }) {
                                             />
                                         )}
                                     </div>
-                                    <span className="text-[--text-color] text-[11px] font-medium text-center leading-tight truncate max-w-[80px] font-mono">
+                                    <span className="text-[--text-color] text-[12px] font-medium text-center leading-tight truncate max-w-[80px] font-mono">
                                         {app.appname}
                                     </span>
                                 </div>
@@ -290,7 +292,7 @@ export default function Launchpad({ onclose }: { onclose: () => void }) {
                 style={{
                     backdropFilter: 'blur(var(--glass-blur-heavy))',
                     WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
-                    background: 'color-mix(in srgb, var(--bg-base) 55%, transparent)',
+                    background: 'color-mix(in srgb, var(--accent-source) 4%, color-mix(in srgb, var(--bg-glass) 28%, transparent))',
                 }}
                 onClick={handleBackdropClick}
             >
@@ -310,12 +312,12 @@ export default function Launchpad({ onclose }: { onclose: () => void }) {
                                 background: 'var(--bg-glass-active)',
                                 boxShadow: 'inset 0 0 0 1px var(--glass-border), var(--shadow-sm)',
                             }}>
-                            <IoSearch className="absolute left-5 text-[--text-muted] text-[18px] z-[1]" />
+                            <IoSearch className={`absolute left-5 text-[18px] z-[1] ${islightbackground ? 'text-black/50' : 'text-white/60'}`} />
                             <input
                                 ref={searchRef}
                                 autoFocus
                                 placeholder="Search apps..."
-                                className="w-full pl-[48px] pr-6 py-3.5 bg-transparent text-[--text-color] placeholder-[--text-muted] text-[15px] font-sans font-medium outline-none rounded-full transition-all"
+                                className={`w-full pl-[48px] pr-6 py-3.5 bg-transparent text-[15px] font-sans font-medium outline-none rounded-full transition-all ${islightbackground ? 'text-black/80 placeholder-black/40' : 'text-white placeholder-white/50'}`}
                                 value={searchterm}
                                 onChange={e => { setsearchterm(e.target.value); }}
                             />
@@ -324,7 +326,7 @@ export default function Launchpad({ onclose }: { onclose: () => void }) {
 
                     {/* ── Category Filter Pills ── */}
                     <motion.div
-                        className="flex gap-2 mb-8 overflow-x-auto no-scrollbar max-w-full px-2"
+                        className="flex gap-2 mb-8 overflow-x-auto no-scrollbar max-w-full px-2 pb-1"
                         initial="hidden"
                         animate="visible"
                         variants={{
@@ -340,7 +342,7 @@ export default function Launchpad({ onclose }: { onclose: () => void }) {
                                 className={`px-4 py-2 text-[13px] font-sans font-medium shrink-0 transition-all active:scale-[0.95] rounded-full whitespace-nowrap ${
                                     activeCategory === cat
                                         ? 'text-white'
-                                        : 'text-[--text-muted] hover:text-[--text-color]'
+                                        : islightbackground ? 'text-black/60 hover:text-black/80' : 'text-white/70 hover:text-white'
                                 }`}
                                 style={
                                     activeCategory === cat
@@ -406,7 +408,7 @@ export default function Launchpad({ onclose }: { onclose: () => void }) {
                                             )}
                                         </div>
                                         {/* App label */}
-                                        <span className="text-[--text-color] text-[12px] font-sans font-medium text-center leading-tight max-w-[88px] line-clamp-2">
+                                        <span className={`text-[12px] font-sans font-medium text-center leading-tight max-w-[88px] line-clamp-2 ${islightbackground ? 'text-black/80' : 'text-white'}`}>
                                             {app.appname}
                                         </span>
                                     </motion.div>

@@ -144,10 +144,10 @@ body {
    ================================================================ */
 
 .clay {
-  --accent-color: color-mix(in srgb, var(--accent-source) 78%, white);
+  --accent-color: color-mix(in srgb, var(--accent-source) 88%, white);
   --icon-tint: var(--accent-color);
   --accent-gradient: linear-gradient(160deg,
-    color-mix(in srgb, var(--accent-source) 55%, white) 0%,
+    color-mix(in srgb, var(--accent-source) 65%, white) 0%,
     var(--accent-color) 50%,
     var(--accent-source) 100%);
   --accent-shadow: 0 3px 10px -2px color-mix(in srgb, var(--accent-color) 45%, rgba(0,0,0,0.2)),
@@ -796,14 +796,7 @@ body {
   box-shadow: var(--glass-shadow), 0 0 20px -6px color-mix(in srgb, var(--accent-color) 30%, transparent);
 }
 
-/* Context menu dropdown — clay only */
-.clay #menudropdown {
-  background: var(--bg-glass) !important;
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  border: 1px solid var(--glass-border) !important;
-  box-shadow: var(--glass-shadow);
-}
+/* Context menu dropdown — clay only (styles applied inline via menu.tsx) */
 
 /* ================================================================
    CLAY MODE — Element overrides (scoped to .clay)
@@ -835,14 +828,7 @@ body {
   -webkit-backdrop-filter: blur(12px);
 }
 
-.clay [role="tooltip"] {
-  border-radius: var(--radius-sm) !important;
-  background: var(--bg-glass) !important;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--glass-border-subtle);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-}
+/* Dock tooltip — clay only (styles applied inline via Dock.tsx) */
 
 /* Window-scoped overrides — clay only */
 .clay .window .bg-overlay {

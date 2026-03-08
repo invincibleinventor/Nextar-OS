@@ -5,6 +5,7 @@ import { useMenuRegistration } from '../AppMenuContext';
 import { useWindows } from '../WindowContext';
 import { useIsClay } from '../hooks/useIsClay';
 import { glassCard, glassButton, insetWell, clayClasses } from '../hooks/useClayStyles';
+import { LuClock, LuTimer, LuAlarmClock } from 'react-icons/lu';
 
 const ZONES = [
   { id: 'ny', label: 'New York', tz: 'America/New_York' },
@@ -94,9 +95,9 @@ export default function Clock({ appId = 'clock', id }: { appId?: string; id?: st
 
   const menus = useMemo(() => ({
     View: [
-      { title: 'Clock', actionId: 'tab-clock' },
-      { title: 'Stopwatch', actionId: 'tab-stopwatch' },
-      { title: 'Timer', actionId: 'tab-timer' },
+      { title: 'Clock', actionId: 'tab-clock', icon: <LuClock size={14} /> },
+      { title: 'Stopwatch', actionId: 'tab-stopwatch', icon: <LuTimer size={14} /> },
+      { title: 'Timer', actionId: 'tab-timer', icon: <LuAlarmClock size={14} /> },
     ],
   }), []);
 

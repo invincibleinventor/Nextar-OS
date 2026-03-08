@@ -13,6 +13,7 @@ import { useMenuAction } from '../hooks/useMenuAction';
 import { useMenuRegistration } from '../AppMenuContext';
 import { useIsClay } from '../hooks/useIsClay';
 import { glassPanel, glassCard } from '../hooks/useClayStyles';
+import { LuSquareCheck, LuSquare } from 'react-icons/lu';
 
 interface ChecklistItem {
     id: string;
@@ -137,8 +138,8 @@ export default function ShipChecklist({ windowId, appId = 'shipchecklist', id }:
 
     const checklistMenus = useMemo(() => ({
         Edit: [
-            { title: "Check All", actionId: "check-all" },
-            { title: "Uncheck All", actionId: "uncheck-all" },
+            { title: "Check All", actionId: "check-all", icon: <LuSquareCheck size={14} /> },
+            { title: "Uncheck All", actionId: "uncheck-all", icon: <LuSquare size={14} /> },
         ],
     }), []);
 

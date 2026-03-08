@@ -79,7 +79,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                         transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <div className="relative pt-8 px-6 flex flex-col items-center pointer-events-auto" style={{ maxWidth: '100vw', boxSizing: 'border-box' }}>
+                        <div className="relative pt-[72px] px-6 flex flex-col items-center pointer-events-auto" style={{ maxWidth: '100vw', boxSizing: 'border-box' }}>
                             <div className={`w-full max-w-lg overflow-hidden ${clay ? (searchquery.trim() ? 'rounded-[16px]' : 'rounded-full') : 'bg-surface border border-[--border-color] shadow-pastel'}`}
                                 style={clay ? {
                                     background: 'color-mix(in srgb, var(--bg-glass) 65%, transparent)',
@@ -88,7 +88,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                                 } : undefined}
                             >
                                 <div className={`flex items-center gap-3 px-4 py-3 ${clay ? (searchquery.trim() ? 'border-b border-[--glass-border]' : '') : 'border-b border-[--border-color]'}`}>
-                                    <IoSearch className="text-[--text-muted] text-xl shrink-0" />
+                                    <IoSearch className="text-[--text-color] opacity-50 text-xl shrink-0" />
                                     <input
                                         ref={searchinputref}
                                         type="text"

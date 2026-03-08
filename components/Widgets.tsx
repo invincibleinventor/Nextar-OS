@@ -23,8 +23,9 @@ const STATS = [
 
 const cursiveFont = "'Snell Roundhand', 'Segoe Script', 'Dancing Script', cursive";
 
+
 const widgetGlass = (clay: boolean): React.CSSProperties => clay ? {
-    background: 'color-mix(in srgb, var(--accent-source) 6%, color-mix(in srgb, var(--bg-glass) 35%, transparent))',
+    background: 'color-mix(in srgb, var(--accent-source) 4%, color-mix(in srgb, var(--bg-glass) 28%, transparent))',
     backdropFilter: 'blur(var(--glass-blur-heavy))',
     WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
     border: '1px solid var(--glass-border)',
@@ -63,18 +64,18 @@ export function ProfileWidget({ size = 'small', onClick }: { size?: 'small' | 'm
                 <Image src="/bala.jpeg" alt="Bala" fill className="object-cover" />
             </div>
             <div className="text-center min-w-0">
-                <p className="font-bold text-[13px] text-[--text-color] leading-tight"
+                <p className="font-bold text-[13px] leading-tight text-[--text-color]"
                     style={{ fontFamily: cursiveFont, fontStyle: 'italic' }}
                 >Bala</p>
-                <p className="text-accent font-semibold mt-0.5 text-[10px]">Full Stack Dev</p>
+                <p className="text-[--text-color] font-semibold mt-0.5 text-[10px]">Full Stack Dev</p>
             </div>
             <div className="flex items-center gap-2 mt-0.5">
                 <a href="https://github.com/invincibleinventor" target="_blank" onClick={e => e.stopPropagation()}
-                    className="text-[--text-muted] hover:text-[--text-color] transition-colors"><IoLogoGithub size={14} /></a>
+                    className="text-[--text-color] opacity-50 hover:opacity-100 transition-opacity"><IoLogoGithub size={14} /></a>
                 <a href="https://www.linkedin.com/in/balasubramaniantbr/" target="_blank" onClick={e => e.stopPropagation()}
-                    className="text-[--text-muted] hover:text-[--text-color] transition-colors"><IoLogoLinkedin size={14} /></a>
+                    className="text-[--text-color] opacity-50 hover:opacity-100 transition-opacity"><IoLogoLinkedin size={14} /></a>
                 <a href="mailto:balasubramanian.tbr@gmail.com" onClick={e => e.stopPropagation()}
-                    className="text-[--text-muted] hover:text-[--text-color] transition-colors"><IoMailOutline size={14} /></a>
+                    className="text-[--text-color] opacity-50 hover:opacity-100 transition-opacity"><IoMailOutline size={14} /></a>
             </div>
         </motion.div>
     );
@@ -92,13 +93,13 @@ export function StatsWidget({ onClick }: { onClick?: () => void }) {
             whileTap={{ scale: 0.97 }}
             onClick={onClick || (() => openPortfolio(addwindow))}
         >
-            <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-[--text-muted] mb-auto">Overview</p>
+            <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-[--text-color] mb-auto">Overview</p>
             <div className="flex flex-col gap-1.5">
                 {STATS.map((stat, i) => (
                     <div key={i} className={`flex items-center gap-3 px-3 py-2 ${clay ? 'rounded-[10px] bg-[--bg-glass-active]' : 'rounded-[8px] bg-[--bg-base] border border-[--border-color]'}`}>
                         <stat.icon size={13} className="text-accent shrink-0" />
                         <span className="text-[13px] font-bold text-[--text-color] leading-none min-w-[24px]">{stat.value}</span>
-                        <span className="text-[10px] text-[--text-muted] leading-none">{stat.label}</span>
+                        <span className="text-[10px] text-[--text-color] opacity-70 leading-none">{stat.label}</span>
                     </div>
                 ))}
             </div>
@@ -119,8 +120,8 @@ export function ProjectsWidget({ onClick }: { onClick?: () => void }) {
             onClick={onClick || (() => openPortfolio(addwindow))}
         >
             <div className="flex items-center justify-between mb-auto">
-                <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-[--text-muted]">Featured Projects</p>
-                <IoArrowForward size={10} className="text-[--text-muted]" />
+                <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-[--text-color]">Featured Projects</p>
+                <IoArrowForward size={10} className="text-[--text-color] opacity-50" />
             </div>
             <div className="flex flex-col gap-1.5 flex-1 overflow-hidden">
                 {PROJECTS.map((p, i) => (
@@ -130,7 +131,7 @@ export function ProjectsWidget({ onClick }: { onClick?: () => void }) {
                         </div>
                         <div className="flex-1 min-w-0">
                             <p className="text-[10px] font-semibold text-[--text-color] leading-tight truncate">{p.name}</p>
-                            <p className="text-[9px] text-[--text-muted] leading-tight mt-0.5 truncate">{p.desc}</p>
+                            <p className="text-[9px] text-[--text-color] opacity-70 leading-tight mt-0.5 truncate">{p.desc}</p>
                         </div>
                     </div>
                 ))}
@@ -151,7 +152,7 @@ export function SkillsWidget({ onClick }: { onClick?: () => void }) {
             whileTap={{ scale: 0.97 }}
             onClick={onClick || (() => openPortfolio(addwindow))}
         >
-            <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-[--text-muted] mb-auto">Tech Stack</p>
+            <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-[--text-color] mb-auto">Tech Stack</p>
             <div className="flex flex-wrap gap-1 content-end">
                 {SKILLS.map((skill, i) => (
                     <span key={i}
@@ -178,7 +179,7 @@ export function ExperienceWidget({ onClick }: { onClick?: () => void }) {
             whileTap={{ scale: 0.97 }}
             onClick={onClick || (() => openPortfolio(addwindow))}
         >
-            <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-[--text-muted] mb-auto">Experience</p>
+            <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-[--text-color] mb-auto">Experience</p>
             <div className={`flex items-start gap-2 p-2 ${clay ? 'rounded-[10px] bg-[--bg-glass-active]' : 'rounded-[8px] bg-[--bg-base] border border-[--border-color]'}`}>
                 <div className={`w-1 self-stretch shrink-0 ${clay ? 'rounded-full' : ''}`}
                     style={{ background: 'var(--accent-color)' }} />
@@ -189,7 +190,7 @@ export function ExperienceWidget({ onClick }: { onClick?: () => void }) {
                             style={clay ? { background: 'var(--accent-gradient)' } : { background: 'var(--accent-color)' }}
                         >Now</span>
                     </div>
-                    <p className="text-[9px] text-[--text-muted] mt-0.5 truncate">For Real &middot; Jan 2026 – Present</p>
+                    <p className="text-[9px] text-[--text-color] opacity-70 mt-0.5 truncate">For Real &middot; Jan 2026 – Present</p>
                 </div>
             </div>
             <div className={`flex items-start gap-2 p-2 mt-1 ${clay ? 'rounded-[10px] bg-[--bg-glass-active]' : 'rounded-[8px] bg-[--bg-base] border border-[--border-color]'}`}>
@@ -197,7 +198,7 @@ export function ExperienceWidget({ onClick }: { onClick?: () => void }) {
                     style={{ background: clay ? 'var(--glass-border)' : 'var(--border-color)' }} />
                 <div className="flex-1 min-w-0">
                     <span className="text-[11px] font-bold text-[--text-color]">Technical Lead</span>
-                    <p className="text-[9px] text-[--text-muted] mt-0.5 truncate">TVS School &middot; Aug 2022 – May 2024</p>
+                    <p className="text-[9px] text-[--text-color] opacity-70 mt-0.5 truncate">TVS School &middot; Aug 2022 – May 2024</p>
                 </div>
             </div>
         </motion.div>
@@ -228,7 +229,7 @@ export function QuickLinksWidget() {
                 >
                     <link.icon size={14} className="text-accent shrink-0" />
                     <span className="text-[12px] font-semibold text-[--text-color] flex-1">{link.label}</span>
-                    <IoArrowForward size={10} className="text-[--text-muted]" />
+                    <IoArrowForward size={10} className="text-[--text-color] opacity-50" />
                 </a>
             ))}
         </div>

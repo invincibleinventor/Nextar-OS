@@ -18,6 +18,7 @@ import { useWindows } from './WindowContext';
 import { useFileSystem } from './FileSystemContext';
 import ContextMenu from './ui/ContextMenu';
 import TintedAppIcon, { squircleClip } from './ui/TintedAppIcon';
+import { LuExternalLink, LuPlus, LuPenLine, LuCopy, LuScissors, LuClipboardPaste, LuPencilRuler, LuFolderOpen, LuTrash2, LuFolderPlus, LuFilePlus, LuImage } from 'react-icons/lu';
 import { useIsClay } from './hooks/useIsClay';
 import { glassPanel, glassInput } from './hooks/useClayStyles';
 import { ProfileWidget, StatsWidget, SkillsWidget, ExperienceWidget } from './Widgets';
@@ -48,6 +49,9 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
     const gridPageRefs = useRef<(HTMLDivElement | null)[]>([]);
     const showAppLibraryRef = useRef(false);
     showAppLibraryRef.current = showAppLibrary;
+    const editmodeRef = useRef(false);
+    editmodeRef.current = editmode;
+    const appLongPressActive = useRef(false);
 
     const desktopItems = files.filter(item => item.parent === currentUserDesktopId && !item.isTrash);
 
@@ -174,6 +178,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
     const handlelongpressstart = (item: filesystemitem | null, e: React.TouchEvent | React.MouseEvent) => {
         const touch = 'touches' in e ? e.touches[0] : e;
         touchstartpos.current = { x: touch.clientX, y: touch.clientY };
+        if (item) appLongPressActive.current = true;
         longpresstimer.current = setTimeout(() => {
             if ('vibrate' in navigator) {
                 navigator.vibrate(10);
@@ -193,6 +198,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
     };
 
     const handlelongpressend = () => {
+        appLongPressActive.current = false;
         if (longpresstimer.current) {
             clearTimeout(longpresstimer.current);
             longpresstimer.current = null;
@@ -491,7 +497,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                                     onChange={(e) => setRenameValue(e.target.value)}
                                     onBlur={submitRename}
                                     onKeyDown={(e) => { if (e.key === 'Enter') submitRename(); if (e.key === 'Escape') { setRenameTarget(null); setRenameValue(''); } }}
-                                    className={`text-[11px] font-medium text-center leading-tight w-full tracking-tight px-1 outline-none ${
+                                    className={`text-[12px] font-medium text-center leading-tight w-full tracking-tight px-1 outline-none ${
                                         clay
                                             ? 'font-sans rounded-[8px] text-[--text-color]'
                                             : 'font-mono bg-[--bg-overlay] text-[--text-color] border border-pastel-red/50'
@@ -501,7 +507,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                                 />
                             ) : (
                                 <span
-                                    className={`text-[11px] font-semibold text-center leading-tight truncate w-full tracking-tight px-1 text-white ${
+                                    className={`text-[12px] font-semibold text-center leading-tight truncate w-full tracking-tight px-1 text-white ${
                                         clay ? 'font-sans' : 'font-mono'
                                     }`}
                                     style={{
@@ -517,8 +523,11 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                 {/* Widgets embedded in grid (pages 0 and 1) */}
                 {pageIndex < 2 && pageWidgetComponents[pageIndex]?.map((widget, i) => (
                     <motion.div key={`widget-${pageIndex}-${i}`}
-                        className={editmode ? '' : 'touch-pan-x'}
-                        style={{ gridColumn: 'span 2', gridRow: 'span 2', aspectRatio: '1', alignSelf: 'center' }}
+                        className={`${editmode ? '' : 'touch-pan-x'} transition-opacity duration-300 ${isoverlayopen ? 'opacity-0' : 'opacity-100'}`}
+                        style={{
+                            gridColumn: 'span 2', gridRow: 'span 2', aspectRatio: '1', alignSelf: 'center',
+                            ...(editmode ? { touchAction: 'none' as const } : {}),
+                        }}
                         animate={editmode ? {
                             rotate: [-1.5, 1.5, -1.5]
                         } : {
@@ -532,6 +541,9 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                                 ease: "easeInOut"
                             } : { duration: 0 },
                         } as any}
+                        drag={editmode || undefined}
+                        dragSnapToOrigin
+                        dragMomentum={false}
                     >
                         {widget}
                     </motion.div>
@@ -546,7 +558,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
         let startY = 0, startX = 0, triggered = false;
 
         const onStart = (e: TouchEvent) => {
-            if (showAppLibraryRef.current) return;
+            if (showAppLibraryRef.current || editmodeRef.current) return;
             const el = homeContainerRef.current;
             if (!el || !el.contains(e.target as Node)) return;
             startY = e.touches[0].clientY;
@@ -555,13 +567,13 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
         };
 
         const onMove = (e: TouchEvent) => {
-            if (triggered || !startY || showAppLibraryRef.current) return;
+            if (triggered || !startY || showAppLibraryRef.current || editmodeRef.current) return;
             const dy = e.touches[0].clientY - startY;
             const dx = Math.abs(e.touches[0].clientX - startX);
             if (Math.abs(dy) > 25 && Math.abs(dy) > dx) {
                 triggered = true;
                 if (dy < 0) setShowAppLibrary(true);
-                else window.dispatchEvent(new CustomEvent('open-notifications'));
+                else window.dispatchEvent(new CustomEvent('open-control-center'));
             }
         };
 
@@ -586,7 +598,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
             className="relative w-full h-full overflow-hidden"
             onClick={() => editmode && seteditmode(false)}
             onTouchStart={(e) => {
-                if (!(e.target as HTMLElement).closest('.app-icon')) {
+                if (!(e.target as HTMLElement).closest('.app-icon') && !appLongPressActive.current) {
                     handlelongpressstart(null, e);
                 }
             }}
@@ -840,29 +852,23 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                         animate={{ y: 0 }}
                         exit={{ y: '100%' }}
                         transition={{ type: 'tween', duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
+                        drag="y"
+                        dragConstraints={{ top: 0, bottom: 0 }}
+                        dragElastic={0.3}
+                        dragListener={false}
+                        onDragEnd={(_, info) => {
+                            if (info.offset.y > 80 || info.velocity.y > 300) {
+                                setShowAppLibrary(false);
+                            }
+                        }}
                         style={{
                             background: clay
-                                ? 'color-mix(in srgb, var(--bg-glass) 70%, transparent)'
+                                ? 'color-mix(in srgb, var(--accent-source) 4%, color-mix(in srgb, var(--bg-glass) 28%, transparent))'
                                 : 'var(--bg-surface)',
                             backdropFilter: clay ? 'blur(var(--glass-blur-heavy))' : undefined,
                             WebkitBackdropFilter: clay ? 'blur(var(--glass-blur-heavy))' : undefined,
                         }}
                     >
-                        {/* Drag handle — only this is draggable to dismiss */}
-                        <motion.div
-                            className="flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing shrink-0"
-                            drag="y"
-                            dragConstraints={{ top: 0, bottom: 0 }}
-                            dragElastic={0.3}
-                            onDragEnd={(_, info) => {
-                                if (info.offset.y > 80 || info.velocity.y > 300) {
-                                    setShowAppLibrary(false);
-                                }
-                            }}
-                            style={{ touchAction: 'none' }}
-                        >
-                            <div className="w-10 h-1 rounded-full" style={{ background: 'var(--text-muted)', opacity: 0.3 }} />
-                        </motion.div>
                         <div className="flex-1 min-h-0 overflow-hidden">
                             <AppLibrary />
                         </div>

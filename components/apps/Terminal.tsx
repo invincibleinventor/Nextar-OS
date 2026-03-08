@@ -10,6 +10,7 @@ import { useAuth } from '../AuthContext';
 import { iselectron, terminal as nativeterminal, getsysteminfo } from '@/utils/platform';
 import { useIsClay } from '../hooks/useIsClay';
 import { glassPanel, glassInput } from '../hooks/useClayStyles';
+import { LuCopy, LuClipboardPaste, LuMousePointerClick, LuTrash2, LuZoomIn, LuZoomOut } from 'react-icons/lu';
 
 const XTermShell = dynamic(() => import('../ui/XTermShell'), { ssr: false });
 
@@ -242,15 +243,15 @@ export default function Terminal({ isFocused = true, appId = 'terminal' }: { isF
 
     const terminalMenus = useMemo(() => ({
         Edit: [
-            { title: "Copy", actionId: "copy", shortcut: "\u2318C" },
-            { title: "Paste", actionId: "paste", shortcut: "\u2318V" },
-            { title: "Select All", actionId: "select-all", shortcut: "\u2318A" },
+            { title: "Copy", actionId: "copy", shortcut: "\u2318C", icon: <LuCopy size={14} /> },
+            { title: "Paste", actionId: "paste", shortcut: "\u2318V", icon: <LuClipboardPaste size={14} /> },
+            { title: "Select All", actionId: "select-all", shortcut: "\u2318A", icon: <LuMousePointerClick size={14} /> },
             { separator: true },
-            { title: "Clear Buffer", actionId: "clear", shortcut: "\u2318K" }
+            { title: "Clear Buffer", actionId: "clear", shortcut: "\u2318K", icon: <LuTrash2 size={14} /> }
         ],
         View: [
-            { title: "Increase Font Size", actionId: "zoom-in", shortcut: "\u2318+" },
-            { title: "Decrease Font Size", actionId: "zoom-out", shortcut: "\u2318-" }
+            { title: "Increase Font Size", actionId: "zoom-in", shortcut: "\u2318+", icon: <LuZoomIn size={14} /> },
+            { title: "Decrease Font Size", actionId: "zoom-out", shortcut: "\u2318-", icon: <LuZoomOut size={14} /> }
         ]
     }), []);
 

@@ -8,6 +8,7 @@ import { useAuth } from '../AuthContext';
 import { IoVideocamOutline, IoCloudUploadOutline, IoPlayOutline, IoTrashOutline } from 'react-icons/io5';
 import { useIsClay } from '../hooks/useIsClay';
 import { glassCard } from '../hooks/useClayStyles';
+import { LuPlay, LuChevronRight, LuChevronLeft, LuVolumeX, LuPictureInPicture, LuExternalLink, LuHouse } from 'react-icons/lu';
 
 const SPEEDS = [0.5, 1, 1.25, 1.5, 2];
 const VIDEO_MIMETYPES = ['video/mp4', 'video/webm', 'video/ogg'];
@@ -96,17 +97,17 @@ export default function VideoPlayer({ appId = 'videoplayer', id, fileUrl }: { ap
 
     const videoMenus = useMemo(() => ({
         Playback: [
-            { title: 'Play/Pause', actionId: 'vp-toggle', shortcut: 'Space' },
+            { title: 'Play/Pause', actionId: 'vp-toggle', shortcut: 'Space', icon: <LuPlay size={14} /> },
             { separator: true },
-            { title: 'Skip Forward 5s', actionId: 'vp-fwd', shortcut: '\u2192' },
-            { title: 'Skip Back 5s', actionId: 'vp-back', shortcut: '\u2190' },
+            { title: 'Skip Forward 5s', actionId: 'vp-fwd', shortcut: '\u2192', icon: <LuChevronRight size={14} /> },
+            { title: 'Skip Back 5s', actionId: 'vp-back', shortcut: '\u2190', icon: <LuChevronLeft size={14} /> },
             { separator: true },
-            { title: 'Mute', actionId: 'vp-mute', shortcut: 'M' },
-            { title: 'Picture in Picture', actionId: 'vp-pip' },
+            { title: 'Mute', actionId: 'vp-mute', shortcut: 'M', icon: <LuVolumeX size={14} /> },
+            { title: 'Picture in Picture', actionId: 'vp-pip', icon: <LuPictureInPicture size={14} /> },
         ],
         File: [
-            { title: 'Open Video...', actionId: 'vp-open', shortcut: '\u2318O' },
-            { title: 'Back to Library', actionId: 'vp-library' },
+            { title: 'Open Video...', actionId: 'vp-open', shortcut: '\u2318O', icon: <LuExternalLink size={14} /> },
+            { title: 'Back to Library', actionId: 'vp-library', icon: <LuHouse size={14} /> },
         ],
     }), []);
 

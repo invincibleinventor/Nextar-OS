@@ -8,6 +8,7 @@ import { useMenuAction } from '../hooks/useMenuAction';
 import { useMenuRegistration } from '../AppMenuContext';
 import { useIsClay } from '../hooks/useIsClay';
 import { glassCard, glassButton, glassInput } from '../hooks/useClayStyles';
+import { LuPlus } from 'react-icons/lu';
 
 interface Task {
     id: string;
@@ -235,7 +236,7 @@ export default function IdeaBoard({ windowId, appId = 'ideaboard', id }: { windo
 
     const boardMenus = useMemo(() => ({
         File: [
-            { title: "New Task", actionId: "new-task", shortcut: "⌘N" },
+            { title: "New Task", actionId: "new-task", shortcut: "⌘N", icon: <LuPlus size={14} /> },
         ],
     }), []);
 
