@@ -10,6 +10,7 @@ import {
 } from 'react-icons/io5';
 import { useIsClay } from '../hooks/useIsClay';
 import { glassSidebar, glassButton } from '../hooks/useClayStyles';
+import { LuPlus, LuShare2, LuUndo2, LuRedo2, LuTrash2, LuPenLine, LuMinus, LuSquare, LuCircle, LuEraser, LuPaintBucket, LuType } from 'react-icons/lu';
 
 type Tool = 'pencil' | 'line' | 'rectangle' | 'ellipse' | 'eraser' | 'fill' | 'text';
 
@@ -379,24 +380,24 @@ export default function Paint({ appId = 'paint', id }: { appId?: string; id?: st
 
     const menus = useMemo(() => ({
         File: [
-            { title: 'New Canvas', actionId: 'paint-new', shortcut: '\u2318N' },
+            { title: 'New Canvas', actionId: 'paint-new', shortcut: '\u2318N', icon: <LuPlus size={14} /> },
             { separator: true },
-            { title: 'Export as PNG', actionId: 'paint-export', shortcut: '\u2318E' },
+            { title: 'Export as PNG', actionId: 'paint-export', shortcut: '\u2318E', icon: <LuShare2 size={14} /> },
         ],
         Edit: [
-            { title: 'Undo', actionId: 'paint-undo', shortcut: '\u2318Z' },
-            { title: 'Redo', actionId: 'paint-redo', shortcut: '\u21E7\u2318Z' },
+            { title: 'Undo', actionId: 'paint-undo', shortcut: '\u2318Z', icon: <LuUndo2 size={14} /> },
+            { title: 'Redo', actionId: 'paint-redo', shortcut: '\u21E7\u2318Z', icon: <LuRedo2 size={14} /> },
             { separator: true },
-            { title: 'Clear Canvas', actionId: 'paint-clear' },
+            { title: 'Clear Canvas', actionId: 'paint-clear', icon: <LuTrash2 size={14} /> },
         ],
         Tools: [
-            { title: 'Pencil', actionId: 'paint-tool-pencil' },
-            { title: 'Line', actionId: 'paint-tool-line' },
-            { title: 'Rectangle', actionId: 'paint-tool-rectangle' },
-            { title: 'Ellipse', actionId: 'paint-tool-ellipse' },
-            { title: 'Eraser', actionId: 'paint-tool-eraser' },
-            { title: 'Fill', actionId: 'paint-tool-fill' },
-            { title: 'Text', actionId: 'paint-tool-text' },
+            { title: 'Pencil', actionId: 'paint-tool-pencil', icon: <LuPenLine size={14} /> },
+            { title: 'Line', actionId: 'paint-tool-line', icon: <LuMinus size={14} /> },
+            { title: 'Rectangle', actionId: 'paint-tool-rectangle', icon: <LuSquare size={14} /> },
+            { title: 'Ellipse', actionId: 'paint-tool-ellipse', icon: <LuCircle size={14} /> },
+            { title: 'Eraser', actionId: 'paint-tool-eraser', icon: <LuEraser size={14} /> },
+            { title: 'Fill', actionId: 'paint-tool-fill', icon: <LuPaintBucket size={14} /> },
+            { title: 'Text', actionId: 'paint-tool-text', icon: <LuType size={14} /> },
         ],
     }), []);
 

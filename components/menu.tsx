@@ -21,7 +21,7 @@ export default function Menu(props: any) {
             return;
         }
         const rect = triggerref.current.getBoundingClientRect();
-        setDropdownPos({ top: rect.bottom + 6, left: rect.left });
+        setDropdownPos({ top: rect.bottom + 14, left: rect.left });
     }, [visible]);
 
     // Close on outside click — check both trigger and portal dropdown

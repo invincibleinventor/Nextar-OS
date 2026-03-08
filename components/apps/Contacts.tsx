@@ -9,6 +9,7 @@ import { useMenuRegistration } from '../AppMenuContext';
 import { useWindows } from '../WindowContext';
 import { useIsClay } from '../hooks/useIsClay';
 import { glassSidebar, glassCard, glassButton, glassInput, clayClasses } from '../hooks/useClayStyles';
+import { LuPlus, LuShare2, LuPenLine, LuTrash2 } from 'react-icons/lu';
 
 interface Contact {
     id: string;
@@ -182,12 +183,12 @@ export default function Contacts({ appId = 'contacts', id }: { appId?: string; i
 
     const contactMenus = useMemo(() => ({
         File: [
-            { title: 'New Contact', actionId: 'contacts-new', shortcut: '⌘N' },
-            { title: 'Export vCard', actionId: 'contacts-export', shortcut: '⇧⌘E' },
+            { title: 'New Contact', actionId: 'contacts-new', shortcut: '⌘N', icon: <LuPlus size={14} /> },
+            { title: 'Export vCard', actionId: 'contacts-export', shortcut: '⇧⌘E', icon: <LuShare2 size={14} /> },
         ],
         Edit: [
-            { title: 'Edit Contact', actionId: 'contacts-edit', shortcut: '⌘E' },
-            { title: 'Delete Contact', actionId: 'contacts-delete', shortcut: '⌫' },
+            { title: 'Edit Contact', actionId: 'contacts-edit', shortcut: '⌘E', icon: <LuPenLine size={14} /> },
+            { title: 'Delete Contact', actionId: 'contacts-delete', shortcut: '⌫', icon: <LuTrash2 size={14} /> },
         ],
     }), []);
 

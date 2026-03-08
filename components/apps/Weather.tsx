@@ -6,6 +6,7 @@ import { useWindows } from '../WindowContext';
 import { useDevice } from '../DeviceContext';
 import { useIsClay } from '../hooks/useIsClay';
 import { glassCard, glassInput, glassButton, clayClasses } from '../hooks/useClayStyles';
+import { LuEye, LuRefreshCw } from 'react-icons/lu';
 
 interface GeoResult { name: string; country: string; latitude: number; longitude: number }
 interface CurrentWeather { temp: number; feelsLike: number; humidity: number; wind: number; pressure: number; uv: number; code: number }
@@ -46,11 +47,11 @@ export default function Weather({ appId = 'weather', id }: { appId?: string; id?
 
     const weatherMenus = useMemo(() => ({
         View: [
-            { title: 'Celsius', actionId: 'unit-c', shortcut: '\u2318C' },
-            { title: 'Fahrenheit', actionId: 'unit-f', shortcut: '\u2318F' },
+            { title: 'Celsius', actionId: 'unit-c', shortcut: '\u2318C', icon: <LuEye size={14} /> },
+            { title: 'Fahrenheit', actionId: 'unit-f', shortcut: '\u2318F', icon: <LuEye size={14} /> },
         ],
         Weather: [
-            { title: 'Refresh', actionId: 'weather-refresh', shortcut: '\u2318R' },
+            { title: 'Refresh', actionId: 'weather-refresh', shortcut: '\u2318R', icon: <LuRefreshCw size={14} /> },
         ],
     }), []);
 

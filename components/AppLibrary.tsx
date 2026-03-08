@@ -5,6 +5,7 @@ import { useWindows } from './WindowContext';
 import { useDevice } from './DeviceContext';
 import { useFileSystem } from './FileSystemContext';
 import { IoSearch, IoClose } from 'react-icons/io5';
+import { LuExternalLink, LuInfo, LuLayoutGrid } from 'react-icons/lu';
 import { useExternalApps } from './ExternalAppsContext';
 import TintedAppIcon from './ui/TintedAppIcon';
 import { useSettings } from './SettingsContext';
@@ -116,16 +117,18 @@ const AppLibrary = () => {
         const app = contextmenu.app;
         const pinned = isOnHomeScreen(app.id);
         return [
-            { label: 'Open', action: () => openapp(app) },
+            { label: 'Open', icon: <LuExternalLink size={14} />, action: () => openapp(app) },
             { separator: true, label: '' },
             {
                 label: 'App Info',
+                icon: <LuInfo size={14} />,
                 action: () => {
                     openSystemItem('settings', { addwindow, windows, setactivewindow, updatewindow, ismobile });
                 }
             },
             {
                 label: pinned ? 'Already on Home Screen' : 'Add to Home Screen',
+                icon: <LuLayoutGrid size={14} />,
                 disabled: pinned,
                 action: () => { if (!pinned) pinToHomeScreen(app); }
             },

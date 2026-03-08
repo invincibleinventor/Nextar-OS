@@ -26,6 +26,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../AuthContext';
 import { useProjects } from '../ProjectContext';
 import { iselectron, nativefs } from '@/utils/platform';
+import { LuExternalLink, LuPenLine, LuTrash2, LuFolderPlus, LuFilePlus, LuUpload, LuArchive, LuPackageOpen, LuInfo, LuCopy, LuScissors, LuClipboardPaste, LuRefreshCw, LuEye, LuArrowUpDown, LuUndo2, LuPlus, LuX, LuRedo2, LuMousePointerClick, LuGrid2X2, LuList, LuColumns3, LuPanelLeft } from 'react-icons/lu';
 import { useIsClay } from '../hooks/useIsClay';
 import { glassCard, glassSidebar, glassInput, glassButton, clayClasses } from '../hooks/useClayStyles';
 
@@ -547,37 +548,37 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
 
     const explorerMenus = useMemo(() => ({
         File: [
-            { title: "New Explorer Window", actionId: "new-window", shortcut: "⌘N" },
-            { title: "New Folder", actionId: "new-folder", shortcut: "⇧⌘N" },
+            { title: "New Explorer Window", actionId: "new-window", shortcut: "⌘N", icon: <LuPlus size={14} /> },
+            { title: "New Folder", actionId: "new-folder", shortcut: "⇧⌘N", icon: <LuFolderPlus size={14} /> },
             { separator: true },
-            { title: "Open", actionId: "open" },
-            { title: "Close Window", actionId: "close-window", shortcut: "⌘W" },
+            { title: "Open", actionId: "open", icon: <LuExternalLink size={14} /> },
+            { title: "Close Window", actionId: "close-window", shortcut: "⌘W", icon: <LuX size={14} /> },
             { separator: true },
-            { title: "Move to Trash", actionId: "move-to-trash", shortcut: "⌘⌫" },
+            { title: "Move to Trash", actionId: "move-to-trash", shortcut: "⌘⌫", icon: <LuTrash2 size={14} /> },
             { separator: true },
-            { title: "Get Info", actionId: "get-info", shortcut: "⌘I" },
-            { title: "Rename", actionId: "rename" }
+            { title: "Get Info", actionId: "get-info", shortcut: "⌘I", icon: <LuInfo size={14} /> },
+            { title: "Rename", actionId: "rename", icon: <LuPenLine size={14} /> }
         ],
         Edit: [
-            { title: "Cut", actionId: "cut", shortcut: "⌘X" },
-            { title: "Copy", actionId: "copy", shortcut: "⌘C" },
-            { title: "Paste", actionId: "paste", shortcut: "⌘V" },
-            { title: "Select All", actionId: "select-all", shortcut: "⌘A" }
+            { title: "Cut", actionId: "cut", shortcut: "⌘X", icon: <LuScissors size={14} /> },
+            { title: "Copy", actionId: "copy", shortcut: "⌘C", icon: <LuCopy size={14} /> },
+            { title: "Paste", actionId: "paste", shortcut: "⌘V", icon: <LuClipboardPaste size={14} /> },
+            { title: "Select All", actionId: "select-all", shortcut: "⌘A", icon: <LuMousePointerClick size={14} /> }
         ],
         View: [
-            { title: "As Icons", actionId: "view-icons" },
-            { title: "As List", actionId: "view-list" },
+            { title: "As Icons", actionId: "view-icons", icon: <LuGrid2X2 size={14} /> },
+            { title: "As List", actionId: "view-list", icon: <LuList size={14} /> },
             { separator: true },
-            { title: "Toggle Sidebar", actionId: "toggle-sidebar" },
-            { title: "Toggle Preview", actionId: "toggle-preview" }
+            { title: "Toggle Sidebar", actionId: "toggle-sidebar", icon: <LuPanelLeft size={14} /> },
+            { title: "Toggle Preview", actionId: "toggle-preview", icon: <LuEye size={14} /> }
         ],
         Go: [
-            { title: "Back", actionId: "go-back", shortcut: "⌘[" },
-            { title: "Enclosing Folder", actionId: "go-up", shortcut: "⌘↑" },
+            { title: "Back", actionId: "go-back", shortcut: "⌘[", icon: <LuUndo2 size={14} /> },
+            { title: "Enclosing Folder", actionId: "go-up", shortcut: "⌘↑", icon: <LuArrowUpDown size={14} /> },
             { separator: true },
-            { title: "Desktop", actionId: "go-desktop" },
-            { title: "Documents", actionId: "go-documents" },
-            { title: "Downloads", actionId: "go-downloads" }
+            { title: "Desktop", actionId: "go-desktop", icon: <LuColumns3 size={14} /> },
+            { title: "Documents", actionId: "go-documents", icon: <LuFolderPlus size={14} /> },
+            { title: "Downloads", actionId: "go-downloads", icon: <LuArchive size={14} /> }
         ]
     }), []);
 
@@ -645,18 +646,18 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
             if (nativeItem) {
                 const fullpath = nativeItem.id.replace('native:', '');
                 return [
-                    { label: 'Open', action: () => handlefileopen(nativeItem) },
+                    { label: 'Open', icon: <LuExternalLink size={14} />, action: () => handlefileopen(nativeItem) },
                     { separator: true, label: '' },
-                    { label: 'Rename', action: () => setFileModal({ isOpen: true, type: 'rename', initialValue: nativeItem.name }) },
+                    { label: 'Rename', icon: <LuPenLine size={14} />, action: () => setFileModal({ isOpen: true, type: 'rename', initialValue: nativeItem.name }) },
                     { separator: true, label: '' },
-                    { label: 'Move to Trash', action: async () => { await nativefs.trash(fullpath); loadNativeDirectory(nativePath); }, danger: true },
+                    { label: 'Move to Trash', icon: <LuTrash2 size={14} />, action: async () => { await nativefs.trash(fullpath); loadNativeDirectory(nativePath); }, danger: true },
                 ];
             } else {
                 return [
-                    { label: 'New Folder', action: () => setFileModal({ isOpen: true, type: 'create-folder', initialValue: '' }) },
+                    { label: 'New Folder', icon: <LuFolderPlus size={14} />, action: () => setFileModal({ isOpen: true, type: 'create-folder', initialValue: '' }) },
                     { separator: true, label: '' },
-                    { label: 'Refresh', action: () => loadNativeDirectory(nativePath) },
-                    { label: 'Show Hidden Files', action: () => setshowhidden(!showhidden) },
+                    { label: 'Refresh', icon: <LuRefreshCw size={14} />, action: () => loadNativeDirectory(nativePath) },
+                    { label: 'Show Hidden Files', icon: <LuEye size={14} />, action: () => setshowhidden(!showhidden) },
                 ];
             }
         }
@@ -670,8 +671,8 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
 
             if (isTrashView) {
                 return [
-                    { label: isMulti ? `Put Back ${targets.length} Items` : 'Put Back', action: () => targets.forEach(id => restoreFromTrash(id)) },
-                    { label: isMulti ? `Delete ${targets.length} Items Immediately` : 'Delete Immediately', action: () => targets.forEach(id => deleteItem(id)), danger: true }
+                    { label: isMulti ? `Put Back ${targets.length} Items` : 'Put Back', icon: <LuUndo2 size={14} />, action: () => targets.forEach(id => restoreFromTrash(id)) },
+                    { label: isMulti ? `Delete ${targets.length} Items Immediately` : 'Delete Immediately', icon: <LuTrash2 size={14} />, action: () => targets.forEach(id => deleteItem(id)), danger: true }
                 ];
             }
 
@@ -679,7 +680,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
 
             const baseItems: any[] = [
                 {
-                    label: 'Open', action: () => targets.forEach(id => {
+                    label: 'Open', icon: <LuExternalLink size={14} />, action: () => targets.forEach(id => {
                         const f = files.find(x => x.id === id);
                         if (f) handlefileopen(f);
                     })
@@ -699,25 +700,27 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
             }
 
             baseItems.push({ separator: true, label: '' });
-            if (!isMulti) baseItems.push({ label: 'Get Info', action: () => openSystemItem(activeFileItem, { addwindow, windows, updatewindow, setactivewindow, ismobile }, 'getinfo') });
+            if (!isMulti) baseItems.push({ label: 'Get Info', icon: <LuInfo size={14} />, action: () => openSystemItem(activeFileItem, { addwindow, windows, updatewindow, setactivewindow, ismobile }, 'getinfo') });
 
             if (!isMulti) {
                 baseItems.push({
                     label: 'Rename',
+                    icon: <LuPenLine size={14} />,
                     action: () => setFileModal({ isOpen: true, type: 'rename', initialValue: activeFileItem.name }),
                     disabled: !canRename
                 });
             }
 
             baseItems.push({ separator: true, label: '' });
-            baseItems.push({ label: isMulti ? `Copy ${targets.length} Items` : 'Copy', action: () => copyItem(targets) });
-            baseItems.push({ label: isMulti ? `Cut ${targets.length} Items` : 'Cut', action: () => cutItem(targets), disabled: hasReadOnly });
+            baseItems.push({ label: isMulti ? `Copy ${targets.length} Items` : 'Copy', icon: <LuCopy size={14} />, action: () => copyItem(targets) });
+            baseItems.push({ label: isMulti ? `Cut ${targets.length} Items` : 'Cut', icon: <LuScissors size={14} />, action: () => cutItem(targets), disabled: hasReadOnly });
 
             baseItems.push({ separator: true, label: '' });
 
             if (!isMulti && activeFileItem.name.match(/\.(zip|jar|war)$/i) && activeFileItem.content) {
                 baseItems.push({
                     label: 'Extract Here',
+                    icon: <LuPackageOpen size={14} />,
                     action: () => {
                         const pid = getcurrentparentid();
                         extractZipToVfs(activeFileItem, pid);
@@ -727,24 +730,26 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
 
             baseItems.push({
                 label: isMulti ? `Compress ${targets.length} Items` : 'Compress',
+                icon: <LuArchive size={14} />,
                 action: () => compressToZip(targets)
             });
 
             return [
                 ...baseItems,
                 { separator: true, label: '' },
-                { label: isMulti ? `Move ${targets.length} Items to Trash` : 'Move to Trash', action: () => targets.forEach(id => moveToTrash(id)), danger: true, disabled: hasReadOnly }
+                { label: isMulti ? `Move ${targets.length} Items to Trash` : 'Move to Trash', icon: <LuTrash2 size={14} />, action: () => targets.forEach(id => moveToTrash(id)), danger: true, disabled: hasReadOnly }
             ];
         } else {
             const parentid = getcurrentparentid();
             const isReadOnlyDir = isLocked(parentid);
             return [
-                { label: 'New Folder', action: () => setFileModal({ isOpen: true, type: 'create-folder', initialValue: '' }), disabled: isReadOnlyDir },
-                { label: 'New File', action: () => setFileModal({ isOpen: true, type: 'create-file', initialValue: '' }), disabled: isReadOnlyDir },
-                { label: 'Upload File', action: () => fileinputref.current?.click(), disabled: isReadOnlyDir },
+                { label: 'New Folder', icon: <LuFolderPlus size={14} />, action: () => setFileModal({ isOpen: true, type: 'create-folder', initialValue: '' }), disabled: isReadOnlyDir },
+                { label: 'New File', icon: <LuFilePlus size={14} />, action: () => setFileModal({ isOpen: true, type: 'create-file', initialValue: '' }), disabled: isReadOnlyDir },
+                { label: 'Upload File', icon: <LuUpload size={14} />, action: () => fileinputref.current?.click(), disabled: isReadOnlyDir },
                 { separator: true, label: '' },
                 {
                     label: 'Upload & Extract Zip',
+                    icon: <LuPackageOpen size={14} />,
                     action: () => {
                         const input = document.createElement('input');
                         input.type = 'file';
@@ -775,7 +780,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                 },
                 { separator: true, label: '' },
                 {
-                    label: 'Paste', action: () => {
+                    label: 'Paste', icon: <LuClipboardPaste size={14} />, action: () => {
                         let currentParentId = 'root';
                         for (const folderName of currentpath) {
                             const folder = files.find(f => f.name === folderName && f.parent === currentParentId && !f.isTrash);
@@ -786,7 +791,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                 },
                 { separator: true, label: '' },
                 {
-                    label: 'Get Info', action: () => {
+                    label: 'Get Info', icon: <LuInfo size={14} />, action: () => {
                         let currentParentId = 'root';
                         let currentFolderItem: filesystemitem | undefined;
                         for (const folderName of currentpath) {
@@ -804,6 +809,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                 { separator: true, label: '' },
                 {
                     label: `Sort by: ${sortby.charAt(0).toUpperCase() + sortby.slice(1)}`,
+                    icon: <LuArrowUpDown size={14} />,
                     children: [
                         { label: `Name ${sortby === 'name' ? (sortasc ? '↑' : '↓') : ''}`, action: () => { if (sortby === 'name') setsortasc(!sortasc); else { setsortby('name'); setsortasc(true); } } },
                         { label: `Date ${sortby === 'date' ? (sortasc ? '↑' : '↓') : ''}`, action: () => { if (sortby === 'date') setsortasc(!sortasc); else { setsortby('date'); setsortasc(true); } } },
@@ -811,7 +817,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
                         { label: `Type ${sortby === 'type' ? (sortasc ? '↑' : '↓') : ''}`, action: () => { if (sortby === 'type') setsortasc(!sortasc); else { setsortby('type'); setsortasc(true); } } },
                     ]
                 },
-                { label: showhidden ? '✓ Show Hidden Files' : 'Show Hidden Files', action: () => setshowhidden(!showhidden) }
+                { label: showhidden ? '✓ Show Hidden Files' : 'Show Hidden Files', icon: <LuEye size={14} />, action: () => setshowhidden(!showhidden) }
             ];
         }
     };

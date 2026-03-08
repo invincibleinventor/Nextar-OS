@@ -11,6 +11,7 @@ import { FaFolder, FaFolderOpen } from 'react-icons/fa';
 import {
     IoTimeOutline, IoRocketOutline, IoDocumentTextOutline, IoTrashOutline,
 } from 'react-icons/io5';
+import { LuSave, LuPlus, LuCamera, LuPlay, LuExternalLink, LuPanelLeft, LuTerminal, LuFileOutput, LuEye, LuMaximize } from 'react-icons/lu';
 import dynamic from 'next/dynamic';
 import { useProjects } from '../ProjectContext';
 import { useTheme } from '../ThemeContext';
@@ -919,22 +920,22 @@ export default function HackathonWorkspace({ windowId, projectId, appId = 'hacka
 
     const workspaceMenus = useMemo(() => ({
         File: [
-            { title: "Save", actionId: "save-file", shortcut: "⌘S" },
-            { title: "New File", actionId: "new-file", shortcut: "⌘N" },
+            { title: "Save", actionId: "save-file", shortcut: "⌘S", icon: <LuSave size={14} /> },
+            { title: "New File", actionId: "new-file", shortcut: "⌘N", icon: <LuPlus size={14} /> },
             { separator: true },
-            { title: "Create Snapshot", actionId: "create-snapshot" },
+            { title: "Create Snapshot", actionId: "create-snapshot", icon: <LuCamera size={14} /> },
         ],
         Run: [
-            { title: "Run Code", actionId: "run-code", shortcut: "⌘R" },
-            { title: "Run as App", actionId: "run-as-app" },
+            { title: "Run Code", actionId: "run-code", shortcut: "⌘R", icon: <LuPlay size={14} /> },
+            { title: "Run as App", actionId: "run-as-app", icon: <LuExternalLink size={14} /> },
         ],
         View: [
-            { title: "Toggle Sidebar", actionId: "toggle-sidebar", shortcut: "⌘B" },
-            { title: "Toggle Terminal", actionId: "toggle-terminal", shortcut: "⌘`" },
-            { title: "Toggle Output", actionId: "toggle-output" },
-            { title: "Toggle Preview", actionId: "toggle-preview" },
+            { title: "Toggle Sidebar", actionId: "toggle-sidebar", shortcut: "⌘B", icon: <LuPanelLeft size={14} /> },
+            { title: "Toggle Terminal", actionId: "toggle-terminal", shortcut: "⌘`", icon: <LuTerminal size={14} /> },
+            { title: "Toggle Output", actionId: "toggle-output", icon: <LuFileOutput size={14} /> },
+            { title: "Toggle Preview", actionId: "toggle-preview", icon: <LuEye size={14} /> },
             { separator: true },
-            { title: "Focus Mode", actionId: "focus-mode", shortcut: "⇧⌘F" },
+            { title: "Focus Mode", actionId: "focus-mode", shortcut: "⇧⌘F", icon: <LuMaximize size={14} /> },
         ],
     }), []);
 

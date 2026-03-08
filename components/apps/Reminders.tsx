@@ -13,6 +13,7 @@ import { useMenuRegistration } from '../AppMenuContext';
 import { useIsClay } from '../hooks/useIsClay';
 import { glassSidebar, glassCard, glassInput, glassButton } from '../hooks/useClayStyles';
 import { AnimatePresence, motion } from 'framer-motion';
+import { LuPlus, LuTrash2, LuCheckSquare, LuFlag } from 'react-icons/lu';
 
 interface Reminder {
     id: string;
@@ -154,14 +155,14 @@ export default function Reminders({ appId = 'reminders', id }: { appId?: string;
 
     const reminderMenus = useMemo(() => ({
         File: [
-            { title: 'New Reminder', actionId: 'new-reminder', shortcut: '⌘N' },
-            { title: 'New List', actionId: 'new-list', shortcut: '⇧⌘N' },
+            { title: 'New Reminder', actionId: 'new-reminder', shortcut: '⌘N', icon: <LuPlus size={14} /> },
+            { title: 'New List', actionId: 'new-list', shortcut: '⇧⌘N', icon: <LuPlus size={14} /> },
         ],
         Edit: [
-            { title: 'Delete Reminder', actionId: 'delete-reminder', shortcut: '⌫' },
+            { title: 'Delete Reminder', actionId: 'delete-reminder', shortcut: '⌫', icon: <LuTrash2 size={14} /> },
             { separator: true },
-            { title: 'Mark Completed', actionId: 'toggle-complete', shortcut: '⌘⏎' },
-            { title: 'Toggle Flag', actionId: 'toggle-flag', shortcut: '⇧⌘F' },
+            { title: 'Mark Completed', actionId: 'toggle-complete', shortcut: '⌘⏎', icon: <LuCheckSquare size={14} /> },
+            { title: 'Toggle Flag', actionId: 'toggle-flag', shortcut: '⇧⌘F', icon: <LuFlag size={14} /> },
         ],
     }), []);
 

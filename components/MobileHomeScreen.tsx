@@ -18,6 +18,7 @@ import { useWindows } from './WindowContext';
 import { useFileSystem } from './FileSystemContext';
 import ContextMenu from './ui/ContextMenu';
 import TintedAppIcon, { squircleClip } from './ui/TintedAppIcon';
+import { LuExternalLink, LuPlus, LuPenLine, LuCopy, LuScissors, LuClipboardPaste, LuPencilRuler, LuFolderOpen, LuTrash2, LuFolderPlus, LuFilePlus, LuImage } from 'react-icons/lu';
 import { useIsClay } from './hooks/useIsClay';
 import { glassPanel, glassInput } from './hooks/useClayStyles';
 import { ProfileWidget, StatsWidget, SkillsWidget, ExperienceWidget } from './Widgets';
@@ -249,6 +250,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
             const items: any[] = [
                 {
                     label: 'Open',
+                    icon: <LuExternalLink size={14} />,
                     action: () => {
                         openSystemItem(item, { addwindow, windows, setactivewindow, updatewindow, ismobile, files });
                     }
@@ -261,6 +263,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                 if (app?.multiwindow) {
                     items.push({
                         label: 'Open New Window',
+                        icon: <LuPlus size={14} />,
                         action: () => {
                             openSystemItem(item, { addwindow, windows, setactivewindow, updatewindow, ismobile, files });
                         }
@@ -273,18 +276,21 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
             if (!item.isReadOnly && !item.isSystem) {
                 items.push({
                     label: 'Rename',
+                    icon: <LuPenLine size={14} />,
                     action: () => handleRename(item.id)
                 });
             }
 
             items.push({
                 label: 'Copy',
+                icon: <LuCopy size={14} />,
                 action: () => copyItem(item.id)
             });
 
             if (!item.isReadOnly && !item.isSystem) {
                 items.push({
                     label: 'Cut',
+                    icon: <LuScissors size={14} />,
                     action: () => cutItem(item.id)
                 });
             }
@@ -293,11 +299,13 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
 
             items.push({
                 label: 'Edit Home Screen',
+                icon: <LuPencilRuler size={14} />,
                 action: () => seteditmode(true)
             });
 
             items.push({
                 label: 'Show in Explorer',
+                icon: <LuFolderOpen size={14} />,
                 action: () => openSystemItem('explorer', { addwindow, windows, setactivewindow, updatewindow, ismobile, files }, undefined, { openPath: item.parent || currentUserDesktopId, selectItem: item.id })
             });
 
@@ -305,6 +313,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                 items.push({ separator: true, label: '' });
                 items.push({
                     label: 'Move to Trash',
+                    icon: <LuTrash2 size={14} />,
                     danger: true,
                     action: () => {
                         if (contextmenu.item?.mimetype === 'application/x-executable' || contextmenu.item?.id.startsWith('desktop-app-')) {
@@ -321,10 +330,12 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
             const items: any[] = [
                 {
                     label: 'New Folder',
+                    icon: <LuFolderPlus size={14} />,
                     action: () => createFolder('New Folder', currentUserDesktopId)
                 },
                 {
                     label: 'New File',
+                    icon: <LuFilePlus size={14} />,
                     action: () => createFile('Untitled.txt', currentUserDesktopId)
                 },
             ];
@@ -332,6 +343,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
             if (clipboard) {
                 items.push({
                     label: 'Paste',
+                    icon: <LuClipboardPaste size={14} />,
                     action: () => pasteItem(currentUserDesktopId)
                 });
             }
@@ -339,10 +351,12 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
             items.push({ separator: true, label: '' });
             items.push({
                 label: 'Edit Home Screen',
+                icon: <LuPencilRuler size={14} />,
                 action: () => seteditmode(true)
             });
             items.push({
                 label: 'Change Wallpaper',
+                icon: <LuImage size={14} />,
                 action: () => {
                     addwindow({
                         id: `settings-${Date.now()}`,

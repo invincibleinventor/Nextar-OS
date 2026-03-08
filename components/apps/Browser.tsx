@@ -8,6 +8,7 @@ import { useMenuRegistration } from '../AppMenuContext';
 import { useMenuAction } from '../hooks/useMenuAction';
 import { useMemo, useCallback } from 'react';
 import { useIsClay } from '../hooks/useIsClay';
+import { LuChevronLeft, LuChevronRight, LuRefreshCw, LuHome, LuScissors, LuCopy, LuClipboardPaste, LuMousePointerClick, LuZoomIn, LuZoomOut, LuMaximize, LuPlus, LuX } from 'react-icons/lu';
 import { glassButton, glassInput, glassCard, clayClasses } from '../hooks/useClayStyles';
 
 interface browserprops {
@@ -125,31 +126,31 @@ export default function Browser({ initialurl = 'https://duckduckgo.com', appId =
     const browserMenus = useMemo(() => ({
         File: [
             { title: "New Window", actionId: "new-window", shortcut: "⌘N" },
-            { title: "New Tab", actionId: "new-tab", shortcut: "⌘T" },
+            { title: "New Tab", actionId: "new-tab", shortcut: "⌘T", icon: <LuPlus size={14} /> },
             { title: "Open Location...", actionId: "open-location", shortcut: "⌘L" },
             { separator: true },
-            { title: "Close Window", actionId: "close-window", shortcut: "⌘W" },
+            { title: "Close Window", actionId: "close-window", shortcut: "⌘W", icon: <LuX size={14} /> },
         ],
         Edit: [
             { title: "Undo", actionId: "undo", shortcut: "⌘Z" },
             { title: "Redo", actionId: "redo", shortcut: "⇧⌘Z" },
             { separator: true },
-            { title: "Cut", actionId: "cut", shortcut: "⌘X" },
-            { title: "Copy", actionId: "copy", shortcut: "⌘C" },
-            { title: "Paste", actionId: "paste", shortcut: "⌘V" },
-            { title: "Select All", actionId: "select-all", shortcut: "⌘A" },
+            { title: "Cut", actionId: "cut", shortcut: "⌘X", icon: <LuScissors size={14} /> },
+            { title: "Copy", actionId: "copy", shortcut: "⌘C", icon: <LuCopy size={14} /> },
+            { title: "Paste", actionId: "paste", shortcut: "⌘V", icon: <LuClipboardPaste size={14} /> },
+            { title: "Select All", actionId: "select-all", shortcut: "⌘A", icon: <LuMousePointerClick size={14} /> },
         ],
         View: [
-            { title: "Zoom In", actionId: "zoom-in", shortcut: "⌘+" },
-            { title: "Zoom Out", actionId: "zoom-out", shortcut: "⌘-" },
-            { title: "Actual Size", actionId: "zoom-reset", shortcut: "⌘0" },
+            { title: "Zoom In", actionId: "zoom-in", shortcut: "⌘+", icon: <LuZoomIn size={14} /> },
+            { title: "Zoom Out", actionId: "zoom-out", shortcut: "⌘-", icon: <LuZoomOut size={14} /> },
+            { title: "Actual Size", actionId: "zoom-reset", shortcut: "⌘0", icon: <LuMaximize size={14} /> },
             { separator: true },
-            { title: "Reload Page", actionId: "reload", shortcut: "⌘R" },
+            { title: "Reload Page", actionId: "reload", shortcut: "⌘R", icon: <LuRefreshCw size={14} /> },
         ],
         History: [
-            { title: "Back", actionId: "go-back", shortcut: "⌘[" },
-            { title: "Forward", actionId: "go-forward", shortcut: "⌘]" },
-            { title: "Home", actionId: "go-home", shortcut: "⇧⌘H" }
+            { title: "Back", actionId: "go-back", shortcut: "⌘[", icon: <LuChevronLeft size={14} /> },
+            { title: "Forward", actionId: "go-forward", shortcut: "⌘]", icon: <LuChevronRight size={14} /> },
+            { title: "Home", actionId: "go-home", shortcut: "⇧⌘H", icon: <LuHome size={14} /> }
         ]
     }), []);
 
