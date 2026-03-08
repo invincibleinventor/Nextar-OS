@@ -173,8 +173,7 @@ const AppLibrary = () => {
                 <div
                     className="flex items-center rounded-full p-[3px]"
                     style={clay ? {
-                        background: islightbackground ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.1)',
-                        backdropFilter: 'blur(12px)',
+                        background: islightbackground ? 'rgba(230,228,232,0.85)' : 'rgba(50,50,55,0.85)',
                         border: islightbackground ? '1px solid rgba(255,255,255,0.4)' : '1px solid rgba(255,255,255,0.08)',
                     } : {
                         background: 'var(--bg-overlay)',
@@ -221,17 +220,10 @@ const AppLibrary = () => {
                 className="flex-1 relative overflow-y-auto overflow-x-hidden px-4 pb-20 scrollbar-hide [&::-webkit-scrollbar]:hidden"
                 style={{ touchAction: 'pan-y', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
-                <AnimatePresence mode="popLayout" initial={false}>
-                    {searchquery.trim() ? (
+                {searchquery.trim() ? (
                         viewmode === 'all' ? (
                             // Search results — flat grid
-                            <motion.div
-                                key="search-apps"
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                transition={{ duration: 0.25 }}
-                            >
+                            <div key="search-apps">
                                 {filteredApps.length > 0 ? (
                                     <div className="grid grid-cols-4 gap-x-4 gap-y-5 pt-3 pb-10">
                                         {filteredApps.map(app => (
@@ -255,16 +247,10 @@ const AppLibrary = () => {
                                         <p className={`text-[15px] font-medium ${textMuted}`}>No apps found</p>
                                     </div>
                                 )}
-                            </motion.div>
+                            </div>
                         ) : (
                             // Search categories
-                            <motion.div
-                                key="search-categories"
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                transition={{ duration: 0.25 }}
-                            >
+                            <div key="search-categories">
                                 {filteredCategories.length > 0 ? (
                                     <div className="grid grid-cols-2 gap-4 pt-3 pb-10 px-1">
                                         {filteredCategories.map(([category, catApps]) => (
@@ -286,17 +272,11 @@ const AppLibrary = () => {
                                         <p className={`text-[15px] font-medium ${textMuted}`}>No categories found</p>
                                     </div>
                                 )}
-                            </motion.div>
+                            </div>
                         )
                     ) : viewmode === 'all' ? (
                         // All apps — flat alphabetical grid
-                        <motion.div
-                            key="all-apps"
-                            initial={{ opacity: 0, x: -30 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -30 }}
-                            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-                        >
+                        <div key="all-apps">
                             <div className="grid grid-cols-4 gap-x-4 gap-y-5 pt-3 pb-10">
                                 {allApps.map(app => (
                                     <AppItem
@@ -314,16 +294,10 @@ const AppLibrary = () => {
                                     />
                                 ))}
                             </div>
-                        </motion.div>
+                        </div>
                     ) : (
                         // Categories view — 2-column grid of glass category cards
-                        <motion.div
-                            key="categories"
-                            initial={{ opacity: 0, x: 30 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: 30 }}
-                            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-                        >
+                        <div key="categories">
                             <div className="grid grid-cols-2 gap-4 pt-3 pb-10 px-1">
                                 {categoryGroups.map(([category, catApps]) => (
                                     <CategoryCard
@@ -339,9 +313,8 @@ const AppLibrary = () => {
                                     />
                                 ))}
                             </div>
-                        </motion.div>
+                        </div>
                     )}
-                </AnimatePresence>
             </div>
 
             {/* Search bar pinned to bottom */}
@@ -350,10 +323,8 @@ const AppLibrary = () => {
                     className={`relative w-full ${clay ? 'rounded-full' : 'rounded-lg bg-overlay border border-[--border-color]'}`}
                     style={clay ? {
                         background: islightbackground
-                            ? 'rgba(255,255,255,0.25)'
-                            : 'rgba(255,255,255,0.1)',
-                        backdropFilter: 'blur(20px)',
-                        WebkitBackdropFilter: 'blur(20px)',
+                            ? 'rgba(230,228,232,0.9)'
+                            : 'rgba(50,50,55,0.9)',
                         boxShadow: islightbackground
                             ? '0 2px 16px rgba(0,0,0,0.08)'
                             : '0 2px 16px rgba(0,0,0,0.2)',
@@ -405,10 +376,10 @@ const AppLibrary = () => {
                                 className="relative w-[85%] max-w-[340px] max-h-[70vh] rounded-[22px] overflow-hidden"
                                 style={clay ? {
                                     background: islightbackground
-                                        ? 'rgba(240,240,245,0.55)'
-                                        : 'rgba(30,30,35,0.45)',
-                                    backdropFilter: 'blur(80px) saturate(1.8)',
-                                    WebkitBackdropFilter: 'blur(80px) saturate(1.8)',
+                                        ? 'rgba(240,240,245,0.92)'
+                                        : 'rgba(30,30,35,0.92)',
+                                    backdropFilter: 'blur(20px) saturate(1.4)',
+                                    WebkitBackdropFilter: 'blur(20px) saturate(1.4)',
                                     border: islightbackground
                                         ? '1px solid rgba(255,255,255,0.5)'
                                         : '1px solid rgba(255,255,255,0.08)',
