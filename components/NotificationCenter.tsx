@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { useNotifications } from './NotificationContext';
 import { useDevice } from './DeviceContext';
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
-import { IoClose, IoNotificationsOutline, IoTrashOutline } from 'react-icons/io5';
+import { IoClose, IoNotificationsOutline } from 'react-icons/io5';
 import { useIsClay } from './hooks/useIsClay';
 import { glassPanel, glassCard, glassButton } from './hooks/useClayStyles';
 import { useWindows } from './WindowContext';
@@ -126,18 +126,18 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                 <h1 className={`font-bold text-[--text-color] tracking-tight leading-none ${clay ? 'text-[42px] font-semibold' : 'text-[48px]'}`}>
                                     {time.split(' ')[0]}
                                 </h1>
-                                <p className="text-[14px] text-[--text-muted] font-medium mt-1.5">{date}</p>
+                                <p className="text-[14px] font-medium mt-1.5 text-[--text-color]">{date}</p>
                             </div>
 
                             {/* Section label + clear */}
                             <div className="px-5 pb-2 flex items-center justify-between shrink-0">
-                                <span className={`text-[13px] font-semibold ${clay ? 'text-[--text-muted]' : 'text-[--text-color]'}`}>
+                                <span className="text-[13px] font-semibold text-[--text-color]">
                                     {notifications.length > 0 ? `${notifications.length} Notification${notifications.length > 1 ? 's' : ''}` : 'Notifications'}
                                 </span>
                                 {notifications.length > 0 && (
                                     <button
                                         onClick={() => clearallnotifications()}
-                                        className={`text-[12px] font-medium active:scale-95 transition-all ${clay ? 'text-accent' : 'text-pastel-blue'}`}
+                                        className="text-[12px] font-semibold active:scale-95 transition-all text-[--text-color]"
                                     >
                                         Clear All
                                     </button>
@@ -179,11 +179,11 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                                 {/* Group header */}
                                                 <div className="flex items-center gap-2.5 px-3.5 pt-3 pb-1.5">
                                                     <Image src={group.icon} width={22} height={22} className="w-[22px] h-[22px] rounded-md shrink-0" alt={group.appname} />
-                                                    <span className={`text-[12px] font-bold flex-1 uppercase tracking-wide ${clay ? 'text-[--text-muted]' : 'text-[--text-color]'}`}>
+                                                    <span className="text-[12px] font-bold flex-1 uppercase tracking-wide text-[--text-color]">
                                                         {group.appname}
                                                     </span>
                                                     {group.items.length > 1 && (
-                                                        <span className="text-[10px] font-bold text-[--text-muted] px-2 py-0.5 rounded-full"
+                                                        <span className="text-[10px] font-bold text-[--text-color] opacity-50 px-2 py-0.5 rounded-full"
                                                             style={{ background: clay ? 'var(--bg-glass)' : 'var(--bg-surface)' }}>
                                                             {group.items.length}
                                                         </span>
@@ -221,9 +221,9 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                                             <div className="px-3.5 py-3">
                                                                 <div className="flex justify-between items-center mb-1">
                                                                     <h3 className="text-[13px] font-semibold text-[--text-color] leading-tight truncate flex-1 mr-2">{n.title}</h3>
-                                                                    <span className="text-[10px] text-[--text-muted] shrink-0">{n.time}</span>
+                                                                    <span className="text-[10px] text-[--text-color] opacity-50 shrink-0">{n.time}</span>
                                                                 </div>
-                                                                <p className="text-[12px] text-[--text-muted] leading-snug line-clamp-2">{n.description}</p>
+                                                                <p className="text-[12px] text-[--text-color] opacity-70 leading-snug line-clamp-2">{n.description}</p>
                                                                 {n.actions && n.actions.length > 0 && (
                                                                     <div className="flex gap-2 mt-2.5">
                                                                         {n.actions.slice(0, 3).map(a => (
@@ -281,7 +281,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                 : 'rounded-2xl bg-overlay border border-[--border-color]'
                             }`}
                             style={clay ? {
-                                background: 'color-mix(in srgb, var(--accent-source) 4%, color-mix(in srgb, var(--bg-glass) 25%, transparent))',
+                                background: 'color-mix(in srgb, var(--accent-source) 6%, color-mix(in srgb, var(--bg-glass) 45%, transparent))',
                                 backdropFilter: 'blur(var(--glass-blur-heavy))',
                                 WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
                                 border: '1px solid var(--glass-border)',
@@ -297,10 +297,10 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                 <div className="flex-1 min-w-0 text-left">
                                     <div className="flex justify-between items-baseline mb-0.5">
                                         <h4 className="font-bold text-[13px] text-[--text-color] leading-tight">{n.appname}</h4>
-                                        <span className="text-[10px] text-[--text-muted]">{n.time}</span>
+                                        <span className="text-[10px] text-[--text-color] opacity-50">{n.time}</span>
                                     </div>
                                     <h4 className="font-semibold text-[13px] text-[--text-color] leading-tight">{n.title}</h4>
-                                    <p className="text-[12px] text-[--text-muted] leading-snug mt-0.5 line-clamp-2">{n.description}</p>
+                                    <p className="text-[12px] text-[--text-color] opacity-70 leading-snug mt-0.5 line-clamp-2">{n.description}</p>
                                 </div>
                             </div>
                         </motion.div>
@@ -327,7 +327,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                 ? 'rounded-[16px]'
                                 : 'bg-overlay border border-[--border-color] anime-accent-left anime-glow-sm'
                             }`}
-                            style={clay ? { background: 'color-mix(in srgb, var(--accent-source) 6%, color-mix(in srgb, var(--bg-glass) 55%, transparent))', backdropFilter: 'blur(var(--glass-blur-heavy))', WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))', border: '1px solid var(--glass-border)', boxShadow: 'var(--glass-shadow)' } : undefined}
+                            style={clay ? { background: 'color-mix(in srgb, var(--accent-source) 6%, color-mix(in srgb, var(--bg-glass) 45%, transparent))', backdropFilter: 'blur(var(--glass-blur-heavy))', WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))', border: '1px solid var(--glass-border)', boxShadow: 'var(--glass-shadow)' } : undefined}
                             onClick={() => { handlenotificationclick(n); markasviewed(n.id); }}
                             whileHover={{ scale: 1.01 }}
                         >
@@ -343,11 +343,11 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                 <Image src={n.icon} width={40} height={40} className="w-10 h-10 object-cover" alt={n.appname} />
                                 <div className="flex-1 min-w-0 text-left">
                                     <div className="flex justify-between items-center mb-1">
-                                        <span className="font-semibold text-[11px] uppercase tracking-wide text-[--text-muted]">{n.appname}</span>
-                                        <span className="text-[10px] text-[--text-muted]">{n.time}</span>
+                                        <span className="font-semibold text-[11px] uppercase tracking-wide text-[--text-color]">{n.appname}</span>
+                                        <span className="text-[10px] text-[--text-color] opacity-50">{n.time}</span>
                                     </div>
                                     <h4 className="font-semibold text-[14px] text-[--text-color] leading-tight">{n.title}</h4>
-                                    <p className="text-[13px] text-[--text-color] leading-snug mt-0.5 line-clamp-2">{n.description}</p>
+                                    <p className="text-[13px] text-[--text-color] opacity-70 leading-snug mt-0.5 line-clamp-2">{n.description}</p>
                                 </div>
                             </div>
                             {n.actions && n.actions.length > 0 && (
@@ -390,7 +390,7 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                         transition={{ type: "spring", stiffness: 400, damping: 28 }}
                         className="fixed z-[700] bottom-[72px] right-3 w-[360px] max-h-[70vh] overflow-hidden flex flex-col rounded-[22px]"
                         style={{
-                            background: 'color-mix(in srgb, var(--accent-source) 12%, var(--bg-glass))',
+                            background: 'color-mix(in srgb, var(--accent-source) 6%, color-mix(in srgb, var(--bg-glass) 35%, transparent))',
                             backdropFilter: 'blur(var(--glass-blur-heavy))',
                             WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
                             border: '1px solid var(--glass-border)',
@@ -404,10 +404,9 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                 {notifications.length > 0 && (
                                     <button
                                         onClick={() => clearallnotifications()}
-                                        className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-[--text-muted] hover:text-[--text-color] active:scale-95 transition-all rounded-full"
-                                        style={{ background: 'color-mix(in srgb, var(--bg-glass-active) 65%, transparent)' }}
+                                        className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-[--text-color] hover:text-[--text-color] active:scale-95 transition-all rounded-full"
+                                        style={{ background: 'color-mix(in srgb, var(--bg-glass) 50%, transparent)', border: '1px solid var(--glass-border)' }}
                                     >
-                                        <IoTrashOutline size={11} />
                                         Clear
                                     </button>
                                 )}
@@ -429,11 +428,11 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                 ) : (
                                     <div className="flex flex-col gap-2.5">
                                         {groupednotifications.map(group => (
-                                            <div key={group.appname} className="rounded-[16px] overflow-hidden" style={glassCard}>
+                                            <div key={group.appname} className="rounded-[16px] overflow-hidden" style={{ background: 'color-mix(in srgb, var(--bg-glass) 50%, transparent)', border: '1px solid var(--glass-border)' }}>
                                                 {/* App group header */}
                                                 <div className="flex items-center gap-2 px-3 pt-2.5 pb-1">
                                                     <Image src={group.icon} width={16} height={16} className="w-4 h-4 rounded-[4px]" alt={group.appname} />
-                                                    <span className="text-[11px] font-semibold text-[--text-muted] uppercase tracking-wide flex-1">{group.appname}</span>
+                                                    <span className="text-[11px] font-semibold text-[--text-color] uppercase tracking-wide flex-1">{group.appname}</span>
                                                     {group.items.length > 1 && (
                                                         <span className="text-[10px] font-semibold text-[--text-muted] px-1.5 py-0.5 rounded-full" style={{ background: 'color-mix(in srgb, var(--bg-glass-active) 65%, transparent)' }}>
                                                             {group.items.length}
@@ -466,9 +465,9 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                                                 </button>
                                                                 <div className="flex justify-between items-center mb-0.5 pr-5">
                                                                     <h4 className="font-semibold text-[13px] text-[--text-color] leading-tight truncate">{n.title}</h4>
-                                                                    <span className="text-[10px] text-[--text-muted] shrink-0 ml-2">{n.time}</span>
+                                                                    <span className="text-[10px] text-[--text-color] opacity-50 shrink-0 ml-2">{n.time}</span>
                                                                 </div>
-                                                                <p className="text-[12px] text-[--text-muted] leading-snug line-clamp-2">{n.description}</p>
+                                                                <p className="text-[12px] text-[--text-color] opacity-70 leading-snug line-clamp-2">{n.description}</p>
                                                                 {n.actions && n.actions.length > 0 && (
                                                                     <div className="flex gap-1.5 mt-2">
                                                                         {n.actions.slice(0, 3).map(a => (
@@ -512,7 +511,6 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                             onClick={() => clearallnotifications()}
                                             className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-[--text-muted] hover:text-[--text-color] hover:bg-overlay transition-colors"
                                         >
-                                            <IoTrashOutline size={14} />
                                             Clear All
                                         </button>
                                     )}
@@ -555,9 +553,9 @@ export default function NotificationCenter({ isopen, onclose }: { isopen: boolea
                                                         <div className="pr-6">
                                                             <div className="flex justify-between items-center mb-0.5">
                                                                 <h4 className="font-semibold text-[14px] text-[--text-color] leading-tight">{n.title}</h4>
-                                                                <span className="text-[10px] text-[--text-muted] shrink-0 ml-2">{n.time}</span>
+                                                                <span className="text-[10px] text-[--text-color] opacity-50 shrink-0 ml-2">{n.time}</span>
                                                             </div>
-                                                            <p className="text-[13px] text-[--text-color] opacity-80 leading-snug mt-0.5 line-clamp-2">{n.description}</p>
+                                                            <p className="text-[13px] text-[--text-color] opacity-70 leading-snug mt-0.5 line-clamp-2">{n.description}</p>
                                                         </div>
                                                         {n.actions && n.actions.length > 0 && (
                                                             <div className="flex gap-2 mt-2 pt-2 border-t border-[--border-color]">

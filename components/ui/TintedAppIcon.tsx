@@ -60,6 +60,7 @@ const appIconMap: Record<string, { icon: PhosphorIcon; bg: string; shade: number
     'videoplayer': { icon: MonitorPlayIcon, bg: 'var(--pastel-mauve)', shade: 2 },
     'paint': { icon: PaintBrushIcon, bg: 'var(--pastel-green)', shade: 0 },
     'contacts': { icon: UserCircleIcon, bg: 'var(--pastel-teal)', shade: 1 },
+    'portfolio': { icon: UserCircleIcon, bg: 'var(--pastel-lavender)', shade: 0 },
 };
 
 /* ── Papirus icon set ── */
@@ -69,7 +70,7 @@ const papirusApps = new Set([
     'music', 'photos', 'videoplayer', 'paint', 'hackathonworkspace', 'apidocs',
     'apiplayground', 'templatesmanager', 'projectdashboard', 'contacts',
     'calculator', 'clock', 'weather', 'appstore', 'welcome', 'fileviewer',
-    'getinfo', 'aboutnextaros', 'trash',
+    'getinfo', 'aboutnextaros', 'trash', 'portfolio',
 ]);
 
 /* ── Clay tint gradients ── */
@@ -98,7 +99,7 @@ const clayColorMap: Record<string, string> = {
     'var(--bg-overlay)': '#3A3A42',
 };
 
-const excludedApps: string[] = ['portfolio'];
+const excludedApps: string[] = [];
 
 /* iOS-style squircle mask */
 const SQUIRCLE_SVG = encodeURIComponent(

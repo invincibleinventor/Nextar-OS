@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDevice } from '../DeviceContext';
 import { useIsClay } from '../hooks/useIsClay';
-import { glassPanel, glassButton } from '../hooks/useClayStyles';
+import { glassShell, glassButton } from '../hooks/useClayStyles';
 
 interface ContextMenuProps {
     x: number;
@@ -95,7 +95,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose, classNa
                     key="context-sheet"
                     ref={menuRef}
                     className={`fixed bottom-0 left-0 right-0 z-[600] p-2 pb-8 ${clay ? 'rounded-t-[20px]' : 'bg-surface border-t-2 border-[--border-color] font-mono'} ${className}`}
-                    style={clay ? glassPanel : undefined}
+                    style={clay ? glassShell : undefined}
                     initial={{ y: '100%' }}
                     animate={{ y: 0 }}
                     exit={{ y: '100%' }}
@@ -153,9 +153,11 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose, classNa
     const neoStyle = clay ? {
         top: position.top,
         left: position.left,
-        ...glassPanel,
+        background: 'color-mix(in srgb, var(--accent-source) 4%, color-mix(in srgb, var(--bg-glass) 20%, transparent))',
         backdropFilter: 'blur(var(--glass-blur-heavy))',
         WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
+        border: '1px solid var(--glass-border)',
+        boxShadow: 'var(--glass-shadow)',
     } : {
         top: position.top,
         left: position.left,
@@ -164,8 +166,8 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose, classNa
     return createPortal(
         <div
             ref={menuRef}
-            className={`fixed z-[600] min-w-[210px] flex flex-col animate-in fade-in zoom-in-95 duration-100 ${clay
-                ? 'rounded-[12px] p-[5px]'
+            className={`fixed z-[600] min-w-[200px] flex flex-col animate-in fade-in zoom-in-95 duration-100 ${clay
+                ? 'rounded-[10px] p-[4px] font-sans'
                 : 'bg-overlay border border-[--border-color] font-mono anime-glow-sm p-[5px]'
             } ${className}`}
             style={neoStyle}
@@ -174,7 +176,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose, classNa
         >
             {items.map((item, index) => {
                 if (item.separator) {
-                    return <div key={`sep-${index}`} className={`h-[1px] mx-2.5 ${clay ? 'my-[5px] bg-[--glass-border]' : 'my-1 bg-[--border-color]'}`} />;
+                    return <div key={`sep-${index}`} className={`h-[1px] mx-2 ${clay ? 'my-[3px] bg-[--glass-border]' : 'my-1 bg-[--border-color]'}`} />;
                 }
 
                 return (
@@ -188,20 +190,21 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose, classNa
                         }}
                         disabled={item.disabled}
                         className={`
-                            w-full text-left text-[13px] font-medium transition-all duration-150
-                            ${clay ? 'rounded-[8px] px-3 py-[7px]' : 'px-3 py-1.5'}
+                            w-full text-left font-medium transition-all duration-100 flex items-center gap-2.5
+                            ${clay ? 'rounded-[6px] px-2.5 py-[5px] text-[12.5px]' : 'px-3 py-1.5 text-[13px]'}
                             ${item.disabled
-                                ? 'opacity-50 cursor-not-allowed text-[--text-muted]'
+                                ? 'opacity-40 cursor-not-allowed text-[--text-color]'
                                 : item.danger
                                     ? clay
                                         ? 'text-pastel-red hover:bg-pastel-red hover:text-white active:scale-[0.97]'
                                         : 'text-[--text-color] hover:bg-pastel-red hover:text-[--bg-base]'
                                     : clay
-                                        ? 'text-[--text-color] hover:bg-[--bg-glass-hover] active:bg-[--bg-glass-active] active:scale-[0.97]'
+                                        ? 'text-[--text-color] hover:bg-white/10 active:bg-white/15 active:scale-[0.97]'
                                         : 'text-[--text-color] hover:bg-accent hover:text-[--bg-base]'
                             }
                         `}
                     >
+                        {item.icon && <span className="w-4 h-4 flex items-center justify-center opacity-80 text-[15px]">{item.icon}</span>}
                         {item.label}
                     </button>
                 );

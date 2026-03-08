@@ -152,14 +152,14 @@ const AppLibrary = () => {
 
             {/* Category chips at top */}
             <div className="shrink-0 px-5 pt-4 pb-2">
-                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none' }}>
+                <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none' }}>
                     <button
                         onClick={() => setselectedcategory(null)}
                         className={`shrink-0 px-4 py-1.5 text-[13px] font-semibold transition-all active:scale-95 ${clay ? 'rounded-full' : ''}`}
                         style={clay ? (
                             !selectedcategory
                                 ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)', color: 'white' }
-                                : { background: 'color-mix(in srgb, var(--bg-glass) 60%, transparent)', color: 'var(--text-color)', border: '1px solid var(--glass-border)', backdropFilter: 'blur(12px)' }
+                                : { background: 'color-mix(in srgb, var(--bg-glass) 60%, transparent)', color: 'white', border: '1px solid var(--glass-border)', backdropFilter: 'blur(12px)', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }
                         ) : (
                             !selectedcategory
                                 ? { background: 'var(--text-color)', color: 'var(--bg-surface)' }
@@ -176,7 +176,7 @@ const AppLibrary = () => {
                             style={clay ? (
                                 selectedcategory === cat
                                     ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)', color: 'white' }
-                                    : { background: 'color-mix(in srgb, var(--bg-glass) 60%, transparent)', color: 'var(--text-color)', border: '1px solid var(--glass-border)', backdropFilter: 'blur(12px)' }
+                                    : { background: 'color-mix(in srgb, var(--bg-glass) 60%, transparent)', color: 'white', border: '1px solid var(--glass-border)', backdropFilter: 'blur(12px)', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }
                             ) : (
                                 selectedcategory === cat
                                     ? { background: 'var(--text-color)', color: 'var(--bg-surface)' }
@@ -216,8 +216,8 @@ const AppLibrary = () => {
                                     useFill={false}
                                 />
                                 <span
-                                    className={`text-[11px] text-center font-medium leading-tight w-full truncate ${islightbackground ? 'text-black/80' : 'text-white'}`}
-                                    style={{ textShadow: islightbackground ? 'none' : '0 1px 2px rgba(0,0,0,0.5), 0 0 4px rgba(0,0,0,0.2)' }}
+                                    className="text-[12px] text-center font-medium leading-tight w-full truncate text-white"
+                                    style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5), 0 0 6px rgba(0,0,0,0.2)' }}
                                 >
                                     {app.appname}
                                 </span>
@@ -242,17 +242,17 @@ const AppLibrary = () => {
                         border: '1px solid var(--glass-border)',
                     } : undefined}
                 >
-                    <IoSearch className="text-[--text-muted]" size={18} />
+                    <IoSearch className="text-white opacity-60" size={18} />
                     <input
                         type="text"
                         value={searchquery}
                         onChange={(e) => setsearchquery(e.target.value)}
                         placeholder="Search apps..."
-                        className={`ml-2 flex-1 bg-transparent text-[--text-color] outline-none ${clay ? 'text-[15px] placeholder:text-[--text-muted]' : 'text-lg placeholder-[--text-muted]'}`}
+                        className={`ml-2 flex-1 bg-transparent text-white outline-none ${clay ? 'text-[15px] placeholder:text-white/50' : 'text-lg placeholder-[--text-muted]'}`}
                     />
                     {searchquery && (
                         <button onClick={() => setsearchquery('')} className="p-1">
-                            <IoClose className="text-[--text-muted]" size={18} />
+                            <IoClose className="text-white opacity-60" size={18} />
                         </button>
                     )}
                 </div>

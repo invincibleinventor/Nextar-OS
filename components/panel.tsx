@@ -222,7 +222,9 @@ export default function Panel({ ontogglenotifications, ontogglecalendar }: { ont
                         className="h-[38px] mt-[4px] px-2 flex items-center space-x-0.5 pointer-events-auto rounded-[22px]"
                         style={{
                             ...glassPanel,
-                            background: 'color-mix(in srgb, var(--accent-source) 12%, var(--bg-glass))',
+                            background: shouldautohide
+                                ? 'color-mix(in srgb, var(--accent-source) 12%, var(--bg-glass))'
+                                : 'color-mix(in srgb, var(--accent-source) 6%, color-mix(in srgb, var(--bg-glass) 35%, transparent))',
                             backdropFilter: 'blur(var(--glass-blur-heavy))',
                             WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
                         }}

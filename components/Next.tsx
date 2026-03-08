@@ -189,7 +189,7 @@ export default function Next({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                         : 'bg-[--bg-surface] shadow-pastel-active border border-[--border-color] anime-glow-lg'
                     }`}
                     style={clay ? {
-                        background: 'color-mix(in srgb, var(--accent-source) 12%, var(--bg-glass))',
+                        background: 'color-mix(in srgb, var(--accent-source) 6%, color-mix(in srgb, var(--bg-glass) 50%, transparent))',
                         backdropFilter: 'blur(var(--glass-blur-heavy))',
                         WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
                         border: '1px solid var(--glass-border)',
@@ -197,14 +197,14 @@ export default function Next({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                     } : undefined}
                 >
                     <div className={`flex items-center gap-3 p-4 border-b ${clay ? 'border-[--glass-border]' : 'border-[--border-color]'}`}>
-                        <IoSearch className="text-xl text-[--text-muted]" />
+                        <IoSearch className="text-xl text-[--text-color]" />
                         <input
                             ref={inputRef}
                             type="text"
                             value={query}
                             onChange={e => setQuery(e.target.value)}
                             placeholder="Next Search"
-                            className="flex-1 text-[--text-color] bg-transparent text-lg outline-none placeholder:text-[--text-muted]"
+                            className={`flex-1 bg-transparent text-lg outline-none ${clay ? 'text-[--text-color] placeholder:text-[--text-color]/50' : 'text-[--text-color] placeholder:text-[--text-muted]'}`}
                             autoFocus
                         />
                     </div>
@@ -220,9 +220,9 @@ export default function Next({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                                     }}
                                     className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${idx === selectedIndex
                                         ? clay ? 'text-white' : 'bg-accent text-[--bg-base]'
-                                        : clay ? 'text-[--text-color] hover:bg-[--bg-glass-hover]' : 'text-[--text-color] hover:bg-overlay'
-                                        } ${clay ? 'mx-2 rounded-[12px]' : ''}`}
-                                    style={idx === selectedIndex && clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' } : undefined}
+                                        : clay ? 'text-[--text-color] hover:bg-white/10' : 'text-[--text-color] hover:bg-overlay'
+                                        } ${clay ? 'mx-2 rounded-[10px]' : ''}`}
+                                    style={idx === selectedIndex && clay ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)', borderRadius: 10 } : undefined}
                                 >
                                     <div className="w-8 h-8 flex items-center justify-center shrink-0 relative">
                                         {result.icon}
@@ -232,14 +232,14 @@ export default function Next({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                                             {result.name}
                                         </div>
                                         {result.subtitle && (
-                                            <div className={`text-xs truncate ${idx === selectedIndex ? (clay ? 'text-white/70' : 'opacity-70') : 'text-[--text-muted]'}`}>
+                                            <div className={`text-xs truncate ${idx === selectedIndex ? (clay ? 'text-white/70' : 'opacity-70') : 'text-[--text-color] opacity-50'}`}>
                                                 {result.subtitle}
                                             </div>
                                         )}
                                     </div>
                                     <div className={`text-xs px-2 py-0.5 rounded-full ${idx === selectedIndex
                                         ? clay ? 'bg-white/20 text-white' : 'bg-[--bg-base]/20'
-                                        : clay ? 'bg-[--bg-glass-active] text-[--text-muted]' : 'bg-overlay'
+                                        : clay ? 'bg-white/10 text-[--text-color] opacity-60' : 'bg-overlay text-[--text-color]'
                                         }`}>
                                         {result.type}
                                     </div>
@@ -249,8 +249,9 @@ export default function Next({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                     )}
 
                     {query && results.length === 0 && (
-                        <div className="p-8 text-center text-[--text-muted]">
-                            No results for &ldquo;{query}&rdquo;
+                        <div className="p-8 text-center text-[--text-color] opacity-50 flex flex-col items-center gap-2">
+                            <IoSearch className="text-2xl" />
+                            <span>No results for &ldquo;{query}&rdquo;</span>
                         </div>
                     )}
 
