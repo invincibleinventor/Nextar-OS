@@ -28,7 +28,7 @@ const Dock = () => {
   const { notifications } = useNotifications();
   const glassStyle: React.CSSProperties = {
     ...glassPill,
-    background: 'color-mix(in srgb, var(--accent-source) 12%, var(--bg-glass))',
+    background: 'color-mix(in srgb, var(--accent-source) 6%, color-mix(in srgb, var(--bg-glass) 35%, transparent))',
     backdropFilter: 'blur(var(--glass-blur-heavy))',
     WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
   };
@@ -212,13 +212,16 @@ const Dock = () => {
           {/* Search pill */}
           <div
             className="flex items-center gap-2.5 h-[44px] px-4 rounded-[22px] cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.97]"
-            style={glassStyle}
+            style={{
+              ...glassStyle,
+              background: 'color-mix(in srgb, var(--accent-source) 4%, color-mix(in srgb, var(--bg-glass) 28%, transparent))',
+            }}
             onClick={() => window.dispatchEvent(new CustomEvent('toggle-next'))}
           >
-            <svg className="w-[15px] h-[15px] text-[--text-muted] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+            <svg className="w-[15px] h-[15px] text-[--text-color] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
               <circle cx="11" cy="11" r="8" /><path strokeLinecap="round" d="M21 21l-4.35-4.35" />
             </svg>
-            <span className="text-[14px] text-[--text-muted] font-medium whitespace-nowrap">Search</span>
+            <span className="text-[14px] text-[--text-color] font-medium whitespace-nowrap">Search</span>
           </div>
         </div>
 
@@ -252,16 +255,13 @@ const Dock = () => {
                   style={{ position: 'relative', zIndex: ishover ? 10 : undefined }}
                 >
                   {ishover && (
-                    <motion.div
-                      className="absolute bottom-full mb-3 text-[11px] text-[--text-color] px-2.5 py-1 rounded-[10px]"
-                      style={{ whiteSpace: 'nowrap', ...glassStyle }}
-                      initial={{ opacity: 0, y: 8, scale: 0.85 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                    <div
+                      className="absolute bottom-full mb-3 text-[11px] text-[--text-color] px-2.5 py-1 rounded-[10px] font-semibold"
+                      style={{ whiteSpace: 'nowrap', background: 'color-mix(in srgb, var(--accent-source) 4%, color-mix(in srgb, var(--bg-glass) 20%, transparent))', backdropFilter: 'blur(var(--glass-blur-heavy))', WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))', border: '1px solid var(--glass-border)', boxShadow: 'var(--glass-shadow)' }}
                     >
                       {app.appname}
                       {wincount > 1 && <span className="ml-1 opacity-50">({wincount})</span>}
-                    </motion.div>
+                    </div>
                   )}
                   <TintedAppIcon appId={app.id} appName={app.appname} originalIcon={app.icon} size={iconsize} useFill={true} />
                   {haswin && !isTrash && (
@@ -290,7 +290,7 @@ const Dock = () => {
           >
             {!isOnline && <span className="text-[9px] font-bold text-pastel-red px-1.5 py-0.5 rounded-full" style={{ background: 'color-mix(in srgb, var(--pastel-red) 15%, transparent)' }}>OFFLINE</span>}
             <LuSignal className={`w-[14px] h-[14px] ${!isOnline ? 'text-pastel-red' : 'text-[--text-color]'}`} />
-            <LuWifi className={`w-[14px] h-[14px] ${!isOnline ? 'text-pastel-red' : wifistatus.connected ? 'text-[--text-color]' : 'text-[--text-muted]'}`} />
+            <LuWifi className={`w-[14px] h-[14px] ${!isOnline ? 'text-pastel-red' : 'text-[--text-color]'}`} />
             <LuBatteryFull className="w-[18px] h-[18px] text-[--text-color]" />
           </div>
 
@@ -300,7 +300,7 @@ const Dock = () => {
             style={glassStyle}
             onClick={() => window.dispatchEvent(new CustomEvent('toggle-calendar'))}
           >
-            <span className="text-[13px] font-medium text-[--text-color] tabular-nums">{currentdate}</span>
+            <span className="text-[13px] font-bold text-[--text-color] tabular-nums">{currentdate}</span>
           </div>
 
           {/* Section 3: Time + notification badge — opens notifications */}

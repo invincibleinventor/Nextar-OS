@@ -50,7 +50,7 @@ export default function CalendarPanel({ isopen, onclose }: { isopen: boolean; on
                                 : 'top-[40px] right-3 rounded-[8px] bg-surface border border-[--border-color]'
                         }`}
                         style={clay ? {
-                            background: 'color-mix(in srgb, var(--accent-source) 12%, var(--bg-glass))',
+                            background: 'color-mix(in srgb, var(--accent-source) 6%, color-mix(in srgb, var(--bg-glass) 35%, transparent))',
                             backdropFilter: 'blur(var(--glass-blur-heavy))',
                             WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
                             border: '1px solid var(--glass-border)',
@@ -62,7 +62,7 @@ export default function CalendarPanel({ isopen, onclose }: { isopen: boolean; on
                             <div className={`leading-none tracking-tight text-[--text-color] ${clay ? 'text-[32px] font-semibold' : 'text-[28px] font-bold'}`}>
                                 {timestr}
                             </div>
-                            <div className="text-[13px] text-[--text-muted] font-medium mt-1">
+                            <div className="text-[13px] text-[--text-color] opacity-60 font-medium mt-1">
                                 {datestr}
                             </div>
                         </div>

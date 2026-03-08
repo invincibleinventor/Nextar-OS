@@ -1,4 +1,4 @@
-const CACHE_VERSION = 3;
+const CACHE_VERSION = 4;
 const CACHE_PREFIX = 'nextaros';
 const CACHE_NAME = `${CACHE_PREFIX}-v${CACHE_VERSION}`;
 
@@ -99,6 +99,19 @@ async function putIfChanged(cache, request, networkResponse) {
     await cache.put(request, networkResponse);
 }
 
+// Add Cross-Origin Isolation headers (required for SharedArrayBuffer / WebContainers / CheerpX)
+function addCoiHeaders(response) {
+    if (response.status === 0) return response;
+    const headers = new Headers(response.headers);
+    headers.set('Cross-Origin-Embedder-Policy', 'credentialless');
+    headers.set('Cross-Origin-Opener-Policy', 'same-origin');
+    return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers,
+    });
+}
+
 function staleWhileRevalidate(event, request) {
     return caches.open(CACHE_NAME).then((cache) => {
         return cache.match(request).then((cached) => {
@@ -176,6 +189,16 @@ self.addEventListener('fetch', (event) => {
     if (event.request.method !== 'GET') return;
 
     const url = new URL(event.request.url);
+
+    // For same-origin navigation requests, add COI headers
+    if (url.origin === location.origin && event.request.mode === 'navigate') {
+        event.respondWith(
+            fetch(event.request).then(addCoiHeaders).catch(() =>
+                caches.open(CACHE_NAME).then(c => c.match(event.request)).then(r => r ? addCoiHeaders(r) : new Response('Offline', { status: 503 }))
+            )
+        );
+        return;
+    }
 
     if (shouldBypass(url, event.request)) return;
     if (!isCacheableOrigin(url)) return;

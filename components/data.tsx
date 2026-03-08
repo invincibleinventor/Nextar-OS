@@ -395,7 +395,7 @@ const _legacyApps: appdata[] = [
     {
         id: 'portfolio',
         appname: 'Portfolio',
-        icon: '/bala.jpeg',
+        icon: '/me.png',
         maximizeable: true,
         componentname: 'apps/Portfolio',
         additionaldata: {},

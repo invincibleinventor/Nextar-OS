@@ -264,7 +264,7 @@ export default function Launchpad({ onclose }: { onclose: () => void }) {
                                             />
                                         )}
                                     </div>
-                                    <span className="text-[--text-color] text-[11px] font-medium text-center leading-tight truncate max-w-[80px] font-mono">
+                                    <span className="text-[--text-color] text-[12px] font-medium text-center leading-tight truncate max-w-[80px] font-mono">
                                         {app.appname}
                                     </span>
                                 </div>
@@ -290,7 +290,7 @@ export default function Launchpad({ onclose }: { onclose: () => void }) {
                 style={{
                     backdropFilter: 'blur(var(--glass-blur-heavy))',
                     WebkitBackdropFilter: 'blur(var(--glass-blur-heavy))',
-                    background: 'color-mix(in srgb, var(--bg-base) 55%, transparent)',
+                    background: 'color-mix(in srgb, var(--accent-source) 4%, color-mix(in srgb, var(--bg-glass) 28%, transparent))',
                 }}
                 onClick={handleBackdropClick}
             >
@@ -310,12 +310,12 @@ export default function Launchpad({ onclose }: { onclose: () => void }) {
                                 background: 'var(--bg-glass-active)',
                                 boxShadow: 'inset 0 0 0 1px var(--glass-border), var(--shadow-sm)',
                             }}>
-                            <IoSearch className="absolute left-5 text-[--text-muted] text-[18px] z-[1]" />
+                            <IoSearch className="absolute left-5 text-white opacity-60 text-[18px] z-[1]" />
                             <input
                                 ref={searchRef}
                                 autoFocus
                                 placeholder="Search apps..."
-                                className="w-full pl-[48px] pr-6 py-3.5 bg-transparent text-[--text-color] placeholder-[--text-muted] text-[15px] font-sans font-medium outline-none rounded-full transition-all"
+                                className="w-full pl-[48px] pr-6 py-3.5 bg-transparent text-white placeholder-white/50 text-[15px] font-sans font-medium outline-none rounded-full transition-all"
                                 value={searchterm}
                                 onChange={e => { setsearchterm(e.target.value); }}
                             />
@@ -324,7 +324,7 @@ export default function Launchpad({ onclose }: { onclose: () => void }) {
 
                     {/* ── Category Filter Pills ── */}
                     <motion.div
-                        className="flex gap-2 mb-8 overflow-x-auto no-scrollbar max-w-full px-2"
+                        className="flex gap-2 mb-8 overflow-x-auto no-scrollbar max-w-full px-2 pb-1"
                         initial="hidden"
                         animate="visible"
                         variants={{
@@ -340,7 +340,7 @@ export default function Launchpad({ onclose }: { onclose: () => void }) {
                                 className={`px-4 py-2 text-[13px] font-sans font-medium shrink-0 transition-all active:scale-[0.95] rounded-full whitespace-nowrap ${
                                     activeCategory === cat
                                         ? 'text-white'
-                                        : 'text-[--text-muted] hover:text-[--text-color]'
+                                        : 'text-white/70 hover:text-white'
                                 }`}
                                 style={
                                     activeCategory === cat
@@ -406,7 +406,7 @@ export default function Launchpad({ onclose }: { onclose: () => void }) {
                                             )}
                                         </div>
                                         {/* App label */}
-                                        <span className="text-[--text-color] text-[12px] font-sans font-medium text-center leading-tight max-w-[88px] line-clamp-2">
+                                        <span className="text-white text-[12px] font-sans font-medium text-center leading-tight max-w-[88px] line-clamp-2" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5), 0 0 6px rgba(0,0,0,0.2)' }}>
                                             {app.appname}
                                         </span>
                                     </motion.div>
