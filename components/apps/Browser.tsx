@@ -8,7 +8,7 @@ import { useMenuRegistration } from '../AppMenuContext';
 import { useMenuAction } from '../hooks/useMenuAction';
 import { useMemo, useCallback } from 'react';
 import { useIsClay } from '../hooks/useIsClay';
-import { LuChevronLeft, LuChevronRight, LuRefreshCw, LuHome, LuScissors, LuCopy, LuClipboardPaste, LuMousePointerClick, LuZoomIn, LuZoomOut, LuMaximize, LuPlus, LuX } from 'react-icons/lu';
+import { LuChevronLeft, LuChevronRight, LuRefreshCw, LuHouse, LuScissors, LuCopy, LuClipboardPaste, LuMousePointerClick, LuZoomIn, LuZoomOut, LuMaximize, LuPlus, LuX } from 'react-icons/lu';
 import { glassButton, glassInput, glassCard, clayClasses } from '../hooks/useClayStyles';
 
 interface browserprops {
@@ -150,7 +150,7 @@ export default function Browser({ initialurl = 'https://duckduckgo.com', appId =
         History: [
             { title: "Back", actionId: "go-back", shortcut: "⌘[", icon: <LuChevronLeft size={14} /> },
             { title: "Forward", actionId: "go-forward", shortcut: "⌘]", icon: <LuChevronRight size={14} /> },
-            { title: "Home", actionId: "go-home", shortcut: "⇧⌘H", icon: <LuHome size={14} /> }
+            { title: "Home", actionId: "go-home", shortcut: "⇧⌘H", icon: <LuHouse size={14} /> }
         ]
     }), []);
 

@@ -15,6 +15,7 @@ interface ContextMenuProps {
         disabled?: boolean;
         separator?: boolean;
         danger?: boolean;
+        icon?: React.ReactNode;
     }[];
     onClose: () => void;
     className?: string;

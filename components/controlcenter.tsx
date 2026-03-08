@@ -31,7 +31,13 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
   const [ismuted, setismuted] = useState(false)
   const [isfullscreen, setisfullscreen] = useState(false)
   const { theme, toggletheme } = useTheme()
-  const { reducemotion } = useSettings()
+  const { reducemotion, setwallpaperurl } = useSettings()
+
+  const handleThemeToggle = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    toggletheme();
+    setwallpaperurl(newTheme === 'dark' ? '/bg-dark.jpg' : '/bg.jpg');
+  }
   const { user, logout } = useAuth()
   const { currenttrack, isplaying, toggle, next, prev, currenttime, duration } = useMusic()
   const clay = useIsClay()
@@ -260,7 +266,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
 
         {/* Dark Mode */}
         <button
-          onClick={() => toggletheme()}
+          onClick={() => handleThemeToggle()}
           className="rounded-[16px] p-3 flex items-center gap-3 transition-all active:scale-[0.96] cursor-pointer select-none text-left"
           style={theme === 'dark'
             ? { background: 'var(--accent-gradient)', boxShadow: 'var(--accent-shadow)' }
@@ -614,7 +620,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
             {isfullscreen ? <IoContract className="text-pastel-green" size={20} /> : <IoExpand className="text-[--text-color]" size={20} />}
             <span className="text-[9px] font-medium text-[--text-muted]">{isfullscreen ? 'Exit' : 'Full'}</span>
           </button>
-          <button onClick={() => toggletheme()} className="rounded-2xl aspect-square flex flex-col items-center justify-center gap-1.5 bg-overlay border border-[--border-color] transition-all active:scale-95">
+          <button onClick={() => handleThemeToggle()} className="rounded-2xl aspect-square flex flex-col items-center justify-center gap-1.5 bg-overlay border border-[--border-color] transition-all active:scale-95">
             {theme === 'light' ? <FaSun className="text-[--text-color]" size={18} /> : <FaMoon className="text-[--text-color]" size={18} />}
             <span className="text-[9px] font-medium text-[--text-muted]">Theme</span>
           </button>
@@ -686,7 +692,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
                 <button onClick={next} className="text-[--text-color] opacity-60 hover:opacity-100"><IoPlaySkipForward size={18} /></button>
               </div>
             </div>
-            <div onClick={() => toggletheme()} className="p-3 bg-overlay border border-[--border-color] flex space-x-2 items-center cursor-pointer h-min self-end">
+            <div onClick={() => handleThemeToggle()} className="p-3 bg-overlay border border-[--border-color] flex space-x-2 items-center cursor-pointer h-min self-end">
               <div className='p-[10px] bg-[--border-color]'>
                 {theme == 'light' && <FaSun className='text-[--text-color]' size={16} />}
                 {theme == 'dark' && <FaMoon className="text-[--text-color]" size={16} />}

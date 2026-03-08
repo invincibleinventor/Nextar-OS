@@ -15,7 +15,7 @@ import { templates } from '../../utils/templates';
 import { ProjectTemplate } from '../../types/project';
 import { useIsClay } from '../hooks/useIsClay';
 import { glassCard, glassButton, glassInput } from '../hooks/useClayStyles';
-import { LuPlus, LuList, LuGrid2x2 } from 'react-icons/lu';
+import { LuPlus, LuList, LuGrid2X2 } from 'react-icons/lu';
 
 const categoryIcons: Record<string, React.ReactNode> = {
     'frontend': <IoGlobeOutline size={14} />,
@@ -270,7 +270,7 @@ export default function ProjectDashboard({ windowId, appId = 'projectdashboard',
         ],
         View: [
             { title: "My Projects", actionId: "view-projects", shortcut: "⌘1", icon: <LuList size={14} /> },
-            { title: "Templates", actionId: "view-templates", shortcut: "⌘2", icon: <LuGrid2x2 size={14} /> },
+            { title: "Templates", actionId: "view-templates", shortcut: "⌘2", icon: <LuGrid2X2 size={14} /> },
         ],
     }), []);
 

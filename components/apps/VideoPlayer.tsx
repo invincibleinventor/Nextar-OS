@@ -8,7 +8,7 @@ import { useAuth } from '../AuthContext';
 import { IoVideocamOutline, IoCloudUploadOutline, IoPlayOutline, IoTrashOutline } from 'react-icons/io5';
 import { useIsClay } from '../hooks/useIsClay';
 import { glassCard } from '../hooks/useClayStyles';
-import { LuPlay, LuChevronRight, LuChevronLeft, LuVolumeX, LuPictureInPicture, LuExternalLink, LuHome } from 'react-icons/lu';
+import { LuPlay, LuChevronRight, LuChevronLeft, LuVolumeX, LuPictureInPicture, LuExternalLink, LuHouse } from 'react-icons/lu';
 
 const SPEEDS = [0.5, 1, 1.25, 1.5, 2];
 const VIDEO_MIMETYPES = ['video/mp4', 'video/webm', 'video/ogg'];
@@ -107,7 +107,7 @@ export default function VideoPlayer({ appId = 'videoplayer', id, fileUrl }: { ap
         ],
         File: [
             { title: 'Open Video...', actionId: 'vp-open', shortcut: '\u2318O', icon: <LuExternalLink size={14} /> },
-            { title: 'Back to Library', actionId: 'vp-library', icon: <LuHome size={14} /> },
+            { title: 'Back to Library', actionId: 'vp-library', icon: <LuHouse size={14} /> },
         ],
     }), []);
 

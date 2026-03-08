@@ -250,7 +250,6 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
             const items: any[] = [
                 {
                     label: 'Open',
-                    icon: <LuExternalLink size={14} />,
                     action: () => {
                         openSystemItem(item, { addwindow, windows, setactivewindow, updatewindow, ismobile, files });
                     }
@@ -263,7 +262,6 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                 if (app?.multiwindow) {
                     items.push({
                         label: 'Open New Window',
-                        icon: <LuPlus size={14} />,
                         action: () => {
                             openSystemItem(item, { addwindow, windows, setactivewindow, updatewindow, ismobile, files });
                         }
@@ -276,21 +274,18 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
             if (!item.isReadOnly && !item.isSystem) {
                 items.push({
                     label: 'Rename',
-                    icon: <LuPenLine size={14} />,
                     action: () => handleRename(item.id)
                 });
             }
 
             items.push({
                 label: 'Copy',
-                icon: <LuCopy size={14} />,
                 action: () => copyItem(item.id)
             });
 
             if (!item.isReadOnly && !item.isSystem) {
                 items.push({
                     label: 'Cut',
-                    icon: <LuScissors size={14} />,
                     action: () => cutItem(item.id)
                 });
             }
@@ -299,13 +294,11 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
 
             items.push({
                 label: 'Edit Home Screen',
-                icon: <LuPencilRuler size={14} />,
                 action: () => seteditmode(true)
             });
 
             items.push({
                 label: 'Show in Explorer',
-                icon: <LuFolderOpen size={14} />,
                 action: () => openSystemItem('explorer', { addwindow, windows, setactivewindow, updatewindow, ismobile, files }, undefined, { openPath: item.parent || currentUserDesktopId, selectItem: item.id })
             });
 
@@ -313,7 +306,6 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                 items.push({ separator: true, label: '' });
                 items.push({
                     label: 'Move to Trash',
-                    icon: <LuTrash2 size={14} />,
                     danger: true,
                     action: () => {
                         if (contextmenu.item?.mimetype === 'application/x-executable' || contextmenu.item?.id.startsWith('desktop-app-')) {
@@ -330,12 +322,10 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
             const items: any[] = [
                 {
                     label: 'New Folder',
-                    icon: <LuFolderPlus size={14} />,
                     action: () => createFolder('New Folder', currentUserDesktopId)
                 },
                 {
                     label: 'New File',
-                    icon: <LuFilePlus size={14} />,
                     action: () => createFile('Untitled.txt', currentUserDesktopId)
                 },
             ];
@@ -343,7 +333,6 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
             if (clipboard) {
                 items.push({
                     label: 'Paste',
-                    icon: <LuClipboardPaste size={14} />,
                     action: () => pasteItem(currentUserDesktopId)
                 });
             }
@@ -351,12 +340,10 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
             items.push({ separator: true, label: '' });
             items.push({
                 label: 'Edit Home Screen',
-                icon: <LuPencilRuler size={14} />,
                 action: () => seteditmode(true)
             });
             items.push({
                 label: 'Change Wallpaper',
-                icon: <LuImage size={14} />,
                 action: () => {
                     addwindow({
                         id: `settings-${Date.now()}`,
@@ -865,6 +852,15 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                         animate={{ y: 0 }}
                         exit={{ y: '100%' }}
                         transition={{ type: 'tween', duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
+                        drag="y"
+                        dragConstraints={{ top: 0, bottom: 0 }}
+                        dragElastic={0.3}
+                        dragListener={false}
+                        onDragEnd={(_, info) => {
+                            if (info.offset.y > 80 || info.velocity.y > 300) {
+                                setShowAppLibrary(false);
+                            }
+                        }}
                         style={{
                             background: clay
                                 ? 'color-mix(in srgb, var(--accent-source) 4%, color-mix(in srgb, var(--bg-glass) 28%, transparent))'
@@ -873,21 +869,6 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                             WebkitBackdropFilter: clay ? 'blur(var(--glass-blur-heavy))' : undefined,
                         }}
                     >
-                        {/* Drag handle — only this is draggable to dismiss */}
-                        <motion.div
-                            className="flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing shrink-0"
-                            drag="y"
-                            dragConstraints={{ top: 0, bottom: 0 }}
-                            dragElastic={0.3}
-                            onDragEnd={(_, info) => {
-                                if (info.offset.y > 80 || info.velocity.y > 300) {
-                                    setShowAppLibrary(false);
-                                }
-                            }}
-                            style={{ touchAction: 'none' }}
-                        >
-                            <div className="w-10 h-1 rounded-full bg-white/40" />
-                        </motion.div>
                         <div className="flex-1 min-h-0 overflow-hidden">
                             <AppLibrary />
                         </div>
