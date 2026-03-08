@@ -5,6 +5,7 @@ import { useMenuRegistration } from '../AppMenuContext';
 import { useWindows } from '../WindowContext';
 import { useIsClay } from '../hooks/useIsClay';
 import { glassCard, glassButton, clayClasses } from '../hooks/useClayStyles';
+import { LuEye } from 'react-icons/lu';
 
 export default function Calculator({ appId = 'calculator', id }: { appId?: string, id?: string }) {
     const [display, setdisplay] = useState('0');
@@ -14,9 +15,9 @@ export default function Calculator({ appId = 'calculator', id }: { appId?: strin
 
     const calculatorMenus = useMemo(() => ({
         View: [
-            { title: "Basic", actionId: "view-basic", shortcut: "⌘1" },
-            { title: "Scientific", actionId: "view-scientific", shortcut: "⌘2" },
-            { title: "Programmer", actionId: "view-programmer", shortcut: "⌘3" }
+            { title: "Basic", actionId: "view-basic", shortcut: "⌘1", icon: <LuEye size={14} /> },
+            { title: "Scientific", actionId: "view-scientific", shortcut: "⌘2", icon: <LuEye size={14} /> },
+            { title: "Programmer", actionId: "view-programmer", shortcut: "⌘3", icon: <LuEye size={14} /> }
         ]
     }), []);
 

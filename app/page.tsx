@@ -12,7 +12,7 @@ import LockScreen from '@/components/LockScreen';
 import MobileHomeScreen from '@/components/MobileHomeScreen';
 import Control from '@/components/controlcenter';
 import RecentApps from '@/components/RecentApps';
-import { LuWifi, LuSignal, LuBatteryFull } from "react-icons/lu";
+import { LuWifi, LuSignal, LuBatteryFull, LuExternalLink, LuInfo, LuFolderOpen, LuPenLine, LuCopy, LuScissors, LuTrash2, LuFolderPlus, LuFilePlus, LuClipboardPaste, LuImage, LuRefreshCw } from "react-icons/lu";
 import { motion, useMotionValue } from 'framer-motion';
 
 import NotificationCenter from '@/components/NotificationCenter';
@@ -515,6 +515,7 @@ const Desktop = () => {
       const baseItems: any[] = [
         {
           label: 'Open',
+          icon: <LuExternalLink size={14} />,
           action: () => targets.forEach(id => {
             const f = files.find(x => x.id === id);
             if (f) openSystemItem(f, context);
@@ -523,36 +524,38 @@ const Desktop = () => {
       ];
 
       if (!isMulti) {
-        baseItems.push({ label: 'Get Info', action: () => openSystemItem(activeFileItem, context, 'getinfo') });
+        baseItems.push({ label: 'Get Info', icon: <LuInfo size={14} />, action: () => openSystemItem(activeFileItem, context, 'getinfo') });
         baseItems.push({
           label: 'Show in Explorer',
+          icon: <LuFolderOpen size={14} />,
           action: () => openSystemItem('explorer', context, undefined, { openPath: activeFileItem.parent || currentUserDesktopId, selectItem: activeFileItem.id })
         });
         baseItems.push({ separator: true, label: '' });
         baseItems.push({
           label: 'Rename',
+          icon: <LuPenLine size={14} />,
           action: () => setFileModal({ isOpen: true, type: 'rename', initialValue: activeFileItem.name }),
           disabled: activeFileItem.isReadOnly
         });
       }
 
       baseItems.push({ separator: true, label: '' });
-      baseItems.push({ label: isMulti ? `Copy ${targets.length} Items` : 'Copy', action: () => copyItem(targets) });
-      baseItems.push({ label: isMulti ? `Cut ${targets.length} Items` : 'Cut', action: () => cutItem(targets), disabled: hasReadOnly });
+      baseItems.push({ label: isMulti ? `Copy ${targets.length} Items` : 'Copy', icon: <LuCopy size={14} />, action: () => copyItem(targets) });
+      baseItems.push({ label: isMulti ? `Cut ${targets.length} Items` : 'Cut', icon: <LuScissors size={14} />, action: () => cutItem(targets), disabled: hasReadOnly });
       baseItems.push({ separator: true, label: '' });
-      baseItems.push({ label: isMulti ? `Move ${targets.length} Items to Trash` : 'Move to Trash', action: () => targets.forEach(id => moveToTrash(id)), danger: true, disabled: hasReadOnly });
+      baseItems.push({ label: isMulti ? `Move ${targets.length} Items to Trash` : 'Move to Trash', icon: <LuTrash2 size={14} />, action: () => targets.forEach(id => moveToTrash(id)), danger: true, disabled: hasReadOnly });
 
       return baseItems;
     } else {
       return [
-        { label: 'New Folder', action: () => setFileModal({ isOpen: true, type: 'create-folder', initialValue: '' }) },
-        { label: 'New File', action: () => setFileModal({ isOpen: true, type: 'create-file', initialValue: '' }) },
+        { label: 'New Folder', icon: <LuFolderPlus size={14} />, action: () => setFileModal({ isOpen: true, type: 'create-folder', initialValue: '' }) },
+        { label: 'New File', icon: <LuFilePlus size={14} />, action: () => setFileModal({ isOpen: true, type: 'create-file', initialValue: '' }) },
         { separator: true, label: '' },
-        { label: 'Paste', action: () => pasteItem(currentUserDesktopId), disabled: !clipboard },
+        { label: 'Paste', icon: <LuClipboardPaste size={14} />, action: () => pasteItem(currentUserDesktopId), disabled: !clipboard },
         { separator: true, label: '' },
-        { label: 'Get Info', action: () => { }, disabled: true },
+        { label: 'Get Info', icon: <LuInfo size={14} />, action: () => { }, disabled: true },
         {
-          label: 'Change Wallpaper', action: () => {
+          label: 'Change Wallpaper', icon: <LuImage size={14} />, action: () => {
             addwindow({
               id: `settings-${Date.now()}`,
               appname: 'Settings',
@@ -564,9 +567,9 @@ const Desktop = () => {
           }
         },
         { separator: true, label: '' },
-        { label: 'Refresh', action: refreshFileSystem },
+        { label: 'Refresh', icon: <LuRefreshCw size={14} />, action: refreshFileSystem },
         { separator: true, label: '' },
-        { label: 'Empty Trash', action: emptyTrash, disabled: files.filter(f => f.isTrash).length === 0 }
+        { label: 'Empty Trash', icon: <LuTrash2 size={14} />, action: emptyTrash, disabled: files.filter(f => f.isTrash).length === 0 }
       ];
     }
   };

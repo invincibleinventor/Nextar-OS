@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useExternalApps, ExternalApp } from '../ExternalAppsContext';
 import { useIsClay } from '../hooks/useIsClay';
 import { glassCard, glassButton, glassInput, glassSidebar, clayClasses } from '../hooks/useClayStyles';
+import { LuRefreshCw, LuSearch } from 'react-icons/lu';
 
 export default function AppStore({ appId = 'appstore', id }: { appId?: string, id?: string }) {
     const [selectedcategory, setselectedcategory] = useState('All');
@@ -53,8 +54,8 @@ export default function AppStore({ appId = 'appstore', id }: { appId?: string, i
 
     const appStoreMenus = useMemo(() => ({
         Store: [
-            { title: "Reload Page", actionId: "reload", shortcut: "⌘R" },
-            { title: "Search", actionId: "search", shortcut: "⌘F" }
+            { title: "Reload Page", actionId: "reload", shortcut: "⌘R", icon: <LuRefreshCw size={14} /> },
+            { title: "Search", actionId: "search", shortcut: "⌘F", icon: <LuSearch size={14} /> }
         ]
     }), []);
 

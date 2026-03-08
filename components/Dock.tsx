@@ -14,7 +14,7 @@ import { iselectron, battery, wifi as wifiApi } from '@/utils/platform';
 import { useIsClay } from './hooks/useIsClay';
 import { glassPill } from './hooks/useClayStyles';
 import Control from './controlcenter';
-import { LuWifi, LuSignal, LuBatteryFull } from 'react-icons/lu';
+import { LuWifi, LuSignal, LuBatteryFull, LuAppWindow, LuPlus, LuPin, LuPinOff, LuX } from 'react-icons/lu';
 import { useAuth } from './AuthContext';
 import { useNotifications } from './NotificationContext';
 
@@ -165,14 +165,14 @@ const Dock = () => {
     const appWins = getAppWindows(item.appname);
     const items: any[] = [];
     if (appWins.length > 0) {
-      appWins.forEach((win: any) => items.push({ label: win.title || win.appname, action: () => { updatewindow(win.id, { isminimized: false }); setactivewindow(win.id); }, bold: win.id === activewindow }));
+      appWins.forEach((win: any) => items.push({ label: win.title || win.appname, icon: <LuAppWindow size={14} />, action: () => { updatewindow(win.id, { isminimized: false }); setactivewindow(win.id); }, bold: win.id === activewindow }));
       items.push({ separator: true });
     }
-    items.push({ label: appWins.length > 0 ? 'New Window' : 'Open', action: () => openSystemItem(item.id, { addwindow, windows, updatewindow, setactivewindow, ismobile }) });
-    if (!item.isSystem) { items.push({ separator: true }); items.push({ label: pinnedAppIds.includes(item.id) ? 'Unpin from Dock' : 'Pin to Dock', action: () => togglePin(item.id) }); }
+    items.push({ label: appWins.length > 0 ? 'New Window' : 'Open', icon: <LuPlus size={14} />, action: () => openSystemItem(item.id, { addwindow, windows, updatewindow, setactivewindow, ismobile }) });
+    if (!item.isSystem) { items.push({ separator: true }); items.push({ label: pinnedAppIds.includes(item.id) ? 'Unpin from Dock' : 'Pin to Dock', icon: pinnedAppIds.includes(item.id) ? <LuPinOff size={14} /> : <LuPin size={14} />, action: () => togglePin(item.id) }); }
     if (appWins.length > 0) {
       items.push({ separator: true });
-      items.push(appWins.length > 1 ? { label: 'Close All Windows', action: () => handleQuit(item.appname), danger: true } : { label: 'Quit', action: () => handleQuit(item.appname) });
+      items.push(appWins.length > 1 ? { label: 'Close All Windows', icon: <LuX size={14} />, action: () => handleQuit(item.appname), danger: true } : { label: 'Quit', icon: <LuX size={14} />, action: () => handleQuit(item.appname) });
     }
     return items;
   };
@@ -288,9 +288,9 @@ const Dock = () => {
             style={glassStyle}
             onClick={() => setshowcontrolcenter(!showcontrolcenter)}
           >
-            {!isOnline && <span className="text-[9px] font-bold text-pastel-red px-1.5 py-0.5 rounded-full" style={{ background: 'color-mix(in srgb, var(--pastel-red) 15%, transparent)' }}>OFFLINE</span>}
-            <LuSignal className={`w-[14px] h-[14px] ${!isOnline ? 'text-pastel-red' : 'text-[--text-color]'}`} />
-            <LuWifi className={`w-[14px] h-[14px] ${!isOnline ? 'text-pastel-red' : 'text-[--text-color]'}`} />
+            {!isOnline && <span className="text-[9px] font-bold text-[--text-muted] px-1.5 py-0.5 rounded-full" style={{ background: 'color-mix(in srgb, var(--text-muted) 10%, transparent)' }}>OFFLINE</span>}
+            <LuSignal className={`w-[14px] h-[14px] ${!isOnline ? 'text-[--text-muted]' : 'text-[--text-color]'}`} />
+            <LuWifi className={`w-[14px] h-[14px] ${!isOnline ? 'text-[--text-muted]' : 'text-[--text-color]'}`} />
             <LuBatteryFull className="w-[18px] h-[18px] text-[--text-color]" />
           </div>
 

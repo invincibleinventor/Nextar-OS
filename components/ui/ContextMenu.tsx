@@ -191,7 +191,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose, classNa
                         disabled={item.disabled}
                         className={`
                             w-full text-left font-medium transition-all duration-100 flex items-center gap-2.5
-                            ${clay ? 'rounded-[6px] px-2.5 py-[5px] text-[12.5px]' : 'px-3 py-1.5 text-[13px]'}
+                            ${clay ? 'rounded-[4px] px-2.5 py-[5px] text-[12.5px]' : 'px-3 py-1.5 text-[13px]'}
                             ${item.disabled
                                 ? 'opacity-40 cursor-not-allowed text-[--text-color]'
                                 : item.danger

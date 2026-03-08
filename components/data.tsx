@@ -11,6 +11,7 @@ import {
     SiMongodb, SiGnubash, SiCplusplus, SiWordpress
 } from 'react-icons/si';
 import { PiThreadsLogo } from "react-icons/pi";
+import { LuPlus, LuFolderPlus, LuFolderOpen, LuFileText, LuExternalLink, LuX, LuTrash2, LuInfo, LuPenLine, LuCopy as LuCopyIcon, LuUndo2, LuRedo2, LuScissors, LuClipboardPaste, LuMousePointerClick, LuGrid2x2, LuList, LuColumns3, LuGalleryHorizontalEnd, LuPanelLeft, LuEye, LuChevronLeft, LuChevronRight, LuFolderUp, LuClock, LuLayoutGrid, LuMonitor, LuFileDown, LuCircleHelp, LuSettings, LuStore, LuOctagonX, LuMoon, LuRotateCw, LuPower, LuLogOut } from 'react-icons/lu';
 import {
     IoCloseOutline, IoFolderOutline, IoDocumentTextOutline, IoAppsOutline,
     IoGridOutline, IoListOutline, IoChevronBack, IoChevronForward,
@@ -35,8 +36,8 @@ export interface appdata {
     defaultsize?: { width: number; height: number };
     acceptedMimeTypes?: string[];
     category?: string;
-    titlemenu?: { title: string; disabled: boolean; separator?: boolean; actionId?: string }[];
-    menus?: Record<string, { title?: string; disabled?: boolean; separator?: boolean; actionId?: string }[]>;
+    titlemenu?: { title: string; disabled: boolean; separator?: boolean; actionId?: string; icon?: React.ReactNode }[];
+    menus?: Record<string, { title?: string; disabled?: boolean; separator?: boolean; actionId?: string; icon?: React.ReactNode }[]>;
     isExternal?: boolean;
     externalUrl?: string;
     nativeOnly?: boolean;
@@ -156,8 +157,8 @@ const _legacyApps: appdata[] = [
         defaultsize: { width: 1000, height: 600 },
         category: 'Utilities',
         titlemenu: [
-            { title: "About Explorer", disabled: false },
-            { title: "Quit Explorer", disabled: false },
+            { title: "About Explorer", disabled: false, icon: <LuInfo size={14} /> },
+            { title: "Quit Explorer", disabled: false, icon: <LuX size={14} /> },
         ],
         manifest: {
             permissions: {
@@ -602,51 +603,51 @@ export const menus = [
         appname: "Explorer",
         menus: {
             File: [
-                { title: "New Explorer Window", actionId: "new-window", disabled: false },
-                { title: "New Folder", actionId: "new-folder", disabled: false },
-                { title: "New Folder with Selection", actionId: "new-folder-selection", disabled: true },
-                { title: "New Smart Folder", actionId: "new-smart-folder", disabled: false },
-                { title: "New Tab", actionId: "new-tab", disabled: false },
+                { title: "New Explorer Window", actionId: "new-window", disabled: false, icon: <LuPlus size={14} /> },
+                { title: "New Folder", actionId: "new-folder", disabled: false, icon: <LuFolderPlus size={14} /> },
+                { title: "New Folder with Selection", actionId: "new-folder-selection", disabled: true, icon: <LuFolderPlus size={14} /> },
+                { title: "New Smart Folder", actionId: "new-smart-folder", disabled: false, icon: <LuFolderPlus size={14} /> },
+                { title: "New Tab", actionId: "new-tab", disabled: false, icon: <LuPlus size={14} /> },
                 { separator: true },
-                { title: "Open", actionId: "open", disabled: false },
-                { title: "Open With", actionId: "open-with", disabled: false },
-                { title: "Close Window", actionId: "close-window", disabled: false },
+                { title: "Open", actionId: "open", disabled: false, icon: <LuExternalLink size={14} /> },
+                { title: "Open With", actionId: "open-with", disabled: false, icon: <LuExternalLink size={14} /> },
+                { title: "Close Window", actionId: "close-window", disabled: false, icon: <LuX size={14} /> },
                 { separator: true },
-                { title: "Move to Trash", actionId: "move-to-trash", disabled: false },
+                { title: "Move to Trash", actionId: "move-to-trash", disabled: false, icon: <LuTrash2 size={14} /> },
                 { separator: true },
-                { title: "Get Info", actionId: "get-info", disabled: false },
-                { title: "Rename", actionId: "rename", disabled: false },
-                { title: "Duplicate", actionId: "duplicate", disabled: true }
+                { title: "Get Info", actionId: "get-info", disabled: false, icon: <LuInfo size={14} /> },
+                { title: "Rename", actionId: "rename", disabled: false, icon: <LuPenLine size={14} /> },
+                { title: "Duplicate", actionId: "duplicate", disabled: true, icon: <LuCopyIcon size={14} /> }
             ],
             Edit: [
-                { title: "Undo", actionId: "undo", disabled: true },
-                { title: "Redo", actionId: "redo", disabled: true },
+                { title: "Undo", actionId: "undo", disabled: true, icon: <LuUndo2 size={14} /> },
+                { title: "Redo", actionId: "redo", disabled: true, icon: <LuRedo2 size={14} /> },
                 { separator: true },
-                { title: "Cut", actionId: "cut", disabled: true },
-                { title: "Copy", actionId: "copy", disabled: false },
-                { title: "Paste", actionId: "paste", disabled: true },
-                { title: "Select All", actionId: "select-all", disabled: false }
+                { title: "Cut", actionId: "cut", disabled: true, icon: <LuScissors size={14} /> },
+                { title: "Copy", actionId: "copy", disabled: false, icon: <LuCopyIcon size={14} /> },
+                { title: "Paste", actionId: "paste", disabled: true, icon: <LuClipboardPaste size={14} /> },
+                { title: "Select All", actionId: "select-all", disabled: false, icon: <LuMousePointerClick size={14} /> }
             ],
             View: [
-                { title: "As Icons", disabled: false },
-                { title: "As List", disabled: false },
-                { title: "As Columns", disabled: false },
-                { title: "As Gallery", disabled: false },
+                { title: "As Icons", disabled: false, icon: <LuGrid2x2 size={14} /> },
+                { title: "As List", disabled: false, icon: <LuList size={14} /> },
+                { title: "As Columns", disabled: false, icon: <LuColumns3 size={14} /> },
+                { title: "As Gallery", disabled: false, icon: <LuGalleryHorizontalEnd size={14} /> },
                 { separator: true },
-                { title: "Hide Sidebar", disabled: false },
-                { title: "Show Preview", disabled: false }
+                { title: "Hide Sidebar", disabled: false, icon: <LuPanelLeft size={14} /> },
+                { title: "Show Preview", disabled: false, icon: <LuEye size={14} /> }
             ],
             Go: [
-                { title: "Back", disabled: true },
-                { title: "Forward", disabled: true },
-                { title: "Enclosing Folder", disabled: false },
+                { title: "Back", disabled: true, icon: <LuChevronLeft size={14} /> },
+                { title: "Forward", disabled: true, icon: <LuChevronRight size={14} /> },
+                { title: "Enclosing Folder", disabled: false, icon: <LuFolderUp size={14} /> },
                 { separator: true },
-                { title: "Recent Folders", disabled: false },
-                { title: "Projects", disabled: false },
-                { title: "Applications", disabled: false },
-                { title: "Desktop", disabled: false },
-                { title: "Documents", disabled: false },
-                { title: "Downloads", disabled: false }
+                { title: "Recent Folders", disabled: false, icon: <LuClock size={14} /> },
+                { title: "Projects", disabled: false, icon: <LuLayoutGrid size={14} /> },
+                { title: "Applications", disabled: false, icon: <LuLayoutGrid size={14} /> },
+                { title: "Desktop", disabled: false, icon: <LuMonitor size={14} /> },
+                { title: "Documents", disabled: false, icon: <LuFileText size={14} /> },
+                { title: "Downloads", disabled: false, icon: <LuFileDown size={14} /> }
             ],
 
         }
@@ -657,35 +658,35 @@ export const titlemenu = [
     {
         title: "Explorer",
         menu: [
-            { title: "About Explorer", disabled: false },
-            { title: "Quit Explorer", disabled: false },
+            { title: "About Explorer", disabled: false, icon: <LuInfo size={14} /> },
+            { title: "Quit Explorer", disabled: false, icon: <LuX size={14} /> },
         ]
     },
     {
         title: "Calculator",
         menu: [
-            { title: "About Calculator", disabled: false },
-            { title: "Quit Calculator", disabled: false },
+            { title: "About Calculator", disabled: false, icon: <LuInfo size={14} /> },
+            { title: "Quit Calculator", disabled: false, icon: <LuX size={14} /> },
         ]
     }
 ];
 
 export const mainmenu = [
-    { title: "About Nextzr", disabled: false },
+    { title: "About Nextzr", disabled: false, icon: <LuInfo size={14} /> },
     { separator: true },
-    { title: "System Settings...", disabled: false },
-    { title: "App Store...", disabled: true },
+    { title: "System Settings...", disabled: false, icon: <LuSettings size={14} /> },
+    { title: "App Store...", disabled: true, icon: <LuStore size={14} /> },
     { separator: true },
-    { title: "Recent Items", disabled: false },
+    { title: "Recent Items", disabled: false, icon: <LuClock size={14} /> },
     { separator: true },
-    { title: "Force Quit...", disabled: false },
+    { title: "Force Quit...", disabled: false, icon: <LuOctagonX size={14} /> },
     { separator: true },
-    { title: "Sleep", disabled: false },
-    { title: "Restart...", disabled: false },
-    { title: "Shut Down...", disabled: false },
+    { title: "Sleep", disabled: false, icon: <LuMoon size={14} /> },
+    { title: "Restart...", disabled: false, icon: <LuRotateCw size={14} /> },
+    { title: "Shut Down...", disabled: false, icon: <LuPower size={14} /> },
     { separator: true },
-    { title: "Lock Screen", disabled: false },
-    { title: "Log Out User...", disabled: false },
+    { title: "Lock Screen", disabled: false, icon: <LuMonitor size={14} /> },
+    { title: "Log Out User...", disabled: false, icon: <LuLogOut size={14} /> },
 ];
 
 export const sidebaritems = [

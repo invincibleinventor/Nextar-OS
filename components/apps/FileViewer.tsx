@@ -10,6 +10,7 @@ import ContextMenu from '../ui/ContextMenu';
 import FileModal from '../ui/FileModal';
 import { useWindows } from '../WindowContext';
 import { IoFolderOpenOutline } from "react-icons/io5";
+import { LuExternalLink, LuTrash2, LuFolderPlus, LuFilePlus, LuInfo } from 'react-icons/lu';
 import Sidebar from '../ui/Sidebar';
 
 
@@ -169,16 +170,16 @@ export default function FileViewer({ content: initialContent, title: initialTitl
 
         if (activeFileItem) {
             return [
-                { label: 'Open', action: () => handleItemDoubleClick(activeFileItem) },
+                { label: 'Open', icon: <LuExternalLink size={14} />, action: () => handleItemDoubleClick(activeFileItem) },
                 { separator: true, label: '' },
-                { label: 'Move to Trash', action: () => moveToTrash(activeFileItem.id), danger: true }
+                { label: 'Move to Trash', icon: <LuTrash2 size={14} />, action: () => moveToTrash(activeFileItem.id), danger: true }
             ];
         } else {
             return [
-                { label: 'New Folder', action: () => setFileModal({ isOpen: true, type: 'create-folder' }) },
-                { label: 'New File', action: () => setFileModal({ isOpen: true, type: 'create-file' }) },
+                { label: 'New Folder', icon: <LuFolderPlus size={14} />, action: () => setFileModal({ isOpen: true, type: 'create-folder' }) },
+                { label: 'New File', icon: <LuFilePlus size={14} />, action: () => setFileModal({ isOpen: true, type: 'create-file' }) },
                 { separator: true, label: '' },
-                { label: 'Get Info', action: () => { } }
+                { label: 'Get Info', icon: <LuInfo size={14} />, action: () => { } }
             ];
         }
     };
