@@ -521,8 +521,7 @@ function CategoryCard({ category, apps: catApps, clay, islightbackground, textCo
                     background: islightbackground
                         ? 'rgba(255,255,255,0.2)'
                         : 'rgba(255,255,255,0.08)',
-                    backdropFilter: 'blur(20px)',
-                    WebkitBackdropFilter: 'blur(20px)',
+                    
                     border: islightbackground
                         ? '1px solid rgba(255,255,255,0.35)'
                         : '1px solid rgba(255,255,255,0.1)',
