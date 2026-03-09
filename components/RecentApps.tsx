@@ -79,7 +79,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                         transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <div className="relative pt-[72px] px-6 flex flex-col items-center pointer-events-auto" style={{ maxWidth: '100vw', boxSizing: 'border-box' }}>
+                        <div className="relative pt-[52px] px-6 flex flex-col items-center pointer-events-auto" style={{ maxWidth: '100vw', boxSizing: 'border-box' }}>
                             <div className={`w-full max-w-lg overflow-hidden ${clay ? (searchquery.trim() ? 'rounded-[16px]' : 'rounded-full') : 'bg-surface border border-[--border-color] shadow-pastel'}`}
                                 style={clay ? {
                                     background: 'color-mix(in srgb, var(--bg-glass) 65%, transparent)',
@@ -186,7 +186,7 @@ const RecentApps = React.memo(({ isopen, onclose }: { isopen: boolean, onclose: 
                         onClick={(e) => { if (!ignoreclickref.current && e.target === e.currentTarget) onclose(); }}
                         style={{ willChange: 'opacity', transform: 'translateZ(0)' }}
                     >
-                        <div className="flex flex-row gap-6 md:gap-10 h-[65vh] items-center">
+                        <div className="flex flex-row gap-6 md:gap-10 h-[65vh] items-end pb-[6vh]">
                             <AnimatePresence>
                                 {[...windows].sort((a, b) => (b.lastInteraction || 0) - (a.lastInteraction || 0)).map((win: any) => {
                                     const appdata = apps.find(a => a.appname === win.appname);
