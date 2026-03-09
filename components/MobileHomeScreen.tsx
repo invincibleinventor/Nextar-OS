@@ -12,7 +12,7 @@ const extractAppId = (fileId: string): string => {
     return fileId;
 };
 import { useSettings } from './SettingsContext';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue } from 'framer-motion';
 import AppLibrary from './AppLibrary';
 import { useWindows } from './WindowContext';
 import { useFileSystem } from './FileSystemContext';
@@ -36,6 +36,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
     const [page, setpage] = useState(0);
     const [showAppLibrary, setShowAppLibrary] = useState(false);
     const [editmode, seteditmode] = useState(false);
+    const appLibraryDragY = useMotionValue(0);
     const [contextmenu, setcontextmenu] = useState<{ x: number; y: number; item?: filesystemitem } | null>(null);
     const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
     const [renameTarget, setRenameTarget] = useState<string | null>(null);
@@ -65,6 +66,10 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
             setHiddenAppIds(JSON.parse(savedHidden));
         }
     }, []);
+
+    useEffect(() => {
+        if (showAppLibrary) appLibraryDragY.set(0);
+    }, [showAppLibrary]);
 
     useEffect(() => {
         const scrollToHome = () => {
@@ -847,31 +852,30 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                 {showAppLibrary && (
                     <motion.div
                         key="app-library-overlay"
-                        className="absolute inset-0 z-30 flex flex-col"
+                        className="absolute inset-0 z-30"
                         initial={{ y: '100%' }}
                         animate={{ y: 0 }}
                         exit={{ y: '100%' }}
                         transition={{ type: 'tween', duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
-                        drag="y"
-                        dragConstraints={{ top: 0, bottom: 0 }}
-                        dragElastic={0.3}
-                        dragListener={false}
-                        onDragEnd={(_, info) => {
-                            if (info.offset.y > 80 || info.velocity.y > 300) {
-                                setShowAppLibrary(false);
-                            }
-                        }}
-                        style={{
-                            background: clay
-                                ? 'color-mix(in srgb, var(--accent-source) 4%, color-mix(in srgb, var(--bg-glass) 28%, transparent))'
-                                : 'var(--bg-surface)',
-                            backdropFilter: clay ? 'blur(var(--glass-blur-heavy))' : undefined,
-                            WebkitBackdropFilter: clay ? 'blur(var(--glass-blur-heavy))' : undefined,
-                        }}
                     >
-                        <div className="flex-1 min-h-0 overflow-hidden">
-                            <AppLibrary />
-                        </div>
+                        <motion.div
+                            className="w-full h-full flex flex-col"
+                            style={{
+                                y: appLibraryDragY,
+                                background: clay
+                                    ? 'color-mix(in srgb, var(--accent-source) 0%, color-mix(in srgb, var(--bg-glass) 28%, transparent))'
+                                    : 'var(--bg-surface)',
+                                backdropFilter: clay ? 'blur(var(--glass-blur-heavy))' : undefined,
+                                WebkitBackdropFilter: clay ? 'blur(var(--glass-blur-heavy))' : undefined,
+                            }}
+                        >
+                            <div className="flex-1 min-h-0 overflow-hidden">
+                                <AppLibrary
+                                    onClose={() => setShowAppLibrary(false)}
+                                    dragY={appLibraryDragY}
+                                />
+                            </div>
+                        </motion.div>
                     </motion.div>
                 )}
             </AnimatePresence>

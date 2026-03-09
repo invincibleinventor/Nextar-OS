@@ -14,7 +14,7 @@ import { useSettings } from './SettingsContext';
 import ContextMenu from './ui/ContextMenu';
 import { useIsClay } from './hooks/useIsClay';
 
-const AppLibrary = () => {
+const AppLibrary = ({ onClose, dragY }: { onClose?: () => void; dragY?: any }) => {
     const { addwindow, windows, setactivewindow, updatewindow } = useWindows();
     const { ismobile } = useDevice();
     const { files, createFile, currentUserDesktopId } = useFileSystem();
@@ -28,6 +28,57 @@ const AppLibrary = () => {
     const [expandedcategory, setexpandedcategory] = useState<{ name: string; apps: appdata[] } | null>(null);
     const longpresstimer = useRef<NodeJS.Timeout | null>(null);
     const touchstartpos = useRef<{ x: number; y: number } | null>(null);
+
+    // Pull-to-close: drive parent's dragY motion value
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const pullStartY = useRef<number | null>(null);
+    const isDraggingDown = useRef(false);
+
+    const handlePullStart = useCallback((e: React.TouchEvent) => {
+        if (!onClose || !dragY) return;
+        const scrollEl = scrollRef.current;
+        if (scrollEl && scrollEl.scrollTop <= 0) {
+            pullStartY.current = e.touches[0].clientY;
+            isDraggingDown.current = false;
+        } else {
+            pullStartY.current = null;
+        }
+    }, [onClose, dragY]);
+
+    const handlePullMove = useCallback((e: React.TouchEvent) => {
+        if (!dragY || pullStartY.current === null) return;
+        const dy = e.touches[0].clientY - pullStartY.current;
+        if (dy > 0) {
+            isDraggingDown.current = true;
+            dragY.set(dy);
+        } else if (isDraggingDown.current) {
+            isDraggingDown.current = false;
+            dragY.set(0);
+        }
+    }, [dragY]);
+
+    const handlePullEnd = useCallback(() => {
+        if (!dragY || !onClose) return;
+        const currentY = dragY.get();
+        if (isDraggingDown.current && currentY > 120) {
+            onClose();
+        } else if (isDraggingDown.current) {
+            // Animate back using spring-like manual animation
+            const start = currentY;
+            const duration = 250;
+            const startTime = performance.now();
+            const animate = (now: number) => {
+                const elapsed = now - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+                dragY.set(start * (1 - eased));
+                if (progress < 1) requestAnimationFrame(animate);
+            };
+            requestAnimationFrame(animate);
+        }
+        isDraggingDown.current = false;
+        pullStartY.current = null;
+    }, [dragY, onClose]);
 
     const allApps = useMemo(() => {
         const installedAppFiles = files.filter(f => f.parent === 'root-apps' && f.name.endsWith('.app'));
@@ -173,7 +224,7 @@ const AppLibrary = () => {
                 <div
                     className="flex items-center rounded-full p-[3px]"
                     style={clay ? {
-                        background: islightbackground ? 'rgba(230,228,232,0.85)' : 'rgba(50,50,55,0.85)',
+                        background: islightbackground ? 'rgba(230,228,232,0.55)' : 'rgba(50,50,55,0.55)',
                         border: islightbackground ? '1px solid rgba(255,255,255,0.4)' : '1px solid rgba(255,255,255,0.08)',
                     } : {
                         background: 'var(--bg-overlay)',
@@ -217,8 +268,13 @@ const AppLibrary = () => {
 
             {/* Scrollable content */}
             <div
+                ref={scrollRef}
                 className="flex-1 relative overflow-y-auto overflow-x-hidden px-4 pb-20 scrollbar-hide [&::-webkit-scrollbar]:hidden"
                 style={{ touchAction: 'pan-y', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                onTouchStart={handlePullStart}
+                onTouchMove={handlePullMove}
+                onTouchEnd={handlePullEnd}
+                onTouchCancel={handlePullEnd}
             >
                 {searchquery.trim() ? (
                         viewmode === 'all' ? (
@@ -323,8 +379,8 @@ const AppLibrary = () => {
                     className={`relative w-full ${clay ? 'rounded-full' : 'rounded-lg bg-overlay border border-[--border-color]'}`}
                     style={clay ? {
                         background: islightbackground
-                            ? 'rgba(230,228,232,0.9)'
-                            : 'rgba(50,50,55,0.9)',
+                            ? 'rgba(230,228,232,0.6)'
+                            : 'rgba(50,50,55,0.6)',
                         boxShadow: islightbackground
                             ? '0 2px 16px rgba(0,0,0,0.08)'
                             : '0 2px 16px rgba(0,0,0,0.2)',
