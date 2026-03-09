@@ -606,7 +606,8 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                     isDraggingLibrary = true;
                     const newY = Math.max(0, screenHeightRef.current + dy);
                     appLibraryY.set(newY);
-                    if (!showAppLibraryRef.current) {
+                    // Only mount AppLibrary content once dragged past 15% — avoids flash on tiny swipes
+                    if (!showAppLibraryRef.current && newY < screenHeightRef.current * 0.85) {
                         setShowAppLibrary(true);
                     }
                 } else if (!isDraggingLibrary) {
@@ -907,8 +908,9 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                     background: clay
                         ? 'color-mix(in srgb, var(--accent-source) 0%, color-mix(in srgb, var(--bg-glass) 28%, transparent))'
                         : 'var(--bg-surface)',
-                    backdropFilter: (clay && showAppLibrary) ? 'blur(var(--glass-blur-heavy))' : 'none',
-                    WebkitBackdropFilter: (clay && showAppLibrary) ? 'blur(var(--glass-blur-heavy))' : 'none',
+                    backdropFilter: showAppLibrary ? (clay ? 'blur(var(--glass-blur-heavy))' : 'none') : 'none',
+                    WebkitBackdropFilter: showAppLibrary ? (clay ? 'blur(var(--glass-blur-heavy))' : 'none') : 'none',
+                    opacity: showAppLibrary ? 1 : 0,
                 }}
             >
                 {showAppLibrary && (
