@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, animate as motionAnimate } from 'framer-motion';
 import { apps, openSystemItem, appdata } from './data';
 import { useWindows } from './WindowContext';
 import { useDevice } from './DeviceContext';
@@ -63,18 +63,7 @@ const AppLibrary = ({ onClose, dragY }: { onClose?: () => void; dragY?: any }) =
         if (isDraggingDown.current && currentY > 120) {
             onClose();
         } else if (isDraggingDown.current) {
-            // Animate back using spring-like manual animation
-            const start = currentY;
-            const duration = 250;
-            const startTime = performance.now();
-            const animate = (now: number) => {
-                const elapsed = now - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-                const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
-                dragY.set(start * (1 - eased));
-                if (progress < 1) requestAnimationFrame(animate);
-            };
-            requestAnimationFrame(animate);
+            motionAnimate(dragY, 0, { type: 'tween', duration: 0.25, ease: [0.32, 0.72, 0, 1] });
         }
         isDraggingDown.current = false;
         pullStartY.current = null;
@@ -432,10 +421,8 @@ const AppLibrary = ({ onClose, dragY }: { onClose?: () => void; dragY?: any }) =
                                 className="relative w-[85%] max-w-[340px] max-h-[70vh] rounded-[22px] overflow-hidden"
                                 style={clay ? {
                                     background: islightbackground
-                                        ? 'rgba(240,240,245,0.92)'
-                                        : 'rgba(30,30,35,0.92)',
-                                    backdropFilter: 'blur(20px) saturate(1.4)',
-                                    WebkitBackdropFilter: 'blur(20px) saturate(1.4)',
+                                        ? 'rgba(240,240,245,0.97)'
+                                        : 'rgba(30,30,35,0.97)',
                                     border: islightbackground
                                         ? '1px solid rgba(255,255,255,0.5)'
                                         : '1px solid rgba(255,255,255,0.08)',
