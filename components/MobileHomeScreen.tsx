@@ -85,6 +85,14 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
     useEffect(() => {
         screenHeightRef.current = window.innerHeight;
         appLibraryY.set(window.innerHeight);
+        const onResize = () => {
+            screenHeightRef.current = window.innerHeight;
+            if (!showAppLibraryRef.current) {
+                appLibraryY.set(window.innerHeight);
+            }
+        };
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
     }, []);
 
     useEffect(() => {
@@ -899,8 +907,8 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                     background: clay
                         ? 'color-mix(in srgb, var(--accent-source) 0%, color-mix(in srgb, var(--bg-glass) 28%, transparent))'
                         : 'var(--bg-surface)',
-                    backdropFilter: clay ? 'blur(var(--glass-blur-heavy))' : undefined,
-                    WebkitBackdropFilter: clay ? 'blur(var(--glass-blur-heavy))' : undefined,
+                    backdropFilter: (clay && showAppLibrary) ? 'blur(var(--glass-blur-heavy))' : 'none',
+                    WebkitBackdropFilter: (clay && showAppLibrary) ? 'blur(var(--glass-blur-heavy))' : 'none',
                 }}
             >
                 {showAppLibrary && (
