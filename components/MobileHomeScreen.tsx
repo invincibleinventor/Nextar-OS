@@ -12,7 +12,7 @@ const extractAppId = (fileId: string): string => {
     return fileId;
 };
 import { useSettings } from './SettingsContext';
-import { motion, AnimatePresence, useMotionValue } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue, animate as motionAnimate } from 'framer-motion';
 import AppLibrary from './AppLibrary';
 import { useWindows } from './WindowContext';
 import { useFileSystem } from './FileSystemContext';
@@ -36,7 +36,9 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
     const [page, setpage] = useState(0);
     const [showAppLibrary, setShowAppLibrary] = useState(false);
     const [editmode, seteditmode] = useState(false);
-    const appLibraryDragY = useMotionValue(0);
+    const screenHeightRef = useRef(typeof window !== 'undefined' ? window.innerHeight : 1000);
+    const appLibraryY = useMotionValue(typeof window !== 'undefined' ? window.innerHeight : 1000);
+    const closeAppLibraryRef = useRef<() => void>(() => {});
     const [contextmenu, setcontextmenu] = useState<{ x: number; y: number; item?: filesystemitem } | null>(null);
     const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
     const [renameTarget, setRenameTarget] = useState<string | null>(null);
@@ -67,9 +69,23 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
         }
     }, []);
 
+    const openAppLibrary = useCallback(() => {
+        setShowAppLibrary(true);
+        motionAnimate(appLibraryY, 0, { type: 'tween', duration: 0.3, ease: [0.32, 0.72, 0, 1] });
+    }, [appLibraryY]);
+
+    const closeAppLibrary = useCallback(() => {
+        motionAnimate(appLibraryY, screenHeightRef.current, {
+            type: 'tween', duration: 0.3, ease: [0.32, 0.72, 0, 1]
+        }).then(() => setShowAppLibrary(false));
+    }, [appLibraryY]);
+
+    closeAppLibraryRef.current = closeAppLibrary;
+
     useEffect(() => {
-        if (showAppLibrary) appLibraryDragY.set(0);
-    }, [showAppLibrary]);
+        screenHeightRef.current = window.innerHeight;
+        appLibraryY.set(window.innerHeight);
+    }, []);
 
     useEffect(() => {
         const scrollToHome = () => {
@@ -78,10 +94,9 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
             }
         };
         const handleAppBack = (e: Event) => {
-            // Close app library on back gesture
             if (showAppLibraryRef.current) {
                 e.preventDefault();
-                setShowAppLibrary(false);
+                closeAppLibraryRef.current();
                 return;
             }
             const currentScroll = scrollcontainerref.current?.scrollLeft || 0;
@@ -93,7 +108,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
             }
         };
         const handleHomePressed = () => {
-            setShowAppLibrary(false);
+            closeAppLibraryRef.current();
             scrollToHome();
         };
 
@@ -560,7 +575,7 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
     // Document-level capture listeners — fires before ANY element's touch handling,
     // including before browser gesture recognition for touchAction
     useEffect(() => {
-        let startY = 0, startX = 0, triggered = false;
+        let startY = 0, startX = 0, triggered = false, isDraggingLibrary = false;
 
         const onStart = (e: TouchEvent) => {
             if (showAppLibraryRef.current || editmodeRef.current) return;
@@ -569,20 +584,48 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
             startY = e.touches[0].clientY;
             startX = e.touches[0].clientX;
             triggered = false;
+            isDraggingLibrary = false;
         };
 
         const onMove = (e: TouchEvent) => {
-            if (triggered || !startY || showAppLibraryRef.current || editmodeRef.current) return;
+            if (triggered || !startY || editmodeRef.current) return;
+            if (showAppLibraryRef.current && !isDraggingLibrary) return;
             const dy = e.touches[0].clientY - startY;
             const dx = Math.abs(e.touches[0].clientX - startX);
-            if (Math.abs(dy) > 25 && Math.abs(dy) > dx) {
-                triggered = true;
-                if (dy < 0) setShowAppLibrary(true);
-                else window.dispatchEvent(new CustomEvent('open-control-center'));
+            if (Math.abs(dy) > 15 && Math.abs(dy) > dx) {
+                if (dy < 0) {
+                    // Swiping up — drag the app library into view
+                    isDraggingLibrary = true;
+                    const newY = Math.max(0, screenHeightRef.current + dy);
+                    appLibraryY.set(newY);
+                    if (!showAppLibraryRef.current) {
+                        setShowAppLibrary(true);
+                    }
+                } else if (!isDraggingLibrary) {
+                    triggered = true;
+                    window.dispatchEvent(new CustomEvent('open-control-center'));
+                }
             }
         };
 
-        const onEnd = () => { triggered = false; startY = 0; };
+        const onEnd = () => {
+            if (isDraggingLibrary) {
+                const currentY = appLibraryY.get();
+                if (currentY < screenHeightRef.current * 0.5) {
+                    // Past halfway — open fully
+                    motionAnimate(appLibraryY, 0, { type: 'tween', duration: 0.25, ease: [0.32, 0.72, 0, 1] });
+                    setShowAppLibrary(true);
+                } else {
+                    // Not far enough — snap back closed
+                    motionAnimate(appLibraryY, screenHeightRef.current, {
+                        type: 'tween', duration: 0.25, ease: [0.32, 0.72, 0, 1]
+                    }).then(() => setShowAppLibrary(false));
+                }
+            }
+            triggered = false;
+            startY = 0;
+            isDraggingLibrary = false;
+        };
 
         document.addEventListener('touchstart', onStart, { capture: true, passive: true });
         document.addEventListener('touchmove', onMove, { capture: true, passive: true });
@@ -833,10 +876,10 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
                 dragElastic={0.2}
                 onDragEnd={(_, info) => {
                     if (info.offset.y < -30 || info.velocity.y < -200) {
-                        setShowAppLibrary(true);
+                        openAppLibrary();
                     }
                 }}
-                onClick={() => setShowAppLibrary(true)}
+                onClick={() => openAppLibrary()}
                 whileTap={{ scale: 1.3, opacity: 0.8 }}
                 style={{ cursor: 'grab', touchAction: 'none' }}
             >
@@ -848,37 +891,27 @@ export default function MobileHomeScreen({ isoverlayopen = false }: { isoverlayo
             </motion.div>
 
             {/* ── App Library overlay ── */}
-            <AnimatePresence>
+            <motion.div
+                className="absolute inset-0 z-30 flex flex-col"
+                style={{
+                    y: appLibraryY,
+                    pointerEvents: showAppLibrary ? 'auto' : 'none',
+                    background: clay
+                        ? 'color-mix(in srgb, var(--accent-source) 0%, color-mix(in srgb, var(--bg-glass) 28%, transparent))'
+                        : 'var(--bg-surface)',
+                    backdropFilter: clay ? 'blur(var(--glass-blur-heavy))' : undefined,
+                    WebkitBackdropFilter: clay ? 'blur(var(--glass-blur-heavy))' : undefined,
+                }}
+            >
                 {showAppLibrary && (
-                    <motion.div
-                        key="app-library-overlay"
-                        className="absolute inset-0 z-30"
-                        initial={{ y: '100%' }}
-                        animate={{ y: 0 }}
-                        exit={{ y: '100%' }}
-                        transition={{ type: 'tween', duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
-                    >
-                        <motion.div
-                            className="w-full h-full flex flex-col"
-                            style={{
-                                y: appLibraryDragY,
-                                background: clay
-                                    ? 'color-mix(in srgb, var(--accent-source) 0%, color-mix(in srgb, var(--bg-glass) 28%, transparent))'
-                                    : 'var(--bg-surface)',
-                                backdropFilter: clay ? 'blur(var(--glass-blur-heavy))' : undefined,
-                                WebkitBackdropFilter: clay ? 'blur(var(--glass-blur-heavy))' : undefined,
-                            }}
-                        >
-                            <div className="flex-1 min-h-0 overflow-hidden">
-                                <AppLibrary
-                                    onClose={() => setShowAppLibrary(false)}
-                                    dragY={appLibraryDragY}
-                                />
-                            </div>
-                        </motion.div>
-                    </motion.div>
+                    <div className="flex-1 min-h-0 overflow-hidden">
+                        <AppLibrary
+                            onClose={closeAppLibrary}
+                            dragY={appLibraryY}
+                        />
+                    </div>
                 )}
-            </AnimatePresence>
+            </motion.div>
         </div>
     );
 }
