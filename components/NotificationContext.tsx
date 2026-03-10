@@ -72,6 +72,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         if (!isnative || !electronapi?.notificationdaemon) return;
 
         const unlisten = electronapi.notificationdaemon.onreceived((notif: any) => {
+            const urgencyMap: Record<number, 'low' | 'normal' | 'critical'> = { 0: 'low', 1: 'normal', 2: 'critical' };
             const n: Notification = {
                 id: `native-${notif.id || Date.now()}`,
                 title: notif.summary || notif.app_name || 'Notification',
@@ -81,6 +82,8 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
                 appname: notif.app_name || 'System',
                 icon: notif.app_icon || '/icons/settings.png',
                 appid: 'system',
+                urgency: urgencyMap[notif.urgency] || 'normal',
+                timestamp: Date.now(),
                 actions: notif.actions?.map((a: any) => ({
                     label: a.label || a,
                     actionId: a.id || a,
@@ -95,12 +98,14 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     const addnotificationRef = useRef((_n: Notification) => {});
 
     const addnotification = (n: Notification) => {
-        setnotifications(prev => [n, ...prev]);
+        const enriched = { ...n, timestamp: n.timestamp || Date.now() };
+        setnotifications(prev => [enriched, ...prev]);
         setversion(v => v + 1);
-        if (!dnd) {
-            settoast(n);
+        // Critical notifications always show; others respect DND
+        if (!dnd || n.urgency === 'critical') {
+            settoast(enriched);
             playSound('notification');
-            setTimeout(() => settoast(null), 3000);
+            setTimeout(() => settoast(null), n.urgency === 'critical' ? 5000 : 3000);
         }
     };
 

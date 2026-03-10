@@ -96,6 +96,45 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
     const [printerList, setPrinterList] = useState<any[]>([]);
     const [defaultPrinter, setDefaultPrinter] = useState('');
 
+    // Startup apps state
+    const [startupApps, setStartupApps] = useState<{ name: string; enabled: boolean; exec: string }[]>(() => {
+        if (typeof window === 'undefined') return [];
+        const stored = localStorage.getItem('nextaros-startup-apps');
+        return stored ? JSON.parse(stored) : [
+            { name: 'NextarOS Welcome', enabled: true, exec: 'aboutnextaros' },
+        ];
+    });
+    const saveStartupApps = (apps: typeof startupApps) => { setStartupApps(apps); localStorage.setItem('nextaros-startup-apps', JSON.stringify(apps)); };
+    const toggleStartupApp = (idx: number) => { const n = [...startupApps]; n[idx] = { ...n[idx], enabled: !n[idx].enabled }; saveStartupApps(n); };
+    const removeStartupApp = (idx: number) => { saveStartupApps(startupApps.filter((_, i) => i !== idx)); };
+
+    // Keyboard shortcuts state
+    const defaultShortcuts = [
+        { id: 'screenshot', label: 'Screenshot', keys: 'Print' },
+        { id: 'screenshot-area', label: 'Screenshot Area', keys: 'Shift+Print' },
+        { id: 'run-dialog', label: 'Run Dialog', keys: 'Alt+F2' },
+        { id: 'app-launcher', label: 'App Launcher', keys: 'Super' },
+        { id: 'spotlight', label: 'Search', keys: 'Super+Space' },
+        { id: 'lock', label: 'Lock Screen', keys: 'Super+L' },
+        { id: 'show-desktop', label: 'Show Desktop', keys: 'Super+D' },
+        { id: 'snap-left', label: 'Snap Window Left', keys: 'Super+Left' },
+        { id: 'snap-right', label: 'Snap Window Right', keys: 'Super+Right' },
+        { id: 'maximize', label: 'Maximize Window', keys: 'Super+Up' },
+        { id: 'minimize', label: 'Minimize Window', keys: 'Super+Down' },
+        { id: 'workspace-prev', label: 'Previous Workspace', keys: 'Ctrl+Alt+Left' },
+        { id: 'workspace-next', label: 'Next Workspace', keys: 'Ctrl+Alt+Right' },
+        { id: 'workspace-overview', label: 'Workspace Overview', keys: 'Ctrl+Alt+Up' },
+        { id: 'app-switcher', label: 'App Switcher', keys: 'Cmd+`' },
+        { id: 'close-window', label: 'Close Window', keys: 'Cmd+W' },
+        { id: 'notification-center', label: 'Notification Center', keys: 'Super+N' },
+        { id: 'control-center', label: 'Control Center', keys: 'Super+S' },
+    ];
+    const [shortcuts, setShortcuts] = useState(() => {
+        if (typeof window === 'undefined') return defaultShortcuts;
+        const stored = localStorage.getItem('nextaros-shortcuts');
+        return stored ? JSON.parse(stored) : defaultShortcuts;
+    });
+
     const fetchwifistatus = useCallback(async () => {
         if (!iselectron) return;
         const status = await wifiapi.getstatus();
@@ -1406,7 +1445,75 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                         </>
                     )}
 
-                    {!['general','appearance','users','wifi','bluetooth','sound','network','storage','displays','keyboard','mouse','language','datetime','power','defaultapps','printers','notifications','focus','accessibility'].includes(activetab) && (
+                    {activetab === 'startup' && (
+                        <>
+                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Startup Applications</div>
+                            <SettingsGroup>
+                                {startupApps.length === 0 ? (
+                                    <SettingsRow label="No startup applications configured" value="" last />
+                                ) : (
+                                    startupApps.map((app, i) => (
+                                        <SettingsRow
+                                            key={i}
+                                            label={app.name}
+                                            value={app.exec}
+                                            toggle
+                                            toggleValue={app.enabled}
+                                            onToggle={() => toggleStartupApp(i)}
+                                            last={i === startupApps.length - 1}
+                                        />
+                                    ))
+                                )}
+                            </SettingsGroup>
+                            <div className="flex gap-2 pl-3 mt-1">
+                                <button
+                                    className={`text-[12px] font-semibold px-3 py-1.5 rounded-lg transition-all ${clay ? 'text-[--accent-color] hover:bg-[--bg-glass-hover]' : 'text-accent hover:bg-overlay'}`}
+                                    onClick={() => {
+                                        const name = prompt('App name:');
+                                        const exec = prompt('Command or app ID:');
+                                        if (name && exec) saveStartupApps([...startupApps, { name, exec, enabled: true }]);
+                                    }}
+                                >
+                                    + Add App
+                                </button>
+                                {startupApps.length > 0 && (
+                                    <button
+                                        className={`text-[12px] font-semibold px-3 py-1.5 rounded-lg transition-all ${clay ? 'text-[--pastel-red] hover:bg-[--bg-glass-hover]' : 'text-red-400 hover:bg-overlay'}`}
+                                        onClick={() => {
+                                            const idx = startupApps.length - 1;
+                                            if (confirm(`Remove "${startupApps[idx].name}"?`)) removeStartupApp(idx);
+                                        }}
+                                    >
+                                        Remove Last
+                                    </button>
+                                )}
+                            </div>
+                            <p className={`text-[11px] pl-3 mt-3 ${clay ? 'text-[--text-muted]' : 'text-[--text-muted]'}`}>
+                                These apps will open automatically when NextarOS starts.
+                            </p>
+                        </>
+                    )}
+
+                    {activetab === 'shortcuts' && (
+                        <>
+                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Keyboard Shortcuts</div>
+                            <SettingsGroup>
+                                {shortcuts.map((s: any, i: number) => (
+                                    <SettingsRow
+                                        key={s.id}
+                                        label={s.label}
+                                        value={s.keys}
+                                        last={i === shortcuts.length - 1}
+                                    />
+                                ))}
+                            </SettingsGroup>
+                            <p className={`text-[11px] pl-3 mt-3 ${clay ? 'text-[--text-muted]' : 'text-[--text-muted]'}`}>
+                                Keyboard shortcuts are configured globally. When running as a desktop environment, these shortcuts are registered system-wide.
+                            </p>
+                        </>
+                    )}
+
+                    {!['general','appearance','users','wifi','bluetooth','sound','network','storage','displays','keyboard','mouse','language','datetime','power','defaultapps','printers','notifications','focus','accessibility','startup','shortcuts'].includes(activetab) && (
                         <div className={`flex flex-col items-center justify-center py-20 text-center ${clay ? '' : 'opacity-50'}`}>
                             <IoSettingsOutline size={48} className={`mb-4 ${clay ? 'text-[--text-muted]' : ''}`} />
                             <h3 className={`text-lg font-semibold ${clay ? 'text-[--text-color]' : ''}`}>Settings for {sidebaritems.find(i => i.id === activetab)?.label}</h3>

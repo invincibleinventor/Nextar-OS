@@ -14,6 +14,8 @@ export interface Notification {
     viewed?: boolean;
     type?: string;
     actions?: NotificationAction[];
+    urgency?: 'low' | 'normal' | 'critical';
+    timestamp?: number;
 }
 
 export const initialnotifications: Notification[] = [
