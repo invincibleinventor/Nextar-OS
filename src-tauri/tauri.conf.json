@@ -1,0 +1,118 @@
+{
+  "productName": "NextarOS",
+  "version": "1.0.0",
+  "identifier": "com.nextaros.desktop",
+  "build": {
+    "frontendDist": "../out",
+    "devUrl": "http://localhost:3000",
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "label": "main",
+        "title": "NextarOS",
+        "fullscreen": false,
+        "resizable": true,
+        "decorations": false,
+        "transparent": true,
+        "width": 1920,
+        "height": 1080,
+        "minWidth": 800,
+        "minHeight": 600
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https: wss: ws: http://localhost:*; frame-src 'self' https: blob:; media-src 'self' blob: https:; worker-src 'self' blob:;"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["deb", "rpm", "appimage"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "linux": {
+      "deb": {
+        "depends": [
+          "libgtk-3-0",
+          "libwebkit2gtk-4.1-0",
+          "libnotify4",
+          "libnss3",
+          "libxss1",
+          "libxtst6",
+          "xdg-utils",
+          "libatspi2.0-0",
+          "libuuid1",
+          "libsecret-1-0",
+          "libpulse0",
+          "network-manager",
+          "bluez"
+        ],
+        "section": "x11",
+        "priority": "optional"
+      },
+      "rpm": {
+        "depends": [
+          "gtk3",
+          "webkit2gtk4.1",
+          "libnotify",
+          "nss",
+          "libXScrnSaver",
+          "libXtst",
+          "xdg-utils",
+          "at-spi2-core",
+          "libuuid",
+          "libsecret",
+          "pulseaudio-libs",
+          "NetworkManager",
+          "bluez"
+        ]
+      }
+    }
+  },
+  "plugins": {
+    "shell": {
+      "open": true,
+      "scope": [
+        {
+          "name": "run-command",
+          "cmd": "",
+          "args": true,
+          "sidecar": false
+        }
+      ]
+    },
+    "fs": {
+      "scope": {
+        "allow": ["$HOME/**", "/tmp/**", "/etc/**", "/usr/**", "/sys/**", "/proc/**", "$RESOURCE/**"],
+        "deny": []
+      }
+    },
+    "dialog": {
+      "open": true,
+      "save": true
+    },
+    "clipboard-manager": {
+      "all": true
+    },
+    "notification": {
+      "all": true
+    },
+    "global-shortcut": {
+      "all": true
+    },
+    "updater": {
+      "endpoints": [
+        "https://github.com/invincibleinventor/nextar-os/releases/latest/download/latest.json"
+      ],
+      "pubkey": ""
+    }
+  }
+}

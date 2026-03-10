@@ -7,6 +7,7 @@ import { useDevice } from './DeviceContext';
 import { useAuth } from './AuthContext';
 import { apps, openSystemItem } from './data';
 import { playSound } from './SoundEffects';
+import { isnative, electronapi } from '@/utils/platform';
 
 interface NotificationContextType {
     notifications: Notification[];
@@ -20,6 +21,12 @@ interface NotificationContextType {
     addToast: (message: string, type?: 'info' | 'success' | 'error' | 'warning', actions?: { label: string; actionId: string }[]) => void;
     handleactionclick: (notif: Notification, actionId: string) => void;
     version: number;
+    dnd: boolean;
+    setdnd: (val: boolean) => void;
+    showpreviews: boolean;
+    setshowpreviews: (val: boolean) => void;
+    showonlockscreen: boolean;
+    setshowonlockscreen: (val: boolean) => void;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -33,6 +40,13 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     const [version, setversion] = useState(0);
 
     const [toast, settoast] = useState<Notification | null>(null);
+    const [dnd, setdnd] = useState(() => typeof window !== 'undefined' ? localStorage.getItem('nextaros-dnd') === 'true' : false);
+    const [showpreviews, setshowpreviews] = useState(() => typeof window !== 'undefined' ? localStorage.getItem('nextaros-notif-previews') !== 'false' : true);
+    const [showonlockscreen, setshowonlockscreen] = useState(() => typeof window !== 'undefined' ? localStorage.getItem('nextaros-notif-lockscreen') !== 'false' : true);
+
+    useEffect(() => { localStorage.setItem('nextaros-dnd', String(dnd)); }, [dnd]);
+    useEffect(() => { localStorage.setItem('nextaros-notif-previews', String(showpreviews)); }, [showpreviews]);
+    useEffect(() => { localStorage.setItem('nextaros-notif-lockscreen', String(showonlockscreen)); }, [showonlockscreen]);
 
     const { isGuest } = useAuth();
 
@@ -53,12 +67,44 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         setisloaded(true);
     }, [isGuest]);
 
+    // Subscribe to native notification daemon (D-Bus org.freedesktop.Notifications)
+    useEffect(() => {
+        if (!isnative || !electronapi?.notificationdaemon) return;
+
+        const unlisten = electronapi.notificationdaemon.onreceived((notif: any) => {
+            const n: Notification = {
+                id: `native-${notif.id || Date.now()}`,
+                title: notif.summary || notif.app_name || 'Notification',
+                description: notif.body || '',
+                time: 'Now',
+                type: 'system',
+                appname: notif.app_name || 'System',
+                icon: notif.app_icon || '/icons/settings.png',
+                appid: 'system',
+                actions: notif.actions?.map((a: any) => ({
+                    label: a.label || a,
+                    actionId: a.id || a,
+                })),
+            };
+            addnotificationRef.current(n);
+        });
+
+        return () => { unlisten?.then?.((fn: any) => fn?.()); };
+    }, []);
+
+    const addnotificationRef = useRef((_n: Notification) => {});
+
     const addnotification = (n: Notification) => {
         setnotifications(prev => [n, ...prev]);
         setversion(v => v + 1);
-        settoast(n);
-        setTimeout(() => settoast(null), 3000);
+        if (!dnd) {
+            settoast(n);
+            playSound('notification');
+            setTimeout(() => settoast(null), 3000);
+        }
     };
+
+    addnotificationRef.current = addnotification;
 
     const addToast = (message: string, type: 'info' | 'success' | 'error' | 'warning' = 'info', actions?: { label: string; actionId: string }[]) => {
         if (type === 'error') playSound('error');
@@ -130,7 +176,13 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
             markasviewed,
             addToast,
             handleactionclick,
-            version
+            version,
+            dnd,
+            setdnd,
+            showpreviews,
+            setshowpreviews,
+            showonlockscreen,
+            setshowonlockscreen,
         }}>
             {children}
         </NotificationContext.Provider>

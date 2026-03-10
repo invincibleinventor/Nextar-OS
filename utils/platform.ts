@@ -1,10 +1,18 @@
-export const iselectron = typeof window !== 'undefined' && !!(window as any).electronAPI?.iselectron;
-export const isweb = !iselectron;
+import { tauriAPI } from './tauri-bridge';
 
-export const electronapi = iselectron ? (window as any).electronAPI : null;
+// Tauri-first detection: check for __TAURI__ (Tauri v2) OR electronAPI (legacy/fallback)
+export const istauri = typeof window !== 'undefined' && '__TAURI__' in window;
+const _iselectron = typeof window !== 'undefined' && !!(window as any).electronAPI?.iselectron;
+// iselectron is true for BOTH Tauri and Electron — all existing checks work unchanged
+export const iselectron = istauri || _iselectron;
+export const isnative = iselectron;
+export const isweb = !isnative;
+
+// Unified API: use tauriAPI for Tauri, electronAPI for Electron
+export const electronapi = istauri ? tauriAPI : (_iselectron ? (window as any).electronAPI : null);
 
 export async function getplatforminfo() {
-    if (iselectron) {
+    if (isnative) {
         return await electronapi.platform.get();
     }
     return {
@@ -23,14 +31,14 @@ export async function getplatforminfo() {
 }
 
 export async function getsysteminfo() {
-    if (iselectron) {
+    if (isnative) {
         return await electronapi.platform.getsysteminfo();
     }
     return null;
 }
 
 export async function shownotification(title: string, body: string, options?: { silent?: boolean; icon?: string }) {
-    if (iselectron) {
+    if (isnative) {
         return await electronapi.notifications.show(title, body, options);
     }
 
@@ -50,7 +58,7 @@ export async function shownotification(title: string, body: string, options?: { 
 }
 
 export async function openexternal(url: string) {
-    if (iselectron) {
+    if (isnative) {
         return await electronapi.shell.openexternal(url);
     }
     window.open(url, '_blank', 'noopener,noreferrer');
@@ -58,7 +66,7 @@ export async function openexternal(url: string) {
 }
 
 export async function readclipboardtext(): Promise<string> {
-    if (iselectron) {
+    if (isnative) {
         return await electronapi.clipboard.readtext();
     }
     try {
@@ -69,7 +77,7 @@ export async function readclipboardtext(): Promise<string> {
 }
 
 export async function writeclipboardtext(text: string): Promise<boolean> {
-    if (iselectron) {
+    if (isnative) {
         return await electronapi.clipboard.writetext(text);
     }
     try {
@@ -82,285 +90,292 @@ export async function writeclipboardtext(text: string): Promise<boolean> {
 
 export const wifi = {
     async getstatus() {
-        if (iselectron) return await electronapi.wifi.getstatus();
+        if (isnative) return await electronapi.wifi.getstatus();
         return { enabled: false, connected: false, ssid: null, error: 'Not in Electron' };
     },
     async setenabled(enabled: boolean) {
-        if (iselectron) return await electronapi.wifi.setenabled(enabled);
+        if (isnative) return await electronapi.wifi.setenabled(enabled);
         return { success: false, error: 'Not in Electron' };
     },
     async getnetworks() {
-        if (iselectron) return await electronapi.wifi.getnetworks();
+        if (isnative) return await electronapi.wifi.getnetworks();
         return { success: false, networks: [], error: 'Not in Electron' };
     },
     async connect(ssid: string, password?: string) {
-        if (iselectron) return await electronapi.wifi.connect(ssid, password);
+        if (isnative) return await electronapi.wifi.connect(ssid, password);
         return { success: false, error: 'Not in Electron' };
     }
 };
 
 export const bluetooth = {
     async getstatus() {
-        if (iselectron) return await electronapi.bluetooth.getstatus();
+        if (isnative) return await electronapi.bluetooth.getstatus();
         return { enabled: false, available: false };
     },
     async setenabled(enabled: boolean) {
-        if (iselectron) return await electronapi.bluetooth.setenabled(enabled);
+        if (isnative) return await electronapi.bluetooth.setenabled(enabled);
         return { success: false, error: 'Not in Electron' };
     },
     async getdevices() {
-        if (iselectron) return await electronapi.bluetooth.getdevices();
+        if (isnative) return await electronapi.bluetooth.getdevices();
         return { success: false, devices: [] };
     }
 };
 
 export const audio = {
     async getvolume() {
-        if (iselectron) return await electronapi.audio.getvolume();
+        if (isnative) return await electronapi.audio.getvolume();
         return { volume: 100, muted: false };
     },
     async setvolume(volume: number) {
-        if (iselectron) return await electronapi.audio.setvolume(volume);
+        if (isnative) return await electronapi.audio.setvolume(volume);
         return { success: false, error: 'Not in Electron' };
     },
     async setmuted(muted: boolean) {
-        if (iselectron) return await electronapi.audio.setmuted(muted);
+        if (isnative) return await electronapi.audio.setmuted(muted);
         return { success: false, error: 'Not in Electron' };
     }
 };
 
 export const brightness = {
     async get() {
-        if (iselectron) return await electronapi.brightness.get();
+        if (isnative) return await electronapi.brightness.get();
         return { brightness: 100, available: false };
     },
     async set(level: number) {
-        if (iselectron) return await electronapi.brightness.set(level);
+        if (isnative) return await electronapi.brightness.set(level);
         return { success: false, error: 'Not in Electron' };
     }
 };
 
 export const battery = {
     async getstatus() {
-        if (iselectron) return await electronapi.battery.getstatus();
+        if (isnative) return await electronapi.battery.getstatus();
         return { percentage: 100, charging: false, pluggedin: true, available: false };
     }
 };
 
 export const processes = {
     async list() {
-        if (iselectron) return await electronapi.processes.list();
+        if (isnative) return await electronapi.processes.list();
         return { success: false, processes: [] };
     },
     async kill(pid: number, force = false) {
-        if (iselectron) return await electronapi.processes.kill(pid, force);
+        if (isnative) return await electronapi.processes.kill(pid, force);
         return { success: false, error: 'Not in Electron' };
     }
 };
 
 export const power = {
     async shutdown() {
-        if (iselectron) return await electronapi.power.shutdown();
+        if (isnative) return await electronapi.power.shutdown();
         return { success: false, error: 'Not in Electron' };
     },
     async restart() {
-        if (iselectron) return await electronapi.power.restart();
+        if (isnative) return await electronapi.power.restart();
         return { success: false, error: 'Not in Electron' };
     },
     async sleep() {
-        if (iselectron) return await electronapi.power.sleep();
+        if (isnative) return await electronapi.power.sleep();
         return { success: false, error: 'Not in Electron' };
     },
     async hibernate() {
-        if (iselectron) return await electronapi.power.hibernate();
+        if (isnative) return await electronapi.power.hibernate();
         return { success: false, error: 'Not in Electron' };
     },
     async logout() {
-        if (iselectron) return await electronapi.power.logout();
+        if (isnative) return await electronapi.power.logout();
         return { success: false, error: 'Not in Electron' };
     },
     async lock() {
-        if (iselectron) return await electronapi.power.lock();
+        if (isnative) return await electronapi.power.lock();
         return { success: false, error: 'Not in Electron' };
+    },
+    async getprofile() {
+        if (isnative && electronapi.power?.getprofile) return await electronapi.power.getprofile();
+        return 'balanced';
+    },
+    async setprofile(profile: string) {
+        if (isnative && electronapi.power?.setprofile) return await electronapi.power.setprofile(profile);
     }
 };
 
 export const apps = {
     async getinstalled() {
-        if (iselectron) return await electronapi.apps.getinstalled();
+        if (isnative) return await electronapi.apps.getinstalled();
         return { success: false, apps: [] };
     },
     async launch(apppath: string, args: string[] = []) {
-        if (iselectron) return await electronapi.apps.launch(apppath, args);
+        if (isnative) return await electronapi.apps.launch(apppath, args);
         return { success: false, error: 'Not in Electron' };
     }
 };
 
 export const externalwindows = {
     async list() {
-        if (iselectron) return await electronapi.externalwindows.list();
+        if (isnative) return await electronapi.externalwindows.list();
         return { success: false, windows: [] };
     },
     async focus(windowid: string) {
-        if (iselectron) return await electronapi.externalwindows.focus(windowid);
+        if (isnative) return await electronapi.externalwindows.focus(windowid);
         return { success: false, error: 'Not in Electron' };
     },
     async minimize(windowid: string) {
-        if (iselectron) return await electronapi.externalwindows.minimize(windowid);
+        if (isnative) return await electronapi.externalwindows.minimize(windowid);
         return { success: false, error: 'Not in Electron' };
     },
     async close(windowid: string) {
-        if (iselectron) return await electronapi.externalwindows.close(windowid);
+        if (isnative) return await electronapi.externalwindows.close(windowid);
         return { success: false, error: 'Not in Electron' };
     }
 };
 
 export const desktop = {
     async setwallpaper(imagepath: string) {
-        if (iselectron) return await electronapi.desktop.setwallpaper(imagepath);
+        if (isnative) return await electronapi.desktop.setwallpaper(imagepath);
         return { success: false, error: 'Not in Electron' };
     }
 };
 
 export const keyboard = {
-    async getlayout() { if (iselectron) return await electronapi.keyboard.getlayout(); return { success: false }; },
-    async getlayouts() { if (iselectron) return await electronapi.keyboard.getlayouts(); return { success: false }; },
-    async setlayout(layout: string) { if (iselectron) return await electronapi.keyboard.setlayout(layout); return { success: false }; },
-    async getrepeatrate() { if (iselectron) return await electronapi.keyboard.getrepeatrate(); return { success: false }; },
-    async setrepeatrate(delay: number, interval: number) { if (iselectron) return await electronapi.keyboard.setrepeatrate(delay, interval); return { success: false }; },
+    async getlayout() { if (isnative) return await electronapi.keyboard.getlayout(); return { success: false }; },
+    async getlayouts() { if (isnative) return await electronapi.keyboard.getlayouts(); return { success: false }; },
+    async setlayout(layout: string) { if (isnative) return await electronapi.keyboard.setlayout(layout); return { success: false }; },
+    async getrepeatrate() { if (isnative) return await electronapi.keyboard.getrepeatrate(); return { success: false }; },
+    async setrepeatrate(delay: number, interval: number) { if (isnative) return await electronapi.keyboard.setrepeatrate(delay, interval); return { success: false }; },
 };
 
 export const mouse = {
-    async getspeed() { if (iselectron) return await electronapi.mouse.getspeed(); return { success: false }; },
-    async setspeed(speed: number) { if (iselectron) return await electronapi.mouse.setspeed(speed); return { success: false }; },
-    async getnaturalscroll() { if (iselectron) return await electronapi.mouse.getnaturalscroll(); return { success: false }; },
-    async setnaturalscroll(enabled: boolean) { if (iselectron) return await electronapi.mouse.setnaturalscroll(enabled); return { success: false }; },
+    async getspeed() { if (isnative) return await electronapi.mouse.getspeed(); return { success: false }; },
+    async setspeed(speed: number) { if (isnative) return await electronapi.mouse.setspeed(speed); return { success: false }; },
+    async getnaturalscroll() { if (isnative) return await electronapi.mouse.getnaturalscroll(); return { success: false }; },
+    async setnaturalscroll(enabled: boolean) { if (isnative) return await electronapi.mouse.setnaturalscroll(enabled); return { success: false }; },
 };
 
 export const locale = {
-    async getlocale() { if (iselectron) return await electronapi.locale.getlocale(); return { success: false }; },
-    async getlocales() { if (iselectron) return await electronapi.locale.getlocales(); return { success: false }; },
-    async setlocale(loc: string) { if (iselectron) return await electronapi.locale.setlocale(loc); return { success: false }; },
+    async getlocale() { if (isnative) return await electronapi.locale.getlocale(); return { success: false }; },
+    async getlocales() { if (isnative) return await electronapi.locale.getlocales(); return { success: false }; },
+    async setlocale(loc: string) { if (isnative) return await electronapi.locale.setlocale(loc); return { success: false }; },
 };
 
 export const datetime = {
-    async getstatus() { if (iselectron) return await electronapi.datetime.getstatus(); return { success: false }; },
-    async gettimezones() { if (iselectron) return await electronapi.datetime.gettimezones(); return { success: false }; },
-    async settimezone(tz: string) { if (iselectron) return await electronapi.datetime.settimezone(tz); return { success: false }; },
-    async setntp(enabled: boolean) { if (iselectron) return await electronapi.datetime.setntp(enabled); return { success: false }; },
+    async getstatus() { if (isnative) return await electronapi.datetime.getstatus(); return { success: false }; },
+    async gettimezones() { if (isnative) return await electronapi.datetime.gettimezones(); return { success: false }; },
+    async settimezone(tz: string) { if (isnative) return await electronapi.datetime.settimezone(tz); return { success: false }; },
+    async setntp(enabled: boolean) { if (isnative) return await electronapi.datetime.setntp(enabled); return { success: false }; },
 };
 
 export const defaultapps = {
-    async getbrowser() { if (iselectron) return await electronapi.defaultapps.getbrowser(); return { success: false }; },
-    async setbrowser(desktop: string) { if (iselectron) return await electronapi.defaultapps.setbrowser(desktop); return { success: false }; },
-    async gethandler(mime: string) { if (iselectron) return await electronapi.defaultapps.gethandler(mime); return { success: false }; },
-    async sethandler(mime: string, desktop: string) { if (iselectron) return await electronapi.defaultapps.sethandler(mime, desktop); return { success: false }; },
+    async getbrowser() { if (isnative) return await electronapi.defaultapps.getbrowser(); return { success: false }; },
+    async setbrowser(desktop: string) { if (isnative) return await electronapi.defaultapps.setbrowser(desktop); return { success: false }; },
+    async gethandler(mime: string) { if (isnative) return await electronapi.defaultapps.gethandler(mime); return { success: false }; },
+    async sethandler(mime: string, desktop: string) { if (isnative) return await electronapi.defaultapps.sethandler(mime, desktop); return { success: false }; },
 };
 
 export const printers = {
-    async getprinters() { if (iselectron) return await electronapi.printers.getprinters(); return { success: false }; },
-    async getdefault() { if (iselectron) return await electronapi.printers.getdefault(); return { success: false }; },
-    async setdefault(printer: string) { if (iselectron) return await electronapi.printers.setdefault(printer); return { success: false }; },
+    async getprinters() { if (isnative) return await electronapi.printers.getprinters(); return { success: false }; },
+    async getdefault() { if (isnative) return await electronapi.printers.getdefault(); return { success: false }; },
+    async setdefault(printer: string) { if (isnative) return await electronapi.printers.setdefault(printer); return { success: false }; },
 };
 
 export const systeminfo = {
     async getnetworkinfo() {
-        if (iselectron) return await electronapi.system.getnetworkinfo();
+        if (isnative) return await electronapi.system.getnetworkinfo();
         return { success: false, interfaces: {} };
     },
     async getdiskusage() {
-        if (iselectron) return await electronapi.system.getdiskusage();
+        if (isnative) return await electronapi.system.getdiskusage();
         return { success: false, disks: [] };
     }
 };
 
 export const icons = {
     async getdata(iconpath: string): Promise<{ success: boolean; dataurl?: string }> {
-        if (iselectron) return await electronapi.icons.getdata(iconpath);
+        if (isnative) return await electronapi.icons.getdata(iconpath);
         return { success: false };
     }
 };
 
 export const nativefs = {
     async readfile(filepath: string): Promise<{ success: boolean; content?: string; error?: string }> {
-        if (iselectron) {
+        if (isnative) {
             return await electronapi.filesystem.readfile(filepath);
         }
         return { success: false, error: 'Not in Electron' };
     },
 
     async writefile(filepath: string, content: string): Promise<{ success: boolean; error?: string }> {
-        if (iselectron) {
+        if (isnative) {
             return await electronapi.filesystem.writefile(filepath, content);
         }
         return { success: false, error: 'Not in Electron' };
     },
 
     async readdir(dirpath: string) {
-        if (iselectron) {
+        if (isnative) {
             return await electronapi.filesystem.readdir(dirpath);
         }
         return { success: false, error: 'Not in Electron' };
     },
 
     async getstats(filepath: string) {
-        if (iselectron) {
+        if (isnative) {
             return await electronapi.filesystem.getstats(filepath);
         }
         return { success: false, error: 'Not in Electron' };
     },
 
     async mkdir(dirpath: string) {
-        if (iselectron) {
+        if (isnative) {
             return await electronapi.filesystem.mkdir(dirpath);
         }
         return { success: false, error: 'Not in Electron' };
     },
 
     async remove(targetpath: string, recursive = false) {
-        if (iselectron) {
+        if (isnative) {
             return await electronapi.filesystem.remove(targetpath, recursive);
         }
         return { success: false, error: 'Not in Electron' };
     },
 
     async rename(oldpath: string, newpath: string) {
-        if (iselectron) {
+        if (isnative) {
             return await electronapi.filesystem.rename(oldpath, newpath);
         }
         return { success: false, error: 'Not in Electron' };
     },
 
     async copy(source: string, dest: string) {
-        if (iselectron) {
+        if (isnative) {
             return await electronapi.filesystem.copy(source, dest);
         }
         return { success: false, error: 'Not in Electron' };
     },
 
     async trash(filepath: string) {
-        if (iselectron) {
+        if (isnative) {
             return await electronapi.filesystem.trash(filepath);
         }
         return { success: false, error: 'Not in Electron' };
     },
 
     async openpath(filepath: string) {
-        if (iselectron) {
+        if (isnative) {
             return await electronapi.shell.openpath(filepath);
         }
         return false;
     },
 
     async showinfolder(filepath: string) {
-        if (iselectron) {
+        if (isnative) {
             return await electronapi.shell.showinfolder(filepath);
         }
         return false;
     },
 
     async openwith(filepath: string, appname: string) {
-        if (iselectron) {
+        if (isnative) {
             return await electronapi.shell.openwith(filepath, appname);
         }
         return { success: false, error: 'Not in Electron' };
@@ -368,44 +383,44 @@ export const nativefs = {
 };
 
 export function onglobalshortcut(callback: (action: string) => void) {
-    if (iselectron) {
+    if (isnative) {
         electronapi.events.onglobalshortcut(callback);
     }
 }
 
 export function onpowerevent(callback: (event: string) => void) {
-    if (iselectron) {
+    if (isnative) {
         electronapi.events.onpowerevent(callback);
     }
 }
 
 export async function minimizewindow() {
-    if (iselectron) {
+    if (isnative) {
         await electronapi.window.minimize();
     }
 }
 
 export async function maximizewindow() {
-    if (iselectron) {
+    if (isnative) {
         await electronapi.window.maximize();
     }
 }
 
 export async function closewindow() {
-    if (iselectron) {
+    if (isnative) {
         await electronapi.window.close();
     }
 }
 
 export async function iswindowmaximized(): Promise<boolean> {
-    if (iselectron) {
+    if (isnative) {
         return await electronapi.window.ismaximized();
     }
     return false;
 }
 
 export async function togglefullscreen() {
-    if (iselectron) {
+    if (isnative) {
         const fullscreen = await electronapi.window.isfullscreen();
         await electronapi.window.setfullscreen(!fullscreen);
         return;
@@ -419,7 +434,7 @@ export async function togglefullscreen() {
 }
 
 export async function getdisplays() {
-    if (iselectron) {
+    if (isnative) {
         return await electronapi.display.getall();
     }
     return [{
@@ -433,40 +448,40 @@ export async function getdisplays() {
 }
 
 export async function getnativetheme(): Promise<'light' | 'dark'> {
-    if (iselectron) {
+    if (isnative) {
         return await electronapi.display.gettheme();
     }
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
 export async function checkforupdates() {
-    if (iselectron) {
+    if (isnative) {
         return await electronapi.updates.check();
     }
     return { available: false };
 }
 
 export async function installupdates() {
-    if (iselectron) {
+    if (isnative) {
         electronapi.updates.install();
     }
 }
 
 export function onupdateavailable(callback: (info: any) => void) {
-    if (iselectron) {
+    if (isnative) {
         electronapi.updates.onavailable(callback);
     }
 }
 
 export function onupdatedownloaded(callback: (info: any) => void) {
-    if (iselectron) {
+    if (isnative) {
         electronapi.updates.ondownloaded(callback);
     }
 }
 
 export const terminal = {
     async execute(command: string, cwd?: string): Promise<{ success: boolean; stdout: string; stderr: string; code: number; error?: string }> {
-        if (iselectron) {
+        if (isnative) {
             return await electronapi.terminal.execute(command, cwd);
         }
         return { success: false, stdout: '', stderr: '', code: 1, error: 'Not in Electron' };
@@ -534,7 +549,7 @@ export const displayconfig = {
 
 export const dialogs = {
     async openfile(options?: { title?: string; filters?: { name: string; extensions: string[] }[]; multiSelections?: boolean; defaultPath?: string }): Promise<{ canceled: boolean; filePaths: string[] }> {
-        if (iselectron) return await electronapi.dialogs.openfile(options);
+        if (isnative) return await electronapi.dialogs.openfile(options);
         return new Promise((resolve) => {
             const input = document.createElement('input');
             input.type = 'file';
@@ -552,7 +567,7 @@ export const dialogs = {
     },
 
     async opendirectory(options?: { title?: string; defaultPath?: string }): Promise<{ canceled: boolean; filePaths: string[] }> {
-        if (iselectron) return await electronapi.dialogs.opendirectory(options);
+        if (isnative) return await electronapi.dialogs.opendirectory(options);
         if ('showDirectoryPicker' in window) {
             try {
                 const handle = await (window as any).showDirectoryPicker();
@@ -565,7 +580,7 @@ export const dialogs = {
     },
 
     async savefile(options?: { title?: string; filters?: { name: string; extensions: string[] }[]; defaultPath?: string }): Promise<{ canceled: boolean; filePath?: string }> {
-        if (iselectron) return await electronapi.dialogs.savefile(options);
+        if (isnative) return await electronapi.dialogs.savefile(options);
         if ('showSaveFilePicker' in window) {
             try {
                 const handle = await (window as any).showSaveFilePicker({
@@ -584,7 +599,7 @@ export const dialogs = {
     },
 
     async messagebox(options?: { type?: string; title?: string; message?: string; detail?: string; buttons?: string[] }): Promise<{ response: number; checkboxChecked: boolean }> {
-        if (iselectron) return await electronapi.dialogs.messagebox(options);
+        if (isnative) return await electronapi.dialogs.messagebox(options);
         const msg = `${options?.message || ''}\n${options?.detail || ''}`.trim();
         if (options?.buttons && options.buttons.length > 1) {
             const result = window.confirm(msg);
@@ -595,141 +610,141 @@ export const dialogs = {
     },
 
     async errorbox(title: string, content: string): Promise<void> {
-        if (iselectron) { await electronapi.dialogs.errorbox(title, content); return; }
+        if (isnative) { await electronapi.dialogs.errorbox(title, content); return; }
         window.alert(`${title}\n\n${content}`);
     }
 };
 
 export const screencapture = {
     async getsources(options?: { types?: string[]; thumbnailSize?: { width: number; height: number } }): Promise<any[]> {
-        if (iselectron) return await electronapi.screencapture.getsources(options);
+        if (isnative) return await electronapi.screencapture.getsources(options);
         return [];
     },
 
     async capture(sourceId: string, options?: { size?: { width: number; height: number } }): Promise<{ success: boolean; dataURL?: string; error?: string }> {
-        if (iselectron) return await electronapi.screencapture.capture(sourceId, options);
+        if (isnative) return await electronapi.screencapture.capture(sourceId, options);
         return { success: false, error: 'Screen capture requires Electron' };
     }
 };
 
 export const filewatcher = {
     async start(watchPath: string, options?: { recursive?: boolean }): Promise<{ success: boolean; id?: number; error?: string }> {
-        if (iselectron) return await electronapi.filesystem.watchstart(watchPath, options);
+        if (isnative) return await electronapi.filesystem.watchstart(watchPath, options);
         return { success: false, error: 'File watchers require Electron' };
     },
 
     async stop(id: number): Promise<{ success: boolean; error?: string }> {
-        if (iselectron) return await electronapi.filesystem.watchstop(id);
+        if (isnative) return await electronapi.filesystem.watchstop(id);
         return { success: false, error: 'File watchers require Electron' };
     },
 
     async stopall(): Promise<{ success: boolean }> {
-        if (iselectron) return await electronapi.filesystem.watchstopall();
+        if (isnative) return await electronapi.filesystem.watchstopall();
         return { success: true };
     },
 
     onchange(callback: (data: { id: number; eventType: string; filename: string; path: string }) => void) {
-        if (iselectron) electronapi.filesystem.onwatchchange(callback);
+        if (isnative) electronapi.filesystem.onwatchchange(callback);
     },
 
     onerror(callback: (data: { id: number; error: string; path: string }) => void) {
-        if (iselectron) electronapi.filesystem.onwatcherror(callback);
+        if (isnative) electronapi.filesystem.onwatcherror(callback);
     }
 };
 
 export const ptyterminal = {
     async spawn(options?: { shell?: string; args?: string[]; cols?: number; rows?: number; cwd?: string; env?: Record<string, string> }): Promise<{ success: boolean; id?: number; pid?: number; error?: string }> {
-        if (iselectron) return await electronapi.terminal.ptyspawn(options);
+        if (isnative) return await electronapi.terminal.ptyspawn(options);
         return { success: false, error: 'PTY requires Electron with node-pty' };
     },
 
     async write(id: number, data: string): Promise<boolean> {
-        if (iselectron) return await electronapi.terminal.ptywrite(id, data);
+        if (isnative) return await electronapi.terminal.ptywrite(id, data);
         return false;
     },
 
     async resize(id: number, cols: number, rows: number): Promise<boolean> {
-        if (iselectron) return await electronapi.terminal.ptyresize(id, cols, rows);
+        if (isnative) return await electronapi.terminal.ptyresize(id, cols, rows);
         return false;
     },
 
     async kill(id: number): Promise<boolean> {
-        if (iselectron) return await electronapi.terminal.ptykill(id);
+        if (isnative) return await electronapi.terminal.ptykill(id);
         return false;
     },
 
     ondata(callback: (data: { id: number; data: string }) => void) {
-        if (iselectron) electronapi.terminal.onptydata(callback);
+        if (isnative) electronapi.terminal.onptydata(callback);
     },
 
     onexit(callback: (data: { id: number; exitCode: number; signal: number }) => void) {
-        if (iselectron) electronapi.terminal.onptyexit(callback);
+        if (isnative) electronapi.terminal.onptyexit(callback);
     }
 };
 
 export const printing = {
     async page(options?: any): Promise<{ success: boolean }> {
-        if (iselectron) return await electronapi.print.page(options);
+        if (isnative) return await electronapi.print.page(options);
         window.print();
         return { success: true };
     },
 
     async topdf(options?: any): Promise<{ success: boolean; data?: string }> {
-        if (iselectron) return await electronapi.print.topdf(options);
+        if (isnative) return await electronapi.print.topdf(options);
         return { success: false };
     },
 
     async getprinters(): Promise<any[]> {
-        if (iselectron) return await electronapi.print.getprinters();
+        if (isnative) return await electronapi.print.getprinters();
         return [];
     }
 };
 
 export const fileassociations = {
     async register(extension: string, appName: string, appPath: string): Promise<{ success: boolean; error?: string }> {
-        if (iselectron) return await electronapi.fileassociations.register(extension, appName, appPath);
+        if (isnative) return await electronapi.fileassociations.register(extension, appName, appPath);
         return { success: false, error: 'File associations require Electron' };
     }
 };
 
 export const protocolhandler = {
     onurl(callback: (url: string) => void) {
-        if (iselectron) electronapi.events.onprotocolurl(callback);
+        if (isnative) electronapi.events.onprotocolurl(callback);
     }
 };
 
 export const securestorage = {
     async isavailable(): Promise<boolean> {
-        if (iselectron) return await electronapi.securestorage.isavailable();
+        if (isnative) return await electronapi.securestorage.isavailable();
         return false;
     },
 
     async encrypt(plaintext: string): Promise<{ success: boolean; data?: string; error?: string }> {
-        if (iselectron) return await electronapi.securestorage.encrypt(plaintext);
+        if (isnative) return await electronapi.securestorage.encrypt(plaintext);
         return { success: false, error: 'Secure storage requires Electron' };
     },
 
     async decrypt(encrypted: string): Promise<{ success: boolean; data?: string; error?: string }> {
-        if (iselectron) return await electronapi.securestorage.decrypt(encrypted);
+        if (isnative) return await electronapi.securestorage.decrypt(encrypted);
         return { success: false, error: 'Secure storage requires Electron' };
     }
 };
 
 export const autolaunch = {
     async getsettings(): Promise<{ openAtLogin: boolean; openAsHidden?: boolean }> {
-        if (iselectron) return await electronapi.autolaunch.getsettings();
+        if (isnative) return await electronapi.autolaunch.getsettings();
         return { openAtLogin: false };
     },
 
     async setsettings(settings: { openAtLogin: boolean; openAsHidden?: boolean }): Promise<{ success: boolean }> {
-        if (iselectron) return await electronapi.autolaunch.setsettings(settings);
+        if (isnative) return await electronapi.autolaunch.setsettings(settings);
         return { success: false };
     }
 };
 
 export const mediapermissions = {
     async check(mediaType: 'microphone' | 'camera' | 'screen'): Promise<string> {
-        if (iselectron) return await electronapi.media.checkpermission(mediaType);
+        if (isnative) return await electronapi.media.checkpermission(mediaType);
         try {
             const name = mediaType === 'camera' ? 'camera' : 'microphone';
             const result = await navigator.permissions.query({ name: name as PermissionName });
@@ -740,7 +755,7 @@ export const mediapermissions = {
     },
 
     async request(mediaType: 'microphone' | 'camera'): Promise<{ granted: boolean }> {
-        if (iselectron) return await electronapi.media.requestpermission(mediaType);
+        if (isnative) return await electronapi.media.requestpermission(mediaType);
         try {
             const constraints = mediaType === 'camera' ? { video: true } : { audio: true };
             const stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -754,7 +769,7 @@ export const mediapermissions = {
 
 export const appbadge = {
     async setbadge(badge: string): Promise<{ success: boolean; error?: string }> {
-        if (iselectron) return await electronapi.appbadge.setbadge(badge);
+        if (isnative) return await electronapi.appbadge.setbadge(badge);
         try {
             if ('setAppBadge' in navigator) {
                 const count = parseInt(badge);
@@ -770,19 +785,19 @@ export const appbadge = {
     },
 
     async setprogress(progress: number): Promise<{ success: boolean }> {
-        if (iselectron) return await electronapi.appbadge.setprogress(progress);
+        if (isnative) return await electronapi.appbadge.setprogress(progress);
         return { success: false };
     },
 
     async bounce(type?: 'critical' | 'informational'): Promise<{ success: boolean; error?: string }> {
-        if (iselectron) return await electronapi.appbadge.bounce(type);
+        if (isnative) return await electronapi.appbadge.bounce(type);
         return { success: false, error: 'Not supported' };
     }
 };
 
 export const hardwareinfo = {
     async getgpu(): Promise<any> {
-        if (iselectron) return await electronapi.hardware.getgpu();
+        if (isnative) return await electronapi.hardware.getgpu();
         try {
             const canvas = document.createElement('canvas');
             const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
@@ -800,12 +815,12 @@ export const hardwareinfo = {
     },
 
     async getfonts(): Promise<{ success: boolean; fonts: string[]; error?: string }> {
-        if (iselectron) return await electronapi.hardware.getfonts();
+        if (isnative) return await electronapi.hardware.getfonts();
         return { success: false, fonts: [], error: 'Font enumeration requires Electron' };
     },
 
     async getdisplays(): Promise<{ success: boolean; displays: any[]; error?: string }> {
-        if (iselectron) return await electronapi.hardware.getdisplays();
+        if (isnative) return await electronapi.hardware.getdisplays();
         return {
             success: true,
             displays: [{
@@ -820,7 +835,7 @@ export const hardwareinfo = {
 
 export const menuactions = {
     onaction(callback: (action: string) => void) {
-        if (iselectron) electronapi.events.onmenuaction(callback);
+        if (isnative) electronapi.events.onmenuaction(callback);
     }
 };
 

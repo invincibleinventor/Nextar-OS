@@ -243,6 +243,40 @@ const Window = ({ id, appname, title, component, props, isminimized, ismaximized
     }
   };
 
+  // Keyboard-triggered window snapping (Super+Left/Right/Up/Down)
+  useEffect(() => {
+    const handleSnap = (e: Event) => {
+      if (activewindow !== id || ismobile) return;
+      const detail = (e as CustomEvent).detail;
+      const { innerWidth: sw, innerHeight: sh } = window;
+
+      if (detail === 'left') {
+        previousStateRef.current = { position: positionref.current, size: sizeref.current };
+        setposition({ top: panelheight, left: 0 });
+        setsize({ width: Math.round(sw / 2), height: sh - panelheight - dockheight });
+        updatewindow(id, { istiled: true, ismaximized: false });
+      } else if (detail === 'right') {
+        previousStateRef.current = { position: positionref.current, size: sizeref.current };
+        setposition({ top: panelheight, left: Math.round(sw / 2) });
+        setsize({ width: Math.round(sw / 2), height: sh - panelheight - dockheight });
+        updatewindow(id, { istiled: true, ismaximized: false });
+      } else if (detail === 'maximize') {
+        if (!ismaximized) {
+          previousStateRef.current = { position: positionref.current, size: sizeref.current };
+          updatewindow(id, { ismaximized: true, istiled: false });
+        }
+      } else if (detail === 'restore') {
+        if (ismaximized || (windows.find((w: any) => w.id === id) as any)?.istiled) {
+          updatewindow(id, { ismaximized: false, istiled: false });
+          setposition(previousStateRef.current.position);
+          setsize(previousStateRef.current.size);
+        }
+      }
+    };
+    window.addEventListener('nextaros:snap', handleSnap);
+    return () => window.removeEventListener('nextaros:snap', handleSnap);
+  }, [activewindow, id, ismobile, ismaximized, panelheight, dockheight, updatewindow, windows]);
+
   const handledragstart = (e: any) => {
     if (e.detail === 2) return;
 

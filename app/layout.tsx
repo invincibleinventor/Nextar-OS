@@ -10,24 +10,25 @@ import { AppMenuProvider } from '@/components/AppMenuContext';
 import { ProcessProvider } from '@/components/ProcessContext';
 import { PermissionsProvider } from '@/components/PermissionsContext';
 import { ElectronProvider } from '@/components/ElectronContext';
+import '@/utils/tauri-bridge'; // Initialize Tauri bridge (sets window.electronAPI)
 import { HostProvider } from '@/components/HostContext';
 
 export const metadata: Metadata = {
   title: {
-    default: 'NextarOS',
+    default: 'Bala TBR - NextarOS',
     template: '%s | NextarOS',
   },
-  description: 'Your personal cloud OS. Deploy on your server, access from anywhere.',
+  description: 'My personal portfolio website - that doubles as your personal cloud OS! Deploy on your server, access from anywhere.',
   applicationName: 'NextarOS',
-  authors: [{ name: 'NextarOS' }],
+  authors: [{ name: 'Bala TBR' }],
   generator: 'Next.js',
-  keywords: ['cloud OS', 'personal cloud', 'self-hosted', 'web desktop', 'browser OS', 'server OS', 'Next.js', 'React', 'TypeScript'],
+  keywords: ['cloud OS', 'personal cloud', 'self-hosted', 'portfolio', 'web desktop', 'browser OS', 'server OS', 'Next.js', 'React', 'TypeScript'],
   referrer: 'origin-when-cross-origin',
-  creator: 'NextarOS',
-  publisher: 'NextarOS',
+  creator: 'Bala TBR',
+  publisher: 'Bala TBR',
   openGraph: {
     title: 'NextarOS',
-    description: 'Your personal cloud OS. Deploy on your server, access from anywhere.',
+    description: 'My personal portfolio website - that doubles as your personal cloud OS! Deploy on your server, access from anywhere.',
     siteName: 'NextarOS',
     locale: 'en_US',
     type: 'website',
@@ -36,14 +37,14 @@ export const metadata: Metadata = {
         url: '/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'NextarOS - Your personal cloud OS',
+        alt: 'NextarOS - Bala TBR',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'NextarOS',
-    description: 'Your personal cloud OS. Deploy on your server, access from anywhere.',
+    description: 'My personal portfolio website - that doubles as your personal cloud OS! Deploy on your server, access from anywhere.',
     images: ['/og-image.jpg'],
   },
   robots: {
@@ -69,7 +70,7 @@ const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebApplication',
   name: 'NextarOS',
-  description: 'Your personal cloud OS. Deploy on your server, access from anywhere.',
+  description: 'My personal portfolio website - that doubles as your personal cloud OS! Deploy on your server, access from anywhere.',
   applicationCategory: 'DesktopEnhancementApplication',
 };
 
@@ -91,6 +92,9 @@ import { ProjectProvider } from '@/components/ProjectContext';
 import { CheerpXProvider } from '@/components/CheerpXContext';
 import { RuntimeProvider } from '@/components/RuntimeContext';
 import PermissionDialog from '@/components/PermissionDialog';
+import { SystemTrayProvider } from '@/components/SystemTray';
+import { WorkspaceProvider } from '@/components/WorkspaceSwitcher';
+import { GlobalMenuProvider } from '@/components/GlobalMenuBar';
 import Script from 'next/script';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -153,8 +157,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                                       <CheerpXProvider>
                                         <RuntimeProvider>
                                           <ProjectProvider>
-                                            {children}
-                                            <PermissionDialog />
+                                            <SystemTrayProvider>
+                                              <WorkspaceProvider>
+                                                <GlobalMenuProvider>
+                                                  {children}
+                                                  <PermissionDialog />
+                                                </GlobalMenuProvider>
+                                              </WorkspaceProvider>
+                                            </SystemTrayProvider>
                                           </ProjectProvider>
                                         </RuntimeProvider>
                                       </CheerpXProvider>

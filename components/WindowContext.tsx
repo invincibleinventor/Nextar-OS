@@ -1,5 +1,23 @@
 'use client';
-import React, { createContext, useState, useContext, useCallback } from 'react';
+import React, { createContext, useState, useContext, useCallback, useEffect, useRef } from 'react';
+import { isnative, electronapi } from '@/utils/platform';
+
+export interface NativeWindow {
+  id: string;
+  windowId: number;
+  title: string;
+  wmClass: string;
+  pid: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  isActive: boolean;
+  isHidden: boolean;
+  isMaximized: boolean;
+  isFullscreen: boolean;
+  workspace: number;
+}
 
 const WindowContext = createContext<any>(null);
 
@@ -8,6 +26,60 @@ export const useWindows = () => useContext(WindowContext);
 export const WindowProvider = ({ children }: any) => {
   const [windows, setwindows] = useState<any[]>([]);
   const [activewindow, setactivewindow] = useState<string | null>(null);
+  const [nativeWindows, setNativeWindows] = useState<NativeWindow[]>([]);
+  const [activeNativeWindow, setActiveNativeWindow] = useState<number | null>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Poll native (external) windows when running as a DE
+  useEffect(() => {
+    if (!isnative || !electronapi?.externalwindows) return;
+
+    const fetchNativeWindows = async () => {
+      try {
+        const list = await electronapi.externalwindows.list();
+        if (!list) return;
+        const mapped: NativeWindow[] = list.map((w: any) => ({
+          id: `native-${w.window_id}`,
+          windowId: w.window_id,
+          title: w.title || '',
+          wmClass: w.wm_class || '',
+          pid: w.pid || 0,
+          x: w.x || 0,
+          y: w.y || 0,
+          width: w.width || 0,
+          height: w.height || 0,
+          isActive: w.is_active || false,
+          isHidden: w.is_hidden || false,
+          isMaximized: w.is_maximized || false,
+          isFullscreen: w.is_fullscreen || false,
+          workspace: w.workspace || 0,
+        }));
+        setNativeWindows(mapped);
+        const active = mapped.find(w => w.isActive);
+        if (active) setActiveNativeWindow(active.windowId);
+      } catch { /* ignore polling errors */ }
+    };
+
+    fetchNativeWindows();
+    pollRef.current = setInterval(fetchNativeWindows, 2000);
+    return () => { if (pollRef.current) clearInterval(pollRef.current); };
+  }, []);
+
+  const focusNativeWindow = useCallback(async (windowId: number) => {
+    if (!electronapi?.externalwindows) return;
+    await electronapi.externalwindows.focus(windowId);
+    setActiveNativeWindow(windowId);
+  }, []);
+
+  const minimizeNativeWindow = useCallback(async (windowId: number) => {
+    if (!electronapi?.externalwindows) return;
+    await electronapi.externalwindows.minimize(windowId);
+  }, []);
+
+  const closeNativeWindow = useCallback(async (windowId: number) => {
+    if (!electronapi?.externalwindows) return;
+    await electronapi.externalwindows.close(windowId);
+  }, []);
 
   const addwindow = useCallback((newwindow: any) => {
     setwindows((prevwindows) => {
@@ -125,6 +197,11 @@ export const WindowProvider = ({ children }: any) => {
         setactivewindow,
         setwindows,
         focusortogglewindow,
+        nativeWindows,
+        activeNativeWindow,
+        focusNativeWindow,
+        minimizeNativeWindow,
+        closeNativeWindow,
       }}
     >
       {children}

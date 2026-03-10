@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { iselectron, electronapi, getplatforminfo, checkforupdates, getnativetheme } from '@/utils/platform';
+import { iselectron, isnative, istauri, electronapi, getplatforminfo, checkforupdates, getnativetheme } from '@/utils/platform';
 
 interface PlatformInfo {
     platform: string;
@@ -35,6 +35,8 @@ interface ShellInfo {
 
 interface ElectronContextType {
     iselectron: boolean;
+    istauri: boolean;
+    isnative: boolean;
     platforminfo: PlatformInfo | null;
     nativetheme: 'light' | 'dark';
     updateinfo: UpdateInfo;
@@ -71,6 +73,8 @@ const defaultshellinfo: ShellInfo = {
 
 const ElectronContext = createContext<ElectronContextType>({
     iselectron: false,
+    istauri: false,
+    isnative: false,
     platforminfo: defaultplatform,
     nativetheme: 'dark',
     updateinfo: { available: false },
@@ -95,13 +99,13 @@ export function ElectronProvider({ children }: { children: React.ReactNode }) {
             const info = await getplatforminfo();
             setplatforminfo({
                 ...info,
-                isweb: !iselectron
+                isweb: !isnative
             });
 
             const theme = await getnativetheme();
             setnativetheme(theme);
 
-            if (iselectron && electronapi?.shellinfo) {
+            if (isnative && electronapi?.shellinfo) {
                 try {
                     const si = await electronapi.shellinfo.get();
                     setshellinfo(si);
@@ -113,7 +117,7 @@ export function ElectronProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     useEffect(() => {
-        if (!iselectron || !electronapi) return;
+        if (!isnative || !electronapi) return;
 
         electronapi.updates.onavailable((info: any) => {
             setupdateinfo(prev => ({ ...prev, available: true, version: info.version }));
@@ -128,10 +132,70 @@ export function ElectronProvider({ children }: { children: React.ReactNode }) {
         });
 
         electronapi.events.onglobalshortcut((action: string) => {
-            if (action === 'search') {
-                window.dispatchEvent(new CustomEvent('nextaros:spotlight'));
-            } else if (action === 'app-switcher') {
-                window.dispatchEvent(new CustomEvent('nextaros:appswitcher'));
+            switch (action) {
+                case 'search':
+                    window.dispatchEvent(new CustomEvent('nextaros:spotlight'));
+                    break;
+                case 'app-switcher':
+                    window.dispatchEvent(new CustomEvent('nextaros:appswitcher'));
+                    break;
+                case 'lock':
+                    window.dispatchEvent(new CustomEvent('nextaros:lock'));
+                    break;
+                case 'file-manager':
+                    window.dispatchEvent(new CustomEvent('nextaros:open-app', { detail: 'explorer' }));
+                    break;
+                case 'terminal':
+                    window.dispatchEvent(new CustomEvent('nextaros:open-app', { detail: 'terminal' }));
+                    break;
+                case 'run-dialog':
+                    window.dispatchEvent(new CustomEvent('nextaros:run-dialog'));
+                    break;
+                case 'screenshot':
+                    window.dispatchEvent(new CustomEvent('nextaros:screenshot', { detail: 'full' }));
+                    break;
+                case 'screenshot-window':
+                    window.dispatchEvent(new CustomEvent('nextaros:screenshot', { detail: 'window' }));
+                    break;
+                case 'screenshot-area':
+                    window.dispatchEvent(new CustomEvent('nextaros:screenshot', { detail: 'area' }));
+                    break;
+                case 'system-menu':
+                    window.dispatchEvent(new CustomEvent('nextaros:system-menu'));
+                    break;
+                case 'show-desktop':
+                    window.dispatchEvent(new CustomEvent('nextaros:show-desktop'));
+                    break;
+                case 'notification-center':
+                    window.dispatchEvent(new CustomEvent('nextaros:notification-center'));
+                    break;
+                case 'app-launcher':
+                    window.dispatchEvent(new CustomEvent('nextaros:app-launcher'));
+                    break;
+                case 'settings':
+                    window.dispatchEvent(new CustomEvent('nextaros:open-app', { detail: 'settings' }));
+                    break;
+                case 'workspace-prev':
+                    window.dispatchEvent(new CustomEvent('nextaros:workspace', { detail: 'prev' }));
+                    break;
+                case 'workspace-next':
+                    window.dispatchEvent(new CustomEvent('nextaros:workspace', { detail: 'next' }));
+                    break;
+                case 'workspace-1': case 'workspace-2': case 'workspace-3': case 'workspace-4':
+                    window.dispatchEvent(new CustomEvent('nextaros:workspace', { detail: action.split('-')[1] }));
+                    break;
+                case 'snap-left':
+                    window.dispatchEvent(new CustomEvent('nextaros:snap', { detail: 'left' }));
+                    break;
+                case 'snap-right':
+                    window.dispatchEvent(new CustomEvent('nextaros:snap', { detail: 'right' }));
+                    break;
+                case 'maximize':
+                    window.dispatchEvent(new CustomEvent('nextaros:snap', { detail: 'maximize' }));
+                    break;
+                case 'restore':
+                    window.dispatchEvent(new CustomEvent('nextaros:snap', { detail: 'restore' }));
+                    break;
             }
         });
 
@@ -148,19 +212,19 @@ export function ElectronProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     const handleinstallupdates = useCallback(() => {
-        if (iselectron && electronapi) {
+        if (isnative && electronapi) {
             electronapi.updates.install();
         }
     }, []);
 
     const handleminimize = useCallback(() => {
-        if (iselectron && electronapi) {
+        if (isnative && electronapi) {
             electronapi.window.minimize();
         }
     }, []);
 
     const handlemaximize = useCallback(async () => {
-        if (iselectron && electronapi) {
+        if (isnative && electronapi) {
             await electronapi.window.maximize();
             const maximized = await electronapi.window.ismaximized();
             setiswindowmaximized(maximized);
@@ -168,7 +232,7 @@ export function ElectronProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     const handleclose = useCallback(() => {
-        if (iselectron && electronapi) {
+        if (isnative && electronapi) {
             electronapi.window.close();
         }
     }, []);
@@ -176,6 +240,8 @@ export function ElectronProvider({ children }: { children: React.ReactNode }) {
     return (
         <ElectronContext.Provider value={{
             iselectron,
+            istauri,
+            isnative,
             platforminfo,
             nativetheme,
             updateinfo,

@@ -19,7 +19,7 @@ import { useAuth } from './AuthContext';
 import { useNotifications } from './NotificationContext';
 
 const Dock = () => {
-  const { windows, addwindow, setactivewindow, activewindow, updatewindow, removewindow } = useWindows();
+  const { windows, addwindow, setactivewindow, activewindow, updatewindow, removewindow, nativeWindows, focusNativeWindow, minimizeNativeWindow, closeNativeWindow } = useWindows();
   const [launchpad, setlaunch] = useState(false);
   const [hoverapp, sethoverapp] = useState<string | null>(null);
   const { ismobile, setappmode } = useDevice();
@@ -97,6 +97,12 @@ const Dock = () => {
   const getAppWindows = (appname: string) => windows.filter((win: any) => win.appname === appname && win.id !== 'explorer-desktop');
 
   const onclick = (id: string, name: string) => {
+    // Handle native window clicks
+    if (id.startsWith('native-')) {
+      const item = nativeWindowItems.find((i: any) => i.id === id);
+      if (item && focusNativeWindow) focusNativeWindow(item.windowId);
+      return;
+    }
     if (id === 'trash-folder') {
       addwindow({ id: `explorer-trash-${Date.now()}`, appname: 'Explorer', title: 'Trash', component: 'apps/Explorer', props: { istrash: true }, isminimized: false, defaultSize: { width: 900, height: 600 } });
       return;
@@ -121,17 +127,47 @@ const Dock = () => {
     .map((win: any) => filteredapps.find((app) => app.appname === win.appname))
     .filter((app: any, idx: number, self: any[]) => app && !pinnedAppIds.includes(app.id) && idx === self.findIndex((t: any) => t?.id === app?.id)) as typeof apps;
 
+  // Native window entries for the dock (grouped by wmClass)
+  const nativeWindowItems = useMemo(() => {
+    if (!nativeWindows || nativeWindows.length === 0) return [];
+    const seen = new Set<string>();
+    return nativeWindows
+      .filter((w: any) => !w.isHidden && w.title)
+      .filter((w: any) => {
+        const key = w.wmClass || w.title;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
+      .map((w: any) => ({
+        id: `native-${w.windowId}`,
+        appname: w.wmClass || w.title,
+        icon: '/icons/appstore.svg',
+        pinned: false,
+        isSystem: false,
+        isNative: true,
+        windowId: w.windowId,
+        componentname: '',
+        maximizeable: true,
+        multiwindow: true,
+        titlebarblurred: false,
+        additionaldata: {},
+      }));
+  }, [nativeWindows]);
+
   /* ─── Dock items differ between clay and classic ─── */
   const classicDockItems = [
     { id: 'launchpad-item', appname: 'LaunchPad', icon: '/launchpad.png', pinned: true, isSystem: true, componentname: 'apps/Launchpad', maximizeable: false, multiwindow: false, titlebarblurred: false, additionaldata: {} },
     ...pinnedAppsList,
     ...uniqueOpenUnpinned,
+    ...nativeWindowItems,
     { id: 'trash-folder', appname: 'Trash', icon: '/trash.png', pinned: true, isSystem: true, componentname: 'Explorer', maximizeable: true, multiwindow: true, titlebarblurred: true, additionaldata: {} }
   ];
 
   const clayDockItems = [
     ...pinnedAppsList,
     ...uniqueOpenUnpinned,
+    ...nativeWindowItems,
     { id: 'trash-folder', appname: 'Trash', icon: '/trash.png', pinned: true, isSystem: true, componentname: 'Explorer', maximizeable: true, multiwindow: true, titlebarblurred: true, additionaldata: {} }
   ];
 
@@ -162,6 +198,26 @@ const Dock = () => {
   const getContextMenuItems = () => {
     if (!contextMenu) return [];
     const item = contextMenu.item;
+
+    // Native window context menu
+    if (item.isNative) {
+      const nwins = nativeWindows.filter((w: any) => (w.wmClass || w.title) === item.appname && !w.isHidden);
+      const items: any[] = [];
+      nwins.forEach((w: any) => items.push({ label: w.title || w.wmClass, icon: <LuAppWindow size={14} />, action: () => focusNativeWindow?.(w.windowId) }));
+      if (nwins.length > 0) items.push({ separator: true });
+      if (nwins.length === 1 && minimizeNativeWindow) {
+        items.push({ label: 'Minimize', action: () => minimizeNativeWindow(nwins[0].windowId) });
+      }
+      if (nwins.length > 0 && closeNativeWindow) {
+        items.push({ separator: true });
+        items.push(nwins.length > 1
+          ? { label: 'Close All Windows', icon: <LuX size={14} />, action: () => nwins.forEach((w: any) => closeNativeWindow(w.windowId)), danger: true }
+          : { label: 'Quit', icon: <LuX size={14} />, action: () => closeNativeWindow(nwins[0].windowId) }
+        );
+      }
+      return items;
+    }
+
     const appWins = getAppWindows(item.appname);
     const items: any[] = [];
     if (appWins.length > 0) {
@@ -235,10 +291,12 @@ const Dock = () => {
             {dockItems.map((app, i) => {
               const { size: iconsize, y: icony } = getprops(i);
               const ishover = hoverapp === app.appname;
-              const appwins = getAppWindows(app.appname);
-              const wincount = appwins.length;
+              const isNativeItem = (app as any).isNative;
+              const appwins = isNativeItem ? [] : getAppWindows(app.appname);
+              const nativeCount = isNativeItem ? nativeWindows.filter((w: any) => (w.wmClass || w.title) === app.appname && !w.isHidden).length : 0;
+              const wincount = appwins.length + nativeCount;
               const haswin = wincount > 0;
-              const isActive = haswin && appwins.some((w: any) => w.id === activewindow);
+              const isActive = isNativeItem ? true : (haswin && appwins.some((w: any) => w.id === activewindow));
               const isTrash = app.id === 'trash-folder';
 
               return (

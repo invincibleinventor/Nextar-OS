@@ -18,7 +18,13 @@
     "electron:build:mac": "npm run build && electron-builder --mac",
     "electron:build:win": "npm run build && electron-builder --win",
     "electron:build:linux": "npm run build && electron-builder --linux",
-    "electron:build:all": "npm run build && electron-builder -mwl"
+    "electron:build:all": "npm run build && electron-builder -mwl",
+    "tauri:dev": "cargo tauri dev",
+    "tauri:build": "cargo tauri build",
+    "tauri:build:linux": "cargo tauri build --target x86_64-unknown-linux-gnu",
+    "tauri:build:deb": "cargo tauri build --bundles deb",
+    "tauri:build:rpm": "cargo tauri build --bundles rpm",
+    "tauri:build:appimage": "cargo tauri build --bundles appimage"
   },
   "build": {
     "appId": "com.nextaros.desktop",

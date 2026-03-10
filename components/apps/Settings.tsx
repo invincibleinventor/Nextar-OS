@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
-import { IoChevronForward, IoChevronBack, IoColorPaletteOutline, IoNotificationsOutline, IoSettingsOutline, IoWifi, IoBluetooth, IoGlobeOutline, IoMoon, IoAccessibilityOutline, IoSearch, IoImageOutline, IoVolumeHigh, IoCheckmark, IoRefresh, IoServerOutline, IoCloudOutline, IoKeypadOutline, IoHandLeftOutline, IoLanguageOutline, IoTimeOutline, IoBatteryChargingOutline, IoAppsOutline, IoPrintOutline, IoDesktopOutline } from 'react-icons/io5';
+import { IoChevronForward, IoChevronBack, IoColorPaletteOutline, IoNotificationsOutline, IoSettingsOutline, IoWifi, IoBluetooth, IoGlobeOutline, IoMoon, IoAccessibilityOutline, IoSearch, IoImageOutline, IoVolumeHigh, IoCheckmark, IoRefresh, IoServerOutline, IoCloudOutline, IoKeypadOutline, IoHandLeftOutline, IoLanguageOutline, IoTimeOutline, IoBatteryChargingOutline, IoAppsOutline, IoPrintOutline, IoDesktopOutline, IoRocketOutline, IoFlashOutline } from 'react-icons/io5';
 import { useSettings } from '../SettingsContext';
 import { useTheme } from '../ThemeContext';
 import { useWindows } from '../WindowContext';
@@ -13,6 +13,7 @@ import UserManagement from './Settings/UserManagement';
 import { IoPeopleOutline } from 'react-icons/io5';
 import { iselectron, wifi as wifiapi, bluetooth as bluetoothapi, audio as audioapi, keyboard as keyboardapi, mouse as mouseapi, locale as localeapi, datetime as datetimeapi, defaultapps as defaultappsapi, printers as printersapi } from '@/utils/platform';
 import { useCheerpXSafe } from '../CheerpXContext';
+import { useNotifications } from '../NotificationContext';
 import { useIsClay } from '../hooks/useIsClay';
 import { glassCard, glassButton, glassSidebar, glassInput, clayClasses } from '../hooks/useClayStyles';
 
@@ -38,6 +39,8 @@ const sidebaritems = [
     { id: 'power', label: 'Power', icon: IoBatteryChargingOutline, color: 'var(--pastel-green)' },
     { type: 'spacer' },
     { id: 'defaultapps', label: 'Default Apps', icon: IoAppsOutline, color: 'var(--pastel-pink)' },
+    { id: 'startup', label: 'Startup Apps', icon: IoRocketOutline, color: 'var(--pastel-peach)' },
+    { id: 'shortcuts', label: 'Keyboard Shortcuts', icon: IoFlashOutline, color: 'var(--pastel-yellow)' },
     { id: 'printers', label: 'Printers', icon: IoPrintOutline, color: 'var(--text-muted)' },
     { id: 'storage', label: 'Storage', icon: IoServerOutline, color: 'var(--pastel-green)' },
 ];
@@ -54,6 +57,7 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
     const [isnarrow, setisnarrow] = useState(false);
     const cheerpx = useCheerpXSafe();
     const clay = useIsClay();
+    const { dnd, setdnd, showpreviews, setshowpreviews, showonlockscreen, setshowonlockscreen } = useNotifications();
     const [storageInfo, setStorageInfo] = useState<{ projectCount: number; cxCacheSize: string } | null>(null);
     const [clearingCache, setClearingCache] = useState(false);
 
@@ -1347,6 +1351,58 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                                     ))}
                                 </SettingsGroup>
                             )}
+                        </>
+                    )}
+
+                    {activetab === 'notifications' && (
+                        <>
+                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Notifications</div>
+                            <SettingsGroup>
+                                <SettingsRow label="Do Not Disturb" toggle toggleValue={dnd} onToggle={setdnd} />
+                                <SettingsRow label="Show Previews" toggle toggleValue={showpreviews} onToggle={setshowpreviews} />
+                                <SettingsRow label="Show in Lock Screen" toggle toggleValue={showonlockscreen} onToggle={setshowonlockscreen} last />
+                            </SettingsGroup>
+                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Application Notifications</div>
+                            <SettingsGroup>
+                                <SettingsRow label="All apps can send notifications" value="" last />
+                            </SettingsGroup>
+                        </>
+                    )}
+
+                    {activetab === 'focus' && (
+                        <>
+                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Focus</div>
+                            <SettingsGroup>
+                                <SettingsRow label="Do Not Disturb" toggle toggleValue={dnd} onToggle={setdnd} />
+                                <SettingsRow label="Schedule" toggle toggleValue={false} onToggle={() => {}} last />
+                            </SettingsGroup>
+                        </>
+                    )}
+
+                    {activetab === 'accessibility' && (
+                        <>
+                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Vision</div>
+                            <SettingsGroup>
+                                <SettingsRow label="High Contrast" toggle toggleValue={false} onToggle={() => {}} />
+                                <SettingsRow label="Large Text" toggle toggleValue={false} onToggle={() => {}} />
+                                <SettingsRow label="Reduce Motion" toggle toggleValue={reducemotion} onToggle={setreducemotion} />
+                                <SettingsRow label="Reduce Transparency" toggle toggleValue={reducetransparency} onToggle={setreducetransparency} last />
+                            </SettingsGroup>
+                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Hearing</div>
+                            <SettingsGroup>
+                                <SettingsRow label="Visual Alerts" toggle toggleValue={false} onToggle={() => {}} />
+                                <SettingsRow label="Mono Audio" toggle toggleValue={false} onToggle={() => {}} last />
+                            </SettingsGroup>
+                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Motor</div>
+                            <SettingsGroup>
+                                <SettingsRow label="Sticky Keys" toggle toggleValue={false} onToggle={() => {}} />
+                                <SettingsRow label="Slow Keys" toggle toggleValue={false} onToggle={() => {}} />
+                                <SettingsRow label="Bounce Keys" toggle toggleValue={false} onToggle={() => {}} last />
+                            </SettingsGroup>
+                            <div className="text-[11px] uppercase font-semibold text-[--text-muted] pl-3 mb-2">Pointer</div>
+                            <SettingsGroup>
+                                <SettingsRow label="Cursor Size" value="Default" last />
+                            </SettingsGroup>
                         </>
                     )}
 

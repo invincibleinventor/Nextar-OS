@@ -33,6 +33,11 @@ import Portfolio from '@/components/Portfolio';
 import DesktopEffects from '@/components/DesktopEffects';
 import { useNotifications } from '@/components/NotificationContext';
 import { ProfileWidget, StatsWidget, SkillsWidget, ExperienceWidget } from '@/components/Widgets';
+import { WorkspaceOverview, useWorkspaces } from '@/components/WorkspaceSwitcher';
+import RunDialog from '@/components/RunDialog';
+import ClipboardManager from '@/components/ClipboardManager';
+import NativeAppLauncher from '@/components/NativeAppLauncher';
+import ScreenshotTool from '@/components/ScreenshotTool';
 
 const GRID_CELL = 106; // 90px icon + 16px gap
 const GRID_PAD_TOP = 40; // top padding (clear panel)
@@ -97,6 +102,7 @@ const Desktop = () => {
   const { windows, addwindow, setwindows, updatewindow, setactivewindow, activewindow } = useWindows();
   const { osstate, ismobile } = useDevice();
   const { wallpaperurl, islightbackground, inverselabelcolor } = useSettings();
+  const { workspaces, switchWorkspace } = useWorkspaces();
   const [showcontrolcenter, setshowcontrolcenter] = useState(false);
   const [shownotificationcenter, setshownotificationcenter] = useState(false);
   const [showcalendar, setshowcalendar] = useState(false);
@@ -108,6 +114,10 @@ const Desktop = () => {
   const [showaboutmac, setshowaboutmac] = useState(false);
   const [issystemgestureactive, setissystemgestureactive] = useState(false);
   const [showdesktopeffects, setshowdesktopeffects] = useState(false);
+  const [showrundialog, setshowrundialog] = useState(false);
+  const [showclipboard, setshowclipboard] = useState(false);
+  const [shownativeapplauncher, setshownativeapplauncher] = useState(false);
+  const [showscreenshot, setshowscreenshot] = useState(false);
 
   const { user } = useAuth();
   const { notifications } = useNotifications();
@@ -405,6 +415,46 @@ const Desktop = () => {
     window.addEventListener('toggle-notifications', handleToggleNotifications);
     window.addEventListener('open-notifications', handleOpenNotifications);
     window.addEventListener('open-control-center', handleOpenControlCenter);
+
+    // DE global shortcut events (dispatched from ElectronContext)
+    const handleRunDialog = () => setshowrundialog(prev => !prev);
+    const handleAppLauncher = () => setshownativeapplauncher(prev => !prev);
+    const handleScreenshot = () => {
+      setshowscreenshot(true);
+    };
+    const handleShowDesktop = () => {
+      const allWindows = windowsref.current;
+      const anyVisible = allWindows.some((w: any) => !w.isminimized);
+      allWindows.forEach((w: any) => updatewindow(w.id, { isminimized: anyVisible }));
+    };
+    const handleLock = () => {
+      window.dispatchEvent(new CustomEvent('nextaros:do-lock'));
+    };
+    const handleOpenApp = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail) openSystemItem(detail, { addwindow, windows: windowsref.current, updatewindow, setactivewindow, ismobile });
+    };
+    const handleNotifCenter = () => setshownotificationcenter(prev => !prev);
+    const handleSpotlight = () => setshownext(prev => !prev);
+
+    window.addEventListener('nextaros:run-dialog', handleRunDialog);
+    window.addEventListener('nextaros:app-launcher', handleAppLauncher);
+    window.addEventListener('nextaros:screenshot', handleScreenshot);
+    window.addEventListener('nextaros:show-desktop', handleShowDesktop);
+    window.addEventListener('nextaros:lock', handleLock);
+    window.addEventListener('nextaros:open-app', handleOpenApp);
+    window.addEventListener('nextaros:notification-center', handleNotifCenter);
+    window.addEventListener('nextaros:spotlight', handleSpotlight);
+    window.addEventListener('nextaros:system-menu', handleOpenControlCenter);
+
+    const handleWorkspace = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail === 'prev') switchWorkspace(Math.max(0, workspaces.current - 1));
+      else if (detail === 'next') switchWorkspace(Math.min(workspaces.count - 1, workspaces.current + 1));
+      else { const idx = parseInt(detail); if (!isNaN(idx) && idx >= 0 && idx < workspaces.count) switchWorkspace(idx); }
+    };
+    window.addEventListener('nextaros:workspace', handleWorkspace);
+
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('start-tour', handleStartTour);
@@ -418,8 +468,18 @@ const Desktop = () => {
       window.removeEventListener('open-notifications', handleOpenNotifications);
       window.removeEventListener('open-control-center', handleOpenControlCenter);
       window.removeEventListener('toggle-calendar', handleToggleCalendar);
+      window.removeEventListener('nextaros:run-dialog', handleRunDialog);
+      window.removeEventListener('nextaros:app-launcher', handleAppLauncher);
+      window.removeEventListener('nextaros:screenshot', handleScreenshot);
+      window.removeEventListener('nextaros:show-desktop', handleShowDesktop);
+      window.removeEventListener('nextaros:lock', handleLock);
+      window.removeEventListener('nextaros:open-app', handleOpenApp);
+      window.removeEventListener('nextaros:notification-center', handleNotifCenter);
+      window.removeEventListener('nextaros:spotlight', handleSpotlight);
+      window.removeEventListener('nextaros:system-menu', handleOpenControlCenter);
+      window.removeEventListener('nextaros:workspace', handleWorkspace);
     };
-  }, [showappswitcher, addwindow, updatewindow, setactivewindow]);
+  }, [showappswitcher, addwindow, updatewindow, setactivewindow, switchWorkspace, workspaces]);
 
   useEffect(() => {
     if (!ismobile) return;
@@ -934,6 +994,11 @@ const Desktop = () => {
       <TourGuide isOpen={showtour} onClose={() => setshowtour(false)} />
       <ForceQuit isopen={showforcequit} onclose={() => setshowforcequit(false)} />
       <AboutDevice isopen={showaboutmac} onclose={() => setshowaboutmac(false)} />
+      <WorkspaceOverview />
+      <RunDialog isOpen={showrundialog} onClose={() => setshowrundialog(false)} />
+      <ClipboardManager isOpen={showclipboard} onClose={() => setshowclipboard(false)} />
+      <NativeAppLauncher isOpen={shownativeapplauncher} onClose={() => setshownativeapplauncher(false)} />
+      <ScreenshotTool isOpen={showscreenshot} onClose={() => setshowscreenshot(false)} />
     </>
   );
 }

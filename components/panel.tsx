@@ -15,6 +15,7 @@ import { useNotifications } from './NotificationContext';
 import { iselectron, power, battery, wifi } from '@/utils/platform';
 import { useIsClay } from './hooks/useIsClay';
 import { glassPanel } from './hooks/useClayStyles';
+import { SystemTrayIcons } from './SystemTray';
 
 export default function Panel({ ontogglenotifications, ontogglecalendar }: { ontogglenotifications?: () => void; ontogglecalendar?: () => void }) {
     const { activewindow, windows, updatewindow, removewindow, setactivewindow, addwindow } = useWindows();
@@ -239,6 +240,9 @@ export default function Panel({ ontogglenotifications, ontogglecalendar }: { ont
                                 return <Menu key={menukey} id={menukey} title={menukey.charAt(0).toUpperCase() + menukey.slice(1)} data={menuitems as any} visible={activemenu === menukey} ontoggle={handletogglemenu} onhover={handlehovermenu} onaction={handleMenuAction} clay={clay} />;
                             })}
                         </div>
+                        <div className="hidden md:flex items-center ml-1 pl-1 border-l border-[--glass-border]">
+                            <SystemTrayIcons />
+                        </div>
                     </div>
                 </div>
             </>
@@ -274,6 +278,7 @@ export default function Panel({ ontogglenotifications, ontogglecalendar }: { ont
                 </div>
                 <div className='flex space-x-3 flex-row items-center content-center'>
                     <div className='hidden md:flex flex-row space-x-4 items-center pl-2'>
+                        <SystemTrayIcons />
                         {!iselectron && (
                             <button onClick={() => setappmode('portfolio')} className={`px-2 py-1 text-xs font-medium transition-colors ${clay ? 'bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/30' : 'bg-pastel-red/15 hover:bg-pastel-red/25 text-pastel-red border border-pastel-red/30'}`}>Exit NextarOS</button>
                         )}

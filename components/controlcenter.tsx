@@ -20,6 +20,7 @@ import Image from 'next/image'
 import { iselectron, wifi, bluetooth, audio, brightness as brightnessapi, battery, power } from '@/utils/platform'
 import { useIsClay } from './hooks/useIsClay'
 import { useWindows } from './WindowContext'
+import { useNotifications } from './NotificationContext'
 
 /* ─────────────────────────────────────────────
    Control Center — Main Component
@@ -54,8 +55,9 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
   const [batterystatus, setbatterystatus] = useState({ percentage: 100, charging: false, available: false })
   const [brightnessavailable, setbrightnessavailable] = useState(false)
   const [airplanemode, setairplanemode] = useState(false)
-  const [focusmode, setfocusmode] = useState(false)
+  const { dnd: focusmode, setdnd: setfocusmode } = useNotifications()
   const [flashlight, setflashlight] = useState(false)
+  const [powerprofile, setpowerprofile] = useState<string>('balanced')
 
   const fetchsystemstatus = useCallback(async () => {
     if (!iselectron) return;
@@ -74,6 +76,7 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
       }
       const batterydata = await battery.getstatus();
       setbatterystatus(batterydata);
+      try { const profile = await power.getprofile(); if (profile) setpowerprofile(profile); } catch {}
     } catch (e) { }
   }, []);
 
@@ -496,6 +499,35 @@ export default function ControlCenter({ onclose, ismobile = false, isopen = true
                 }}
               />
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── 6. Power Profile ── */}
+      {iselectron && (
+        <div className="rounded-[16px] p-3" style={{ background: 'color-mix(in srgb, var(--bg-glass-active) 65%, transparent)' }}>
+          <span className="text-[12px] font-semibold text-[--text-color] mb-2 block">Power Mode</span>
+          <div className="flex gap-1.5">
+            {[
+              { id: 'power-saver', label: 'Low Power', icon: '🔋' },
+              { id: 'balanced', label: 'Balanced', icon: '⚖️' },
+              { id: 'performance', label: 'Performance', icon: '⚡' },
+            ].map((p) => (
+              <button
+                key={p.id}
+                onClick={async () => { setpowerprofile(p.id); await power.setprofile(p.id); }}
+                className="flex-1 flex flex-col items-center gap-1 py-2 rounded-[12px] transition-all text-center"
+                style={{
+                  background: powerprofile === p.id
+                    ? 'color-mix(in srgb, var(--accent-color) 25%, var(--bg-glass))'
+                    : 'var(--bg-glass)',
+                  border: powerprofile === p.id ? '1px solid var(--accent-color)' : '1px solid transparent',
+                }}
+              >
+                <span className="text-[14px]">{p.icon}</span>
+                <span className={`text-[10px] font-semibold ${powerprofile === p.id ? 'text-[--accent-color]' : 'text-[--text-muted]'}`}>{p.label}</span>
+              </button>
+            ))}
           </div>
         </div>
       )}

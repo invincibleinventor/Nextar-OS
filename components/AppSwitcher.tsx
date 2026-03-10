@@ -8,14 +8,23 @@ import { useIsClay } from './hooks/useIsClay';
 import { glassPanel, glassCard } from './hooks/useClayStyles';
 
 export default function AppSwitcher({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
-    const { windows, setactivewindow, updatewindow } = useWindows();
+    const { windows, setactivewindow, updatewindow, nativeWindows, focusNativeWindow } = useWindows();
     const [selectedIndex, setSelectedIndex] = useState(0);
     const switcherRef = useRef<HTMLDivElement>(null);
     const clay = useIsClay();
 
     const openwindows = windows.filter((w: any) => !w.isminimized);
     const minimizedwindows = windows.filter((w: any) => w.isminimized);
-    const allwindows = [...openwindows, ...minimizedwindows];
+    const nativeItems = (nativeWindows || []).filter((w: any) => !w.isHidden && w.title).map((w: any) => ({
+        id: `native-${w.windowId}`,
+        appname: w.wmClass || w.title,
+        title: w.title,
+        isminimized: false,
+        isNative: true,
+        windowId: w.windowId,
+        icon: '/icons/appstore.svg',
+    }));
+    const allwindows = [...openwindows, ...minimizedwindows, ...nativeItems];
 
     useEffect(() => {
         if (isOpen && allwindows.length > 0) {
@@ -43,10 +52,14 @@ export default function AppSwitcher({ isOpen, onClose }: { isOpen: boolean; onCl
             if (e.key === 'Meta' || e.key === 'Control') {
                 const selectedWindow = allwindows[selectedIndex];
                 if (selectedWindow) {
-                    if (selectedWindow.isminimized) {
-                        updatewindow(selectedWindow.id, { isminimized: false });
+                    if ((selectedWindow as any).isNative) {
+                        focusNativeWindow?.((selectedWindow as any).windowId);
+                    } else {
+                        if (selectedWindow.isminimized) {
+                            updatewindow(selectedWindow.id, { isminimized: false });
+                        }
+                        setactivewindow(selectedWindow.id);
                     }
-                    setactivewindow(selectedWindow.id);
                 }
                 onClose();
             }
@@ -95,10 +108,14 @@ export default function AppSwitcher({ isOpen, onClose }: { isOpen: boolean; onCl
                             <div
                                 key={win.id}
                                 onClick={() => {
-                                    if (win.isminimized) {
-                                        updatewindow(win.id, { isminimized: false });
+                                    if ((win as any).isNative) {
+                                        focusNativeWindow?.((win as any).windowId);
+                                    } else {
+                                        if (win.isminimized) {
+                                            updatewindow(win.id, { isminimized: false });
+                                        }
+                                        setactivewindow(win.id);
                                     }
-                                    setactivewindow(win.id);
                                     onClose();
                                 }}
                                 className={`flex flex-col items-center gap-2 p-3 cursor-pointer transition-all duration-150 ${clay ? 'rounded-[16px] active:scale-[0.97]' : ''} ${isSelected

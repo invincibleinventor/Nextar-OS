@@ -246,7 +246,8 @@ export default function TourGuide({ isOpen, onClose }: TourGuideProps) {
             {
                 popover: {
                     title: 'Welcome to NextarOS',
-                    description: 'Your personal cloud OS, in your pocket.\nLet\'s walk through the key features.',
+        description: 'My personal portfolio website - that doubles as your personal cloud OS! Deploy on your server, access from anywhere.',
+
                     side: 'bottom' as const,
                     align: 'center' as const
                 }
@@ -302,7 +303,7 @@ export default function TourGuide({ isOpen, onClose }: TourGuideProps) {
             {
                 popover: {
                     title: 'Welcome to NextarOS',
-                    description: 'Your personal cloud OS.\nLet us give you a quick tour of the interface.',
+                            description: 'My personal portfolio website - that doubles as your personal cloud OS! Deploy on your server, access from anywhere.',
                     side: 'bottom' as const,
                     align: 'center' as const
                 }

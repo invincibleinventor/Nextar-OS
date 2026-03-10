@@ -131,7 +131,7 @@ export default function AboutNextarOS() {
 
                         <h1 className="text-xl font-bold text-[--text-color] mb-1">NextarOS</h1>
                         <p className="text-xs text-[--text-muted] mb-1">Version 1.0</p>
-                        <p className="text-xs text-[--text-muted] mb-4">Your personal cloud OS.</p>
+                        <p className="text-xs text-[--text-muted] mb-4">My Portfolio - Your personal cloud OS.</p>
 
                         <div
                             className={`w-full max-w-[250px] space-y-2 text-[13px] text-left mb-4 ${clay ? 'p-4 rounded-[16px]' : ''}`}

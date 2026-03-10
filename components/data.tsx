@@ -119,11 +119,11 @@ export const componentmap: { [key: string]: any } = {
 export const personal = {
     personal: {
         name: "NextarOS",
-        role: "Your Personal Cloud OS",
+        role: "My Personal Portfolio -Your Personal Cloud OS",
         bio: "A complete desktop experience in your browser. Files, apps, tools, and more — deploy on any server, access from anywhere.",
         location: "Everywhere",
-        username: "nextaros",
-        email: "hello@nextaros.dev",
+        username: "bala_tbr",
+        email: "invincibleinventor@gmail.com",
         socials: {
             github: "https://github.com/invincibleinventor",
             threads: "",
@@ -133,7 +133,7 @@ export const personal = {
     education: [] as { degree: string; institution: string; year: string; grade: string }[],
     projects: [] as { title: string; date: number; type: string; desc: string; stack: string[]; link: string; github: string; icon: React.ReactNode }[],
     skills: [
-        "Self-Hosted", "Cloud Desktop", "Next.js", "React",
+         "Cloud Desktop", "Next.js", "React",
         "TypeScript", "Node.js", "Python", "Tailwind CSS",
         "WebContainers", "IndexedDB", "Monaco Editor", "WASM"
     ]
