@@ -59,6 +59,10 @@ fn main() {
         .setup(move |app| {
             let window = app.get_webview_window("main").unwrap();
 
+            // Enable devtools for debugging
+            #[cfg(debug_assertions)]
+            window.open_devtools();
+
             // Session mode: fullscreen, no decorations
             if is_session {
                 let _ = window.set_fullscreen(true);

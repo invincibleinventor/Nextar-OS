@@ -109,6 +109,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="w-screen h-screen overflow-hidden bg-black antialiased" suppressHydrationWarning>
+        {/* Debug: visible before React mounts — if you see this, HTML loads but JS crashes */}
+        <noscript><div style={{position:'fixed',inset:0,zIndex:99999,background:'red',color:'white',fontSize:32,display:'flex',alignItems:'center',justifyContent:'center'}}>JavaScript is disabled</div></noscript>
+        <div id="__boot_diag" style={{position:'fixed',top:10,left:10,zIndex:99999,color:'lime',fontSize:14,fontFamily:'monospace',pointerEvents:'none'}}>HTML loaded, waiting for React...</div>
+        <script dangerouslySetInnerHTML={{__html:`setTimeout(function(){var d=document.getElementById('__boot_diag');if(d)d.textContent='React mounted after '+performance.now().toFixed(0)+'ms'},100);setTimeout(function(){var d=document.getElementById('__boot_diag');if(d)d.remove()},5000);window.onerror=function(m,s,l,c,e){var d=document.getElementById('__boot_diag');if(d){d.style.color='red';d.textContent='JS ERROR: '+m;}};`}} />
         <ThemeProvider>
           <Script
             id="service-worker"
