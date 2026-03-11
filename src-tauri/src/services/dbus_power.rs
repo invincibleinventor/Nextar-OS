@@ -150,7 +150,7 @@ pub async fn start(app: tauri::AppHandle) -> Result<(), Box<dyn std::error::Erro
             Err(e) => { log::error!("UPower signals failed: {}", e); return; }
         };
         while let Some(signal) = stream.next().await {
-            let member = signal.member().map(|m| m.to_string()).unwrap_or_default();
+            let member = signal.header().member().map(|m| m.to_string()).unwrap_or_default();
             match member.as_str() {
                 "DeviceChanged" | "Changed" => {
                     let _ = app_clone.emit("battery-changed", ());

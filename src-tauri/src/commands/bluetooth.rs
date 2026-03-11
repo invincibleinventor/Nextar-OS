@@ -22,19 +22,19 @@ pub struct BluetoothDevice {
 pub async fn bluetooth_get_status() -> Result<BluetoothStatus, String> {
     #[cfg(target_os = "linux")]
     {
-        let conn = zbus::Connection::system().await.map_err(|e: zbus::Error| e.to_string())?;
+        let conn = zbus::Connection::system().await.map_err(|e| e.to_string())?;
 
         // Find the first adapter
         let om_proxy: zbus::Proxy<'_> = zbus::proxy::Builder::new(&conn)
-            .destination("org.bluez").map_err(|e: zbus::Error| e.to_string())?
-            .path("/").map_err(|e: zbus::Error| e.to_string())?
-            .interface("org.freedesktop.DBus.ObjectManager").map_err(|e: zbus::Error| e.to_string())?
-            .build().await.map_err(|e: zbus::Error| e.to_string())?;
+            .destination("org.bluez").map_err(|e| e.to_string())?
+            .path("/").map_err(|e| e.to_string())?
+            .interface("org.freedesktop.DBus.ObjectManager").map_err(|e| e.to_string())?
+            .build().await.map_err(|e| e.to_string())?;
 
         let objects: std::collections::HashMap<
             zbus::zvariant::OwnedObjectPath,
             std::collections::HashMap<String, std::collections::HashMap<String, zbus::zvariant::OwnedValue>>,
-        > = om_proxy.call::<_, (), _>("GetManagedObjects", &()).await.map_err(|e: zbus::Error| e.to_string())?;
+        > = om_proxy.call::<_, (), _>("GetManagedObjects", &()).await.map_err(|e| e.to_string())?;
 
         for (_path, interfaces) in &objects {
             if let Some(adapter_props) = interfaces.get("org.bluez.Adapter1") {
@@ -79,17 +79,17 @@ pub async fn bluetooth_get_status() -> Result<BluetoothStatus, String> {
 pub async fn bluetooth_set_enabled(enabled: bool) -> Result<(), String> {
     #[cfg(target_os = "linux")]
     {
-        let conn = zbus::Connection::system().await.map_err(|e: zbus::Error| e.to_string())?;
+        let conn = zbus::Connection::system().await.map_err(|e| e.to_string())?;
         let proxy: zbus::Proxy<'_> = zbus::proxy::Builder::new(&conn)
-            .destination("org.bluez").map_err(|e: zbus::Error| e.to_string())?
-            .path("/org/bluez/hci0").map_err(|e: zbus::Error| e.to_string())?
-            .interface("org.bluez.Adapter1").map_err(|e: zbus::Error| e.to_string())?
-            .build().await.map_err(|e: zbus::Error| e.to_string())?;
+            .destination("org.bluez").map_err(|e| e.to_string())?
+            .path("/org/bluez/hci0").map_err(|e| e.to_string())?
+            .interface("org.bluez.Adapter1").map_err(|e| e.to_string())?
+            .build().await.map_err(|e| e.to_string())?;
 
         proxy
             .set_property("Powered", enabled)
             .await
-            .map_err(|e: zbus::Error| e.to_string())
+            .map_err(|e| e.to_string())
     }
     #[cfg(not(target_os = "linux"))]
     {
@@ -102,18 +102,18 @@ pub async fn bluetooth_set_enabled(enabled: bool) -> Result<(), String> {
 pub async fn bluetooth_get_devices() -> Result<Vec<BluetoothDevice>, String> {
     #[cfg(target_os = "linux")]
     {
-        let conn = zbus::Connection::system().await.map_err(|e: zbus::Error| e.to_string())?;
+        let conn = zbus::Connection::system().await.map_err(|e| e.to_string())?;
 
         let om_proxy: zbus::Proxy<'_> = zbus::proxy::Builder::new(&conn)
-            .destination("org.bluez").map_err(|e: zbus::Error| e.to_string())?
-            .path("/").map_err(|e: zbus::Error| e.to_string())?
-            .interface("org.freedesktop.DBus.ObjectManager").map_err(|e: zbus::Error| e.to_string())?
-            .build().await.map_err(|e: zbus::Error| e.to_string())?;
+            .destination("org.bluez").map_err(|e| e.to_string())?
+            .path("/").map_err(|e| e.to_string())?
+            .interface("org.freedesktop.DBus.ObjectManager").map_err(|e| e.to_string())?
+            .build().await.map_err(|e| e.to_string())?;
 
         let objects: std::collections::HashMap<
             zbus::zvariant::OwnedObjectPath,
             std::collections::HashMap<String, std::collections::HashMap<String, zbus::zvariant::OwnedValue>>,
-        > = om_proxy.call::<_, (), _>("GetManagedObjects", &()).await.map_err(|e: zbus::Error| e.to_string())?;
+        > = om_proxy.call::<_, (), _>("GetManagedObjects", &()).await.map_err(|e| e.to_string())?;
 
         let mut devices = Vec::new();
         for (_path, interfaces) in &objects {
@@ -175,14 +175,14 @@ pub async fn bluetooth_connect(address: String) -> Result<(), String> {
     #[cfg(target_os = "linux")]
     {
         let obj_path = format!("/org/bluez/hci0/dev_{}", address.replace(':', "_"));
-        let conn = zbus::Connection::system().await.map_err(|e: zbus::Error| e.to_string())?;
+        let conn = zbus::Connection::system().await.map_err(|e| e.to_string())?;
         let proxy: zbus::Proxy<'_> = zbus::proxy::Builder::new(&conn)
-            .destination("org.bluez").map_err(|e: zbus::Error| e.to_string())?
-            .path(zbus::zvariant::ObjectPath::try_from(obj_path.as_str()).map_err(|e: zbus::zvariant::Error| e.to_string())?).map_err(|e: zbus::Error| e.to_string())?
-            .interface("org.bluez.Device1").map_err(|e: zbus::Error| e.to_string())?
-            .build().await.map_err(|e: zbus::Error| e.to_string())?;
+            .destination("org.bluez").map_err(|e| e.to_string())?
+            .path(zbus::zvariant::ObjectPath::try_from(obj_path.as_str()).map_err(|e| e.to_string())?).map_err(|e| e.to_string())?
+            .interface("org.bluez.Device1").map_err(|e| e.to_string())?
+            .build().await.map_err(|e| e.to_string())?;
 
-        proxy.call::<_, (), ()>("Connect", &()).await.map_err(|e: zbus::Error| e.to_string())
+        proxy.call::<_, (), ()>("Connect", &()).await.map_err(|e| e.to_string())
     }
     #[cfg(not(target_os = "linux"))]
     {
@@ -196,14 +196,14 @@ pub async fn bluetooth_disconnect(address: String) -> Result<(), String> {
     #[cfg(target_os = "linux")]
     {
         let obj_path = format!("/org/bluez/hci0/dev_{}", address.replace(':', "_"));
-        let conn = zbus::Connection::system().await.map_err(|e: zbus::Error| e.to_string())?;
+        let conn = zbus::Connection::system().await.map_err(|e| e.to_string())?;
         let proxy: zbus::Proxy<'_> = zbus::proxy::Builder::new(&conn)
-            .destination("org.bluez").map_err(|e: zbus::Error| e.to_string())?
-            .path(zbus::zvariant::ObjectPath::try_from(obj_path.as_str()).map_err(|e: zbus::zvariant::Error| e.to_string())?).map_err(|e: zbus::Error| e.to_string())?
-            .interface("org.bluez.Device1").map_err(|e: zbus::Error| e.to_string())?
-            .build().await.map_err(|e: zbus::Error| e.to_string())?;
+            .destination("org.bluez").map_err(|e| e.to_string())?
+            .path(zbus::zvariant::ObjectPath::try_from(obj_path.as_str()).map_err(|e| e.to_string())?).map_err(|e| e.to_string())?
+            .interface("org.bluez.Device1").map_err(|e| e.to_string())?
+            .build().await.map_err(|e| e.to_string())?;
 
-        proxy.call::<_, (), ()>("Disconnect", &()).await.map_err(|e: zbus::Error| e.to_string())
+        proxy.call::<_, (), ()>("Disconnect", &()).await.map_err(|e| e.to_string())
     }
     #[cfg(not(target_os = "linux"))]
     {

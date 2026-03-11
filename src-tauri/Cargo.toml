@@ -46,7 +46,8 @@ zbus = "5"
 x11rb = { version = "0.13", features = ["all-extensions"] }
 freedesktop-desktop-entry = "0.8"
 xdg = "2.5"
-nix = { version = "0.29", features = ["signal", "process", "fs"] }
+nix = { version = "0.29", features = ["signal", "process", "fs", "term"] }
+base64 = "0.22"
 libpulse-binding = "2"
 libpulse-simple-binding = "2"
 wayland-client = "0.31"

@@ -71,7 +71,7 @@ pub async fn pty_spawn(options: PtySpawnOptions, app: tauri::AppHandle) -> Resul
             }),
             None,
         )
-        .map_err(|e| e.to_string())?;
+        .map_err(|e: nix::Error| e.to_string())?;
 
         let master_fd = pty_result.master;
         let slave_fd = pty_result.slave;

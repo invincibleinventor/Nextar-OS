@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tauri::Emitter;
 use tokio::sync::RwLock;
-use zbus::{interface, Connection, ConnectionBuilder};
+use zbus::{interface, Connection};
 
 use super::state::MenuItem;
 
@@ -141,7 +141,7 @@ pub async fn start(app: tauri::AppHandle) -> Result<(), Box<dyn std::error::Erro
         registrations: Arc::new(RwLock::new(HashMap::new())),
     };
 
-    let _conn = ConnectionBuilder::session()?
+    let _conn = zbus::connection::Builder::session()?
         .name("com.canonical.AppMenu.Registrar")?
         .serve_at("/com/canonical/AppMenu/Registrar", registrar)?
         .build()

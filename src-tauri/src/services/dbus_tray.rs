@@ -5,8 +5,9 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tauri::{Emitter, Manager};
 use tokio::sync::RwLock;
-use zbus::{interface, Connection, ConnectionBuilder, MatchRule, MessageStream};
+use zbus::{interface, Connection, MatchRule, MessageStream};
 use zbus::names::BusName;
+use zbus::object_server::SignalContext;
 use futures_util::StreamExt;
 
 use super::state::TrayItem;
@@ -69,13 +70,13 @@ impl StatusNotifierWatcher {
     }
 
     #[zbus(signal)]
-    async fn status_notifier_item_registered(ctxt: &zbus::SignalContext<'_>, service: &str) -> zbus::Result<()>;
+    async fn status_notifier_item_registered(ctxt: &SignalContext<'_>, service: &str) -> zbus::Result<()>;
 
     #[zbus(signal)]
-    async fn status_notifier_item_unregistered(ctxt: &zbus::SignalContext<'_>, service: &str) -> zbus::Result<()>;
+    async fn status_notifier_item_unregistered(ctxt: &SignalContext<'_>, service: &str) -> zbus::Result<()>;
 
     #[zbus(signal)]
-    async fn status_notifier_host_registered(ctxt: &zbus::SignalContext<'_>) -> zbus::Result<()>;
+    async fn status_notifier_host_registered(ctxt: &SignalContext<'_>) -> zbus::Result<()>;
 }
 
 /// Fetch properties from a StatusNotifierItem service
@@ -123,7 +124,7 @@ pub async fn start(app: tauri::AppHandle) -> Result<(), Box<dyn std::error::Erro
         hosts: Arc::new(RwLock::new(Vec::new())),
     };
 
-    let conn = ConnectionBuilder::session()?
+    let conn = zbus::connection::Builder::session()?
         .name("org.kde.StatusNotifierWatcher")?
         .serve_at("/StatusNotifierWatcher", watcher)?
         .build()

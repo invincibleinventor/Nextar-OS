@@ -10,12 +10,12 @@ pub struct AuthResult {
 pub async fn polkit_check_auth(action_id: String) -> Result<AuthResult, String> {
     #[cfg(target_os = "linux")]
     {
-        let conn = zbus::Connection::system().await.map_err(|e: zbus::Error| e.to_string())?;
+        let conn = zbus::Connection::system().await.map_err(|e| e.to_string())?;
         let proxy: zbus::Proxy<'_> = zbus::proxy::Builder::new(&conn)
-            .destination("org.freedesktop.PolicyKit1").map_err(|e: zbus::Error| e.to_string())?
-            .path("/org/freedesktop/PolicyKit1/Authority").map_err(|e: zbus::Error| e.to_string())?
-            .interface("org.freedesktop.PolicyKit1.Authority").map_err(|e: zbus::Error| e.to_string())?
-            .build().await.map_err(|e: zbus::Error| e.to_string())?;
+            .destination("org.freedesktop.PolicyKit1").map_err(|e| e.to_string())?
+            .path("/org/freedesktop/PolicyKit1/Authority").map_err(|e| e.to_string())?
+            .interface("org.freedesktop.PolicyKit1.Authority").map_err(|e| e.to_string())?
+            .build().await.map_err(|e| e.to_string())?;
 
         let subject = (
             "unix-process",
@@ -34,7 +34,7 @@ pub async fn polkit_check_auth(action_id: String) -> Result<AuthResult, String> 
                 "",
             ))
             .await
-            .map_err(|e: zbus::Error| e.to_string())?;
+            .map_err(|e| e.to_string())?;
 
         Ok(AuthResult {
             authorized: result.0,

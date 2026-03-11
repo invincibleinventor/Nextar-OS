@@ -4,7 +4,8 @@
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicU32, Ordering};
 use tauri::{Emitter, Manager};
-use zbus::{interface, Connection, ConnectionBuilder};
+use zbus::interface;
+use zbus::object_server::SignalContext;
 
 use super::state::NotificationRecord;
 
@@ -119,16 +120,16 @@ impl NotificationDaemon {
 
     /// Signals
     #[zbus(signal)]
-    async fn notification_closed(signal_ctxt: &zbus::SignalContext<'_>, id: u32, reason: u32) -> zbus::Result<()>;
+    async fn notification_closed(signal_ctxt: &SignalContext<'_>, id: u32, reason: u32) -> zbus::Result<()>;
 
     #[zbus(signal)]
-    async fn action_invoked(signal_ctxt: &zbus::SignalContext<'_>, id: u32, action_key: &str) -> zbus::Result<()>;
+    async fn action_invoked(signal_ctxt: &SignalContext<'_>, id: u32, action_key: &str) -> zbus::Result<()>;
 }
 
 pub async fn start(app: tauri::AppHandle) -> Result<(), Box<dyn std::error::Error>> {
     let daemon = NotificationDaemon { app };
 
-    let _conn = ConnectionBuilder::session()?
+    let _conn = zbus::connection::Builder::session()?
         .name("org.freedesktop.Notifications")?
         .serve_at("/org/freedesktop/Notifications", daemon)?
         .build()

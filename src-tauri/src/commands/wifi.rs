@@ -20,11 +20,11 @@ pub struct WifiNetwork {
 }
 
 #[cfg(target_os = "linux")]
-async fn nm_proxy_at(
-    conn: &zbus::Connection,
-    path: &str,
-    iface: &str,
-) -> Result<zbus::Proxy<'_>, zbus::Error> {
+async fn nm_proxy_at<'a>(
+    conn: &'a zbus::Connection,
+    path: &'a str,
+    iface: &'a str,
+) -> Result<zbus::Proxy<'a>, zbus::Error> {
     zbus::proxy::Builder::new(conn)
         .destination("org.freedesktop.NetworkManager")?
         .path(zbus::zvariant::ObjectPath::try_from(path)?)?

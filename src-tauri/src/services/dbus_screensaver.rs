@@ -6,7 +6,8 @@ use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::Arc;
 use tauri::Emitter;
 use tokio::sync::RwLock;
-use zbus::{interface, ConnectionBuilder};
+use zbus::interface;
+use zbus::object_server::SignalContext;
 
 static NEXT_COOKIE: AtomicU32 = AtomicU32::new(1);
 
@@ -85,7 +86,7 @@ impl ScreenSaver {
     }
 
     #[zbus(signal)]
-    async fn active_changed(signal_ctxt: &zbus::SignalContext<'_>, active: bool) -> zbus::Result<()>;
+    async fn active_changed(signal_ctxt: &SignalContext<'_>, active: bool) -> zbus::Result<()>;
 }
 
 pub async fn start(app: tauri::AppHandle) -> Result<(), Box<dyn std::error::Error>> {
@@ -95,7 +96,7 @@ pub async fn start(app: tauri::AppHandle) -> Result<(), Box<dyn std::error::Erro
         active: Arc::new(RwLock::new(false)),
     };
 
-    let _conn = ConnectionBuilder::session()?
+    let _conn = zbus::connection::Builder::session()?
         .name("org.freedesktop.ScreenSaver")?
         .serve_at("/org/freedesktop/ScreenSaver", screensaver)?
         .build()
