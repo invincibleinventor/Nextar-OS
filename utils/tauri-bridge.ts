@@ -46,10 +46,33 @@ export const tauriAPI = {
     istauri: IS_TAURI,
     iselectron: false, // Backwards compat
 
-    // Platform
+    // Platform — map Rust field names to frontend expected names
     platform: {
-        get: () => cmd('get_platform'),
-        getsysteminfo: () => cmd('get_system_info'),
+        get: async () => {
+            const p = await cmd('get_platform');
+            return {
+                platform: p.platform, arch: p.arch,
+                hostname: p.hostname, username: p.username,
+                homedir: p.home_dir, islinux: p.os === 'linux',
+                ismac: p.os === 'macos', iswindows: p.os === 'windows',
+                cpus: navigator.hardwareConcurrency || 4,
+                totalmem: 0, freemem: 0,
+            };
+        },
+        getsysteminfo: async () => {
+            const s = await cmd('get_system_info');
+            return {
+                ...s,
+                homedir: s.home_dir,
+                hostname: s.hostname || s.host_name,
+                osname: s.os_name,
+                osversion: s.os_version,
+                kernelversion: s.kernel_version,
+                cpucount: s.cpu_count,
+                totalmem: s.total_memory,
+                usedmem: s.used_memory,
+            };
+        },
         getpowerstate: () => cmd('get_power_state'),
     },
 
@@ -58,6 +81,8 @@ export const tauriAPI = {
         getversion: () => Promise.resolve('1.0.0'),
         getconfig: () => cmd('get_config').catch(() => ({})),
         setconfig: (config: any) => cmd('set_config', { config }).catch(() => {}),
+        getconfigvalue: (key: string) => cmd('get_config_value', { key }).catch(() => null),
+        setconfigvalue: (key: string, value: any) => cmd('set_config_value', { key, value }).catch(() => {}),
     },
 
     // Notifications
@@ -66,19 +91,66 @@ export const tauriAPI = {
             cmd('plugin:notification|notify', { title, body, ...options }),
     },
 
-    // Filesystem
+    // Filesystem — wrap responses to match frontend expected format
     filesystem: {
-        readfile: (filepath: string) => cmd('read_file', { path: filepath }),
+        readfile: async (filepath: string) => {
+            try {
+                const content = await cmd('read_file', { path: filepath });
+                return { success: true, content };
+            } catch (e: any) { return { success: false, error: String(e) }; }
+        },
         readfilebinary: (filepath: string) => cmd('read_file_binary', { path: filepath }),
-        writefile: (filepath: string, content: string) => cmd('write_file', { path: filepath, content }),
+        writefile: async (filepath: string, content: string) => {
+            try {
+                await cmd('write_file', { path: filepath, content });
+                return { success: true };
+            } catch (e: any) { return { success: false, error: String(e) }; }
+        },
         writefilebinary: (filepath: string, content: Uint8Array) => cmd('write_file_binary', { path: filepath, content: Array.from(content) }),
-        readdir: (dirpath: string) => cmd('read_directory', { path: dirpath }),
-        getstats: (filepath: string) => cmd('get_file_stats', { path: filepath }),
-        mkdir: (dirpath: string) => cmd('create_directory', { path: dirpath }),
-        remove: (targetpath: string, recursive?: boolean) => cmd('delete_path', { path: targetpath, recursive }),
-        rename: (oldpath: string, newpath: string) => cmd('rename_path', { oldPath: oldpath, newPath: newpath }),
-        copy: (source: string, dest: string) => cmd('copy_path', { source, dest }),
-        trash: (filepath: string) => cmd('trash_path', { path: filepath }),
+        readdir: async (dirpath: string) => {
+            try {
+                const entries = await cmd('read_directory', { path: dirpath });
+                const items = (entries || []).map((e: any) => ({
+                    name: e.name,
+                    path: e.path,
+                    isdir: e.is_dir,
+                    isfile: e.is_file,
+                    issymlink: e.is_symlink,
+                    size: e.size,
+                    modified: e.modified ? new Date(e.modified * 1000) : undefined,
+                    created: e.created ? new Date(e.created * 1000) : undefined,
+                    permissions: e.permissions,
+                    mime_type: e.mime_type,
+                }));
+                return { success: true, items };
+            } catch (e: any) { return { success: false, error: String(e), items: [] }; }
+        },
+        getstats: async (filepath: string) => {
+            try {
+                const stats = await cmd('get_file_stats', { path: filepath });
+                return { success: true, ...stats, isdir: stats.is_dir, isfile: stats.is_file, issymlink: stats.is_symlink };
+            } catch (e: any) { return { success: false, error: String(e) }; }
+        },
+        mkdir: async (dirpath: string) => {
+            try { await cmd('create_directory', { path: dirpath }); return { success: true }; }
+            catch (e: any) { return { success: false, error: String(e) }; }
+        },
+        remove: async (targetpath: string, recursive?: boolean) => {
+            try { await cmd('delete_path', { path: targetpath, recursive }); return { success: true }; }
+            catch (e: any) { return { success: false, error: String(e) }; }
+        },
+        rename: async (oldpath: string, newpath: string) => {
+            try { await cmd('rename_path', { oldPath: oldpath, newPath: newpath }); return { success: true }; }
+            catch (e: any) { return { success: false, error: String(e) }; }
+        },
+        copy: async (source: string, dest: string) => {
+            try { await cmd('copy_path', { source, dest }); return { success: true }; }
+            catch (e: any) { return { success: false, error: String(e) }; }
+        },
+        trash: async (filepath: string) => {
+            try { await cmd('trash_path', { path: filepath }); return { success: true }; }
+            catch (e: any) { return { success: false, error: String(e) }; }
+        },
         watchstart: (watchPath: string, options?: { recursive?: boolean }) =>
             cmd('watch_start', { path: watchPath, recursive: options?.recursive }),
         watchstop: (id: string) => cmd('watch_stop', { id }),
@@ -279,9 +351,14 @@ export const tauriAPI = {
         setdefault: (printer: string) => cmd('printer_set_default', { name: printer }),
     },
 
-    // Terminal
+    // Terminal — wrap response to match frontend expected format
     terminal: {
-        execute: (command: string, cwd?: string) => cmd('terminal_execute', { command, cwd }),
+        execute: async (command: string, cwd?: string) => {
+            try {
+                const result = await cmd('terminal_execute', { command, cwd });
+                return { success: true, stdout: result.stdout || '', stderr: result.stderr || '', code: result.exit_code ?? 0 };
+            } catch (e: any) { return { success: false, stdout: '', stderr: String(e), code: 1, error: String(e) }; }
+        },
         ptyspawn: (options: any) => cmd('pty_spawn', { options }),
         ptywrite: (id: string, data: string) => cmd('pty_write', { id, data }),
         ptyresize: (id: string, cols: number, rows: number) => cmd('pty_resize', { id, cols, rows }),

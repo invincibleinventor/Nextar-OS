@@ -4,6 +4,7 @@
 use x11rb::connection::Connection;
 use x11rb::protocol::xproto::*;
 use x11rb::rust_connection::RustConnection;
+use x11rb::wrapper::ConnectionExt as WrapperConnectionExt;
 
 /// Set up EWMH hints on the root window to advertise our WM capabilities
 pub fn setup_ewmh_hints() -> Result<(), Box<dyn std::error::Error>> {

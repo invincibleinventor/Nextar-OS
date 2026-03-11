@@ -83,13 +83,14 @@ pub async fn network_get_info() -> Result<NetworkInfo, String> {
                     "other"
                 };
 
+                let connected = up && ip4.is_some();
                 Some(NetworkInterface {
                     name,
                     ip4,
                     ip6,
                     mac,
                     interface_type: itype.to_string(),
-                    connected: up && ip4.is_some(),
+                    connected,
                     speed: None,
                 })
             })

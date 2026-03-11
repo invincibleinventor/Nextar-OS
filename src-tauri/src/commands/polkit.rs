@@ -11,23 +11,22 @@ pub async fn polkit_check_auth(action_id: String) -> Result<AuthResult, String> 
     #[cfg(target_os = "linux")]
     {
         let conn = zbus::Connection::system().await.map_err(|e| e.to_string())?;
-        let proxy = zbus::Proxy::new(
-            &conn,
-            "org.freedesktop.PolicyKit1",
-            "/org/freedesktop/PolicyKit1/Authority",
-            "org.freedesktop.PolicyKit1.Authority",
-        ).await.map_err(|e| e.to_string())?;
+        let proxy = zbus::Proxy::builder(&conn)
+            .destination("org.freedesktop.PolicyKit1").map_err(|e| e.to_string())?
+            .path("/org/freedesktop/PolicyKit1/Authority").map_err(|e| e.to_string())?
+            .interface("org.freedesktop.PolicyKit1.Authority").map_err(|e| e.to_string())?
+            .build().await.map_err(|e| e.to_string())?;
 
         let subject = (
             "unix-process",
             std::collections::HashMap::from([
-                ("pid".to_string(), zbus::zvariant::Value::new(std::process::id())),
-                ("start-time".to_string(), zbus::zvariant::Value::new(0u64)),
+                ("pid".to_string(), zbus::zvariant::Value::from(std::process::id())),
+                ("start-time".to_string(), zbus::zvariant::Value::from(0u64)),
             ]),
         );
 
         let result: (bool, bool, std::collections::HashMap<String, String>) = proxy
-            .call("CheckAuthorization", &(
+            .call::<_, _, (bool, bool, std::collections::HashMap<String, String>)>("CheckAuthorization", &(
                 &subject,
                 &action_id,
                 &std::collections::HashMap::<String, String>::new(),

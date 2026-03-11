@@ -18,7 +18,7 @@ struct MenuRegistrar {
 #[interface(name = "com.canonical.AppMenu.Registrar")]
 impl MenuRegistrar {
     /// Register a window's menu
-    async fn register_window(&self, window_id: u32, service: &str, menu_path: &zbus::zvariant::ObjectPath<'_>) {
+    async fn register_window(&self, window_id: u32, service: &str, menu_path: zbus::zvariant::ObjectPath<'_>) {
         let mut regs = self.registrations.write().await;
         regs.insert(window_id, (service.to_string(), menu_path.to_string()));
         log::info!("Global menu registered for window {} → {}:{}", window_id, service, menu_path);
@@ -62,11 +62,16 @@ pub async fn fetch_dbusmenu(
     menu_path: &str,
 ) -> Result<Vec<MenuItem>, Box<dyn std::error::Error + Send + Sync>> {
     let conn = Connection::session().await?;
-    let proxy = zbus::Proxy::new(&conn, service, menu_path, "com.canonical.dbusmenu").await?;
+    let proxy = zbus::Proxy::builder(&conn)
+        .destination(zbus::names::BusName::try_from(service)?)?
+        .path(zbus::zvariant::ObjectPath::try_from(menu_path)?)?
+        .interface("com.canonical.dbusmenu")?
+        .build()
+        .await?;
 
     // GetLayout(parentId=0, recursionDepth=-1, propertyNames=[])
     let reply: (u32, (i32, HashMap<String, zbus::zvariant::OwnedValue>, Vec<zbus::zvariant::OwnedValue>)) =
-        proxy.call("GetLayout", &(0i32, -1i32, Vec::<String>::new())).await?;
+        proxy.call::<_, (i32, i32, Vec<String>), _>("GetLayout", &(0i32, -1i32, Vec::<String>::new())).await?;
 
     let (_revision, root) = reply;
     let items = parse_menu_item(&root.2);
@@ -77,15 +82,16 @@ fn parse_menu_item(children: &[zbus::zvariant::OwnedValue]) -> Vec<MenuItem> {
     let mut items = Vec::new();
     for child in children {
         // Each child is a struct (id, props, children)
-        if let Ok(tuple) = child.downcast_ref::<zbus::zvariant::Structure>() {
+        if let Ok(tuple) = child.downcast_ref::<zbus::zvariant::Structure<'_>>() {
             let fields = tuple.fields();
             if fields.len() >= 3 {
-                let id = fields[0].downcast_ref::<i32>().copied().unwrap_or(0);
+                let id = fields[0].downcast_ref::<i32>().ok().copied().unwrap_or(0);
                 let props: HashMap<String, String> = fields[1]
-                    .downcast_ref::<HashMap<&str, zbus::zvariant::Value>>()
+                    .downcast_ref::<HashMap<&str, zbus::zvariant::Value<'_>>>()
+                    .ok()
                     .map(|m| {
                         m.iter()
-                            .filter_map(|(k, v)| v.downcast_ref::<&str>().map(|s| (k.to_string(), s.to_string())))
+                            .filter_map(|(k, v)| v.downcast_ref::<&str>().ok().map(|s| (k.to_string(), s.to_string())))
                             .collect()
                     })
                     .unwrap_or_default();
@@ -100,8 +106,9 @@ fn parse_menu_item(children: &[zbus::zvariant::OwnedValue]) -> Vec<MenuItem> {
                 let toggle_state = props.get("toggle-state").and_then(|v| v.parse().ok());
 
                 let sub_children = if let Some(arr) = fields.get(2) {
-                    if let Ok(arr) = arr.downcast_ref::<Vec<zbus::zvariant::OwnedValue>>() {
-                        parse_menu_item(arr)
+                    if let Ok(arr) = arr.downcast_ref::<Vec<zbus::zvariant::Value<'_>>>() {
+                        let owned: Vec<zbus::zvariant::OwnedValue> = arr.iter().map(|v| v.to_owned().into()).collect();
+                        parse_menu_item(&owned)
                     } else {
                         Vec::new()
                     }
@@ -109,6 +116,7 @@ fn parse_menu_item(children: &[zbus::zvariant::OwnedValue]) -> Vec<MenuItem> {
                     Vec::new()
                 };
 
+                let resolved_type = if item_type == "separator" { "separator".into() } else if !sub_children.is_empty() { "submenu".into() } else { "normal".into() };
                 items.push(MenuItem {
                     id,
                     label,
@@ -119,7 +127,7 @@ fn parse_menu_item(children: &[zbus::zvariant::OwnedValue]) -> Vec<MenuItem> {
                     toggle_type,
                     toggle_state,
                     children: sub_children,
-                    item_type: if item_type == "separator" { "separator".into() } else if !sub_children.is_empty() { "submenu".into() } else { "normal".into() },
+                    item_type: resolved_type,
                 });
             }
         }

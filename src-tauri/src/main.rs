@@ -56,6 +56,9 @@ fn main() {
                 let _ = window.set_fullscreen(true);
                 let _ = window.set_decorations(false);
                 let _ = window.set_always_on_top(true);
+            } else {
+                // Non-session: maximize window to fill screen
+                let _ = window.maximize();
             }
 
             // Start background services
@@ -261,6 +264,11 @@ fn main() {
             commands::appearance::appearance_set_cursor_theme,
             commands::appearance::appearance_set_dark_mode,
             commands::appearance::appearance_set_accent_color,
+            // Config
+            commands::config::get_config,
+            commands::config::set_config,
+            commands::config::get_config_value,
+            commands::config::set_config_value,
         ]);
 
     builder

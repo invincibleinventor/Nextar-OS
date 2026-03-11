@@ -30,3 +30,4 @@ pub mod printers;
 pub mod hardware;
 pub mod appearance;
 pub mod shortcuts;
+pub mod config;

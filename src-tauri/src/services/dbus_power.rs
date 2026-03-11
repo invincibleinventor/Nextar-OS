@@ -1,6 +1,7 @@
 //! Listen to logind/UPower D-Bus signals for power events
 
 use tauri::Emitter;
+use futures_util::StreamExt;
 use zbus::Connection;
 
 pub async fn start(app: tauri::AppHandle) -> Result<(), Box<dyn std::error::Error>> {
@@ -8,16 +9,14 @@ pub async fn start(app: tauri::AppHandle) -> Result<(), Box<dyn std::error::Erro
 
     // Listen for PrepareForSleep from logind (suspend/resume)
     let app_clone = app.clone();
-    let logind_proxy = zbus::Proxy::new(
-        &conn,
-        "org.freedesktop.login1",
-        "/org/freedesktop/login1",
-        "org.freedesktop.login1.Manager",
-    )
-    .await?;
+    let logind_proxy = zbus::Proxy::builder(&conn)
+        .destination("org.freedesktop.login1")?
+        .path("/org/freedesktop/login1")?
+        .interface("org.freedesktop.login1.Manager")?
+        .build()
+        .await?;
 
     tokio::spawn(async move {
-        use futures_util::StreamExt;
         let mut stream = logind_proxy
             .receive_signal("PrepareForSleep")
             .await
@@ -33,16 +32,14 @@ pub async fn start(app: tauri::AppHandle) -> Result<(), Box<dyn std::error::Erro
 
     // Listen for PrepareForShutdown
     let app_clone = app.clone();
-    let logind_proxy2 = zbus::Proxy::new(
-        &conn,
-        "org.freedesktop.login1",
-        "/org/freedesktop/login1",
-        "org.freedesktop.login1.Manager",
-    )
-    .await?;
+    let logind_proxy2 = zbus::Proxy::builder(&conn)
+        .destination("org.freedesktop.login1")?
+        .path("/org/freedesktop/login1")?
+        .interface("org.freedesktop.login1.Manager")?
+        .build()
+        .await?;
 
     tokio::spawn(async move {
-        use futures_util::StreamExt;
         let mut stream = logind_proxy2
             .receive_signal("PrepareForShutdown")
             .await
@@ -60,16 +57,14 @@ pub async fn start(app: tauri::AppHandle) -> Result<(), Box<dyn std::error::Erro
     let session_path = get_current_session_path(&conn).await;
     if let Some(session_path) = session_path {
         let app_clone = app.clone();
-        let session_proxy = zbus::Proxy::new(
-            &conn,
-            "org.freedesktop.login1",
-            &session_path,
-            "org.freedesktop.login1.Session",
-        )
-        .await?;
+        let session_proxy = zbus::Proxy::builder(&conn)
+            .destination("org.freedesktop.login1")?
+            .path(zbus::zvariant::ObjectPath::try_from(session_path.as_str())?)?
+            .interface("org.freedesktop.login1.Session")?
+            .build()
+            .await?;
 
         tokio::spawn(async move {
-            use futures_util::StreamExt;
             let mut lock_stream = session_proxy.receive_signal("Lock").await.unwrap();
             while let Some(_) = lock_stream.next().await {
                 let _ = app_clone.emit("session-action", "lock");
@@ -78,16 +73,14 @@ pub async fn start(app: tauri::AppHandle) -> Result<(), Box<dyn std::error::Erro
         });
 
         let app_clone = app.clone();
-        let session_proxy2 = zbus::Proxy::new(
-            &conn,
-            "org.freedesktop.login1",
-            &session_path,
-            "org.freedesktop.login1.Session",
-        )
-        .await?;
+        let session_proxy2 = zbus::Proxy::builder(&conn)
+            .destination("org.freedesktop.login1")?
+            .path(zbus::zvariant::ObjectPath::try_from(session_path.as_str())?)?
+            .interface("org.freedesktop.login1.Session")?
+            .build()
+            .await?;
 
         tokio::spawn(async move {
-            use futures_util::StreamExt;
             let mut unlock_stream = session_proxy2.receive_signal("Unlock").await.unwrap();
             while let Some(_) = unlock_stream.next().await {
                 let _ = app_clone.emit("session-action", "unlock");
@@ -98,16 +91,14 @@ pub async fn start(app: tauri::AppHandle) -> Result<(), Box<dyn std::error::Erro
     // Listen for UPower device changes (battery)
     let app_clone = app.clone();
     let upower_conn = Connection::system().await?;
-    let upower_proxy = zbus::Proxy::new(
-        &upower_conn,
-        "org.freedesktop.UPower",
-        "/org/freedesktop/UPower",
-        "org.freedesktop.UPower",
-    )
-    .await?;
+    let upower_proxy = zbus::Proxy::builder(&upower_conn)
+        .destination("org.freedesktop.UPower")?
+        .path("/org/freedesktop/UPower")?
+        .interface("org.freedesktop.UPower")?
+        .build()
+        .await?;
 
     tokio::spawn(async move {
-        use futures_util::StreamExt;
         // Watch for property changes on UPower
         let mut stream = upower_proxy.receive_all_signals().await.unwrap();
         while let Some(signal) = stream.next().await {
@@ -127,17 +118,16 @@ pub async fn start(app: tauri::AppHandle) -> Result<(), Box<dyn std::error::Erro
 }
 
 async fn get_current_session_path(conn: &Connection) -> Option<String> {
-    let proxy = zbus::Proxy::new(
-        conn,
-        "org.freedesktop.login1",
-        "/org/freedesktop/login1",
-        "org.freedesktop.login1.Manager",
-    )
-    .await
-    .ok()?;
+    let proxy = zbus::Proxy::builder(conn)
+        .destination("org.freedesktop.login1").ok()?
+        .path("/org/freedesktop/login1").ok()?
+        .interface("org.freedesktop.login1.Manager").ok()?
+        .build()
+        .await
+        .ok()?;
 
     let reply: (zbus::zvariant::OwnedObjectPath,) = proxy
-        .call("GetSession", &("auto",))
+        .call::<_, (&str,), (zbus::zvariant::OwnedObjectPath,)>("GetSession", &("auto",))
         .await
         .ok()?;
 

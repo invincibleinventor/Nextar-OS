@@ -6,7 +6,7 @@ import {
     IoHomeOutline, IoRefresh, IoTrashOutline, IoOpenOutline,
     IoSearch, IoGridOutline, IoListOutline, IoTerminal
 } from 'react-icons/io5';
-import { iselectron, nativefs } from '@/utils/platform';
+import { iselectron, nativefs, istauri } from '@/utils/platform';
 import { useIsClay } from '../hooks/useIsClay';
 import { glassCard, glassSidebar, glassInput } from '../hooks/useClayStyles';
 
@@ -26,7 +26,9 @@ interface NativeFileBrowserProps {
 
 export default function NativeFileBrowser({ isFocused, initialPath }: NativeFileBrowserProps) {
     const clay = useIsClay();
-    const [currentpath, setcurrentpath] = useState(initialPath || '/home');
+    const isMacOS = typeof window !== 'undefined' && /Mac/i.test(navigator.userAgent);
+    const homeDir = isMacOS ? '/Users' : '/home';
+    const [currentpath, setcurrentpath] = useState(initialPath || homeDir);
     const [files, setfiles] = useState<NativeFile[]>([]);
     const [loading, setloading] = useState(false);
     const [error, seterror] = useState<string | null>(null);
@@ -128,11 +130,13 @@ export default function NativeFileBrowser({ isFocused, initialPath }: NativeFile
         ? files.filter(f => f.name.toLowerCase().includes(searchquery.toLowerCase()))
         : files;
 
+    const userName = typeof process !== 'undefined' ? process.env.USER || 'user' : 'user';
+    const userHome = isMacOS ? `/Users/${userName}` : `/home/${userName}`;
     const quicknav = [
-        { name: 'Home', path: '/home', icon: IoHomeOutline },
-        { name: 'Desktop', path: '/home/' + (process.env.USER || 'user') + '/Desktop', icon: IoGridOutline },
-        { name: 'Documents', path: '/home/' + (process.env.USER || 'user') + '/Documents', icon: IoDocumentOutline },
-        { name: 'Downloads', path: '/home/' + (process.env.USER || 'user') + '/Downloads', icon: IoDocumentOutline },
+        { name: 'Home', path: userHome, icon: IoHomeOutline },
+        { name: 'Desktop', path: userHome + '/Desktop', icon: IoGridOutline },
+        { name: 'Documents', path: userHome + '/Documents', icon: IoDocumentOutline },
+        { name: 'Downloads', path: userHome + '/Downloads', icon: IoDocumentOutline },
         { name: 'Root', path: '/', icon: IoTerminal },
     ];
 

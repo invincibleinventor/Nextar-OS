@@ -770,8 +770,9 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                             <SettingsGroup>
                                 <div className="p-5 flex justify-center gap-8">
                                     <button
-                                        onClick={() => {
-                                            localStorage.setItem('nextaros-ui-style', 'neo');
+                                        onClick={async () => {
+                                            const { setConfig } = await import('@/utils/config');
+                                            await setConfig('nextaros-ui-style', 'neo');
                                             document.documentElement.classList.add('clay');
                                             window.location.reload();
                                         }}
@@ -785,8 +786,9 @@ export default function Settings({ initialPage, windowId }: { initialPage?: stri
                                         <span className={`text-[12px] font-medium ${clay ? 'text-accent' : 'text-[--text-muted]'}`}>Neo-Glass</span>
                                     </button>
                                     <button
-                                        onClick={() => {
-                                            localStorage.setItem('nextaros-ui-style', 'classic');
+                                        onClick={async () => {
+                                            const { setConfig } = await import('@/utils/config');
+                                            await setConfig('nextaros-ui-style', 'classic');
                                             document.documentElement.classList.remove('clay');
                                             window.location.reload();
                                         }}

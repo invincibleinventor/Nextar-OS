@@ -12,9 +12,13 @@ pub async fn tray_item_activate(service: String, x: i32, y: i32) -> Result<(), S
     #[cfg(target_os = "linux")]
     {
         let conn = zbus::Connection::session().await.map_err(|e| e.to_string())?;
-        let proxy = zbus::Proxy::new(&conn, &service, "/StatusNotifierItem", "org.kde.StatusNotifierItem")
-            .await.map_err(|e| e.to_string())?;
-        proxy.call::<_, ()>("Activate", &(x, y)).await.map_err(|e| e.to_string())
+        let proxy = zbus::Proxy::builder(&conn)
+            .destination(zbus::names::BusName::try_from(service.as_str()).map_err(|e| e.to_string())?)
+            .map_err(|e| e.to_string())?
+            .path("/StatusNotifierItem").map_err(|e| e.to_string())?
+            .interface("org.kde.StatusNotifierItem").map_err(|e| e.to_string())?
+            .build().await.map_err(|e| e.to_string())?;
+        proxy.call::<_, (i32, i32), ()>("Activate", &(x, y)).await.map_err(|e| e.to_string())
     }
     #[cfg(not(target_os = "linux"))]
     { let _ = (service, x, y); Ok(()) }

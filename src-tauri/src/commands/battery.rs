@@ -19,14 +19,11 @@ pub async fn battery_get_status() -> Result<BatteryStatus, String> {
     {
         // Use UPower D-Bus
         let conn = zbus::Connection::system().await.map_err(|e| e.to_string())?;
-        let proxy = zbus::Proxy::new(
-            &conn,
-            "org.freedesktop.UPower",
-            "/org/freedesktop/UPower/devices/DisplayDevice",
-            "org.freedesktop.UPower.Device",
-        )
-        .await
-        .map_err(|e| e.to_string())?;
+        let proxy = zbus::Proxy::builder(&conn)
+            .destination("org.freedesktop.UPower").map_err(|e| e.to_string())?
+            .path("/org/freedesktop/UPower/devices/DisplayDevice").map_err(|e| e.to_string())?
+            .interface("org.freedesktop.UPower.Device").map_err(|e| e.to_string())?
+            .build().await.map_err(|e| e.to_string())?;
 
         let percentage: f64 = proxy.get_property("Percentage").await.unwrap_or(0.0);
         let state_num: u32 = proxy.get_property("State").await.unwrap_or(0);

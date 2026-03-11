@@ -5,16 +5,18 @@
   "build": {
     "frontendDist": "../out",
     "devUrl": "http://localhost:3000",
-    "beforeDevCommand": "npm run dev",
+    "beforeDevCommand": "",
     "beforeBuildCommand": "npm run build"
   },
   "app": {
     "withGlobalTauri": true,
+    "macOSPrivateApi": true,
     "windows": [
       {
         "label": "main",
         "title": "NextarOS",
         "fullscreen": false,
+        "maximized": true,
         "resizable": true,
         "decorations": false,
         "transparent": true,
@@ -79,34 +81,7 @@
   },
   "plugins": {
     "shell": {
-      "open": true,
-      "scope": [
-        {
-          "name": "run-command",
-          "cmd": "",
-          "args": true,
-          "sidecar": false
-        }
-      ]
-    },
-    "fs": {
-      "scope": {
-        "allow": ["$HOME/**", "/tmp/**", "/etc/**", "/usr/**", "/sys/**", "/proc/**", "$RESOURCE/**"],
-        "deny": []
-      }
-    },
-    "dialog": {
-      "open": true,
-      "save": true
-    },
-    "clipboard-manager": {
-      "all": true
-    },
-    "notification": {
-      "all": true
-    },
-    "global-shortcut": {
-      "all": true
+      "open": true
     },
     "updater": {
       "endpoints": [

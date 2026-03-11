@@ -3,7 +3,7 @@
 
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicU32, Ordering};
-use tauri::Emitter;
+use tauri::{Emitter, Manager};
 use zbus::{interface, Connection, ConnectionBuilder};
 
 use super::state::NotificationRecord;

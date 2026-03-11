@@ -96,6 +96,7 @@ import { SystemTrayProvider } from '@/components/SystemTray';
 import { WorkspaceProvider } from '@/components/WorkspaceSwitcher';
 import { GlobalMenuProvider } from '@/components/GlobalMenuBar';
 import Script from 'next/script';
+import { ConfigSync } from '@/components/ConfigSync';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -103,7 +104,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('theme');if(t){document.documentElement.classList.add(t)}else{document.documentElement.classList.add('dark')}var s=localStorage.getItem('nextaros-ui-style');if(s==='classic'){/* no clay */}else{document.documentElement.classList.add('clay')}}catch(e){document.documentElement.classList.add('dark');document.documentElement.classList.add('clay')}})()`,
+            __html: `(function(){try{var isTauri='__TAURI__' in window;var t=localStorage.getItem('theme');if(t){document.documentElement.classList.add(t)}else{document.documentElement.classList.add('dark')}if(isTauri){document.documentElement.classList.add('clay')}else{var s=localStorage.getItem('nextaros-ui-style');if(s!=='classic'){document.documentElement.classList.add('clay')}}}catch(e){document.documentElement.classList.add('dark');document.documentElement.classList.add('clay')}})()`,
           }}
         />
       </head>
@@ -141,6 +142,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <WindowProvider>
             <div className="fixed inset-0 bg-black h-[100dvh] w-screen overflow-hidden transition-colors duration-500">
 
+              <ConfigSync />
               <ElectronProvider>
                 <HostProvider>
                 <DeviceProvider>

@@ -2681,6 +2681,7 @@ dependencies = [
  "dirs",
  "env_logger",
  "freedesktop-desktop-entry",
+ "futures-util",
  "libc",
  "libpulse-binding",
  "libpulse-simple-binding",

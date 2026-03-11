@@ -3,10 +3,11 @@
 
 use std::collections::HashMap;
 use std::sync::Arc;
-use tauri::Emitter;
+use tauri::{Emitter, Manager};
 use tokio::sync::RwLock;
 use zbus::{interface, Connection, ConnectionBuilder, MatchRule, MessageStream};
 use zbus::names::BusName;
+use futures_util::StreamExt;
 
 use super::state::TrayItem;
 
@@ -82,13 +83,12 @@ async fn fetch_tray_item_props(service: &str) -> Result<TrayItem, Box<dyn std::e
     let conn = Connection::session().await?;
 
     // The path is usually /StatusNotifierItem
-    let proxy = zbus::Proxy::new(
-        &conn,
-        service,
-        "/StatusNotifierItem",
-        "org.kde.StatusNotifierItem",
-    )
-    .await?;
+    let proxy = zbus::Proxy::builder(&conn)
+        .destination(BusName::try_from(service)?)?
+        .path("/StatusNotifierItem")?
+        .interface("org.kde.StatusNotifierItem")?
+        .build()
+        .await?;
 
     let title: String = proxy.get_property("Title").await.unwrap_or_default();
     let icon_name: String = proxy.get_property("IconName").await.unwrap_or_default();
@@ -99,7 +99,8 @@ async fn fetch_tray_item_props(service: &str) -> Result<TrayItem, Box<dyn std::e
         .unwrap_or_default();
     let category: String = proxy.get_property("Category").await.unwrap_or_default();
     let status: String = proxy.get_property("Status").await.unwrap_or_default();
-    let menu_path: String = proxy.get_property("Menu").await
+    let menu_path: String = proxy.get_property::<zbus::zvariant::OwnedObjectPath>("Menu").await
+        .map(|p| p.to_string())
         .unwrap_or_else(|_| "/MenuBar".into());
 
     Ok(TrayItem {
@@ -131,15 +132,17 @@ pub async fn start(app: tauri::AppHandle) -> Result<(), Box<dyn std::error::Erro
     log::info!("StatusNotifierWatcher D-Bus service started");
 
     // Also register ourselves as a host
-    let _ = conn
-        .call_method(
-            Some("org.kde.StatusNotifierWatcher"),
-            "/StatusNotifierWatcher",
-            Some("org.kde.StatusNotifierWatcher"),
-            "RegisterStatusNotifierHost",
-            &("org.nextaros.Desktop",),
-        )
-        .await;
+    {
+        let host_proxy = zbus::Proxy::builder(&conn)
+            .destination("org.kde.StatusNotifierWatcher").ok()
+            .and_then(|b| b.path("/StatusNotifierWatcher").ok())
+            .and_then(|b| b.interface("org.kde.StatusNotifierWatcher").ok());
+        if let Some(builder) = host_proxy {
+            if let Ok(proxy) = builder.build().await {
+                let _ = proxy.call::<_, (&str,), ()>("RegisterStatusNotifierHost", &("org.nextaros.Desktop",)).await;
+            }
+        }
+    }
 
     // Watch for NameOwnerChanged to detect when tray items exit
     let app_clone = app.clone();
@@ -159,19 +162,15 @@ pub async fn start(app: tauri::AppHandle) -> Result<(), Box<dyn std::error::Erro
             .build();
 
         let mut stream = MessageStream::for_match_rule(rule, &conn, None).await.unwrap();
-        use futures_util::StreamExt;
         while let Some(msg) = stream.next().await {
-            if let Ok(msg) = msg {
-                if let Ok((name, _old, new)): Result<(String, String, String), _> =
-                    msg.body().deserialize()
-                {
-                    if new.is_empty() {
-                        // Service disappeared — remove from tray
-                        if let Some(state) = app_clone.try_state::<super::state::AppState>() {
-                            let mut items = state.tray_items.write().await;
-                            items.retain(|i| i.service != name);
-                            let _ = app_clone.emit("tray-item-unregistered", &name);
-                        }
+            if let Ok((name, _old, new)) = msg.body().deserialize::<(String, String, String)>()
+            {
+                if new.is_empty() {
+                    // Service disappeared — remove from tray
+                    if let Some(state) = app_clone.try_state::<super::state::AppState>() {
+                        let mut items = state.tray_items.write().await;
+                        items.retain(|i| i.service != name);
+                        let _ = app_clone.emit("tray-item-unregistered", &name);
                     }
                 }
             }

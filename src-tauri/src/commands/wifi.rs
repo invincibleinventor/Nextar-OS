@@ -19,20 +19,29 @@ pub struct WifiNetwork {
     pub frequency: Option<u32>,
 }
 
+#[cfg(target_os = "linux")]
+async fn nm_proxy_at(
+    conn: &zbus::Connection,
+    path: &str,
+    iface: &str,
+) -> Result<zbus::Proxy<'_>, zbus::Error> {
+    zbus::Proxy::builder(conn)
+        .destination("org.freedesktop.NetworkManager")?
+        .path(zbus::zvariant::ObjectPath::try_from(path)?)?
+        .interface(iface)?
+        .build()
+        .await
+}
+
 #[tauri::command]
 pub async fn wifi_get_status() -> Result<WifiStatus, String> {
     #[cfg(target_os = "linux")]
     {
         // Use NetworkManager D-Bus
         let conn = zbus::Connection::system().await.map_err(|e| e.to_string())?;
-        let proxy = zbus::Proxy::new(
-            &conn,
-            "org.freedesktop.NetworkManager",
-            "/org/freedesktop/NetworkManager",
-            "org.freedesktop.NetworkManager",
-        )
-        .await
-        .map_err(|e| e.to_string())?;
+        let proxy = nm_proxy_at(&conn, "/org/freedesktop/NetworkManager", "org.freedesktop.NetworkManager")
+            .await
+            .map_err(|e| e.to_string())?;
 
         let wireless_enabled: bool = proxy
             .get_property("WirelessEnabled")
@@ -50,9 +59,8 @@ pub async fn wifi_get_status() -> Result<WifiStatus, String> {
         let mut ip = None;
 
         for conn_path in &active_connections {
-            let active_proxy = zbus::Proxy::new(
+            let active_proxy = nm_proxy_at(
                 &conn,
-                "org.freedesktop.NetworkManager",
                 conn_path.as_str(),
                 "org.freedesktop.NetworkManager.Connection.Active",
             )
@@ -74,9 +82,8 @@ pub async fn wifi_get_status() -> Result<WifiStatus, String> {
                         .unwrap_or_else(|_| zbus::zvariant::OwnedObjectPath::try_from("/").unwrap());
 
                     if ip4_config.as_str() != "/" {
-                        let ip_proxy = zbus::Proxy::new(
+                        let ip_proxy = nm_proxy_at(
                             &conn,
-                            "org.freedesktop.NetworkManager",
                             ip4_config.as_str(),
                             "org.freedesktop.NetworkManager.IP4Config",
                         )
@@ -129,14 +136,9 @@ pub async fn wifi_set_enabled(enabled: bool) -> Result<(), String> {
     #[cfg(target_os = "linux")]
     {
         let conn = zbus::Connection::system().await.map_err(|e| e.to_string())?;
-        let proxy = zbus::Proxy::new(
-            &conn,
-            "org.freedesktop.NetworkManager",
-            "/org/freedesktop/NetworkManager",
-            "org.freedesktop.NetworkManager",
-        )
-        .await
-        .map_err(|e| e.to_string())?;
+        let proxy = nm_proxy_at(&conn, "/org/freedesktop/NetworkManager", "org.freedesktop.NetworkManager")
+            .await
+            .map_err(|e| e.to_string())?;
 
         proxy
             .set_property("WirelessEnabled", enabled)
@@ -156,14 +158,9 @@ pub async fn wifi_get_networks() -> Result<Vec<WifiNetwork>, String> {
     {
         // Request scan then list access points
         let conn = zbus::Connection::system().await.map_err(|e| e.to_string())?;
-        let nm_proxy = zbus::Proxy::new(
-            &conn,
-            "org.freedesktop.NetworkManager",
-            "/org/freedesktop/NetworkManager",
-            "org.freedesktop.NetworkManager",
-        )
-        .await
-        .map_err(|e| e.to_string())?;
+        let nm_proxy = nm_proxy_at(&conn, "/org/freedesktop/NetworkManager", "org.freedesktop.NetworkManager")
+            .await
+            .map_err(|e| e.to_string())?;
 
         // Get WiFi devices
         let devices: Vec<zbus::zvariant::OwnedObjectPath> = nm_proxy
@@ -174,25 +171,24 @@ pub async fn wifi_get_networks() -> Result<Vec<WifiNetwork>, String> {
         let mut networks = Vec::new();
 
         for dev_path in &devices {
-            let dev_proxy = zbus::Proxy::new(
+            let dev_proxy = nm_proxy_at(
                 &conn,
-                "org.freedesktop.NetworkManager",
                 dev_path.as_str(),
                 "org.freedesktop.NetworkManager.Device",
             )
             .await
             .ok();
 
-            let device_type: u32 = dev_proxy
-                .as_ref()
-                .and_then(|p| futures_lite::future::block_on(p.get_property("DeviceType")).ok())
-                .unwrap_or(0);
+            let device_type: u32 = if let Some(ref p) = dev_proxy {
+                p.get_property("DeviceType").await.unwrap_or(0)
+            } else {
+                0
+            };
 
             if device_type != 2 { continue; } // NM_DEVICE_TYPE_WIFI = 2
 
-            let wifi_proxy = zbus::Proxy::new(
+            let wifi_proxy = nm_proxy_at(
                 &conn,
-                "org.freedesktop.NetworkManager",
                 dev_path.as_str(),
                 "org.freedesktop.NetworkManager.Device.Wireless",
             )
@@ -201,7 +197,7 @@ pub async fn wifi_get_networks() -> Result<Vec<WifiNetwork>, String> {
 
             if let Some(wp) = wifi_proxy {
                 // Request scan
-                let _ = wp.call::<_, ()>("RequestScan", &std::collections::HashMap::<String, zbus::zvariant::Value>::new()).await;
+                let _ = wp.call::<_, std::collections::HashMap<String, zbus::zvariant::Value<'_>>, ()>("RequestScan", &std::collections::HashMap::<String, zbus::zvariant::Value>::new()).await;
                 tokio::time::sleep(std::time::Duration::from_secs(2)).await;
 
                 let access_points: Vec<zbus::zvariant::OwnedObjectPath> = wp
@@ -216,9 +212,8 @@ pub async fn wifi_get_networks() -> Result<Vec<WifiNetwork>, String> {
                     .unwrap_or_default();
 
                 for ap_path in &access_points {
-                    let ap_proxy = zbus::Proxy::new(
+                    let ap_proxy = nm_proxy_at(
                         &conn,
-                        "org.freedesktop.NetworkManager",
                         ap_path.as_str(),
                         "org.freedesktop.NetworkManager.AccessPoint",
                     )

@@ -48,11 +48,13 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
     const userhome = isGuest ? 'Guest' : (username.charAt(0).toUpperCase() + username.slice(1));
 
     const [fsMode, setFsMode] = useState<'vfs' | 'native'>(iselectron ? 'native' : 'vfs');
-    const [nativePath, setNativePath] = useState('/home');
+    const isMacOS = typeof window !== 'undefined' && /Mac/i.test(navigator.userAgent);
+    const nativeHomeDir = isMacOS ? '/Users' : '/home';
+    const [nativePath, setNativePath] = useState(nativeHomeDir);
     const [nativeFiles, setNativeFiles] = useState<filesystemitem[]>([]);
     const [nativeLoading, setNativeLoading] = useState(false);
     const [nativeError, setNativeError] = useState<string | null>(null);
-    const [nativeHistory, setNativeHistory] = useState<string[]>(['/home']);
+    const [nativeHistory, setNativeHistory] = useState<string[]>([nativeHomeDir]);
     const [nativeHistoryIdx, setNativeHistoryIdx] = useState(0);
 
     const formatNativeSize = (bytes: number) => {
@@ -124,7 +126,7 @@ export default function Explorer({ windowId, initialpath, istrash, openPath, sel
         ...(iselectron ? [{
             title: 'Host System',
             items: [
-                { name: 'Home', icon: IoHomeOutline, path: ['_native_', '/home'], color: 'var(--pastel-teal)' },
+                { name: 'Home', icon: IoHomeOutline, path: ['_native_', nativeHomeDir], color: 'var(--pastel-teal)' },
                 { name: 'Root (/)', icon: IoServerOutline, path: ['_native_', '/'], color: 'var(--text-muted)' },
             ]
         }] : []),
