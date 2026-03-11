@@ -83,7 +83,7 @@ async fn fetch_tray_item_props(service: &str) -> Result<TrayItem, Box<dyn std::e
     let conn = Connection::session().await?;
 
     // The path is usually /StatusNotifierItem
-    let proxy = zbus::Proxy::builder(&conn)
+    let proxy: zbus::Proxy<'_> = zbus::proxy::Builder::new(&conn)
         .destination(BusName::try_from(service)?)?
         .path("/StatusNotifierItem")?
         .interface("org.kde.StatusNotifierItem")?
@@ -95,12 +95,12 @@ async fn fetch_tray_item_props(service: &str) -> Result<TrayItem, Box<dyn std::e
     let tooltip_text = proxy
         .get_property::<(String, Vec<(i32, i32, Vec<u8>)>, String, String)>("ToolTip")
         .await
-        .map(|t| t.2)
+        .map(|t: (String, Vec<(i32, i32, Vec<u8>)>, String, String)| t.2)
         .unwrap_or_default();
     let category: String = proxy.get_property("Category").await.unwrap_or_default();
     let status: String = proxy.get_property("Status").await.unwrap_or_default();
     let menu_path: String = proxy.get_property::<zbus::zvariant::OwnedObjectPath>("Menu").await
-        .map(|p| p.to_string())
+        .map(|p: zbus::zvariant::OwnedObjectPath| p.to_string())
         .unwrap_or_else(|_| "/MenuBar".into());
 
     Ok(TrayItem {
@@ -133,14 +133,16 @@ pub async fn start(app: tauri::AppHandle) -> Result<(), Box<dyn std::error::Erro
 
     // Also register ourselves as a host
     {
-        let host_proxy = zbus::Proxy::builder(&conn)
-            .destination("org.kde.StatusNotifierWatcher").ok()
-            .and_then(|b| b.path("/StatusNotifierWatcher").ok())
-            .and_then(|b| b.interface("org.kde.StatusNotifierWatcher").ok());
-        if let Some(builder) = host_proxy {
-            if let Ok(proxy) = builder.build().await {
-                let _ = proxy.call::<_, (&str,), ()>("RegisterStatusNotifierHost", &("org.nextaros.Desktop",)).await;
-            }
+        if let Ok(proxy) = async {
+            let p: zbus::Proxy<'_> = zbus::proxy::Builder::new(&conn)
+                .destination("org.kde.StatusNotifierWatcher")?
+                .path("/StatusNotifierWatcher")?
+                .interface("org.kde.StatusNotifierWatcher")?
+                .build()
+                .await?;
+            Ok::<zbus::Proxy<'_>, zbus::Error>(p)
+        }.await {
+            let _ = proxy.call::<_, (&str,), ()>("RegisterStatusNotifierHost", &("org.nextaros.Desktop",)).await;
         }
     }
 
@@ -162,7 +164,7 @@ pub async fn start(app: tauri::AppHandle) -> Result<(), Box<dyn std::error::Erro
             .build();
 
         let mut stream = MessageStream::for_match_rule(rule, &conn, None).await.unwrap();
-        while let Some(msg) = stream.next().await {
+        while let Some(Ok(msg)) = stream.next().await {
             if let Ok((name, _old, new)) = msg.body().deserialize::<(String, String, String)>()
             {
                 if new.is_empty() {

@@ -62,7 +62,7 @@ pub async fn fetch_dbusmenu(
     menu_path: &str,
 ) -> Result<Vec<MenuItem>, Box<dyn std::error::Error + Send + Sync>> {
     let conn = Connection::session().await?;
-    let proxy = zbus::Proxy::builder(&conn)
+    let proxy: zbus::Proxy<'_> = zbus::proxy::Builder::new(&conn)
         .destination(zbus::names::BusName::try_from(service)?)?
         .path(zbus::zvariant::ObjectPath::try_from(menu_path)?)?
         .interface("com.canonical.dbusmenu")?
@@ -85,16 +85,17 @@ fn parse_menu_item(children: &[zbus::zvariant::OwnedValue]) -> Vec<MenuItem> {
         if let Ok(tuple) = child.downcast_ref::<zbus::zvariant::Structure<'_>>() {
             let fields = tuple.fields();
             if fields.len() >= 3 {
-                let id = fields[0].downcast_ref::<i32>().ok().copied().unwrap_or(0);
-                let props: HashMap<String, String> = fields[1]
-                    .downcast_ref::<HashMap<&str, zbus::zvariant::Value<'_>>>()
-                    .ok()
-                    .map(|m| {
-                        m.iter()
-                            .filter_map(|(k, v)| v.downcast_ref::<&str>().ok().map(|s| (k.to_string(), s.to_string())))
-                            .collect()
+                // In zbus 5, downcast_ref returns Result<T, _> where T is the value (not a reference)
+                let id: i32 = fields[0].downcast_ref::<i32>().unwrap_or(0);
+
+                // Parse properties dict: a{sv} → try to extract as HashMap<String, OwnedValue>
+                let props: HashMap<String, String> = HashMap::<String, zbus::zvariant::OwnedValue>::try_from(fields[1].clone())
+                    .unwrap_or_default()
+                    .into_iter()
+                    .filter_map(|(k, v)| {
+                        String::try_from(v).ok().map(|s| (k, s))
                     })
-                    .unwrap_or_default();
+                    .collect();
 
                 let label = props.get("label").cloned().unwrap_or_default();
                 let item_type = props.get("type").cloned().unwrap_or_else(|| "normal".into());
@@ -106,12 +107,10 @@ fn parse_menu_item(children: &[zbus::zvariant::OwnedValue]) -> Vec<MenuItem> {
                 let toggle_state = props.get("toggle-state").and_then(|v| v.parse().ok());
 
                 let sub_children = if let Some(arr) = fields.get(2) {
-                    if let Ok(arr) = arr.downcast_ref::<Vec<zbus::zvariant::Value<'_>>>() {
-                        let owned: Vec<zbus::zvariant::OwnedValue> = arr.iter().map(|v| v.to_owned().into()).collect();
-                        parse_menu_item(&owned)
-                    } else {
-                        Vec::new()
-                    }
+                    // Try to get children as Vec<OwnedValue>
+                    Vec::<zbus::zvariant::OwnedValue>::try_from(arr.clone())
+                        .map(|owned| parse_menu_item(&owned))
+                        .unwrap_or_default()
                 } else {
                     Vec::new()
                 };

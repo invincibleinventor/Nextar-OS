@@ -9,7 +9,7 @@ pub async fn start(app: tauri::AppHandle) -> Result<(), Box<dyn std::error::Erro
 
     // Listen for PrepareForSleep from logind (suspend/resume)
     let app_clone = app.clone();
-    let logind_proxy = zbus::Proxy::builder(&conn)
+    let logind_proxy: zbus::Proxy<'_> = zbus::proxy::Builder::new(&conn)
         .destination("org.freedesktop.login1")?
         .path("/org/freedesktop/login1")?
         .interface("org.freedesktop.login1.Manager")?
@@ -32,7 +32,7 @@ pub async fn start(app: tauri::AppHandle) -> Result<(), Box<dyn std::error::Erro
 
     // Listen for PrepareForShutdown
     let app_clone = app.clone();
-    let logind_proxy2 = zbus::Proxy::builder(&conn)
+    let logind_proxy2: zbus::Proxy<'_> = zbus::proxy::Builder::new(&conn)
         .destination("org.freedesktop.login1")?
         .path("/org/freedesktop/login1")?
         .interface("org.freedesktop.login1.Manager")?
@@ -57,7 +57,7 @@ pub async fn start(app: tauri::AppHandle) -> Result<(), Box<dyn std::error::Erro
     let session_path = get_current_session_path(&conn).await;
     if let Some(session_path) = session_path {
         let app_clone = app.clone();
-        let session_proxy = zbus::Proxy::builder(&conn)
+        let session_proxy: zbus::Proxy<'_> = zbus::proxy::Builder::new(&conn)
             .destination("org.freedesktop.login1")?
             .path(zbus::zvariant::ObjectPath::try_from(session_path.as_str())?)?
             .interface("org.freedesktop.login1.Session")?
@@ -73,7 +73,7 @@ pub async fn start(app: tauri::AppHandle) -> Result<(), Box<dyn std::error::Erro
         });
 
         let app_clone = app.clone();
-        let session_proxy2 = zbus::Proxy::builder(&conn)
+        let session_proxy2: zbus::Proxy<'_> = zbus::proxy::Builder::new(&conn)
             .destination("org.freedesktop.login1")?
             .path(zbus::zvariant::ObjectPath::try_from(session_path.as_str())?)?
             .interface("org.freedesktop.login1.Session")?
@@ -91,7 +91,7 @@ pub async fn start(app: tauri::AppHandle) -> Result<(), Box<dyn std::error::Erro
     // Listen for UPower device changes (battery)
     let app_clone = app.clone();
     let upower_conn = Connection::system().await?;
-    let upower_proxy = zbus::Proxy::builder(&upower_conn)
+    let upower_proxy: zbus::Proxy<'_> = zbus::proxy::Builder::new(&upower_conn)
         .destination("org.freedesktop.UPower")?
         .path("/org/freedesktop/UPower")?
         .interface("org.freedesktop.UPower")?
@@ -102,7 +102,7 @@ pub async fn start(app: tauri::AppHandle) -> Result<(), Box<dyn std::error::Erro
         // Watch for property changes on UPower
         let mut stream = upower_proxy.receive_all_signals().await.unwrap();
         while let Some(signal) = stream.next().await {
-            let member = signal.member().map(|m| m.to_string()).unwrap_or_default();
+            let member = signal.member().map(|m: zbus::names::MemberName<'_>| m.to_string()).unwrap_or_default();
             match member.as_str() {
                 "DeviceChanged" | "Changed" => {
                     let _ = app_clone.emit("battery-changed", ());
@@ -118,7 +118,7 @@ pub async fn start(app: tauri::AppHandle) -> Result<(), Box<dyn std::error::Erro
 }
 
 async fn get_current_session_path(conn: &Connection) -> Option<String> {
-    let proxy = zbus::Proxy::builder(conn)
+    let proxy: zbus::Proxy<'_> = zbus::proxy::Builder::new(conn)
         .destination("org.freedesktop.login1").ok()?
         .path("/org/freedesktop/login1").ok()?
         .interface("org.freedesktop.login1.Manager").ok()?

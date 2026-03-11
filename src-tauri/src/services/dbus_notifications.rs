@@ -66,7 +66,8 @@ impl NotificationDaemon {
             }
             // Cap at 200
             if history.len() > 200 {
-                history.drain(0..history.len() - 200);
+                let excess = history.len() - 200;
+                history.drain(0..excess);
             }
         }
 

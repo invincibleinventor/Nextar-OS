@@ -10,12 +10,12 @@ pub struct AuthResult {
 pub async fn polkit_check_auth(action_id: String) -> Result<AuthResult, String> {
     #[cfg(target_os = "linux")]
     {
-        let conn = zbus::Connection::system().await.map_err(|e| e.to_string())?;
-        let proxy = zbus::Proxy::builder(&conn)
-            .destination("org.freedesktop.PolicyKit1").map_err(|e| e.to_string())?
-            .path("/org/freedesktop/PolicyKit1/Authority").map_err(|e| e.to_string())?
-            .interface("org.freedesktop.PolicyKit1.Authority").map_err(|e| e.to_string())?
-            .build().await.map_err(|e| e.to_string())?;
+        let conn = zbus::Connection::system().await.map_err(|e: zbus::Error| e.to_string())?;
+        let proxy: zbus::Proxy<'_> = zbus::proxy::Builder::new(&conn)
+            .destination("org.freedesktop.PolicyKit1").map_err(|e: zbus::Error| e.to_string())?
+            .path("/org/freedesktop/PolicyKit1/Authority").map_err(|e: zbus::Error| e.to_string())?
+            .interface("org.freedesktop.PolicyKit1.Authority").map_err(|e: zbus::Error| e.to_string())?
+            .build().await.map_err(|e: zbus::Error| e.to_string())?;
 
         let subject = (
             "unix-process",
@@ -30,11 +30,11 @@ pub async fn polkit_check_auth(action_id: String) -> Result<AuthResult, String> 
                 &subject,
                 &action_id,
                 &std::collections::HashMap::<String, String>::new(),
-                0u32, // AllowUserInteraction
+                0u32,
                 "",
             ))
             .await
-            .map_err(|e| e.to_string())?;
+            .map_err(|e: zbus::Error| e.to_string())?;
 
         Ok(AuthResult {
             authorized: result.0,
@@ -46,10 +46,9 @@ pub async fn polkit_check_auth(action_id: String) -> Result<AuthResult, String> 
 }
 
 #[tauri::command]
-pub async fn polkit_authenticate(action_id: String) -> Result<bool, String> {
+pub async fn polkit_authenticate(_action_id: String) -> Result<bool, String> {
     #[cfg(target_os = "linux")]
     {
-        // Use pkexec to trigger auth dialog
         let output = tokio::process::Command::new("pkexec")
             .args(["--disable-internal-agent", "true"])
             .output()
@@ -58,5 +57,5 @@ pub async fn polkit_authenticate(action_id: String) -> Result<bool, String> {
         Ok(output.status.success())
     }
     #[cfg(not(target_os = "linux"))]
-    { let _ = action_id; Ok(true) }
+    { Ok(true) }
 }

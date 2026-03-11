@@ -25,7 +25,7 @@ async fn nm_proxy_at(
     path: &str,
     iface: &str,
 ) -> Result<zbus::Proxy<'_>, zbus::Error> {
-    zbus::Proxy::builder(conn)
+    zbus::proxy::Builder::new(conn)
         .destination("org.freedesktop.NetworkManager")?
         .path(zbus::zvariant::ObjectPath::try_from(path)?)?
         .interface(iface)?
@@ -208,7 +208,7 @@ pub async fn wifi_get_networks() -> Result<Vec<WifiNetwork>, String> {
                 let active_ap: String = wp
                     .get_property::<zbus::zvariant::OwnedObjectPath>("ActiveAccessPoint")
                     .await
-                    .map(|p| p.to_string())
+                    .map(|p: zbus::zvariant::OwnedObjectPath| p.to_string())
                     .unwrap_or_default();
 
                 for ap_path in &access_points {
