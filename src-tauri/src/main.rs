@@ -11,6 +11,14 @@ use tauri::Manager;
 fn main() {
     env_logger::init();
 
+    // Fix WebKitGTK black screen on some Linux configurations (VM, missing GPU drivers)
+    #[cfg(target_os = "linux")]
+    {
+        if env::var("WEBKIT_DISABLE_COMPOSITING_MODE").is_err() {
+            unsafe { env::set_var("WEBKIT_DISABLE_COMPOSITING_MODE", "1"); }
+        }
+    }
+
     // Detect desktop session mode
     let is_session = env::args().any(|a| a == "--session")
         || env::var("NEXTAROS_SESSION").unwrap_or_default() == "1"
