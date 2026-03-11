@@ -7,7 +7,7 @@ use tauri::{Emitter, Manager};
 use tokio::sync::RwLock;
 use zbus::{interface, Connection, MatchRule, MessageStream};
 use zbus::names::BusName;
-use zbus::object_server::SignalContext;
+use zbus::object_server::SignalEmitter;
 use futures_util::StreamExt;
 
 use super::state::TrayItem;
@@ -70,13 +70,13 @@ impl StatusNotifierWatcher {
     }
 
     #[zbus(signal)]
-    async fn status_notifier_item_registered(ctxt: &SignalContext<'_>, service: &str) -> zbus::Result<()>;
+    async fn status_notifier_item_registered(ctxt: &SignalEmitter<'_>, service: &str) -> zbus::Result<()>;
 
     #[zbus(signal)]
-    async fn status_notifier_item_unregistered(ctxt: &SignalContext<'_>, service: &str) -> zbus::Result<()>;
+    async fn status_notifier_item_unregistered(ctxt: &SignalEmitter<'_>, service: &str) -> zbus::Result<()>;
 
     #[zbus(signal)]
-    async fn status_notifier_host_registered(ctxt: &SignalContext<'_>) -> zbus::Result<()>;
+    async fn status_notifier_host_registered(ctxt: &SignalEmitter<'_>) -> zbus::Result<()>;
 }
 
 /// Fetch properties from a StatusNotifierItem service

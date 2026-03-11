@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 use tauri::Emitter;
+#[cfg(target_os = "linux")]
+use std::os::fd::AsRawFd;
 
 #[derive(Deserialize)]
 pub struct PtySpawnOptions {
