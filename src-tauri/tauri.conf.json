@@ -5,7 +5,7 @@
   "build": {
     "frontendDist": "../out",
     "devUrl": "http://localhost:3000",
-    "beforeDevCommand": "",
+    "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build"
   },
   "app": {
@@ -19,7 +19,7 @@
         "maximized": true,
         "resizable": true,
         "decorations": false,
-        "transparent": true,
+        "transparent": false,
         "width": 1920,
         "height": 1080,
         "minWidth": 800,

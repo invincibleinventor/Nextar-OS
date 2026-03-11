@@ -76,27 +76,25 @@ pub async fn session_install() -> Result<String, String> {
         let exe_path = exe.to_string_lossy();
 
         let xsession_content = format!(
-            "[Desktop Entry]\n\
-            Name=NextarOS\n\
-            Comment=NextarOS Desktop Environment\n\
-            Exec=env NEXTAROS_SESSION=1 DESKTOP_SESSION=nextaros XDG_SESSION_DESKTOP=nextaros XDG_CURRENT_DESKTOP=NextarOS QT_QPA_PLATFORMTHEME=qt5ct {} --no-sandbox --session\n\
-            TryExec={}\n\
-            Type=Application\n\
-            DesktopNames=NextarOS\n\
-            X-Ubuntu-Gettext-Domain=nextaros\n",
-            exe_path, exe_path
-        );
+"[Desktop Entry]
+Name=NextarOS
+Comment=NextarOS Desktop Environment
+Exec=env NEXTAROS_SESSION=1 DESKTOP_SESSION=nextaros XDG_SESSION_DESKTOP=nextaros XDG_CURRENT_DESKTOP=NextarOS QT_QPA_PLATFORMTHEME=qt5ct {exe} --session
+TryExec={exe}
+Type=Application
+DesktopNames=NextarOS
+X-Ubuntu-Gettext-Domain=nextaros
+", exe = exe_path);
 
         let wayland_content = format!(
-            "[Desktop Entry]\n\
-            Name=NextarOS (Wayland)\n\
-            Comment=NextarOS Desktop Environment on Wayland\n\
-            Exec=env NEXTAROS_SESSION=1 DESKTOP_SESSION=nextaros XDG_SESSION_DESKTOP=nextaros XDG_CURRENT_DESKTOP=NextarOS XDG_SESSION_TYPE=wayland QT_QPA_PLATFORMTHEME=qt5ct {} --no-sandbox --session --ozone-platform-hint=auto\n\
-            TryExec={}\n\
-            Type=Application\n\
-            DesktopNames=NextarOS\n",
-            exe_path, exe_path
-        );
+"[Desktop Entry]
+Name=NextarOS (Wayland)
+Comment=NextarOS Desktop Environment on Wayland
+Exec=env NEXTAROS_SESSION=1 DESKTOP_SESSION=nextaros XDG_SESSION_DESKTOP=nextaros XDG_CURRENT_DESKTOP=NextarOS XDG_SESSION_TYPE=wayland QT_QPA_PLATFORMTHEME=qt5ct {exe} --session --ozone-platform-hint=auto
+TryExec={exe}
+Type=Application
+DesktopNames=NextarOS
+", exe = exe_path);
 
         // Try system dir first, fall back to user dir
         let system_x11 = "/usr/share/xsessions/nextaros.desktop";
