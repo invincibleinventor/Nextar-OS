@@ -2,25 +2,29 @@
 
 use tauri::Emitter;
 use futures_util::StreamExt;
-use zbus::Connection;
 
 pub async fn start(app: tauri::AppHandle) -> Result<(), Box<dyn std::error::Error>> {
-    let conn = Connection::system().await?;
-
     // Listen for PrepareForSleep from logind (suspend/resume)
     let app_clone = app.clone();
-    let logind_proxy: zbus::Proxy<'_> = zbus::proxy::Builder::new(&conn)
-        .destination("org.freedesktop.login1")?
-        .path("/org/freedesktop/login1")?
-        .interface("org.freedesktop.login1.Manager")?
-        .build()
-        .await?;
-
     tokio::spawn(async move {
-        let mut stream = logind_proxy
-            .receive_signal("PrepareForSleep")
+        let conn = match zbus::Connection::system().await {
+            Ok(c) => c,
+            Err(e) => { log::error!("D-Bus connect failed for sleep listener: {}", e); return; }
+        };
+        let proxy: zbus::Proxy<'_> = match zbus::proxy::Builder::new(&conn)
+            .destination("org.freedesktop.login1").unwrap()
+            .path("/org/freedesktop/login1").unwrap()
+            .interface("org.freedesktop.login1.Manager").unwrap()
+            .build()
             .await
-            .unwrap();
+        {
+            Ok(p) => p,
+            Err(e) => { log::error!("logind proxy failed: {}", e); return; }
+        };
+        let mut stream = match proxy.receive_signal("PrepareForSleep").await {
+            Ok(s) => s,
+            Err(e) => { log::error!("PrepareForSleep signal failed: {}", e); return; }
+        };
         while let Some(signal) = stream.next().await {
             if let Ok(args) = signal.body().deserialize::<(bool,)>() {
                 let event = if args.0 { "suspend" } else { "resume" };
@@ -32,18 +36,25 @@ pub async fn start(app: tauri::AppHandle) -> Result<(), Box<dyn std::error::Erro
 
     // Listen for PrepareForShutdown
     let app_clone = app.clone();
-    let logind_proxy2: zbus::Proxy<'_> = zbus::proxy::Builder::new(&conn)
-        .destination("org.freedesktop.login1")?
-        .path("/org/freedesktop/login1")?
-        .interface("org.freedesktop.login1.Manager")?
-        .build()
-        .await?;
-
     tokio::spawn(async move {
-        let mut stream = logind_proxy2
-            .receive_signal("PrepareForShutdown")
+        let conn = match zbus::Connection::system().await {
+            Ok(c) => c,
+            Err(e) => { log::error!("D-Bus connect failed for shutdown listener: {}", e); return; }
+        };
+        let proxy: zbus::Proxy<'_> = match zbus::proxy::Builder::new(&conn)
+            .destination("org.freedesktop.login1").unwrap()
+            .path("/org/freedesktop/login1").unwrap()
+            .interface("org.freedesktop.login1.Manager").unwrap()
+            .build()
             .await
-            .unwrap();
+        {
+            Ok(p) => p,
+            Err(e) => { log::error!("logind proxy failed: {}", e); return; }
+        };
+        let mut stream = match proxy.receive_signal("PrepareForShutdown").await {
+            Ok(s) => s,
+            Err(e) => { log::error!("PrepareForShutdown signal failed: {}", e); return; }
+        };
         while let Some(signal) = stream.next().await {
             if let Ok(args) = signal.body().deserialize::<(bool,)>() {
                 if args.0 {
@@ -54,35 +65,64 @@ pub async fn start(app: tauri::AppHandle) -> Result<(), Box<dyn std::error::Erro
     });
 
     // Listen for Lock/Unlock from session
-    let session_path = get_current_session_path(&conn).await;
+    let session_path = get_current_session_path().await;
     if let Some(session_path) = session_path {
         let app_clone = app.clone();
-        let session_proxy: zbus::Proxy<'_> = zbus::proxy::Builder::new(&conn)
-            .destination("org.freedesktop.login1")?
-            .path(zbus::zvariant::ObjectPath::try_from(session_path.as_str())?)?
-            .interface("org.freedesktop.login1.Session")?
-            .build()
-            .await?;
-
+        let sp = session_path.clone();
         tokio::spawn(async move {
-            let mut lock_stream = session_proxy.receive_signal("Lock").await.unwrap();
-            while let Some(_) = lock_stream.next().await {
+            let conn = match zbus::Connection::system().await {
+                Ok(c) => c,
+                Err(e) => { log::error!("D-Bus connect failed for lock listener: {}", e); return; }
+            };
+            let obj_path = match zbus::zvariant::OwnedObjectPath::try_from(sp.as_str()) {
+                Ok(p) => p,
+                Err(e) => { log::error!("Invalid session path: {}", e); return; }
+            };
+            let proxy: zbus::Proxy<'_> = match zbus::proxy::Builder::new(&conn)
+                .destination("org.freedesktop.login1").unwrap()
+                .path(obj_path).unwrap()
+                .interface("org.freedesktop.login1.Session").unwrap()
+                .build()
+                .await
+            {
+                Ok(p) => p,
+                Err(e) => { log::error!("Session proxy failed: {}", e); return; }
+            };
+            let mut stream = match proxy.receive_signal("Lock").await {
+                Ok(s) => s,
+                Err(e) => { log::error!("Lock signal failed: {}", e); return; }
+            };
+            while let Some(_) = stream.next().await {
                 let _ = app_clone.emit("session-action", "lock");
                 log::info!("Session lock signal received");
             }
         });
 
         let app_clone = app.clone();
-        let session_proxy2: zbus::Proxy<'_> = zbus::proxy::Builder::new(&conn)
-            .destination("org.freedesktop.login1")?
-            .path(zbus::zvariant::ObjectPath::try_from(session_path.as_str())?)?
-            .interface("org.freedesktop.login1.Session")?
-            .build()
-            .await?;
-
         tokio::spawn(async move {
-            let mut unlock_stream = session_proxy2.receive_signal("Unlock").await.unwrap();
-            while let Some(_) = unlock_stream.next().await {
+            let conn = match zbus::Connection::system().await {
+                Ok(c) => c,
+                Err(e) => { log::error!("D-Bus connect failed for unlock listener: {}", e); return; }
+            };
+            let obj_path = match zbus::zvariant::OwnedObjectPath::try_from(session_path.as_str()) {
+                Ok(p) => p,
+                Err(e) => { log::error!("Invalid session path: {}", e); return; }
+            };
+            let proxy: zbus::Proxy<'_> = match zbus::proxy::Builder::new(&conn)
+                .destination("org.freedesktop.login1").unwrap()
+                .path(obj_path).unwrap()
+                .interface("org.freedesktop.login1.Session").unwrap()
+                .build()
+                .await
+            {
+                Ok(p) => p,
+                Err(e) => { log::error!("Session proxy failed: {}", e); return; }
+            };
+            let mut stream = match proxy.receive_signal("Unlock").await {
+                Ok(s) => s,
+                Err(e) => { log::error!("Unlock signal failed: {}", e); return; }
+            };
+            while let Some(_) = stream.next().await {
                 let _ = app_clone.emit("session-action", "unlock");
             }
         });
@@ -90,19 +130,27 @@ pub async fn start(app: tauri::AppHandle) -> Result<(), Box<dyn std::error::Erro
 
     // Listen for UPower device changes (battery)
     let app_clone = app.clone();
-    let upower_conn = Connection::system().await?;
-    let upower_proxy: zbus::Proxy<'_> = zbus::proxy::Builder::new(&upower_conn)
-        .destination("org.freedesktop.UPower")?
-        .path("/org/freedesktop/UPower")?
-        .interface("org.freedesktop.UPower")?
-        .build()
-        .await?;
-
     tokio::spawn(async move {
-        // Watch for property changes on UPower
-        let mut stream = upower_proxy.receive_all_signals().await.unwrap();
+        let conn = match zbus::Connection::system().await {
+            Ok(c) => c,
+            Err(e) => { log::error!("D-Bus connect failed for UPower listener: {}", e); return; }
+        };
+        let proxy: zbus::Proxy<'_> = match zbus::proxy::Builder::new(&conn)
+            .destination("org.freedesktop.UPower").unwrap()
+            .path("/org/freedesktop/UPower").unwrap()
+            .interface("org.freedesktop.UPower").unwrap()
+            .build()
+            .await
+        {
+            Ok(p) => p,
+            Err(e) => { log::error!("UPower proxy failed: {}", e); return; }
+        };
+        let mut stream = match proxy.receive_all_signals().await {
+            Ok(s) => s,
+            Err(e) => { log::error!("UPower signals failed: {}", e); return; }
+        };
         while let Some(signal) = stream.next().await {
-            let member = signal.member().map(|m: zbus::names::MemberName<'_>| m.to_string()).unwrap_or_default();
+            let member = signal.member().map(|m| m.to_string()).unwrap_or_default();
             match member.as_str() {
                 "DeviceChanged" | "Changed" => {
                     let _ = app_clone.emit("battery-changed", ());
@@ -117,8 +165,9 @@ pub async fn start(app: tauri::AppHandle) -> Result<(), Box<dyn std::error::Erro
     Ok(())
 }
 
-async fn get_current_session_path(conn: &Connection) -> Option<String> {
-    let proxy: zbus::Proxy<'_> = zbus::proxy::Builder::new(conn)
+async fn get_current_session_path() -> Option<String> {
+    let conn = zbus::Connection::system().await.ok()?;
+    let proxy: zbus::Proxy<'_> = zbus::proxy::Builder::new(&conn)
         .destination("org.freedesktop.login1").ok()?
         .path("/org/freedesktop/login1").ok()?
         .interface("org.freedesktop.login1.Manager").ok()?

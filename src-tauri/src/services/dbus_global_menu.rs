@@ -18,15 +18,16 @@ struct MenuRegistrar {
 #[interface(name = "com.canonical.AppMenu.Registrar")]
 impl MenuRegistrar {
     /// Register a window's menu
-    async fn register_window(&self, window_id: u32, service: &str, menu_path: zbus::zvariant::ObjectPath<'_>) {
+    async fn register_window(&self, window_id: u32, service: &str, menu_path: zbus::zvariant::OwnedObjectPath) {
+        let menu_path_str = menu_path.to_string();
         let mut regs = self.registrations.write().await;
-        regs.insert(window_id, (service.to_string(), menu_path.to_string()));
-        log::info!("Global menu registered for window {} → {}:{}", window_id, service, menu_path);
+        regs.insert(window_id, (service.to_string(), menu_path_str.clone()));
+        log::info!("Global menu registered for window {} → {}:{}", window_id, service, menu_path_str);
 
         let _ = self.app.emit("global-menu-registered", serde_json::json!({
             "windowId": window_id,
             "service": service,
-            "menuPath": menu_path.as_str(),
+            "menuPath": menu_path_str,
         }));
     }
 

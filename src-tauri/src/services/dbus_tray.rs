@@ -20,7 +20,7 @@ struct StatusNotifierWatcher {
 #[interface(name = "org.kde.StatusNotifierWatcher")]
 impl StatusNotifierWatcher {
     /// Called by apps to register their tray icon
-    async fn register_status_notifier_item(&mut self, service: &str) {
+    async fn register_status_notifier_item(&self, service: &str) {
         let mut items = self.items.write().await;
         let full_service = service.to_string();
         if !items.contains(&full_service) {

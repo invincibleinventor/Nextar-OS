@@ -25,7 +25,7 @@ impl NotificationDaemon {
         summary: &str,
         body: &str,
         actions: Vec<String>,
-        hints: HashMap<String, zbus::zvariant::Value<'_>>,
+        hints: HashMap<String, zbus::zvariant::OwnedValue>,
         expire_timeout: i32,
     ) -> u32 {
         let id = if replaces_id > 0 {
@@ -36,9 +36,7 @@ impl NotificationDaemon {
 
         let urgency = hints
             .get("urgency")
-            .and_then(|v| {
-                if let zbus::zvariant::Value::U8(u) = v { Some(*u) } else { None }
-            })
+            .and_then(|v| u8::try_from(v).ok())
             .unwrap_or(1);
 
         let record = NotificationRecord {
